@@ -1,0 +1,1083 @@
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dinosaur Cup</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --accent: #22c55e;
+      --accent-2: #f59e0b;
+      --danger: #ef4444;
+      --blue: #38bdf8;
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --radius: 20px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(34,197,94,.14), transparent 25%),
+        radial-gradient(circle at top right, rgba(56,189,248,.12), transparent 22%),
+        linear-gradient(180deg, #0b1220, #0f172a 45%, #111827);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: .5px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-top: 6px;
+      font-size: 1rem;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+      backdrop-filter: blur(8px);
+    }
+
+    .hidden { display: none !important; }
+
+    .screen {
+      display: grid;
+      gap: 18px;
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 980px) {
+      .top-row { grid-template-columns: 1fr; }
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .15s ease, opacity .15s ease, box-shadow .2s ease;
+      box-shadow: 0 6px 20px rgba(0,0,0,.2);
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:active { transform: translateY(1px) scale(.99); }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    .primary { background: linear-gradient(180deg, #22c55e, #16a34a); color: white; }
+    .secondary { background: linear-gradient(180deg, #38bdf8, #0284c7); color: white; }
+    .ghost { background: rgba(255,255,255,.08); color: var(--text); }
+    .danger { background: linear-gradient(180deg, #fb7185, #e11d48); color: white; }
+
+    .counter {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--accent-2);
+    }
+
+    .picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .dino-card {
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border: 2px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      padding: 14px;
+      min-height: 138px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dino-card:hover { transform: translateY(-3px); border-color: rgba(56,189,248,.55); }
+    .dino-card.selected {
+      border-color: rgba(34,197,94,.95);
+      background: linear-gradient(180deg, rgba(34,197,94,.18), rgba(34,197,94,.07));
+    }
+
+    .dino-card .big {
+      font-size: 2rem;
+      line-height: 1;
+    }
+
+    .dino-name { font-size: .98rem; font-weight: 800; }
+    .dino-type {
+      align-self: flex-start;
+      font-size: .8rem;
+      padding: 5px 9px;
+      background: rgba(255,255,255,.08);
+      border-radius: 999px;
+      color: var(--muted);
+    }
+
+    .dino-flavor {
+      color: #dbeafe;
+      font-size: .8rem;
+      line-height: 1.3;
+      opacity: .88;
+    }
+
+    .selected-badge {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--accent);
+      color: white;
+      font-size: .9rem;
+      font-weight: 900;
+      box-shadow: 0 8px 18px rgba(34,197,94,.3);
+    }
+
+    .bracket-wrap {
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .bracket {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
+      gap: 18px;
+      min-width: 980px;
+    }
+
+    .round h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #fde68a;
+      font-size: 1rem;
+    }
+
+    .match {
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 10px;
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .slot {
+      padding: 9px 10px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.05);
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    .slot.winner {
+      background: rgba(34,197,94,.18);
+      border: 1px solid rgba(34,197,94,.35);
+    }
+
+    .slot.pending {
+      color: #94a3b8;
+      font-weight: 600;
+    }
+
+    .battle-layout {
+      display: grid;
+      grid-template-columns: 1fr 320px 1fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    @media (max-width: 1100px) {
+      .battle-layout { grid-template-columns: 1fr; }
+    }
+
+    .fighter {
+      position: relative;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+    }
+
+    .fighter-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .fighter-name { font-size: 1.3rem; font-weight: 900; }
+    .fighter-type { color: #bfdbfe; font-weight: 600; }
+    .fighter-emoji {
+      font-size: clamp(5rem, 14vw, 8.5rem);
+      text-align: center;
+      margin: 18px 0;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,.28));
+      transition: transform .25s ease, filter .25s ease;
+      user-select: none;
+    }
+
+    .fighter.attacking .fighter-emoji { transform: translateX(18px) scale(1.05); }
+    .fighter.right.attacking .fighter-emoji { transform: translateX(-18px) scale(1.05); }
+    .fighter.hit .fighter-emoji { animation: shake .35s linear; }
+    .fighter.celebrate .fighter-emoji { animation: bounce 1s ease infinite; }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      25% { transform: translateX(-10px) rotate(-2deg); }
+      50% { transform: translateX(10px) rotate(2deg); }
+      75% { transform: translateX(-8px) rotate(-1deg); }
+      100% { transform: translateX(0); }
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .hp {
+      display: grid;
+      gap: 8px;
+    }
+
+    .hp-track {
+      width: 100%;
+      height: 18px;
+      background: rgba(255,255,255,.08);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .hp-fill {
+      height: 100%;
+      width: 100%;
+      background: linear-gradient(90deg, #22c55e, #f59e0b 70%, #ef4444);
+      transition: width .35s ease;
+    }
+
+    .battle-center {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .dice-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .die-block {
+      display: grid;
+      gap: 8px;
+      justify-items: center;
+    }
+
+    .die-label {
+      font-size: .88rem;
+      color: var(--muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+    }
+
+    .die {
+      width: 86px;
+      height: 86px;
+      border-radius: 20px;
+      background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(226,232,240,.95));
+      color: #0f172a;
+      display: grid;
+      place-items: center;
+      font-size: 2rem;
+      font-weight: 900;
+      box-shadow: 0 10px 18px rgba(0,0,0,.18);
+      position: relative;
+    }
+
+    .rolling { animation: roll .55s linear infinite; }
+    @keyframes roll {
+      0% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(9deg) scale(1.03); }
+      50% { transform: rotate(-9deg) scale(.98); }
+      75% { transform: rotate(7deg) scale(1.04); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+
+    .battle-log {
+      width: 100%;
+      max-height: 260px;
+      overflow: auto;
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 12px;
+      text-align: left;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+
+    .battle-log p {
+      margin: 0 0 8px;
+      line-height: 1.35;
+      color: #e2e8f0;
+    }
+
+    .battle-log p:last-child { margin-bottom: 0; }
+    .flash {
+      min-height: 36px;
+      font-weight: 900;
+      font-size: 1.1rem;
+      color: #fde68a;
+    }
+
+    .winner-banner {
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #86efac;
+      margin-top: 6px;
+    }
+
+    .footer-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .small-note {
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="title">
+      <div>
+        <h1>Dinosaur Cup</h1>
+        <div class="subtitle">Velg 16 dinosaurer, bygg cupen, og kjemp deg fram til finalen.</div>
+      </div>
+      <div class="controls">
+        <button id="newGameBtn" class="ghost">Nytt spill</button>
+        <button id="soundBtn" class="secondary">Lyd: På</button>
+      </div>
+    </div>
+
+    <section id="selectionScreen" class="screen panel">
+      <div class="top-row">
+        <div class="panel">
+          <h2>Velg 16 dinosaurer</h2>
+          <p class="small-note">Klikk på kortene for å velge deltakere. Når du har valgt 16, kan du starte cupen. Du kan også fylle automatisk med et tilfeldig utvalg.</p>
+          <div class="controls">
+            <div class="counter">Valgt: <span id="selectedCount">0</span>/16</div>
+            <button id="random16Btn" class="secondary">Velg 16 tilfeldig</button>
+            <button id="clearBtn" class="ghost">Tøm valg</button>
+            <button id="startCupBtn" class="primary" disabled>Start cup</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Regler</h2>
+          <div class="small-note">
+            <p>- Alle starter med 10 liv.</p>
+            <p>- Begge kaster 1 angrepsterning og 1 forsvarsterning.</p>
+            <p>- Skade = angrep − forsvar.</p>
+            <p>- 6 på angrep gir +2 skade.</p>
+            <p>- 6 på forsvar gir 1 skade tilbake.</p>
+            <p>- Vinneren går videre i cupen.</p>
+          </div>
+        </div>
+      </div>
+      <div id="pickerGrid" class="picker-grid"></div>
+    </section>
+
+    <section id="bracketScreen" class="screen panel hidden">
+      <div class="controls" style="justify-content: space-between;">
+        <div>
+          <h2 style="margin:0 0 6px;">Cup-tre</h2>
+          <div class="small-note">Trykk på neste kamp for å starte. Kampene spilles én om gangen.</div>
+        </div>
+        <div class="controls">
+          <button id="playNextMatchBtn" class="primary">Spill neste kamp</button>
+        </div>
+      </div>
+      <div class="bracket-wrap">
+        <div id="bracket" class="bracket"></div>
+      </div>
+    </section>
+
+    <section id="battleScreen" class="screen panel hidden">
+      <div class="controls" style="justify-content: space-between;">
+        <div>
+          <h2 id="battleTitle" style="margin:0 0 6px;">Kamp</h2>
+          <div class="small-note">Trykk på kast terninger for å spille neste runde.</div>
+        </div>
+        <div class="controls">
+          <button id="backToBracketBtn" class="ghost hidden">Tilbake til cup</button>
+        </div>
+      </div>
+
+      <div class="battle-layout">
+        <div id="fighterLeft" class="fighter panel left">
+          <div class="fighter-top">
+            <div>
+              <div id="leftName" class="fighter-name"></div>
+              <div id="leftType" class="fighter-type"></div>
+            </div>
+            <div id="leftHpText"></div>
+          </div>
+          <div id="leftEmoji" class="fighter-emoji">🦖</div>
+          <div class="hp">
+            <div class="hp-track"><div id="leftHpFill" class="hp-fill"></div></div>
+          </div>
+        </div>
+
+        <div class="battle-center panel">
+          <div class="dice-row">
+            <div class="die-block">
+              <div class="die-label">Venstre angrep</div>
+              <div id="leftAttackDie" class="die">?</div>
+            </div>
+            <div class="die-block">
+              <div class="die-label">Venstre forsvar</div>
+              <div id="leftDefenseDie" class="die">?</div>
+            </div>
+            <div class="die-block">
+              <div class="die-label">Høyre angrep</div>
+              <div id="rightAttackDie" class="die">?</div>
+            </div>
+            <div class="die-block">
+              <div class="die-label">Høyre forsvar</div>
+              <div id="rightDefenseDie" class="die">?</div>
+            </div>
+          </div>
+
+          <div id="flash" class="flash"></div>
+          <div class="footer-actions">
+            <button id="rollBtn" class="primary">Kast terninger</button>
+            <button id="autoBattleBtn" class="secondary">Spill kampen automatisk</button>
+          </div>
+          <div id="winnerBanner" class="winner-banner"></div>
+          <div id="battleLog" class="battle-log"></div>
+        </div>
+
+        <div id="fighterRight" class="fighter panel right">
+          <div class="fighter-top">
+            <div>
+              <div id="rightName" class="fighter-name"></div>
+              <div id="rightType" class="fighter-type"></div>
+            </div>
+            <div id="rightHpText"></div>
+          </div>
+          <div id="rightEmoji" class="fighter-emoji">🦕</div>
+          <div class="hp">
+            <div class="hp-track"><div id="rightHpFill" class="hp-fill"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const DINOSAURS = [
+      { id: 1, name: 'Tyrannosaurus rex', type: 'Predator', emoji: '🦖', flavor: 'Massiv jeger med brutal bittkraft.' },
+      { id: 2, name: 'Triceratops', type: 'Tank', emoji: '🦏', flavor: 'Horn, skjold og null frykt.' },
+      { id: 3, name: 'Velociraptor', type: 'Speed', emoji: '🦅', flavor: 'Rask og slu med farlige angrep.' },
+      { id: 4, name: 'Spinosaurus', type: 'Predator', emoji: '🐊', flavor: 'Elvejeger med lang snute.' },
+      { id: 5, name: 'Stegosaurus', type: 'Tank', emoji: '🦕', flavor: 'Pigg-haleflipp og tung rustning.' },
+      { id: 6, name: 'Ankylosaurus', type: 'Tank', emoji: '🛡️', flavor: 'Nesten levende stridsvogn.' },
+      { id: 7, name: 'Brachiosaurus', type: 'Giant', emoji: '🌿', flavor: 'Enorm planteeter med rekkevidde.' },
+      { id: 8, name: 'Allosaurus', type: 'Predator', emoji: '🐲', flavor: 'Klassisk storrovdyr med kraftig jaktstil.' },
+      { id: 9, name: 'Carnotaurus', type: 'Speed', emoji: '🔥', flavor: 'Rask, sint og bygd for utfall.' },
+      { id: 10, name: 'Diplodocus', type: 'Giant', emoji: '🌴', flavor: 'Lang hale og stor kropp.' },
+      { id: 11, name: 'Iguanodon', type: 'Balanced', emoji: '🦎', flavor: 'Allsidig og overraskende tøff.' },
+      { id: 12, name: 'Parasaurolophus', type: 'Balanced', emoji: '🎺', flavor: 'Kjent for sin merkelige kam.' },
+      { id: 13, name: 'Therizinosaurus', type: 'Weird', emoji: '🪶', flavor: 'Gigantiske klør og kaotisk stil.' },
+      { id: 14, name: 'Dilophosaurus', type: 'Speed', emoji: '💨', flavor: 'Smidig og kjapp i åpningene.' },
+      { id: 15, name: 'Utahraptor', type: 'Predator', emoji: '⚡', flavor: 'Stor og brutalt effektiv raptor.' },
+      { id: 16, name: 'Compsognathus', type: 'Swarm', emoji: '🐤', flavor: 'Liten, men skummel i gruppe.' },
+      { id: 17, name: 'Quetzalcoatlus', type: 'Sky Hunter', emoji: '🪽', flavor: 'Flygende gigant med enorm rekkevidde.' },
+      { id: 18, name: 'Hatzegopteryx', type: 'Sky Hunter', emoji: '🦅', flavor: 'Ekstrem nebbkraft og voldsom tilstedeværelse.' },
+      { id: 19, name: 'Pachycephalosaurus', type: 'Bruiser', emoji: '💥', flavor: 'Hodestøt som kan snu en kamp.' },
+      { id: 20, name: 'Giganotosaurus', type: 'Predator', emoji: '🌋', flavor: 'Massiv jeger fra sør.' },
+      { id: 21, name: 'Oviraptor', type: 'Trickster', emoji: '🥚', flavor: 'Liten, kvikk og utspekulert.' },
+      { id: 22, name: 'Ceratosaurus', type: 'Predator', emoji: '🗡️', flavor: 'Hornsnute med agressiv stil.' },
+      { id: 23, name: 'Kentrosaurus', type: 'Tank', emoji: '📍', flavor: 'Mange pigger og høy risiko å nærme seg.' },
+      { id: 24, name: 'Microraptor', type: 'Speed', emoji: '🪶', flavor: 'Liten glidejeger med fart.' },
+      { id: 25, name: 'Majungasaurus', type: 'Predator', emoji: '🦖', flavor: 'Seig og uforutsigbar.' },
+      { id: 26, name: 'Albertosaurus', type: 'Balanced', emoji: '🦕', flavor: 'Raskere slektning av større tyranner.' },
+      { id: 27, name: 'Sauropelta', type: 'Tank', emoji: '🧱', flavor: 'Lav, pansret og krevende å skade.' },
+      { id: 28, name: 'Mononykus', type: 'Trickster', emoji: '✨', flavor: 'Merkelig, liten og ekstremt rask.' }
+    ];
+
+    const selectedIds = new Set();
+    let soundEnabled = true;
+    let bracketRounds = [];
+    let currentMatchRef = null;
+    let currentBattle = null;
+    let autoBattleTimer = null;
+
+    const selectionScreen = document.getElementById('selectionScreen');
+    const bracketScreen = document.getElementById('bracketScreen');
+    const battleScreen = document.getElementById('battleScreen');
+    const pickerGrid = document.getElementById('pickerGrid');
+    const selectedCount = document.getElementById('selectedCount');
+    const startCupBtn = document.getElementById('startCupBtn');
+    const random16Btn = document.getElementById('random16Btn');
+    const clearBtn = document.getElementById('clearBtn');
+    const bracketEl = document.getElementById('bracket');
+    const playNextMatchBtn = document.getElementById('playNextMatchBtn');
+    const backToBracketBtn = document.getElementById('backToBracketBtn');
+    const rollBtn = document.getElementById('rollBtn');
+    const autoBattleBtn = document.getElementById('autoBattleBtn');
+    const battleLog = document.getElementById('battleLog');
+    const flash = document.getElementById('flash');
+    const battleTitle = document.getElementById('battleTitle');
+    const winnerBanner = document.getElementById('winnerBanner');
+    const soundBtn = document.getElementById('soundBtn');
+
+    const leftName = document.getElementById('leftName');
+    const leftType = document.getElementById('leftType');
+    const leftEmoji = document.getElementById('leftEmoji');
+    const leftHpFill = document.getElementById('leftHpFill');
+    const leftHpText = document.getElementById('leftHpText');
+    const rightName = document.getElementById('rightName');
+    const rightType = document.getElementById('rightType');
+    const rightEmoji = document.getElementById('rightEmoji');
+    const rightHpFill = document.getElementById('rightHpFill');
+    const rightHpText = document.getElementById('rightHpText');
+
+    const fighterLeft = document.getElementById('fighterLeft');
+    const fighterRight = document.getElementById('fighterRight');
+    const leftAttackDie = document.getElementById('leftAttackDie');
+    const leftDefenseDie = document.getElementById('leftDefenseDie');
+    const rightAttackDie = document.getElementById('rightAttackDie');
+    const rightDefenseDie = document.getElementById('rightDefenseDie');
+
+    function showScreen(name) {
+      selectionScreen.classList.toggle('hidden', name !== 'selection');
+      bracketScreen.classList.toggle('hidden', name !== 'bracket');
+      battleScreen.classList.toggle('hidden', name !== 'battle');
+    }
+
+    function renderPicker() {
+      pickerGrid.innerHTML = '';
+      DINOSAURS.forEach((dino) => {
+        const card = document.createElement('div');
+        card.className = 'dino-card' + (selectedIds.has(dino.id) ? ' selected' : '');
+        card.innerHTML = `
+          <div class="big">${dino.emoji}</div>
+          <div class="dino-name">${dino.name}</div>
+          <div class="dino-type">${dino.type}</div>
+          <div class="dino-flavor">${dino.flavor}</div>
+          ${selectedIds.has(dino.id) ? '<div class="selected-badge">✓</div>' : ''}
+        `;
+        card.addEventListener('click', () => toggleSelect(dino.id));
+        pickerGrid.appendChild(card);
+      });
+      selectedCount.textContent = selectedIds.size;
+      startCupBtn.disabled = selectedIds.size !== 16;
+    }
+
+    function toggleSelect(id) {
+      if (selectedIds.has(id)) {
+        selectedIds.delete(id);
+      } else {
+        if (selectedIds.size >= 16) return;
+        selectedIds.add(id);
+      }
+      renderPicker();
+      playTone('tick');
+    }
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function randomSelect16() {
+      selectedIds.clear();
+      shuffle(DINOSAURS).slice(0, 16).forEach(d => selectedIds.add(d.id));
+      renderPicker();
+      playTone('win');
+    }
+
+    function createBracket(selectedDinos) {
+      const shuffled = shuffle(selectedDinos);
+      const round1 = [];
+      for (let i = 0; i < 16; i += 2) {
+        round1.push({ a: shuffled[i], b: shuffled[i + 1], winner: null });
+      }
+      const round2 = Array.from({ length: 4 }, () => ({ a: null, b: null, winner: null }));
+      const round3 = Array.from({ length: 2 }, () => ({ a: null, b: null, winner: null }));
+      const round4 = [{ a: null, b: null, winner: null }];
+      bracketRounds = [round1, round2, round3, round4];
+    }
+
+    function propagateWinner(roundIndex, matchIndex, winner) {
+      if (roundIndex >= bracketRounds.length - 1) return;
+      const nextRound = bracketRounds[roundIndex + 1];
+      const nextMatchIndex = Math.floor(matchIndex / 2);
+      const slot = matchIndex % 2 === 0 ? 'a' : 'b';
+      nextRound[nextMatchIndex][slot] = { ...winner };
+    }
+
+    function renderBracket() {
+      const titles = ['Åttedelsfinaler', 'Kvartfinaler', 'Semifinaler', 'Finale'];
+      bracketEl.innerHTML = '';
+      bracketRounds.forEach((round, rIndex) => {
+        const col = document.createElement('div');
+        col.className = 'round';
+        col.innerHTML = `<h3>${titles[rIndex]}</h3>`;
+        round.forEach((match, mIndex) => {
+          const box = document.createElement('div');
+          box.className = 'match';
+          const readyA = !!match.a;
+          const readyB = !!match.b;
+          const current = isCurrentPlayableMatch(rIndex, mIndex);
+          box.innerHTML = `
+            <div class="slot ${match.winner === match.a ? 'winner' : ''} ${!readyA ? 'pending' : ''}">${readyA ? match.a.emoji + ' ' + match.a.name : 'Venter...'}</div>
+            <div class="slot ${match.winner === match.b ? 'winner' : ''} ${!readyB ? 'pending' : ''}">${readyB ? match.b.emoji + ' ' + match.b.name : 'Venter...'}</div>
+            ${current ? '<button class="primary play-match-btn">Spill kamp</button>' : ''}
+          `;
+          if (current) {
+            box.querySelector('.play-match-btn').addEventListener('click', () => startBattle(rIndex, mIndex));
+          }
+          col.appendChild(box);
+        });
+        bracketEl.appendChild(col);
+      });
+      playNextMatchBtn.disabled = !getNextMatchRef();
+    }
+
+    function isCurrentPlayableMatch(roundIndex, matchIndex) {
+      const next = getNextMatchRef();
+      return next && next.roundIndex === roundIndex && next.matchIndex === matchIndex;
+    }
+
+    function getNextMatchRef() {
+      for (let roundIndex = 0; roundIndex < bracketRounds.length; roundIndex++) {
+        const round = bracketRounds[roundIndex];
+        for (let matchIndex = 0; matchIndex < round.length; matchIndex++) {
+          const match = round[matchIndex];
+          if (!match.winner && match.a && match.b) {
+            return { roundIndex, matchIndex };
+          }
+        }
+      }
+      return null;
+    }
+
+    function sanitizeWinner(dino) {
+      const { hp, ...cleanDino } = dino;
+      return cleanDino;
+    }
+
+    function startCup() {
+      const existing = document.getElementById('championPanel');
+      if (existing) existing.remove();
+      const selected = DINOSAURS.filter(d => selectedIds.has(d.id));
+      createBracket(selected);
+      renderBracket();
+      showScreen('bracket');
+      playTone('win');
+    }
+
+    function resetDice() {
+      [leftAttackDie, leftDefenseDie, rightAttackDie, rightDefenseDie].forEach(die => {
+        die.textContent = '?';
+        die.classList.remove('rolling');
+      });
+    }
+
+    function startBattle(roundIndex, matchIndex) {
+      currentMatchRef = { roundIndex, matchIndex };
+      const match = bracketRounds[roundIndex][matchIndex];
+      if (!match || !match.a || !match.b) {
+        renderBracket();
+        showScreen('bracket');
+        return;
+      }
+
+      clearInterval(autoBattleTimer);
+      autoBattleTimer = null;
+
+      currentBattle = {
+        left: { ...match.a, hp: 10 },
+        right: { ...match.b, hp: 10 },
+        finished: false
+      };
+      battleTitle.textContent = `${match.a.name} mot ${match.b.name}`;
+      winnerBanner.textContent = '';
+      flash.textContent = 'Klar for kamp';
+      battleLog.innerHTML = '';
+      backToBracketBtn.classList.add('hidden');
+      rollBtn.disabled = false;
+      autoBattleBtn.disabled = false;
+      updateBattleUI();
+      resetDice();
+      clearBattleClasses();
+      showScreen('battle');
+    }
+
+    function clearBattleClasses() {
+      [fighterLeft, fighterRight].forEach(el => el.classList.remove('attacking', 'hit', 'celebrate'));
+    }
+
+    function updateBattleUI() {
+      leftName.textContent = currentBattle.left.name;
+      leftType.textContent = currentBattle.left.type;
+      leftEmoji.textContent = currentBattle.left.emoji;
+      rightName.textContent = currentBattle.right.name;
+      rightType.textContent = currentBattle.right.type;
+      rightEmoji.textContent = currentBattle.right.emoji;
+      leftHpFill.style.width = `${Math.max(0, currentBattle.left.hp) * 10}%`;
+      rightHpFill.style.width = `${Math.max(0, currentBattle.right.hp) * 10}%`;
+      leftHpText.textContent = `${currentBattle.left.hp}/10 liv`;
+      rightHpText.textContent = `${currentBattle.right.hp}/10 liv`;
+    }
+
+    function randDie() {
+      return 1 + Math.floor(Math.random() * 6);
+    }
+
+    function addLog(text) {
+      const p = document.createElement('p');
+      p.textContent = text;
+      battleLog.prepend(p);
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function setRolling(isRolling) {
+      [leftAttackDie, leftDefenseDie, rightAttackDie, rightDefenseDie].forEach(die => {
+        die.classList.toggle('rolling', isRolling);
+        if (isRolling) die.textContent = ['1','2','3','4','5','6'][Math.floor(Math.random() * 6)];
+      });
+    }
+
+    async function rollRound() {
+      if (!currentBattle || currentBattle.finished) return;
+      rollBtn.disabled = true;
+      autoBattleBtn.disabled = true;
+      clearBattleClasses();
+      flash.textContent = 'Terningene ruller...';
+      playTone('roll');
+      setRolling(true);
+      await sleep(750);
+      setRolling(false);
+
+      const la = randDie();
+      const ld = randDie();
+      const ra = randDie();
+      const rd = randDie();
+
+      leftAttackDie.textContent = la;
+      leftDefenseDie.textContent = ld;
+      rightAttackDie.textContent = ra;
+      rightDefenseDie.textContent = rd;
+
+      let leftDamage = Math.max(0, la - rd);
+      let rightDamage = Math.max(0, ra - ld);
+      const events = [];
+
+      if (la === 6) {
+        leftDamage += 2;
+        events.push(`${currentBattle.left.name} fikk critical hit (+2 skade).`);
+      }
+      if (ra === 6) {
+        rightDamage += 2;
+        events.push(`${currentBattle.right.name} fikk critical hit (+2 skade).`);
+      }
+      if (ld === 6) {
+        currentBattle.right.hp -= 1;
+        events.push(`${currentBattle.left.name} fikk 6 i forsvar og ga 1 skade tilbake.`);
+      }
+      if (rd === 6) {
+        currentBattle.left.hp -= 1;
+        events.push(`${currentBattle.right.name} fikk 6 i forsvar og ga 1 skade tilbake.`);
+      }
+
+      if (leftDamage > 0) {
+        fighterLeft.classList.add('attacking');
+        fighterRight.classList.add('hit');
+        currentBattle.right.hp -= leftDamage;
+        events.push(`${currentBattle.left.name} traff for ${leftDamage} skade.`);
+        playTone(la === 6 ? 'critical' : 'hit');
+      } else {
+        events.push(`${currentBattle.left.name} klarte ikke å skade.`);
+      }
+
+      if (rightDamage > 0) {
+        fighterRight.classList.add('attacking');
+        fighterLeft.classList.add('hit');
+        currentBattle.left.hp -= rightDamage;
+        events.push(`${currentBattle.right.name} traff for ${rightDamage} skade.`);
+        playTone(ra === 6 ? 'critical' : 'hit');
+      } else {
+        events.push(`${currentBattle.right.name} klarte ikke å skade.`);
+      }
+
+      currentBattle.left.hp = Math.max(0, currentBattle.left.hp);
+      currentBattle.right.hp = Math.max(0, currentBattle.right.hp);
+      updateBattleUI();
+
+      let flashText = `${currentBattle.left.name}: ${la}/${ld} | ${currentBattle.right.name}: ${ra}/${rd}`;
+      if (la === 6 || ra === 6) flashText = 'Critical hit! ' + flashText;
+      else if (ld === 6 || rd === 6) flashText = 'Counter! ' + flashText;
+      flash.textContent = flashText;
+      events.forEach(addLog);
+
+      await sleep(350);
+      clearBattleClasses();
+      checkBattleWinner();
+      if (!currentBattle.finished) {
+        rollBtn.disabled = false;
+        autoBattleBtn.disabled = false;
+      }
+    }
+
+    function checkBattleWinner() {
+      const leftDown = currentBattle.left.hp <= 0;
+      const rightDown = currentBattle.right.hp <= 0;
+      if (!leftDown && !rightDown) return;
+
+      currentBattle.finished = true;
+      let winner;
+      if (leftDown && rightDown) {
+        winner = Math.random() < 0.5 ? currentBattle.left : currentBattle.right;
+        addLog(`Begge falt samtidig. Dommeren valgte ${winner.name} som vinner.`);
+      } else {
+        winner = leftDown ? currentBattle.right : currentBattle.left;
+      }
+
+      winnerBanner.textContent = `${winner.emoji} ${winner.name} vinner kampen!`;
+      if (winner === currentBattle.left) fighterLeft.classList.add('celebrate');
+      else fighterRight.classList.add('celebrate');
+      playTone('win');
+      applyBattleWinner(winner);
+      rollBtn.disabled = true;
+      autoBattleBtn.disabled = true;
+      backToBracketBtn.classList.remove('hidden');
+      flash.textContent = 'Kampen er ferdig. Trykk «Tilbake til cup» eller «Spill neste kamp». ';
+    }
+
+    function applyBattleWinner(winner) {
+      const { roundIndex, matchIndex } = currentMatchRef;
+      const cleanWinner = sanitizeWinner(winner);
+      bracketRounds[roundIndex][matchIndex].winner = cleanWinner;
+      propagateWinner(roundIndex, matchIndex, cleanWinner);
+      renderBracket();
+    }
+
+    function goToBracket() {
+      clearInterval(autoBattleTimer);
+      autoBattleTimer = null;
+      currentBattle = null;
+      currentMatchRef = null;
+      clearBattleClasses();
+      resetDice();
+      renderBracket();
+      showScreen('bracket');
+
+      const existing = document.getElementById('championPanel');
+      const champ = bracketRounds[3] && bracketRounds[3][0] ? bracketRounds[3][0].winner : null;
+
+      if (!champ) {
+        if (existing) existing.remove();
+        playNextMatchBtn.disabled = getNextMatchRef() === null;
+        return;
+      }
+
+      playNextMatchBtn.disabled = true;
+      if (!existing) {
+        const panel = document.createElement('div');
+        panel.id = 'championPanel';
+        panel.className = 'panel';
+        panel.style.marginTop = '18px';
+        panel.innerHTML = `<h2>Vinner</h2><div class="winner-banner">${champ.emoji} ${champ.name} er cupmester!</div><div class="footer-actions" style="margin-top:12px;"><button id="playAgainBtn" class="primary">Spill igjen</button></div>`;
+        bracketScreen.appendChild(panel);
+        document.getElementById('playAgainBtn').addEventListener('click', resetGame);
+      } else {
+        existing.querySelector('.winner-banner').textContent = `${champ.emoji} ${champ.name} er cupmester!`;
+      }
+    }
+
+    function autoBattle() {
+      if (!currentBattle || currentBattle.finished || autoBattleTimer) return;
+      rollBtn.disabled = true;
+      autoBattleBtn.disabled = true;
+      autoBattleTimer = setInterval(async () => {
+        if (!currentBattle || currentBattle.finished) {
+          clearInterval(autoBattleTimer);
+          autoBattleTimer = null;
+          return;
+        }
+        await rollRound();
+        if (currentBattle.finished) {
+          clearInterval(autoBattleTimer);
+          autoBattleTimer = null;
+        }
+      }, 1300);
+    }
+
+    function resetGame() {
+      clearInterval(autoBattleTimer);
+      autoBattleTimer = null;
+      selectedIds.clear();
+      bracketRounds = [];
+      currentMatchRef = null;
+      currentBattle = null;
+      const champ = document.getElementById('championPanel');
+      if (champ) champ.remove();
+      renderPicker();
+      showScreen('selection');
+      flash.textContent = '';
+      winnerBanner.textContent = '';
+      battleLog.innerHTML = '';
+      resetDice();
+    }
+
+    function playTone(type = 'tick') {
+      if (!soundEnabled) return;
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = playTone.ctx || (playTone.ctx = new AudioContext());
+        const now = ctx.currentTime;
+
+        const make = (freq, duration, gain, wave = 'sine', delay = 0) => {
+          const osc = ctx.createOscillator();
+          const g = ctx.createGain();
+          osc.type = wave;
+          osc.frequency.value = freq;
+          g.gain.setValueAtTime(0.0001, now + delay);
+          g.gain.exponentialRampToValueAtTime(gain, now + delay + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + delay + duration);
+          osc.connect(g).connect(ctx.destination);
+          osc.start(now + delay);
+          osc.stop(now + delay + duration + 0.02);
+        };
+
+        if (type === 'roll') {
+          make(220, 0.08, 0.03, 'square');
+          make(260, 0.08, 0.025, 'square', 0.06);
+          make(190, 0.08, 0.025, 'square', 0.12);
+        } else if (type === 'hit') {
+          make(140, 0.12, 0.05, 'sawtooth');
+          make(90, 0.15, 0.03, 'square', 0.03);
+        } else if (type === 'critical') {
+          make(420, 0.12, 0.05, 'triangle');
+          make(650, 0.16, 0.05, 'triangle', 0.05);
+        } else if (type === 'win') {
+          make(440, 0.14, 0.05, 'triangle');
+          make(660, 0.14, 0.05, 'triangle', 0.15);
+          make(880, 0.18, 0.05, 'triangle', 0.3);
+        } else {
+          make(300, 0.05, 0.02, 'sine');
+        }
+      } catch (e) {
+        // lyd er valgfritt
+      }
+    }
+
+    random16Btn.addEventListener('click', randomSelect16);
+    clearBtn.addEventListener('click', () => { selectedIds.clear(); renderPicker(); });
+    startCupBtn.addEventListener('click', startCup);
+    function playNextMatch() {
+      const next = getNextMatchRef();
+      if (!next) {
+        renderBracket();
+        return;
+      }
+
+      currentMatchRef = next;
+      startBattle(next.roundIndex, next.matchIndex);
+    }
+
+    playNextMatchBtn.addEventListener('click', playNextMatch);
+    backToBracketBtn.addEventListener('click', goToBracket);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !battleScreen.classList.contains('hidden') && currentBattle && currentBattle.finished) {
+        goToBracket();
+      }
+    });
+    rollBtn.addEventListener('click', rollRound);
+    autoBattleBtn.addEventListener('click', autoBattle);
+    document.getElementById('newGameBtn').addEventListener('click', resetGame);
+    soundBtn.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundBtn.textContent = `Lyd: ${soundEnabled ? 'På' : 'Av'}`;
+    });
+
+    renderPicker();
+  </script>
+</body>
+</html>
