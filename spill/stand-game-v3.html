@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAND — An Anti-Bullying Story Game</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --ink: #12111a;
+  --paper: #f0ece2;
+  --accent: #d64045;
+  --gold: #e8a838;
+  --teal: #2a9d8f;
+  --muted: #7a7a99;
+  --surface: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.09);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--ink);
+  color: var(--paper);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* SCREENS */
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+/* ANIMATIONS */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-18px); }
+}
+@keyframes diceSpin {
+  from { transform: rotate(-360deg) scale(0.5); opacity: 0; }
+  to   { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+
+/* =========================================================
+   TITLE SCREEN
+   ========================================================= */
+#title-screen {
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse at 70% 30%, #1e1040 0%, var(--ink) 70%);
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+}
+.orb1 { width:500px; height:500px; background:#4a1060; top:-150px; right:-150px; opacity:0.35; animation: float 10s ease-in-out infinite; }
+.orb2 { width:350px; height:350px; background:#0d4060; bottom:-100px; left:-80px; opacity:0.4; animation: float 13s 2s ease-in-out infinite; }
+
+.title-inner {
+  text-align: center;
+  z-index: 2;
+  animation: fadeUp 1s ease both;
+}
+
+.title-eyebrow {
+  font-size: 0.7rem;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.2rem;
+}
+
+.title-word {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(6rem, 18vw, 11rem);
+  font-weight: 900;
+  line-height: 0.85;
+  background: linear-gradient(160deg, #fff 0%, var(--gold) 60%, #e07030 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.6rem;
+}
+
+.title-tagline {
+  font-size: 1rem;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  margin-bottom: 3rem;
+}
+
+.btn-start {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 1.1rem 2.8rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 30px rgba(214,64,69,0.45);
+}
+.btn-start:hover { transform: translateY(-3px); box-shadow: 0 8px 40px rgba(214,64,69,0.55); }
+
+.title-footnote { margin-top: 2rem; font-size: 0.72rem; color: var(--muted); opacity: 0.55; }
+
+/* =========================================================
+   CHARACTER SELECT
+   ========================================================= */
+#char-screen {
+  background: #0e0d18;
+  padding: 2.5rem 1.5rem 4rem;
+  align-items: center;
+}
+
+.section-head {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  animation: fadeUp 0.6s ease both;
+}
+.section-head h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+}
+.section-head p { color: var(--muted); margin-top: 0.5rem; font-size: 0.95rem; }
+
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 920px;
+  animation: fadeUp 0.7s 0.15s ease both;
+}
+
+.char-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 22px;
+  padding: 1.4rem 1rem 1.2rem;
+  cursor: pointer;
+  transition: transform 0.25s, border-color 0.25s, background 0.25s;
+  text-align: center;
+}
+.char-card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,0.25); }
+.char-card.selected { border-color: var(--gold); background: rgba(232,168,56,0.07); }
+
+.char-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 0.9rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+}
+.char-name { font-family: 'Playfair Display', serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.2rem; }
+.char-role { font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+
+.stat-rows { display: flex; flex-direction: column; gap: 0.35rem; }
+.srow { display: flex; align-items: center; gap: 0.4rem; font-size: 0.62rem; color: var(--muted); }
+.srow-label { width: 52px; text-align: right; font-size: 0.58rem; }
+.srow-track { flex: 1; height: 3px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+.srow-fill { height: 100%; border-radius: 4px; }
+
+.char-detail {
+  width: 100%; max-width: 920px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.5rem 2rem;
+  margin-top: 1.8rem;
+  animation: fadeUp 0.5s ease both;
+  min-height: 80px;
+}
+.char-detail h3 { font-family: 'Playfair Display', serif; font-size: 1.2rem; margin-bottom: 0.4rem; }
+.char-detail p { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+
+.char-actions { margin-top: 1.5rem; text-align: center; }
+
+.btn-go {
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  padding: 1rem 2.6rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 25px rgba(42,157,143,0.4);
+  display: none;
+}
+.btn-go.visible { display: inline-block; }
+.btn-go:hover { transform: translateY(-3px); box-shadow: 0 8px 35px rgba(42,157,143,0.5); }
+
+/* =========================================================
+   GAME SCREEN
+   ========================================================= */
+#game-screen { background: var(--ink); }
+
+.topbar {
+  background: rgba(10,10,20,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 20;
+}
+.tb-left { display: flex; align-items: center; gap: 0.65rem; }
+.tb-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.tb-name { font-size: 0.85rem; font-weight: 600; line-height: 1.2; }
+.tb-chapter { font-size: 0.65rem; color: var(--muted); }
+.tb-stats { display: flex; gap: 0.8rem; }
+.tb-stat {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.75rem;
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 0.25rem 0.7rem;
+}
+.tb-stat-val { font-weight: 600; }
+
+/* Progress */
+.prog-wrap {
+  padding: 0.9rem 1.5rem 0;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+}
+.prog-track { background: rgba(255,255,255,0.07); border-radius: 6px; height: 3px; overflow: hidden; }
+.prog-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--teal), var(--gold)); transition: width 0.7s ease; }
+.prog-labels { display: flex; justify-content: space-between; margin-top: 0.4rem; font-size: 0.6rem; color: var(--muted); }
+
+/* Scene */
+.scene-wrap {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 5rem;
+  width: 100%;
+}
+
+.scene-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 1.4rem;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards;
+}
+
+/* Illustration panel */
+.scene-panel {
+  width: 100%;
+  height: 200px;
+  border-radius: 22px;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  animation: fadeUp 0.5s 0.08s ease forwards;
+}
+.scene-panel-emoji {
+  font-size: 4.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
+}
+.scene-panel-location {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  text-align: right;
+  line-height: 1.4;
+}
+
+/* Narrative */
+.narrative {
+  margin-bottom: 1.8rem;
+  opacity: 0;
+  animation: fadeUp 0.5s 0.15s ease forwards;
+}
+.narrative-scene {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1rem, 2.2vw, 1.15rem);
+  line-height: 1.8;
+  color: #ddd8cc;
+  margin-bottom: 1.2rem;
+}
+.narrative-question {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--gold);
+  padding: 0.9rem 1.2rem;
+  background: rgba(232,168,56,0.08);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 10px 10px 0;
+}
+
+/* Dice event */
+.dice-card {
+  background: rgba(42,157,143,0.08);
+  border: 1px solid rgba(42,157,143,0.3);
+  border-radius: 14px;
+  padding: 0.9rem 1.2rem;
+  margin-bottom: 1.6rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.82rem;
+  color: var(--teal);
+  opacity: 0;
+  animation: fadeUp 0.5s 0.22s ease forwards;
+}
+.dice-face {
+  font-size: 1.8rem;
+  animation: diceSpin 0.6s ease both;
+}
+.dice-info strong { display: block; margin-bottom: 0.15rem; }
+
+/* Choices */
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  opacity: 0;
+  animation: fadeUp 0.5s 0.28s ease forwards;
+}
+.choices-heading {
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.2rem;
+}
+
+.choice {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  text-align: left;
+  color: var(--paper);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  transition: all 0.22s ease;
+  width: 100%;
+}
+.choice:hover:not(:disabled) {
+  background: rgba(255,255,255,0.09);
+  border-color: rgba(255,255,255,0.28);
+  transform: translateX(4px);
+}
+.choice:disabled { cursor: default; }
+.choice.picked-good { border-color: var(--teal); background: rgba(42,157,143,0.1); }
+.choice.picked-mid  { border-color: var(--gold); background: rgba(232,168,56,0.08); }
+.choice.picked-bad  { border-color: var(--accent); background: rgba(214,64,69,0.1); }
+
+.choice-letter {
+  background: rgba(255,255,255,0.1);
+  border-radius: 7px;
+  min-width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Reflection */
+.reflect {
+  background: rgba(42,157,143,0.07);
+  border: 1px solid rgba(42,157,143,0.22);
+  border-radius: 16px;
+  padding: 1.4rem 1.6rem;
+  margin-top: 1.5rem;
+  opacity: 0;
+  animation: fadeUp 0.5s ease forwards;
+  display: none;
+}
+.reflect.show { display: block; }
+.reflect-head {
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 0.6rem;
+}
+.reflect-text { font-size: 0.88rem; color: #aab8c2; line-height: 1.7; }
+
+/* =========================================================
+   END SCREEN
+   ========================================================= */
+#end-screen {
+  background: radial-gradient(ellipse at 30% 70%, #0d3040 0%, var(--ink) 65%);
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1.5rem;
+}
+
+.end-card {
+  max-width: 580px;
+  width: 100%;
+  text-align: center;
+  animation: fadeUp 0.9s ease both;
+}
+
+.end-emblem {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  margin: 0 auto 1.5rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3.2rem;
+}
+
+.end-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 6vw, 3rem);
+  font-weight: 900;
+  margin-bottom: 0.4rem;
+}
+.end-subtitle {
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2rem;
+}
+
+.end-stats-grid {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.4rem;
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+.end-stats-label {
+  font-size: 0.65rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.9rem;
+}
+.esr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.esr:last-child { border: none; }
+.esr-val { font-weight: 600; }
+
+.end-reflect-box {
+  background: rgba(42,157,143,0.08);
+  border: 1px solid rgba(42,157,143,0.25);
+  border-radius: 16px;
+  padding: 1.4rem 1.6rem;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+.end-reflect-box h4 { font-family: 'Playfair Display', serif; color: var(--teal); margin-bottom: 0.7rem; font-size: 1rem; }
+.end-reflect-box p { font-size: 0.87rem; color: var(--muted); line-height: 1.7; }
+
+.end-actions { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
+
+.btn-again {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 0.95rem 2.2rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(214,64,69,0.4);
+}
+.btn-again:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(214,64,69,0.5); }
+
+.btn-new {
+  background: transparent;
+  color: var(--paper);
+  border: 2px solid var(--border);
+  padding: 0.95rem 2.2rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 60px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.btn-new:hover { border-color: rgba(255,255,255,0.4); }
+
+@media (max-width: 500px) {
+  .char-grid { grid-template-columns: repeat(2, 1fr); }
+  .tb-stats { display: none; }
+  .scene-panel { height: 140px; }
+}
+
+#continue-btn {
+  display: none;
+  width: 100%;
+  margin-top: 1.2rem;
+  padding: 1rem;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  color: var(--paper);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+#continue-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.35);
+  transform: translateY(-2px);
+}
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div id="title-screen" class="screen active">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="title-inner">
+    <p class="title-eyebrow">A story about courage</p>
+    <div class="title-word">STAND</div>
+    <p class="title-tagline">Your choices shape the story. Every time.</p>
+    <button class="btn-start" onclick="showScreen('char-screen')">Choose Your Character →</button>
+    <p class="title-footnote">6 characters · Branching narrative · Dice twists · Reflection prompts</p>
+  </div>
+</div>
+
+<!-- CHARACTER SELECT -->
+<div id="char-screen" class="screen">
+  <div class="section-head">
+    <h2>Who are you?</h2>
+    <p>Each character sees the same situation differently — and has different strengths.</p>
+  </div>
+  <div class="char-grid" id="char-grid"></div>
+  <div class="char-detail" id="char-detail">
+    <p style="color:var(--muted);font-size:0.85rem;">← Select a character above to learn more</p>
+  </div>
+  <div class="char-actions">
+    <button class="btn-go" id="btn-go" onclick="startGame()">Start Your Story →</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="game-screen" class="screen">
+  <div class="topbar">
+    <div class="tb-left">
+      <div class="tb-avatar" id="tb-avatar"></div>
+      <div>
+        <div class="tb-name" id="tb-name">—</div>
+        <div class="tb-chapter" id="tb-chapter">Chapter 1</div>
+      </div>
+    </div>
+    <div class="tb-stats">
+      <div class="tb-stat">💪 <span class="tb-stat-val" id="s-courage">5</span></div>
+      <div class="tb-stat">❤️ <span class="tb-stat-val" id="s-empathy">5</span></div>
+      <div class="tb-stat">🌟 <span class="tb-stat-val" id="s-rep">5</span></div>
+    </div>
+  </div>
+
+  <div class="prog-wrap">
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+    <div class="prog-labels">
+      <span>Beginning</span><span>Middle</span><span>Crisis</span><span>Resolution</span>
+    </div>
+  </div>
+
+  <div class="scene-wrap">
+    <div class="scene-label" id="scene-label"></div>
+    <div class="scene-panel" id="scene-panel">
+      <div class="scene-panel-emoji" id="scene-emoji"></div>
+      <div class="scene-panel-location" id="scene-location"></div>
+    </div>
+    <div class="narrative" id="narrative">
+      <div class="narrative-scene" id="narrative-scene"></div>
+      <div class="narrative-question" id="narrative-question"></div>
+    </div>
+    <div class="dice-card" id="dice-card" style="display:none">
+      <div class="dice-face" id="dice-face">🎲</div>
+      <div class="dice-info">
+        <strong id="dice-title"></strong>
+        <span id="dice-body"></span>
+      </div>
+    </div>
+    <div class="choices" id="choices">
+      <div class="choices-heading">What do you do?</div>
+    </div>
+    <div class="reflect" id="reflect">
+      <div class="reflect-head">🪞 Reflect</div>
+      <div class="reflect-text" id="reflect-text"></div>
+    </div>
+    <button id="continue-btn" onclick="" style="display:none">Continue →</button>
+  </div>
+</div>
+
+<!-- END -->
+<div id="end-screen" class="screen">
+  <div class="end-card">
+    <div class="end-emblem" id="end-emblem"></div>
+    <div class="end-title" id="end-title"></div>
+    <div class="end-subtitle" id="end-subtitle"></div>
+    <div class="end-stats-grid">
+      <div class="end-stats-label">Your journey</div>
+      <div class="esr"><span>Courage</span><span class="esr-val" id="e-courage"></span></div>
+      <div class="esr"><span>Empathy</span><span class="esr-val" id="e-empathy"></span></div>
+      <div class="esr"><span>Reputation</span><span class="esr-val" id="e-rep"></span></div>
+      <div class="esr"><span>Choices made</span><span class="esr-val" id="e-choices"></span></div>
+    </div>
+    <div class="end-reflect-box">
+      <h4>Something to think about</h4>
+      <p id="end-reflect"></p>
+    </div>
+    <div class="end-actions">
+      <button class="btn-again" onclick="restartSameChar()">Play Again</button>
+      <button class="btn-new" onclick="showScreen('char-screen')">New Character</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// CHARACTERS
+// =====================================================================
+const CHARS = [
+  {
+    id: 'maya', name: 'Maya', emoji: '🌸', role: 'The Peacemaker',
+    bg: 'linear-gradient(135deg,#c0395a,#7b1030)',
+    bio: 'Maya always feels the tension in a room before anyone names it. She\'s kind, perceptive — but terrified of conflict. She tends to smooth things over rather than say what she actually thinks. Today, smoothing things over might not be enough.',
+    stats: { courage:3, empathy:9, popularity:6, resilience:5 },
+    colors: ['#c0395a','#2a9d8f','#f4a261','#e9c46a'],
+    bonus: { empathy: 2 }
+  },
+  {
+    id: 'leo', name: 'Leo', emoji: '⚡', role: 'The Outsider',
+    bg: 'linear-gradient(135deg,#3a56d4,#1e0c6e)',
+    bio: 'Leo moved schools six months ago and still hasn\'t found his footing. He observes more than he speaks — and he sees things others miss. Being on the outside of things means he knows exactly what it feels like to be ignored.',
+    stats: { courage:6, empathy:7, popularity:2, resilience:8 },
+    colors: ['#4361ee','#2a9d8f','#f4a261','#e9c46a'],
+    bonus: { resilience: 2 }
+  },
+  {
+    id: 'zara', name: 'Zara', emoji: '🔥', role: 'The Leader',
+    bg: 'linear-gradient(135deg,#e07a30,#a03010)',
+    bio: 'Zara is someone people listen to — in class, in the hall, in the group chat. She\'s used to being the one who sets the tone. She\'s starting to realize that her silence is a kind of signal too, and that the crowd usually does whatever she does.',
+    stats: { courage:7, empathy:5, popularity:10, resilience:6 },
+    colors: ['#f4a261','#2a9d8f','#e63946','#e9c46a'],
+    bonus: { popularity: 2 }
+  },
+  {
+    id: 'theo', name: 'Theo', emoji: '📚', role: 'The Observer',
+    bg: 'linear-gradient(135deg,#1e8070,#0e3040)',
+    bio: 'Theo has been watching this unfold for weeks. He notices everything: who is excluded, who laughs, who looks away. He has good intentions — but is noticing enough? At what point does watching become part of the problem?',
+    stats: { courage:4, empathy:8, popularity:4, resilience:7 },
+    colors: ['#2a9d8f','#e63946','#f4a261','#e9c46a'],
+    bonus: { empathy:1, resilience:1 }
+  },
+  {
+    id: 'nia', name: 'Nia', emoji: '🎭', role: 'The Joker',
+    bg: 'linear-gradient(135deg,#c8a020,#886010)',
+    bio: 'Nia makes everyone laugh — she\'s the one who breaks awkward silences and keeps things fun. But humour can cut both ways. She\'s been laughing at jokes she\'s not sure were actually funny. Today something shifts, and the joke isn\'t sitting right.',
+    stats: { courage:5, empathy:6, popularity:8, resilience:6 },
+    colors: ['#e9c46a','#2a9d8f','#e63946','#4361ee'],
+    bonus: { popularity:1, courage:1 }
+  },
+  {
+    id: 'sam', name: 'Sam', emoji: '🛡️', role: 'The Target',
+    bg: 'linear-gradient(135deg,#8040cc,#3a0870)',
+    bio: 'Sam has been on the receiving end of comments, exclusion and group chat screenshots for months. Playing as Sam means experiencing the story from the inside — and deciding how to respond when you\'re the one it\'s happening to.',
+    stats: { courage:7, empathy:9, popularity:3, resilience:9 },
+    colors: ['#9d4edd','#2a9d8f','#e63946','#f4a261'],
+    bonus: { resilience: 3 }
+  }
+];
+
+// =====================================================================
+// SCENES
+// Data structure: flat array, navigation by index (no ID jumping)
+// Each path is a separate sequence. We pick a path index per branch.
+// Structure: 5 scenes total per run, chosen by 3 branches from scene 0
+// =====================================================================
+
+function buildStory(char) {
+  const n = char.name;
+  const id = char.id;
+
+  // Opening intro line varies per character
+  const openers = {
+    maya: `You arrived early today — you always do. You like to get a sense of the room before it fills up.`,
+    leo:  `You grab a tray and scan for somewhere to sit. You know this feeling well: that half-second where you're visible to everyone and belong to nobody.`,
+    zara: `People move slightly when you walk in — not much, just enough. You've been here long enough to know that the room arranges itself around you.`,
+    theo: `You've been watching it happen since September. You have a mental log. Today it happens again, and this time you're close enough that there's no pretending you didn't see.`,
+    nia:  `You're mid-laugh at something Marcus said when you notice Elias's face. And suddenly you're not sure if you were laughing at the joke — or at him.`,
+    sam:  `You put your tray down at the end of a table. You already know what's about to happen — you can feel it before it starts, the way you always can now.`
+  };
+
+  // We build 5 scenes as a linear array.
+  // scene[0] always has 3 choices → sets "branch" (0,1,2)
+  // Scenes 1–3 are drawn from a pool of 9 (3×3), chosen by branch
+  // Scene 4 is the resolution, slightly affected by stats
+
+  const s = [];
+
+  // ── SCENE 0: THE CAFETERIA ──────────────────────────────────────
+  s.push({
+    label: 'CHAPTER 1  ·  THE CAFETERIA',
+    emoji: '🍽️',
+    location: 'Monday · 12:15 · Cafeteria',
+    bg: 'linear-gradient(135deg, #1a1630 0%, #0d1a30 100%)',
+    scene: `${openers[id]}
+
+The cafeteria is loud and crowded. At a corner table, Elias sits alone — again. His lunch tray is in front of him, untouched. You watched earlier as Marcus "accidentally" bumped into him in the queue, sending his juice across his shirt. Marcus's friends laughed. A teacher was nearby. Nobody said anything.
+
+Elias has his head down now. He's not eating. He's just waiting for the bell.`,
+    question: `You are ${n}. You've seen what just happened. Your usual friends are waving you over from across the room. What do you do?`,
+    dice: null,
+    choices: [
+      {
+        text: 'Walk over and sit down next to Elias. In front of everyone.',
+        good: 2,
+        effect: { courage:+3, empathy:+2, rep:-1 },
+        reflect: 'You made yourself visible when it was easier not to be. That is what standing up actually looks like — not a single big speech, but a small, public decision to be somewhere that costs you something.',
+        next: 1
+      },
+      {
+        text: 'Catch Elias\'s eye from across the room. Nod — just enough so he knows you saw.',
+        good: 1,
+        effect: { courage:+1, empathy:+1, rep:0 },
+        reflect: 'You let him know he wasn\'t invisible. A small signal. But is a signal enough? What does Elias do with a nod?',
+        next: 4
+      },
+      {
+        text: 'Head to your usual table. You\'ll deal with it another time.',
+        good: 0,
+        effect: { courage:-1, empathy:-1, rep:+1 },
+        reflect: 'Choosing not to act is still a choice — it tells Elias something. What do you think it told him?',
+        next: 7
+      }
+    ]
+  });
+
+  // ── BRANCH A: You sat with Elias ────────────────────────────────
+
+  // Scene 1A: Sitting with Elias
+  s.push({
+    label: 'CHAPTER 2  ·  THE TABLE',
+    emoji: '🌊',
+    location: 'Monday · 12:18 · Cafeteria corner',
+    bg: 'linear-gradient(135deg, #0d3040 0%, #1a1630 100%)',
+    scene: `You sit down. Elias looks up, startled — like he's checking whether this is a setup. Then his shoulders drop slightly. He relaxes by about five percent.
+
+"You don't have to sit here," he says. It sounds like he's said this before.
+
+Marcus and his group are watching from across the room. You can feel it without looking. One of your usual friends has their phone out — you're not sure if they're texting or filming.
+
+Elias pushes a chip across his tray and doesn't quite look at you. "Does this happen a lot where you're from?" he asks. It's an odd question. Then you realise: he means to him. He's asking if this is normal.`,
+    question: `He's asking you directly. What do you say?`,
+    dice: { chance: 0.45, good: true, title: 'Unexpected backup', body: 'Another classmate — someone from your usual table — quietly sits down on Elias\'s other side. You didn\'t expect that.', stat: 'empathy', val: 1 },
+    choices: [
+      {
+        text: '"No. It\'s not normal. And you shouldn\'t have to put up with it."',
+        good: 2,
+        effect: { courage:+2, empathy:+3, rep:0 },
+        reflect: 'You named it. That\'s harder than it sounds. People who are targeted often spend months wondering if they\'re overreacting — you just told Elias he isn\'t.',
+        next: 2
+      },
+      {
+        text: 'Keep it light. Start talking about something else — school, football, anything normal.',
+        good: 1,
+        effect: { courage:0, empathy:+2, rep:+1 },
+        reflect: 'Sometimes normality is a gift. Making someone feel like a regular person — not a victim — has its own value. But you also avoided the harder conversation.',
+        next: 3
+      },
+      {
+        text: 'Shrug. "People can be idiots sometimes." Look over at your usual table.',
+        good: 0,
+        effect: { courage:-1, empathy:0, rep:+1 },
+        reflect: 'You sat with him — that meant something. But you also kept one foot at the other table. Elias noticed. How do you think that felt?',
+        next: 3
+      }
+    ]
+  });
+
+  // Scene 2A: Strong path
+  s.push({
+    label: 'CHAPTER 3  ·  THE GROUP CHAT',
+    emoji: '📱',
+    location: 'Monday · 22:40 · Your room',
+    bg: 'linear-gradient(135deg, #1a1040 0%, #0d1020 100%)',
+    scene: `That night, your phone buzzes. Then again. Then five times in a row.
+
+Someone added you to a group chat you've never seen before. It's called "EliasLOL". There are 17 people in it. Some are in your year, some aren't. There are screenshots of Elias — his face from earlier today, with captions. Cruel ones. People are reacting with laughing emojis. 
+
+You scroll back through the messages. It's been active since September.
+
+You sit with this for a moment. Some of the people in this chat are people you eat lunch with every day.`,
+    question: `It's 22:42. Nobody knows you've seen this yet. What do you do?`,
+    dice: { chance: 0.5, good: true, title: 'A lucky detail', body: 'One message in the chat names a specific teacher. That makes it easier to report — there\'s something concrete to point to.', stat: 'courage', val: 1 },
+    choices: [
+      {
+        text: 'Screenshot everything right now. Tomorrow morning, give it to a trusted adult — teacher, counsellor, anyone.',
+        good: 2,
+        effect: { courage:+3, empathy:+2, rep:-2 },
+        reflect: 'Reporting something takes more courage than most people realise — especially when friends are involved. You chose to protect Elias over protecting your own social standing. That matters.',
+        next: 6
+      },
+      {
+        text: 'Write in the chat: "This isn\'t funny. I\'m leaving." Then leave.',
+        good: 2,
+        effect: { courage:+2, empathy:+1, rep:-1 },
+        reflect: 'You left a public record that someone pushed back. Others in that chat saw it. Some of them were probably relieved that someone said something.',
+        next: 6
+      },
+      {
+        text: 'Close the chat. Don\'t respond. Don\'t share. Try to sleep.',
+        good: 1,
+        effect: { courage:0, empathy:0, rep:0 },
+        reflect: 'You didn\'t add to it — that\'s something. But silence in a group is often read as agreement. What do you think the others in the chat assumed about you after that?',
+        next: 6
+      }
+    ]
+  });
+
+  // Scene 3A: Lighter path from 2A
+  s.push({
+    label: 'CHAPTER 3  ·  THE RUMOUR',
+    emoji: '💬',
+    location: 'Wednesday · 09:05 · School corridor',
+    bg: 'linear-gradient(135deg, #1a1630 0%, #2a1830 100%)',
+    scene: `By Wednesday a rumour about Elias is moving through the year group. It's not true — you know it's not true — but it doesn't matter. It has the shape of a truth: specific enough to sound real, vague enough to deny.
+
+Between lessons, someone you know well leans in and says: "Did you hear about Elias?" They look excited. They're not being cruel — they just don't know they're carrying something poisoned.
+
+The corridor is busy. Three people nearby are definitely listening.`,
+    question: `There's a gap where your response should go. What do you say?`,
+    dice: { chance: 0.4, good: true, title: 'You know the real story', body: 'You actually know the truth behind the rumour. That gives you something concrete to say.', stat: 'empathy', val: 1 },
+    choices: [
+      {
+        text: '"That\'s not true. And spreading it is going to hurt someone."',
+        good: 2,
+        effect: { courage:+2, empathy:+2, rep:-1 },
+        reflect: 'You stopped the rumour at one point in the network. That matters more than it sounds — rumours need to travel to grow. You cut a branch.',
+        next: 6
+      },
+      {
+        text: '"I don\'t really know about that." Change subject.',
+        good: 1,
+        effect: { courage:0, empathy:0, rep:0 },
+        reflect: 'You didn\'t add fuel. But you didn\'t put the fire out either. The person walked away with the story intact.',
+        next: 6
+      },
+      {
+        text: 'Laugh along. Ask for more details.',
+        good: 0,
+        effect: { courage:-2, empathy:-3, rep:+1 },
+        reflect: 'You became part of the chain. Even if you didn\'t invent the rumour, you helped it move. How does that sit?',
+        next: 6
+      }
+    ]
+  });
+
+  // ── BRANCH B: You nodded ─────────────────────────────────────────
+
+  // Scene 4B: The corridor incident
+  s.push({
+    label: 'CHAPTER 2  ·  THE CORRIDOR',
+    emoji: '🚪',
+    location: 'Monday · 13:45 · East corridor',
+    bg: 'linear-gradient(135deg, #1e1a10 0%, #1a1630 100%)',
+    scene: `After lunch you're walking to class. Elias is just ahead of you. The corridor is busy — year groups mixing, everyone half-focused on their phones.
+
+Marcus and two others fall into step beside Elias. You watch Marcus "accidentally" shove into him — just hard enough that Elias stumbles, his notebook sliding across the floor. 
+
+"Whoops," Marcus says, and keeps walking. His friends laugh.
+
+Nobody stops. Three students nearby definitely saw it. One of them looks at you — briefly, like they're waiting to see what you do.
+
+The notebook is still on the floor. Elias is crouching to pick it up.`,
+    question: `The moment lasts about four seconds. What do you do?`,
+    dice: { chance: 0.35, good: true, title: 'A teacher rounds the corner', body: 'Ms Andersen appears at the end of the corridor — she didn\'t see what happened, but she\'s there now.', stat: 'courage', val: 1 },
+    choices: [
+      {
+        text: 'Walk over. Pick up the notebook. Hand it to Elias. Look Marcus in the eye.',
+        good: 2,
+        effect: { courage:+3, empathy:+2, rep:-1 },
+        reflect: 'You stepped in when nobody else did. Three people saw you do it — including Marcus. That moment carries weight even when nobody talks about it.',
+        next: 6
+      },
+      {
+        text: 'Say, loud enough to hear: "Hey — watch it."',
+        good: 1,
+        effect: { courage:+1, empathy:+1, rep:0 },
+        reflect: 'You broke the silence. A small intervention — but it told Elias someone noticed, and it told Marcus someone was paying attention.',
+        next: 6
+      },
+      {
+        text: 'Walk past. Tell yourself it wasn\'t that serious.',
+        good: 0,
+        effect: { courage:-1, empathy:-2, rep:0 },
+        reflect: 'How serious does it need to get? There\'s no bright line — that\'s what makes these moments so hard. But where is your line?',
+        next: 6
+      }
+    ]
+  });
+
+  // ── BRANCH C: You looked away ────────────────────────────────────
+
+  // Scene 7C: The walk home
+  s.push({
+    label: 'CHAPTER 2  ·  THE WALK HOME',
+    emoji: '🌧️',
+    location: 'Monday · 15:30 · On the way home',
+    bg: 'linear-gradient(135deg, #1a1a1a 0%, #1a1630 100%)',
+    scene: `You chose your usual table. Lunch felt normal. People joked around. You ate.
+
+But on the walk home, Elias's face keeps coming back. Not dramatically — just a replay. Him sitting with his tray. Head down. Not eating.
+
+You've had a version of that feeling. Not the same situation, maybe — but the specific heaviness of being in a room and knowing that nobody is coming. You recognise it from somewhere.
+
+You take out your phone. Elias's contact is there — you've never actually texted him, but you have the number from a group project last term.`,
+    question: `You're alone now. No one will know what you decide. What do you do?`,
+    dice: null,
+    choices: [
+      {
+        text: 'Text him. "Hey. Today wasn\'t okay. I should have said something and I didn\'t."',
+        good: 2,
+        effect: { courage:+2, empathy:+3, rep:0 },
+        reflect: 'It\'s genuinely hard to reach back after doing nothing. Acknowledging it — to yourself and to him — takes a different kind of courage than speaking up in the moment. It\'s not too late.',
+        next: 6
+      },
+      {
+        text: 'Make a real plan. Tomorrow, you\'ll actually do something. Write it down.',
+        good: 1,
+        effect: { courage:+1, empathy:+1, rep:0 },
+        reflect: '"Tomorrow" is only real if you follow through. But having a concrete plan is more than most people get to. The question is: will you?',
+        next: 6
+      },
+      {
+        text: 'Put your headphones in. Think about something else.',
+        good: 0,
+        effect: { courage:-2, empathy:-2, rep:+1 },
+        reflect: 'Comfort and courage rarely live in the same place. You chose comfort. That\'s human. But Elias is still sitting with that tray.',
+        next: 6
+      }
+    ]
+  });
+
+  // ── SHARED SCENE: Scene 5 — The Breaking Point ──────────────────
+  s.push({
+    label: 'CHAPTER 3  ·  IT ESCALATES',
+    emoji: '⚡',
+    location: 'Thursday · 08:50 · Before registration',
+    bg: 'linear-gradient(135deg, #2a1010 0%, #1a1630 100%)',
+    scene: `Thursday morning. Elias isn't in registration.
+
+Word moves around the room quickly: his parents called the school. There's going to be a meeting. The Head of Year is involved. Some people seem annoyed. A few are worried. Someone says "he snitched" — but you know a more accurate word is "asked for help."
+
+Marcus is quieter than usual. His group isn't joking around. They're checking their phones.
+
+You think about everything you've seen in the last four days. Everything you did — and didn't do. You realise that you have information. Things you witnessed. Things you know.`,
+    question: `You have a choice about what to do with what you know. What do you do?`,
+    dice: { chance: 0.4, good: true, title: 'You\'re not alone', body: 'Another student quietly tells you they\'ve been feeling the same way — they saw it too, and they\'d back you up.', stat: 'courage', val: 1 },
+    choices: [
+      {
+        text: 'Go to the Head of Year and tell them what you saw — specifically, clearly.',
+        good: 2,
+        effect: { courage:+3, empathy:+2, rep:-2 },
+        reflect: 'You brought your piece of the picture into the open. That takes courage, especially when other people are calling it "snitching." There is a word for what you actually did: it\'s called being a witness.',
+        next: 7
+      },
+      {
+        text: 'Send Elias a message: "I hope you\'re okay. You were right to say something."',
+        good: 2,
+        effect: { courage:+2, empathy:+3, rep:0 },
+        reflect: 'You reached out across the gap. He needed to hear that someone thinks he did the right thing — not just that things will "work out."',
+        next: 7
+      },
+      {
+        text: 'Stay quiet. Let the adults handle it. It\'s not really your place.',
+        good: 0,
+        effect: { courage:-1, empathy:-1, rep:0 },
+        reflect: 'Adults can only work with what they know. What you saw — what you know — is information they don\'t have. What happens to cases where the witnesses say nothing?',
+        next: 7
+      }
+    ]
+  });
+
+  // ── FINAL SCENE ─────────────────────────────────────────────────
+  s.push({
+    label: 'CHAPTER 4  ·  THE LAST MOMENT',
+    emoji: '🌅',
+    location: 'Friday · 11:20 · Corridor outside the library',
+    bg: 'linear-gradient(135deg, #0d2040 0%, #1a1630 100%)',
+    scene: `Friday. The school assembly addressed it — briefly, carefully, without naming anyone. But everyone knew what it was about. Something has shifted. Not fixed. But shifted.
+
+Elias is back. He looks tired but upright. Like someone who has been through something and is trying to walk normally on the other side of it.
+
+In the corridor after class, he passes you. He slows down — almost stops. You both know that the last week happened. You both know what you did or didn't do. 
+
+You have five seconds. One last choice about who you are in this story.`,
+    question: `What do you do in this moment?`,
+    dice: { chance: 0.45, good: true, title: 'Marcus is watching', body: 'Marcus passes just behind you and sees the exchange. Whatever you do here — he\'ll see it.', stat: 'courage', val: 1 },
+    choices: [
+      {
+        text: '"I\'m glad you\'re back. I\'m sorry I didn\'t do more, earlier."',
+        good: 2,
+        effect: { courage:+3, empathy:+3, rep:+1 },
+        reflect: 'You took accountability without being asked. That\'s one of the rarest things there is. You didn\'t explain or justify — you just acknowledged it. Elias will remember this.',
+        next: 'end'
+      },
+      {
+        text: '"Hey." A nod. "Good to see you back."',
+        good: 1,
+        effect: { courage:+1, empathy:+2, rep:+1 },
+        reflect: 'Simple. Human. Not too much. Sometimes the gesture doesn\'t need to be big to land — it just needs to be real.',
+        next: 'end'
+      },
+      {
+        text: 'You look away. It\'s still too awkward.',
+        good: 0,
+        effect: { courage:-1, empathy:0, rep:0 },
+        reflect: 'Awkwardness fades. The moment — the one where you could have said something — stays. You\'ll probably remember this one.',
+        next: 'end'
+      }
+    ]
+  });
+
+  return s;
+}
+
+// =====================================================================
+// STATE
+// =====================================================================
+let G = {
+  char: null,
+  story: [],
+  idx: 0,
+  stats: { courage:5, empathy:5, rep:5 },
+  good: 0,
+  mid: 0,
+  bad: 0
+};
+
+// =====================================================================
+// SCREEN
+// =====================================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// =====================================================================
+// CHARACTER SELECT
+// =====================================================================
+function initCharGrid() {
+  const grid = document.getElementById('char-grid');
+  grid.innerHTML = CHARS.map(c => `
+    <div class="char-card" id="cc-${c.id}" onclick="pickChar('${c.id}')">
+      <div class="char-avatar" style="background:${c.bg}">${c.emoji}</div>
+      <div class="char-name">${c.name}</div>
+      <div class="char-role">${c.role}</div>
+      <div class="stat-rows">
+        ${['courage','empathy','popularity','resilience'].map((st,i) => `
+          <div class="srow">
+            <div class="srow-label">${st}</div>
+            <div class="srow-track">
+              <div class="srow-fill" style="width:${c.stats[st]*10}%;background:${c.colors[i]}"></div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+function pickChar(id) {
+  G.char = CHARS.find(c => c.id === id);
+  document.querySelectorAll('.char-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('cc-'+id).classList.add('selected');
+
+  const det = document.getElementById('char-detail');
+  det.innerHTML = `<h3>${G.char.emoji} ${G.char.name} <span style="color:var(--muted);font-size:0.8rem;font-weight:400">— ${G.char.role}</span></h3><p>${G.char.bio}</p>`;
+
+  const go = document.getElementById('btn-go');
+  go.classList.add('visible');
+}
+
+// =====================================================================
+// GAME START
+// =====================================================================
+function startGame() {
+  if (!G.char) return;
+
+  G.story = buildStory(G.char);
+  G.idx   = 0;
+  G.stats = { courage:5, empathy:5, rep:5 };
+  G.good  = 0; G.mid = 0; G.bad = 0;
+
+  // Apply character bonus
+  Object.entries(G.char.bonus || {}).forEach(([k,v]) => {
+    if (G.stats[k] !== undefined) G.stats[k] = Math.min(12, G.stats[k] + v);
+  });
+
+  // Setup topbar
+  const av = document.getElementById('tb-avatar');
+  av.textContent  = G.char.emoji;
+  av.style.background = G.char.bg;
+  document.getElementById('tb-name').textContent = G.char.name;
+
+  showScreen('game-screen');
+  renderScene();
+}
+
+function restartSameChar() { startGame(); }
+
+// =====================================================================
+// RENDER SCENE
+// =====================================================================
+function renderScene() {
+  const scene = G.story[G.idx];
+  if (!scene) { showEnd(); return; }
+
+  // Reset reflect
+  const rbox = document.getElementById('reflect');
+  rbox.classList.remove('show');
+  rbox.style.opacity = '0';
+  document.getElementById('continue-btn').style.display = 'none';
+
+  // Progress
+  const pct = Math.round((G.idx / (G.story.length - 1)) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('tb-chapter').textContent = scene.label;
+
+  // Re-trigger animations by cloning nodes
+  reAnimate('scene-label');
+  reAnimate('scene-panel');
+  reAnimate('narrative');
+  reAnimate('choices');
+
+  // Fill content
+  document.getElementById('scene-label').textContent = scene.label;
+
+  const panel = document.getElementById('scene-panel');
+  panel.style.background = scene.bg;
+  document.getElementById('scene-emoji').textContent = scene.emoji;
+  document.getElementById('scene-location').textContent = scene.location;
+
+  document.getElementById('narrative-scene').textContent = scene.scene;
+  document.getElementById('narrative-question').textContent = scene.question;
+
+  // Dice
+  const dcard = document.getElementById('dice-card');
+  if (scene.dice && Math.random() < scene.dice.chance) {
+    // Apply bonus
+    if (scene.dice.stat && G.stats[scene.dice.stat] !== undefined) {
+      G.stats[scene.dice.stat] = Math.min(15, G.stats[scene.dice.stat] + scene.dice.val);
+      updateStats();
+    }
+    document.getElementById('dice-face').textContent = scene.dice.good ? '🎲' : '💀';
+    document.getElementById('dice-title').textContent = scene.dice.title;
+    document.getElementById('dice-body').textContent  = scene.dice.body;
+    dcard.style.display = 'flex';
+    dcard.style.animation = 'none';
+    void dcard.offsetWidth;
+    dcard.style.animation = 'fadeUp 0.5s 0.2s ease both';
+  } else {
+    dcard.style.display = 'none';
+  }
+
+  // Choices
+  const area = document.getElementById('choices');
+  area.innerHTML = '<div class="choices-heading">What do you do?</div>';
+  scene.choices.forEach((ch, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'choice';
+    btn.innerHTML = `<span class="choice-letter">${String.fromCharCode(65+i)}</span><span>${ch.text}</span>`;
+    btn.onclick = () => choose(i);
+    area.appendChild(btn);
+  });
+
+  updateStats();
+}
+
+function reAnimate(id) {
+  const el = document.getElementById(id);
+  el.style.animation = 'none';
+  el.style.opacity   = '0';
+  void el.offsetWidth;
+  el.style.animation = '';
+}
+
+// =====================================================================
+// CHOICE
+// =====================================================================
+function choose(idx) {
+  const scene  = G.story[G.idx];
+  const choice = scene.choices[idx];
+
+  // Lock all buttons
+  document.querySelectorAll('.choice').forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === idx) {
+      btn.classList.add(
+        choice.good === 2 ? 'picked-good' :
+        choice.good === 1 ? 'picked-mid'  : 'picked-bad'
+      );
+    }
+  });
+
+  // Apply effect
+  const eff = choice.effect;
+  G.stats.courage  = clamp(G.stats.courage  + (eff.courage || 0));
+  G.stats.empathy  = clamp(G.stats.empathy  + (eff.empathy || 0));
+  G.stats.rep      = clamp(G.stats.rep      + (eff.rep || 0));
+  updateStats();
+
+  if (choice.good === 2) G.good++;
+  else if (choice.good === 1) G.mid++;
+  else G.bad++;
+
+  // Show reflect
+  const rbox = document.getElementById('reflect');
+  document.getElementById('reflect-text').textContent = choice.reflect;
+  rbox.classList.add('show');
+  rbox.style.animation = 'none';
+  void rbox.offsetWidth;
+  rbox.style.animation = 'fadeUp 0.5s ease forwards';
+
+  // Show continue button
+  const contBtn = document.getElementById('continue-btn');
+  contBtn.style.display = 'block';
+  contBtn.style.animation = 'none';
+  void contBtn.offsetWidth;
+  contBtn.style.animation = 'fadeUp 0.5s 0.3s ease both';
+  contBtn.onclick = () => {
+    contBtn.style.display = 'none';
+    if (choice.next === 'end') {
+      showEnd();
+    } else {
+      G.idx = choice.next;
+      renderScene();
+    }
+  };
+}
+
+function clamp(v) { return Math.max(0, Math.min(15, v)); }
+
+function updateStats() {
+  document.getElementById('s-courage').textContent = G.stats.courage;
+  document.getElementById('s-empathy').textContent = G.stats.empathy;
+  document.getElementById('s-rep').textContent     = G.stats.rep;
+}
+
+// =====================================================================
+// END SCREEN
+// =====================================================================
+function showEnd() {
+  const score = G.good * 2 + G.mid;
+  const max   = (G.good + G.mid + G.bad) * 2;
+  const pct   = max > 0 ? score / max : 0;
+
+  let emblem, title, subtitle, reflect;
+
+  if (pct >= 0.8) {
+    emblem  = '🌟';
+    title   = 'Upstander';
+    subtitle = 'You chose courage when it cost you something';
+    reflect  = `You didn't do everything perfectly — nobody does. But across this story, you made the harder, kinder choice more often than not. Upstanders aren't people without fear. They're people who act anyway. The world needs more of that. You have it.`;
+  } else if (pct >= 0.5) {
+    emblem  = '🌱';
+    title   = 'Growing';
+    subtitle = 'You tried, hesitated, tried again';
+    reflect  = `You weren't consistent — you stepped up in some moments and stepped back in others. That's honest. Most people are somewhere in the middle. The question this game leaves you with: in the moments you held back, what stopped you? And is that something you can change?`;
+  } else if (pct >= 0.25) {
+    emblem  = '🪞';
+    title   = 'Witness';
+    subtitle = 'You saw it clearly — but rarely acted on it';
+    reflect  = `You watched, you understood, you maybe felt uncomfortable — but you stayed on the edge. Being a witness is its own kind of presence. But this story asks: is witnessing enough? What would it have taken for you to take one step further?`;
+  } else {
+    emblem  = '🌫️';
+    title   = 'Bystander';
+    subtitle = 'You stayed on the edges of this story';
+    reflect  = `You played it safe. That's human — and it's the most common choice. But consider: Elias was in that cafeteria, in that corridor, in that group chat. He experienced every moment you watched from a distance. What did your distance cost him? This game is just practice. The next version is real life.`;
+  }
+
+  document.getElementById('end-emblem').textContent  = emblem;
+  document.getElementById('end-emblem').style.background = pct >= 0.8 ? 'rgba(42,157,143,0.2)' : pct >= 0.5 ? 'rgba(232,168,56,0.15)' : 'rgba(214,64,69,0.15)';
+  document.getElementById('end-title').textContent   = title;
+  document.getElementById('end-subtitle').textContent = subtitle;
+
+  document.getElementById('e-courage').textContent = `${G.stats.courage}/15`;
+  document.getElementById('e-empathy').textContent = `${G.stats.empathy}/15`;
+  document.getElementById('e-rep').textContent     = G.stats.rep >= 8 ? 'High — but what did it cost?' : G.stats.rep >= 5 ? 'Balanced' : 'Lower — you risked something for someone else';
+  document.getElementById('e-choices').textContent = `${G.good} courageous · ${G.mid} cautious · ${G.bad} passive`;
+  document.getElementById('end-reflect').textContent = reflect;
+
+  showScreen('end-screen');
+}
+
+// =====================================================================
+// INIT
+// =====================================================================
+initCharGrid();
+</script>
+</body>
+</html>
