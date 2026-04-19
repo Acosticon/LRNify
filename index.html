@@ -3,13 +3,60 @@
   
 <head>
   <title>Min side</title>
+  <style>
+    body {
+      background-color: #AAAAAA;
+      font-family: Arial, sans-serif;
+    }
+    .menu {
+      margin: 20px;
+      padding: 15px;
+      background-color: #888888;
+      border-radius: 5px;
+    }
+    .menu button {
+      margin: 5px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #666666;
+      color: white;
+      border: none;
+      border-radius: 3px;
+    }
+    .menu button:hover {
+      background-color: #555555;
+    }
+    .content-frame {
+      margin: 20px;
+      border: 2px solid #666666;
+      width: 90%;
+      height: 600px;
+    }
+  </style>
 </head>
-  <body style="background-color: #AAAAAA;">
+
 <body>
   <center>
     <h1>Hei verden!</h1>
-  <img src="9321d7fd-544c-435f-b218-440f076dbe6f.png" alt="Hjernen med et nettverk av koblinger som lager bokstaven V." height="200">
+    <img src="9321d7fd-544c-435f-b218-440f076dbe6f.png" alt="Hjernen med et nettverk av koblinger som lager bokstaven V." height="200">
   </center>
-<a href="spill\dino.html">Dinosaurspillet!</a>
+
+  <div class="menu">
+    <button onclick="loadContent('spill/dino.html')">Dinosaurspillet!</button>
+    <button onclick="loadContent('mappe1/index.html')">Mappe 1</button>
+    <button onclick="loadContent('mappe2/index.html')">Mappe 2</button>
+    <button onclick="loadContent('mappe3/index.html')">Mappe 3</button>
+  </div>
+
+  <center>
+    <iframe id="contentFrame" class="content-frame" src=""></iframe>
+  </center>
+
+  <script>
+    function loadContent(url) {
+      document.getElementById('contentFrame').src = url;
+    }
+  </script>
 </body>
 </html>
