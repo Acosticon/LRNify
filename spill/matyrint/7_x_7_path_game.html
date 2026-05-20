@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dungeon Dragon Math Game</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #101010;
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    .wrap {
+      text-align: center;
+      max-width: 980px;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: 24px;
+    }
+
+    p {
+      margin-top: 0;
+      color: #bbb;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(12, 42px);
+      grid-template-rows: repeat(12, 42px);
+      gap: 0;
+      padding: 12px;
+      background: #141414;
+      border-radius: 12px;
+      width: max-content;
+      margin: 0 auto;
+      box-shadow: 0 0 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .cell {
+      width: 42px;
+      height: 42px;
+      background: #777;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-sizing: border-box;
+      border-top: 3px solid transparent;
+      border-right: 3px solid transparent;
+      border-bottom: 3px solid transparent;
+      border-left: 3px solid transparent;
+    }
+
+    .void {
+      background: #101010;
+    }
+
+    .room {
+      background: #bfbfbf;
+    }
+
+    .hall {
+      background: #777;
+    }
+
+    .start {
+      background: #18a558;
+    }
+
+    .boss {
+      background: #d62828;
+    }
+
+    .wall-top { border-top-color: #050505; }
+    .wall-right { border-right-color: #050505; }
+    .wall-bottom { border-bottom-color: #050505; }
+    .wall-left { border-left-color: #050505; }
+
+    .door-top { border-top-color: #9b5c20; }
+    .door-right { border-right-color: #9b5c20; }
+    .door-bottom { border-bottom-color: #9b5c20; }
+    .door-left { border-left-color: #9b5c20; }
+
+    .monster::before {
+      content: "👾";
+      position: absolute;
+      font-size: 22px;
+      z-index: 2;
+    }
+
+    .dragon::before {
+      content: "🐉";
+      position: absolute;
+      font-size: 23px;
+      z-index: 2;
+    }
+
+    .player::after {
+      content: "";
+      width: 23px;
+      height: 23px;
+      border-radius: 50%;
+      background: #3b82f6;
+      box-shadow: 0 0 10px rgba(59, 130, 246, 0.9);
+      border: 2px solid white;
+      position: absolute;
+      z-index: 4;
+    }
+
+    #legend {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 10px 0 12px;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      border-radius: 3px;
+    }
+
+    #message {
+      margin-top: 12px;
+      min-height: 24px;
+      font-weight: bold;
+    }
+
+    #combatPanel {
+      display: none;
+      margin: 14px auto 0;
+      padding: 16px;
+      max-width: 460px;
+      background: #222;
+      border-radius: 12px;
+      border: 1px solid #444;
+    }
+
+    .hp-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: #ddd;
+    }
+
+    #enemyName {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    #problem {
+      font-size: 28px;
+      font-weight: bold;
+      margin: 12px 0;
+    }
+
+    input {
+      width: 90px;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #submitAnswer {
+      margin-left: 8px;
+      background: #3b82f6;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Dungeon Dragon Math Game</h1>
+    <p>Move with W A S D. Walls and doors are on tile borders. Enter a monster room to start combat.</p>
+
+    <div id="legend">
+      <span class="legend-item"><span class="swatch" style="background:#bfbfbf"></span> Room</span>
+      <span class="legend-item"><span class="swatch" style="background:#777"></span> Hallway</span>
+      <span class="legend-item"><span class="swatch" style="background:#050505"></span> Wall border</span>
+      <span class="legend-item"><span class="swatch" style="background:#9b5c20"></span> Door border</span>
+      <span class="legend-item">👾 Monster</span>
+      <span class="legend-item">🐉 Dragon</span>
+    </div>
+
+    <div id="grid"></div>
+    <div id="message"></div>
+
+    <div id="combatPanel">
+      <div id="enemyName">Monster</div>
+      <div class="hp-row">
+        <div>Player HP: <strong id="playerHpText">40</strong></div>
+        <div>Enemy HP: <strong id="enemyHpText">15</strong></div>
+      </div>
+      <div id="problem"></div>
+      <input id="answerInput" type="number" autocomplete="off" />
+      <button id="submitAnswer">Attack</button>
+      <div id="combatMessage"></div>
+    </div>
+
+    <button onclick="newGame()">Generate New Dungeon</button>
+  </div>
+
+  <script>
+    const size = 12;
+    const VOID = "void";
+    const ROOM = "room";
+    const HALL = "hall";
+    const WALL = "wall";
+    const DOOR = "door";
+    const OPEN = "open";
+
+    const grid = document.getElementById("grid");
+    const message = document.getElementById("message");
+    const combatPanel = document.getElementById("combatPanel");
+    const playerHpText = document.getElementById("playerHpText");
+    const enemyHpText = document.getElementById("enemyHpText");
+    const enemyName = document.getElementById("enemyName");
+    const problem = document.getElementById("problem");
+    const answerInput = document.getElementById("answerInput");
+    const submitAnswer = document.getElementById("submitAnswer");
+    const combatMessage = document.getElementById("combatMessage");
+
+    let map = [];
+    let rooms = [];
+    let player = { row: 0, col: 0 };
+    let currentRoom = null;
+    let currentEnemy = null;
+    let inCombat = false;
+    let playerHp = 40;
+    let currentAnswer = 0;
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function key(row, col) {
+      return `${row},${col}`;
+    }
+
+    function makeCell(type = VOID, roomId = null) {
+      return {
+        type,
+        roomId,
+        borders: { top: OPEN, right: OPEN, bottom: OPEN, left: OPEN }
+      };
+    }
+
+    function makeEmptyMap() {
+      return Array.from({ length: size }, () => Array.from({ length: size }, () => makeCell()));
+    }
+
+    function opposite(dir) {
+      return { top: "bottom", right: "left", bottom: "top", left: "right" }[dir];
+    }
+
+    function delta(dir) {
+      return {
+        top: { row: -1, col: 0 },
+        right: { row: 0, col: 1 },
+        bottom: { row: 1, col: 0 },
+        left: { row: 0, col: -1 }
+      }[dir];
+    }
+
+    function setBorder(row, col, dir, value) {
+      if (row < 0 || row >= size || col < 0 || col >= size) return;
+      map[row][col].borders[dir] = value;
+      const d = delta(dir);
+      const nr = row + d.row;
+      const nc = col + d.col;
+      if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+        map[nr][nc].borders[opposite(dir)] = value;
+      }
+    }
+
+    function centerOf(room) {
+      return {
+        row: Math.floor(room.y + room.h / 2),
+        col: Math.floor(room.x + room.w / 2)
+      };
+    }
+
+    function roomsOverlap(a, b) {
+      return !(
+        a.x + a.w <= b.x ||
+        b.x + b.w <= a.x ||
+        a.y + a.h <= b.y ||
+        b.y + b.h <= a.y
+      );
+    }
+
+    function carveRoom(room) {
+      for (let row = room.y; row < room.y + room.h; row++) {
+        for (let col = room.x; col < room.x + room.w; col++) {
+          map[row][col].type = ROOM;
+          map[row][col].roomId = room.id;
+        }
+      }
+    }
+
+    function carveHall(row, col) {
+      if (row < 0 || row >= size || col < 0 || col >= size) return;
+      if (map[row][col].type === VOID) {
+        map[row][col].type = HALL;
+        map[row][col].roomId = null;
+      }
+    }
+
+    function addOuterWalls() {
+      for (let i = 0; i < size; i++) {
+        setBorder(0, i, "top", WALL);
+        setBorder(size - 1, i, "bottom", WALL);
+        setBorder(i, 0, "left", WALL);
+        setBorder(i, size - 1, "right", WALL);
+      }
+    }
+
+    function addWallsBetweenDifferentAreas() {
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          const here = map[row][col];
+          if (here.type === VOID) continue;
+
+          for (const dir of ["right", "bottom"]) {
+            const d = delta(dir);
+            const nr = row + d.row;
+            const nc = col + d.col;
+
+            if (nr >= size || nc >= size) continue;
+            const there = map[nr][nc];
+
+            if (there.type === VOID) {
+              setBorder(row, col, dir, WALL);
+            } else if (here.roomId !== there.roomId) {
+              setBorder(row, col, dir, WALL);
+            }
+          }
+        }
+      }
+    }
+
+    function addDoorBetweenCells(a, b) {
+      const dr = b.row - a.row;
+      const dc = b.col - a.col;
+      if (dr === -1) setBorder(a.row, a.col, "top", DOOR);
+      if (dr === 1) setBorder(a.row, a.col, "bottom", DOOR);
+      if (dc === -1) setBorder(a.row, a.col, "left", DOOR);
+      if (dc === 1) setBorder(a.row, a.col, "right", DOOR);
+    }
+
+    function openBetweenCells(a, b) {
+      const dr = b.row - a.row;
+      const dc = b.col - a.col;
+      if (dr === -1) setBorder(a.row, a.col, "top", OPEN);
+      if (dr === 1) setBorder(a.row, a.col, "bottom", OPEN);
+      if (dc === -1) setBorder(a.row, a.col, "left", OPEN);
+      if (dc === 1) setBorder(a.row, a.col, "right", OPEN);
+    }
+
+    function carveCorridor(a, b) {
+      let row = a.row;
+      let col = a.col;
+      carveHall(row, col);
+
+      const horizontalFirst = Math.random() < 0.5;
+
+      function stepRow() {
+        const next = { row: row + Math.sign(b.row - row), col };
+        carveHall(next.row, next.col);
+        openBetweenCells({ row, col }, next);
+        row = next.row;
+      }
+
+      function stepCol() {
+        const next = { row, col: col + Math.sign(b.col - col) };
+        carveHall(next.row, next.col);
+        openBetweenCells({ row, col }, next);
+        col = next.col;
+      }
+
+      if (horizontalFirst) {
+        while (col !== b.col) stepCol();
+        while (row !== b.row) stepRow();
+      } else {
+        while (row !== b.row) stepRow();
+        while (col !== b.col) stepCol();
+      }
+    }
+
+    function connectRooms(roomA, roomB) {
+      const a = centerOf(roomA);
+      const b = centerOf(roomB);
+      carveCorridor(a, b);
+
+      // Door near each room center, so combat is tied to entering the room rather than the monster tile.
+      const pathCells = getRoughPath(a, b);
+      const firstExit = pathCells.find(cell => map[cell.row][cell.col].roomId !== roomA.id);
+      const lastEntry = [...pathCells].reverse().find(cell => map[cell.row][cell.col].roomId !== roomB.id);
+
+      if (firstExit) addDoorBetweenCells(a, firstExit);
+      if (lastEntry) addDoorBetweenCells(b, lastEntry);
+    }
+
+    function getRoughPath(a, b) {
+      const cells = [];
+      let row = a.row;
+      let col = a.col;
+      while (col !== b.col) {
+        col += Math.sign(b.col - col);
+        cells.push({ row, col });
+      }
+      while (row !== b.row) {
+        row += Math.sign(b.row - row);
+        cells.push({ row, col });
+      }
+      return cells;
+    }
+
+    function createRooms() {
+      const fixedRooms = [
+        { x: 0, y: 0, w: 3, h: 3, id: 0, kind: "start" },
+        { x: 8, y: 8, w: 4, h: 4, id: 1, kind: "boss" },
+        { x: 3, y: 0, w: 3, h: 2, id: 2, kind: "normal" },
+        { x: 6, y: 0, w: 3, h: 3, id: 3, kind: "normal" },
+        { x: 0, y: 3, w: 4, h: 3, id: 4, kind: "normal" },
+        { x: 4, y: 3, w: 3, h: 4, id: 5, kind: "normal" },
+        { x: 7, y: 3, w: 4, h: 3, id: 6, kind: "normal" },
+        { x: 0, y: 6, w: 3, h: 3, id: 7, kind: "normal" },
+        { x: 3, y: 7, w: 4, h: 3, id: 8, kind: "normal" }
+      ];
+
+      rooms = fixedRooms.map(room => ({
+        ...room,
+        monster: {
+          name: room.kind === "boss" ? "Dragon" : randomMonsterName(),
+          hp: room.kind === "boss" ? 30 : 15,
+          maxHp: room.kind === "boss" ? 30 : 15,
+          defeated: room.kind === "start"
+        }
+      }));
+
+      for (const room of rooms) carveRoom(room);
+    }
+
+    function randomMonsterName() {
+      const names = ["Goblin", "Skeleton", "Slime", "Bat", "Orc", "Spider", "Imp"];
+      return names[randomInt(0, names.length - 1)];
+    }
+
+    function addRoomDoors() {
+      // Doors between adjacent rooms and into corridors.
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          const here = map[row][col];
+          if (here.type === VOID) continue;
+
+          for (const dir of ["right", "bottom"]) {
+            const d = delta(dir);
+            const nr = row + d.row;
+            const nc = col + d.col;
+            if (nr >= size || nc >= size) continue;
+
+            const there = map[nr][nc];
+            if (there.type === VOID) continue;
+
+            const differentRooms = here.roomId !== null && there.roomId !== null && here.roomId !== there.roomId;
+            const roomToHall = here.type !== there.type && (here.type === ROOM || there.type === ROOM);
+
+            if ((differentRooms || roomToHall) && map[row][col].borders[dir] === WALL && Math.random() < 0.28) {
+              setBorder(row, col, dir, DOOR);
+            }
+          }
+        }
+      }
+
+      // Guaranteed key doors so the dungeon is traversable.
+      const guaranteed = [
+        [{ row: 1, col: 2 }, { row: 1, col: 3 }],
+        [{ row: 1, col: 5 }, { row: 1, col: 6 }],
+        [{ row: 2, col: 1 }, { row: 3, col: 1 }],
+        [{ row: 4, col: 3 }, { row: 4, col: 4 }],
+        [{ row: 4, col: 6 }, { row: 4, col: 7 }],
+        [{ row: 5, col: 9 }, { row: 6, col: 9 }],
+        [{ row: 8, col: 6 }, { row: 8, col: 7 }],
+        [{ row: 8, col: 7 }, { row: 8, col: 8 }]
+      ];
+
+      for (const [a, b] of guaranteed) addDoorBetweenCells(a, b);
+    }
+
+    function generateDungeon() {
+      map = makeEmptyMap();
+      createRooms();
+
+      const connectionOrder = [0, 2, 3, 6, 1, 8, 7, 4, 5, 6];
+      for (let i = 0; i < connectionOrder.length - 1; i++) {
+        connectRooms(rooms[connectionOrder[i]], rooms[connectionOrder[i + 1]]);
+      }
+
+      addOuterWalls();
+      addWallsBetweenDifferentAreas();
+      addRoomDoors();
+
+      player = { row: 1, col: 1 };
+      currentRoom = rooms[0];
+    }
+
+    function canMove(row, col, dir) {
+      const d = delta(dir);
+      const nr = row + d.row;
+      const nc = col + d.col;
+      if (nr < 0 || nr >= size || nc < 0 || nc >= size) return false;
+      if (map[nr][nc].type === VOID) return false;
+      return map[row][col].borders[dir] !== WALL;
+    }
+
+    function roomAt(row, col) {
+      const roomId = map[row][col].roomId;
+      if (roomId === null) return null;
+      return rooms.find(room => room.id === roomId) || null;
+    }
+
+    function monsterPosition(room) {
+      const c = centerOf(room);
+      return { row: c.row, col: c.col };
+    }
+
+    function drawGrid() {
+      grid.innerHTML = "";
+
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          const data = map[row][col];
+          const cell = document.createElement("div");
+          cell.classList.add("cell", data.type);
+
+          for (const dir of ["top", "right", "bottom", "left"]) {
+            const border = data.borders[dir];
+            if (border === WALL) cell.classList.add(`wall-${dir}`);
+            if (border === DOOR) cell.classList.add(`door-${dir}`);
+          }
+
+          const room = roomAt(row, col);
+          if (room?.kind === "start") cell.classList.add("start");
+          if (room?.kind === "boss") cell.classList.add("boss");
+
+          if (room && !room.monster.defeated) {
+            const pos = monsterPosition(room);
+            if (row === pos.row && col === pos.col) {
+              cell.classList.add(room.kind === "boss" ? "dragon" : "monster");
+            }
+          }
+
+          if (player.row === row && player.col === col) cell.classList.add("player");
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    function movePlayer(deltaRow, deltaCol, dir) {
+      if (inCombat) {
+        message.textContent = "Defeat the enemy before moving again!";
+        return;
+      }
+
+      if (!canMove(player.row, player.col, dir)) {
+        message.textContent = "A wall blocks your way. Look for a door.";
+        return;
+      }
+
+      player = { row: player.row + deltaRow, col: player.col + deltaCol };
+      message.textContent = "";
+
+      const enteredRoom = roomAt(player.row, player.col);
+      if (enteredRoom && enteredRoom !== currentRoom) {
+        currentRoom = enteredRoom;
+        if (!enteredRoom.monster.defeated) startCombat(enteredRoom);
+      } else if (enteredRoom && !enteredRoom.monster.defeated && enteredRoom.kind !== "start") {
+        startCombat(enteredRoom);
+      }
+
+      drawGrid();
+    }
+
+    function startCombat(room) {
+      currentEnemy = room.monster;
+      inCombat = true;
+      combatPanel.style.display = "block";
+      enemyName.textContent = currentEnemy.name;
+      message.textContent = `${currentEnemy.name} attacks! Combat takes place in the whole room.`;
+      updateHpText();
+      generateProblem();
+      answerInput.focus();
+    }
+
+    function updateHpText() {
+      playerHpText.textContent = playerHp;
+      enemyHpText.textContent = currentEnemy ? currentEnemy.hp : "-";
+    }
+
+    function generateProblem() {
+      const a = Math.floor(Math.random() * 10);
+      const b = Math.floor(Math.random() * 10);
+      currentAnswer = a + b;
+      problem.textContent = `${a} + ${b} = ?`;
+      answerInput.value = "";
+    }
+
+    function submitCombatAnswer() {
+      if (!inCombat || !currentEnemy) return;
+
+      const userAnswer = Number(answerInput.value);
+
+      if (answerInput.value.trim() === "") {
+        combatMessage.textContent = "Enter an answer first.";
+        return;
+      }
+
+      if (userAnswer === currentAnswer) {
+        currentEnemy.hp -= 5;
+        combatMessage.textContent = `Correct! ${currentEnemy.name} loses 5 HP.`;
+      } else {
+        playerHp -= 5;
+        combatMessage.textContent = `Wrong! The answer was ${currentAnswer}. You lose 5 HP.`;
+      }
+
+      if (currentEnemy.hp <= 0) {
+        currentEnemy.hp = 0;
+        currentEnemy.defeated = true;
+        updateHpText();
+
+        if (currentEnemy.name === "Dragon") {
+          combatMessage.textContent = "You defeated the dragon! Victory!";
+          message.textContent = "Victory! Generate a new dungeon to play again.";
+        } else {
+          combatMessage.textContent = `You defeated the ${currentEnemy.name}!`;
+          message.textContent = "Room cleared. Keep exploring.";
+        }
+
+        inCombat = false;
+        currentEnemy = null;
+        combatPanel.style.display = "none";
+        drawGrid();
+        return;
+      }
+
+      if (playerHp <= 0) {
+        playerHp = 0;
+        updateHpText();
+        combatMessage.textContent = `${currentEnemy.name} defeated you!`;
+        message.textContent = "Game over. Generate a new dungeon to try again.";
+        inCombat = false;
+        currentEnemy = null;
+        drawGrid();
+        return;
+      }
+
+      updateHpText();
+      generateProblem();
+      answerInput.focus();
+    }
+
+    document.addEventListener("keydown", (event) => {
+      const keyPressed = event.key.toLowerCase();
+
+      if (inCombat && event.key === "Enter") {
+        submitCombatAnswer();
+        return;
+      }
+
+      if (["w", "a", "s", "d"].includes(keyPressed)) event.preventDefault();
+
+      if (keyPressed === "w") movePlayer(-1, 0, "top");
+      if (keyPressed === "s") movePlayer(1, 0, "bottom");
+      if (keyPressed === "a") movePlayer(0, -1, "left");
+      if (keyPressed === "d") movePlayer(0, 1, "right");
+    });
+
+    submitAnswer.addEventListener("click", submitCombatAnswer);
+
+    function newGame() {
+      generateDungeon();
+      inCombat = false;
+      currentEnemy = null;
+      playerHp = 40;
+      message.textContent = "";
+      combatMessage.textContent = "";
+      combatPanel.style.display = "none";
+      updateHpText();
+      drawGrid();
+    }
+
+    newGame();
+  </script>
+</body>
+</html>
