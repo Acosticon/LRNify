@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dungeon Dragon Math Game</title>
+  <style>
+    #startScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: radial-gradient(circle at top, #1f2937, #090909 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    .start-card {
+      max-width: 760px;
+      width: 100%;
+      background: #181818;
+      border: 1px solid #3a3a3a;
+      border-radius: 22px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 0 36px rgba(0, 0, 0, 0.65);
+    }
+
+    .theme-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .theme-card {
+      padding: 18px;
+      border: 2px solid #444;
+      border-radius: 16px;
+      background: #242424;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .theme-card:hover {
+      transform: translateY(-3px);
+      border-color: #93c5fd;
+      background: #2f2f2f;
+    }
+
+    .theme-card.selected {
+      border-color: #22c55e;
+      background: #12351f;
+    }
+
+    .theme-icon {
+      font-size: 42px;
+      margin-bottom: 10px;
+    }
+
+    .theme-title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .theme-desc {
+      color: #bbb;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    #startButton {
+      margin-top: 26px;
+      padding: 13px 22px;
+      font-size: 17px;
+      background: #22c55e;
+      color: #052e16;
+    }
+
+    @media (max-width: 760px) {
+      .theme-options {
+        grid-template-columns: 1fr;
+      }
+    }
+    :root {
+      --page-bg: #101010;
+      --panel-bg: #171717;
+      --panel-border: #2e2e2e;
+      --floor: #bfbfbf;
+      --start-floor: #80cfa1;
+      --boss-floor: #d55a5a;
+      --wall: #050505;
+      --door: #a46625;
+      --accent: #3b82f6;
+      --message: #fef3c7;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--page-bg);
+      font-family: Arial, sans-serif;
+      color: white;
+    }
+
+    .wrap {
+      text-align: center;
+      max-width: 1180px;
+      width: 100%;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+      font-size: 26px;
+    }
+
+    p {
+      margin-top: 0;
+      color: #bbb;
+    }
+
+    #status {
+      margin: 8px 0 10px;
+      color: #ddd;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
+    .game-layout {
+      display: grid;
+      grid-template-columns: auto minmax(360px, 1fr);
+      gap: 22px;
+      align-items: start;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .map-panel,
+    .side-panel {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 0 24px rgba(0, 0, 0, 0.45);
+    }
+
+    .side-panel {
+      text-align: left;
+      min-height: 530px;
+      box-sizing: border-box;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(12, 42px);
+      grid-template-rows: repeat(12, 42px);
+      gap: 0;
+      background: var(--panel-bg);
+      border-radius: 12px;
+      width: max-content;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .cell {
+      width: 42px;
+      height: 42px;
+      background: var(--floor);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-sizing: border-box;
+      border-top: 3px solid transparent;
+      border-right: 3px solid transparent;
+      border-bottom: 3px solid transparent;
+      border-left: 3px solid transparent;
+    }
+
+    .start-room { background: var(--start-floor); }
+    .boss-room { background: var(--boss-floor); }
+
+    .wall-top { border-top-color: var(--wall); }
+    .wall-right { border-right-color: var(--wall); }
+    .wall-bottom { border-bottom-color: var(--wall); }
+    .wall-left { border-left-color: var(--wall); }
+
+    .door-top { border-top-color: var(--door); }
+    .door-right { border-right-color: var(--door); }
+    .door-bottom { border-bottom-color: var(--door); }
+    .door-left { border-left-color: var(--door); }
+
+    .monster::before,
+    .dragon::before,
+    .player::after {
+      position: absolute;
+      z-index: 3;
+    }
+
+    .monster::before {
+      content: attr(data-icon);
+      font-size: 22px;
+    }
+
+    .dragon::before {
+      content: "🐉";
+      font-size: 23px;
+    }
+
+    .player::after {
+      content: "🛡️";
+      font-size: 25px;
+      filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+    }
+
+    #legend {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin: 10px 0 12px;
+      color: #ccc;
+      font-size: 14px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 16px;
+      height: 16px;
+      display: inline-block;
+      border-radius: 3px;
+    }
+
+    #message {
+      margin-top: 12px;
+      min-height: 24px;
+      font-weight: bold;
+      text-align: center;
+      color: var(--message);
+    }
+
+    #combatPanel {
+      display: none;
+      padding: 18px;
+      background: color-mix(in srgb, var(--panel-bg) 85%, white 15%);
+      border-radius: 14px;
+      border: 1px solid var(--panel-border);
+    }
+
+    #emptyPanel {
+      padding: 22px;
+      background: color-mix(in srgb, var(--panel-bg) 85%, white 10%);
+      border: 1px dashed var(--panel-border);
+      border-radius: 14px;
+      color: #ccc;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    #enemyLine {
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .hp-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: #ddd;
+    }
+
+    #problem {
+      font-size: 34px;
+      font-weight: bold;
+      margin: 18px 0;
+      text-align: center;
+    }
+
+    .answer-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+
+    input {
+      width: 100px;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #submitAnswer {
+      margin-top: 0;
+      background: var(--accent);
+      color: white;
+    }
+
+    #combatMessage {
+      margin-top: 14px;
+      max-height: 150px;
+      overflow-y: auto;
+      line-height: 1.45;
+      font-weight: bold;
+    }
+
+    .battle-log-line {
+      margin-top: 6px;
+    }
+
+    .battle-log-success {
+      color: #166534;
+    }
+
+    .battle-log-fail {
+      color: #7f1d1d;
+    }
+
+    #rewardPanel {
+      display: none;
+      margin-top: 14px;
+      padding: 16px;
+      background: #172554;
+      border: 1px solid #3b82f6;
+      border-radius: 14px;
+      text-align: center;
+      animation: popIn 0.35s ease-out;
+    }
+
+    #rewardTitle {
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    #rewardDetails {
+      color: #dbeafe;
+      margin-bottom: 12px;
+    }
+
+    .xp-bar-shell {
+      height: 20px;
+      background: #111827;
+      border: 1px solid #4b5563;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #xpBar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #a3e635);
+      transition: width 0.8s ease-out;
+    }
+
+    #xpText {
+      margin-top: 8px;
+      font-weight: bold;
+      color: #ecfccb;
+    }
+
+    #levelUpBanner {
+      display: none;
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #facc15, #f97316);
+      color: #111827;
+      text-align: center;
+      font-size: 24px;
+      font-weight: 900;
+      box-shadow: 0 0 24px rgba(250, 204, 21, 0.65);
+      animation: levelPulse 0.9s ease-in-out infinite alternate;
+    }
+
+    #winScreen {
+      display: none;
+      margin-top: 14px;
+      padding: 24px;
+      background: linear-gradient(135deg, #1f2937, #111827);
+      border: 1px solid #555;
+      border-radius: 16px;
+      box-shadow: 0 0 24px rgba(255, 255, 255, 0.12);
+      text-align: center;
+    }
+
+    #winScreen h2 {
+      margin-top: 0;
+      font-size: 32px;
+    }
+
+    #newGameButton {
+      margin-top: 18px;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes levelPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.035); }
+    }
+
+    @media (max-width: 980px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .map-panel,
+      .side-panel {
+        margin: 0 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="startScreen">
+    <div class="start-card">
+      <h1>Choose Your Dungeon Theme</h1>
+      <p>Your theme determines which monsters appear in the dungeon.</p>
+
+      <div class="theme-options">
+        <div class="theme-card selected" data-theme="minecraft">
+          <div class="theme-icon">⛏️</div>
+          <div class="theme-title">Minecraft</div>
+          <div class="theme-desc">Creepers, zombies, skeletons, spiders, slimes, and blocky dungeon creatures.</div>
+        </div>
+
+        <div class="theme-card" data-theme="halloween">
+          <div class="theme-icon">🎃</div>
+          <div class="theme-title">Halloween</div>
+          <div class="theme-desc">Ghosts, vampires, witches, werewolves, bats, pumpkins, and spooky monsters.</div>
+        </div>
+
+        <div class="theme-card" data-theme="nature">
+          <div class="theme-icon">🌲</div>
+          <div class="theme-title">Nature</div>
+          <div class="theme-desc">Wolves, bears, snakes, spiders, mushrooms, vines, boars, and forest spirits.</div>
+        </div>
+      </div>
+
+      <button id="startButton">Start Adventure</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <h1>Dungeon Dragon Math Game</h1>
+    <p>Move with W A S D. Defeat monsters, earn XP, level up, and clear four dungeon levels.</p>
+    <div id="status"></div>
+
+    <div id="legend">
+      <span class="legend-item"><span id="floorSwatch" class="swatch"></span> Room floor</span>
+      <span class="legend-item"><span id="wallSwatch" class="swatch"></span> Wall border</span>
+      <span class="legend-item"><span id="doorSwatch" class="swatch"></span> Door border</span>
+      <span class="legend-item">🛡️ Hero</span>
+      <span class="legend-item">👾 Monsters</span>
+      <span class="legend-item">🐉 Boss</span>
+    </div>
+
+    <div class="game-layout">
+      <div class="map-panel">
+        <div id="grid"></div>
+        <div id="message"></div>
+      </div>
+
+      <div class="side-panel">
+        <div id="emptyPanel">
+          <h2>Explore the dungeon</h2>
+          <p>Enter a monster room to begin combat. Combat and rewards will appear here.</p>
+        </div>
+
+        <div id="combatPanel">
+          <div id="enemyLine">Monster</div>
+          <div class="hp-row">
+            <div>Player HP: <strong id="playerHpText">40</strong></div>
+            <div>Enemy HP: <strong id="enemyHpText">15</strong></div>
+          </div>
+          <div class="hp-row">
+            <div>Damage: <strong id="damageText">5</strong></div>
+            <div>Accuracy: <strong id="accuracyText">100%</strong></div>
+          </div>
+          <div id="problem"></div>
+          <div class="answer-row">
+            <input id="answerInput" type="number" autocomplete="off" />
+            <button id="submitAnswer">Attack</button>
+          </div>
+          <div id="combatMessage"></div>
+        </div>
+
+        <div id="rewardPanel">
+          <div id="rewardTitle"></div>
+          <div id="rewardDetails"></div>
+          <div class="xp-bar-shell">
+            <div id="xpBar"></div>
+          </div>
+          <div id="xpText"></div>
+        </div>
+
+        <div id="levelUpBanner"></div>
+
+        <div id="winScreen">
+          <h2>🏆 Victory!</h2>
+          <p>You cleared level 4 and defeated the final dragon.</p>
+          <p id="finalStats"></p>
+          <button onclick="newGame()">Play Again</button>
+        </div>
+      </div>
+    </div>
+
+    <button id="newGameButton" onclick="newGame()">Generate New Dungeon</button>
+  </div>
+
+  <script>
+    const size = 12;
+    const WALL = "wall";
+    const DOOR = "door";
+    const OPEN = "open";
+    const maxDungeonLevel = 4;
+
+    const monsterThemes = {
+      minecraft: [
+        { name: "Creeper", icon: "🟩", hp: 14 },
+        { name: "Zombie", icon: "🧟", hp: 13 },
+        { name: "Skeleton Archer", icon: "💀", hp: 12 },
+        { name: "Cave Spider", icon: "🕷️", hp: 11 },
+        { name: "Slime", icon: "🟢", hp: 9 },
+        { name: "Enderman", icon: "🌌", hp: 19 },
+        { name: "Pillager", icon: "🏹", hp: 15 },
+        { name: "Witch", icon: "🧙", hp: 16 },
+        { name: "Blaze", icon: "🔥", hp: 17 },
+        { name: "Piglin", icon: "🐷", hp: 14 }
+      ],
+      halloween: [
+        { name: "Ghost", icon: "👻", hp: 12 },
+        { name: "Vampire", icon: "🧛", hp: 18 },
+        { name: "Werewolf", icon: "🐺", hp: 19 },
+        { name: "Witch", icon: "🧙", hp: 16 },
+        { name: "Pumpkin Fiend", icon: "🎃", hp: 13 },
+        { name: "Bat", icon: "🦇", hp: 9 },
+        { name: "Skeleton", icon: "💀", hp: 12 },
+        { name: "Mummy", icon: "🧟", hp: 15 },
+        { name: "Demon", icon: "😈", hp: 17 },
+        { name: "Black Cat", icon: "🐈‍⬛", hp: 10 }
+      ],
+      nature: [
+        { name: "Wolf", icon: "🐺", hp: 13 },
+        { name: "Bear", icon: "🐻", hp: 20 },
+        { name: "Snake", icon: "🐍", hp: 10 },
+        { name: "Spider", icon: "🕷️", hp: 11 },
+        { name: "Boar", icon: "🐗", hp: 15 },
+        { name: "Mushroom Beast", icon: "🍄", hp: 12 },
+        { name: "Vine Monster", icon: "🌿", hp: 14 },
+        { name: "Forest Spirit", icon: "🧚", hp: 17 },
+        { name: "Scorpion", icon: "🦂", hp: 13 },
+        { name: "Eagle", icon: "🦅", hp: 12 }
+      ]
+    };
+
+    let selectedTheme = "minecraft";
+
+    const visualThemes = {
+      minecraft: {
+        pageBg: "#0f172a",
+        panelBg: "#1f2937",
+        panelBorder: "#4b5563",
+        floor: "#7c9f5b",
+        startFloor: "#4ade80",
+        bossFloor: "#7f1d1d",
+        wall: "#3f3f46",
+        door: "#8b5a2b",
+        accent: "#22c55e",
+        message: "#dcfce7"
+      },
+      halloween: {
+        pageBg: "#120617",
+        panelBg: "#241126",
+        panelBorder: "#5b315f",
+        floor: "#5b5563",
+        startFloor: "#7c3aed",
+        bossFloor: "#ea580c",
+        wall: "#050008",
+        door: "#f97316",
+        accent: "#fb923c",
+        message: "#fed7aa"
+      },
+      nature: {
+        pageBg: "#06130b",
+        panelBg: "#102316",
+        panelBorder: "#31573a",
+        floor: "#8f9f66",
+        startFloor: "#86efac",
+        bossFloor: "#92400e",
+        wall: "#2f1d0e",
+        door: "#78350f",
+        accent: "#65a30d",
+        message: "#ecfccb"
+      }
+    };
+
+    const startScreen = document.getElementById("startScreen");
+    const startButton = document.getElementById("startButton");
+    const floorSwatch = document.getElementById("floorSwatch");
+    const wallSwatch = document.getElementById("wallSwatch");
+    const doorSwatch = document.getElementById("doorSwatch");
+    const themeCards = document.querySelectorAll(".theme-card");
+    const grid = document.getElementById("grid");
+    const status = document.getElementById("status");
+    const message = document.getElementById("message");
+    const combatPanel = document.getElementById("combatPanel");
+    const emptyPanel = document.getElementById("emptyPanel");
+    const rewardPanel = document.getElementById("rewardPanel");
+    const rewardTitle = document.getElementById("rewardTitle");
+    const rewardDetails = document.getElementById("rewardDetails");
+    const xpBar = document.getElementById("xpBar");
+    const xpText = document.getElementById("xpText");
+    const levelUpBanner = document.getElementById("levelUpBanner");
+    const playerHpText = document.getElementById("playerHpText");
+    const enemyHpText = document.getElementById("enemyHpText");
+    const enemyLine = document.getElementById("enemyLine");
+    const problem = document.getElementById("problem");
+    const answerInput = document.getElementById("answerInput");
+    const submitAnswer = document.getElementById("submitAnswer");
+    const combatMessage = document.getElementById("combatMessage");
+    const damageText = document.getElementById("damageText");
+    const accuracyText = document.getElementById("accuracyText");
+    const winScreen = document.getElementById("winScreen");
+    const finalStats = document.getElementById("finalStats");
+
+    let map = [];
+    let rooms = [];
+    let player = { row: 0, col: 0 };
+    let currentRoom = null;
+    let currentEnemy = null;
+    let inCombat = false;
+    let waitingForNextLevel = false;
+    let gameWon = false;
+    let currentAnswer = 0;
+    let currentExpression = "";
+    let dungeonLevel = 1;
+    let operation = "addition";
+
+    let playerStats = {
+      level: 1,
+      xp: 0,
+      nextXp: 50,
+      hp: 45,
+      maxHp: 45,
+      baseDamage: 5,
+      totalCorrect: 0,
+      totalAnswered: 0
+    };
+
+    let combatStats = {
+      startingHp: 0,
+      correct: 0,
+      answered: 0,
+      isBoss: false
+    };
+
+    function randomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function makeCell(roomId = null) {
+      return {
+        roomId,
+        borders: { top: OPEN, right: OPEN, bottom: OPEN, left: OPEN }
+      };
+    }
+
+    function makeEmptyMap() {
+      return Array.from({ length: size }, () => Array.from({ length: size }, () => makeCell()));
+    }
+
+    function opposite(dir) {
+      return { top: "bottom", right: "left", bottom: "top", left: "right" }[dir];
+    }
+
+    function delta(dir) {
+      return {
+        top: { row: -1, col: 0 },
+        right: { row: 0, col: 1 },
+        bottom: { row: 1, col: 0 },
+        left: { row: 0, col: -1 }
+      }[dir];
+    }
+
+    function setBorder(row, col, dir, value) {
+      if (row < 0 || row >= size || col < 0 || col >= size) return;
+      map[row][col].borders[dir] = value;
+
+      const d = delta(dir);
+      const nr = row + d.row;
+      const nc = col + d.col;
+      if (nr >= 0 && nr < size && nc >= 0 && nc < size) {
+        map[nr][nc].borders[opposite(dir)] = value;
+      }
+    }
+
+    function addOuterWalls() {
+      for (let i = 0; i < size; i++) {
+        setBorder(0, i, "top", WALL);
+        setBorder(size - 1, i, "bottom", WALL);
+        setBorder(i, 0, "left", WALL);
+        setBorder(i, size - 1, "right", WALL);
+      }
+    }
+
+    function roomAt(row, col) {
+      const id = map[row][col].roomId;
+      return rooms.find(room => room.id === id) || null;
+    }
+
+    function centerOfRoom(room) {
+      let sumRow = 0;
+      let sumCol = 0;
+      for (const cell of room.cells) {
+        sumRow += cell.row;
+        sumCol += cell.col;
+      }
+      return {
+        row: Math.round(sumRow / room.cells.length),
+        col: Math.round(sumCol / room.cells.length)
+      };
+    }
+
+    function nearestRoomCell(room, target) {
+      return [...room.cells].sort((a, b) => {
+        const da = Math.abs(a.row - target.row) + Math.abs(a.col - target.col);
+        const db = Math.abs(b.row - target.row) + Math.abs(b.col - target.col);
+        return da - db;
+      })[0];
+    }
+
+    function chooseMonster(levelBoost) {
+      const themeMonsters = monsterThemes[selectedTheme];
+      const type = themeMonsters[randomInt(0, themeMonsters.length - 1)];
+      const hp = type.hp + levelBoost * 4 + randomInt(0, 4);
+      return {
+        name: type.name,
+        icon: type.icon,
+        hp,
+        maxHp: hp,
+        defeated: false
+      };
+    }
+
+    function createRoomSeeds(count) {
+      const seeds = [
+        { row: 0, col: 0 },
+        { row: size - 1, col: size - 1 }
+      ];
+
+      while (seeds.length < count) {
+        const seed = { row: randomInt(0, size - 1), col: randomInt(0, size - 1) };
+        const farEnough = seeds.every(s => Math.abs(s.row - seed.row) + Math.abs(s.col - seed.col) >= 2);
+        if (farEnough) seeds.push(seed);
+      }
+
+      return seeds;
+    }
+
+    function generateRoomRegions() {
+      const roomCount = randomInt(15, 20);
+      const seeds = createRoomSeeds(roomCount);
+
+      rooms = seeds.map((seed, id) => {
+        const kind = id === 0 ? "start" : id === 1 ? "boss" : "normal";
+        const bossHp = 42 + dungeonLevel * 9;
+        return {
+          id,
+          cells: [],
+          kind,
+          monster: kind === "start"
+            ? { name: "None", icon: "", hp: 0, maxHp: 0, defeated: true }
+            : kind === "boss"
+              ? { name: "Dragon", icon: "🐉", hp: bossHp, maxHp: bossHp, defeated: false }
+              : chooseMonster(dungeonLevel - 1)
+        };
+      });
+
+      const owner = Array.from({ length: size }, () => Array(size).fill(null));
+      const frontier = [];
+
+      seeds.forEach((seed, id) => {
+        owner[seed.row][seed.col] = id;
+        frontier.push({ ...seed, id });
+      });
+
+      while (frontier.length > 0) {
+        const index = randomInt(0, frontier.length - 1);
+        const cell = frontier.splice(index, 1)[0];
+        const dirs = shuffle(["top", "right", "bottom", "left"]);
+
+        for (const dir of dirs) {
+          const d = delta(dir);
+          const nr = cell.row + d.row;
+          const nc = cell.col + d.col;
+          if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue;
+          if (owner[nr][nc] !== null) continue;
+
+          owner[nr][nc] = cell.id;
+          frontier.push({ row: nr, col: nc, id: cell.id });
+        }
+      }
+
+      map = makeEmptyMap();
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          map[row][col].roomId = owner[row][col];
+          rooms[owner[row][col]].cells.push({ row, col });
+        }
+      }
+    }
+
+    function pairKey(edge) {
+      const a = Math.min(edge.a, edge.b);
+      const b = Math.max(edge.a, edge.b);
+      return `${a}-${b}`;
+    }
+
+    function findRoomAdjacencies() {
+      const byPair = new Map();
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          for (const dir of ["right", "bottom"]) {
+            const d = delta(dir);
+            const nr = row + d.row;
+            const nc = col + d.col;
+            if (nr >= size || nc >= size) continue;
+
+            const a = map[row][col].roomId;
+            const b = map[nr][nc].roomId;
+            if (a === b) continue;
+
+            const k = `${Math.min(a, b)}-${Math.max(a, b)}`;
+            if (!byPair.has(k)) byPair.set(k, { a: Math.min(a, b), b: Math.max(a, b), borders: [] });
+            byPair.get(k).borders.push({ row, col, dir });
+          }
+        }
+      }
+      return [...byPair.values()];
+    }
+
+    function makeRoomSpanningTree(edges) {
+      const connected = new Set([0]);
+      const chosen = [];
+
+      while (connected.size < rooms.length) {
+        const candidates = edges.filter(edge => connected.has(edge.a) !== connected.has(edge.b));
+        if (candidates.length === 0) break;
+        const edge = candidates[randomInt(0, candidates.length - 1)];
+        chosen.push(edge);
+        connected.add(edge.a);
+        connected.add(edge.b);
+      }
+
+      return chosen;
+    }
+
+    function placeSingleDoorBetweenRooms(roomA, roomB) {
+      const borders = [];
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          for (const dir of ["top", "right", "bottom", "left"]) {
+            const d = delta(dir);
+            const nr = row + d.row;
+            const nc = col + d.col;
+            if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue;
+            const a = map[row][col].roomId;
+            const b = map[nr][nc].roomId;
+            if ((a === roomA && b === roomB) || (a === roomB && b === roomA)) {
+              borders.push({ row, col, dir });
+            }
+          }
+        }
+      }
+
+      if (borders.length === 0) return;
+      const door = borders[randomInt(0, borders.length - 1)];
+      setBorder(door.row, door.col, door.dir, DOOR);
+    }
+
+    function buildWallsAndDoors() {
+      addOuterWalls();
+
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          for (const dir of ["right", "bottom"]) {
+            const d = delta(dir);
+            const nr = row + d.row;
+            const nc = col + d.col;
+            if (nr >= size || nc >= size) continue;
+            if (map[row][col].roomId !== map[nr][nc].roomId) {
+              setBorder(row, col, dir, WALL);
+            }
+          }
+        }
+      }
+
+      const adj = findRoomAdjacencies();
+      const treePairs = makeRoomSpanningTree(adj);
+      const allDoorPairs = new Set(treePairs.map(pairKey));
+
+      for (const edge of shuffle([...adj])) {
+        if (allDoorPairs.has(pairKey(edge))) continue;
+        if (Math.random() < 0.08) allDoorPairs.add(pairKey(edge));
+      }
+
+      for (const pair of allDoorPairs) {
+        const [a, b] = pair.split("-").map(Number);
+        placeSingleDoorBetweenRooms(a, b);
+      }
+    }
+
+    function canMoveFrom(row, col, dir) {
+      const d = delta(dir);
+      const nr = row + d.row;
+      const nc = col + d.col;
+      if (nr < 0 || nr >= size || nc < 0 || nc >= size) return false;
+      return map[row][col].borders[dir] !== WALL;
+    }
+
+    function allFloorCellsReachable() {
+      const start = { row: 0, col: 0 };
+      const seen = new Set([`${start.row},${start.col}`]);
+      const queue = [start];
+
+      while (queue.length > 0) {
+        const cell = queue.shift();
+        for (const dir of ["top", "right", "bottom", "left"]) {
+          if (!canMoveFrom(cell.row, cell.col, dir)) continue;
+          const d = delta(dir);
+          const next = { row: cell.row + d.row, col: cell.col + d.col };
+          const k = `${next.row},${next.col}`;
+          if (seen.has(k)) continue;
+          seen.add(k);
+          queue.push(next);
+        }
+      }
+
+      return seen.size === size * size;
+    }
+
+    function addInternalWalls() {
+      for (const room of rooms) {
+        const attempts = room.cells.length >= 8 ? 2 : 1;
+        for (let i = 0; i < attempts; i++) {
+          const cell = room.cells[randomInt(0, room.cells.length - 1)];
+          const dirs = shuffle(["top", "right", "bottom", "left"]);
+          for (const dir of dirs) {
+            const d = delta(dir);
+            const nr = cell.row + d.row;
+            const nc = cell.col + d.col;
+            if (nr < 0 || nr >= size || nc < 0 || nc >= size) continue;
+            if (map[nr][nc].roomId !== room.id) continue;
+
+            const old = map[cell.row][cell.col].borders[dir];
+            setBorder(cell.row, cell.col, dir, WALL);
+            if (allFloorCellsReachable()) break;
+            setBorder(cell.row, cell.col, dir, old);
+          }
+        }
+      }
+    }
+
+    function monsterPosition(room) {
+      if (room.kind === "boss") return nearestRoomCell(room, { row: size - 1, col: size - 1 });
+      return nearestRoomCell(room, centerOfRoom(room));
+    }
+
+    function generateDungeon() {
+      for (let tries = 0; tries < 50; tries++) {
+        generateRoomRegions();
+        buildWallsAndDoors();
+        addInternalWalls();
+
+        if (allFloorCellsReachable()) {
+          player = nearestRoomCell(rooms[0], { row: 0, col: 0 });
+          currentRoom = rooms[0];
+          return;
+        }
+      }
+    }
+
+    function getDamage() {
+      return playerStats.baseDamage + (playerStats.level - 1) * 2;
+    }
+
+    function getOperationForDungeonLevel() {
+      return dungeonLevel % 2 === 1 ? "addition" : "subtraction";
+    }
+
+    function applyVisualTheme() {
+      const theme = visualThemes[selectedTheme];
+      const root = document.documentElement;
+      root.style.setProperty("--page-bg", theme.pageBg);
+      root.style.setProperty("--panel-bg", theme.panelBg);
+      root.style.setProperty("--panel-border", theme.panelBorder);
+      root.style.setProperty("--floor", theme.floor);
+      root.style.setProperty("--start-floor", theme.startFloor);
+      root.style.setProperty("--boss-floor", theme.bossFloor);
+      root.style.setProperty("--wall", theme.wall);
+      root.style.setProperty("--door", theme.door);
+      root.style.setProperty("--accent", theme.accent);
+      root.style.setProperty("--message", theme.message);
+
+      if (floorSwatch) floorSwatch.style.background = theme.floor;
+      if (wallSwatch) wallSwatch.style.background = theme.wall;
+      if (doorSwatch) doorSwatch.style.background = theme.door;
+    }
+
+    function getThemeLabel() {
+      return selectedTheme.charAt(0).toUpperCase() + selectedTheme.slice(1);
+    }
+
+    function drawStatus() {
+      const totalAccuracy = playerStats.totalAnswered === 0
+        ? 100
+        : Math.round((playerStats.totalCorrect / playerStats.totalAnswered) * 100);
+
+      status.innerHTML = `${getThemeLabel()} Theme | Dungeon Level ${dungeonLevel}/${maxDungeonLevel}: ${operation} | Hero Level ${playerStats.level} | XP ${playerStats.xp}/${playerStats.nextXp} | Damage ${getDamage()} | Accuracy ${totalAccuracy}%`;
+    }
+
+    function drawGrid() {
+      grid.innerHTML = "";
+      drawStatus();
+
+      for (let row = 0; row < size; row++) {
+        for (let col = 0; col < size; col++) {
+          const data = map[row][col];
+          const room = roomAt(row, col);
+          const cell = document.createElement("div");
+          cell.classList.add("cell");
+
+          if (room.kind === "start") cell.classList.add("start-room");
+          if (room.kind === "boss") cell.classList.add("boss-room");
+
+          for (const dir of ["top", "right", "bottom", "left"]) {
+            const border = data.borders[dir];
+            if (border === WALL) cell.classList.add(`wall-${dir}`);
+            if (border === DOOR) cell.classList.add(`door-${dir}`);
+          }
+
+          if (room && !room.monster.defeated) {
+            const pos = monsterPosition(room);
+            if (row === pos.row && col === pos.col) {
+              if (room.kind === "boss") {
+                cell.classList.add("dragon");
+              } else {
+                cell.classList.add("monster");
+                cell.dataset.icon = room.monster.icon;
+              }
+            }
+          }
+
+          if (player.row === row && player.col === col) cell.classList.add("player");
+          grid.appendChild(cell);
+        }
+      }
+    }
+
+    function showIdlePanel() {
+      emptyPanel.style.display = "block";
+      combatPanel.style.display = "none";
+    }
+
+    function hideIdlePanel() {
+      emptyPanel.style.display = "none";
+    }
+
+    function movePlayer(deltaRow, deltaCol, dir) {
+      if (gameWon) return;
+
+      if (waitingForNextLevel) {
+        message.textContent = "Press Enter for next level.";
+        return;
+      }
+
+      if (inCombat) {
+        message.textContent = "Defeat the enemy before moving again!";
+        return;
+      }
+
+      if (!canMoveFrom(player.row, player.col, dir)) {
+        message.textContent = "A wall blocks your way. Look for a door.";
+        return;
+      }
+
+      player = { row: player.row + deltaRow, col: player.col + deltaCol };
+      message.textContent = "";
+
+      const enteredRoom = roomAt(player.row, player.col);
+      if (enteredRoom && enteredRoom !== currentRoom) {
+        currentRoom = enteredRoom;
+        if (!enteredRoom.monster.defeated) startCombat(enteredRoom);
+      } else if (enteredRoom && !enteredRoom.monster.defeated && enteredRoom.kind !== "start") {
+        startCombat(enteredRoom);
+      }
+
+      drawGrid();
+    }
+
+    function startCombat(room) {
+      currentEnemy = room.monster;
+      combatStats = {
+        startingHp: currentEnemy.maxHp,
+        correct: 0,
+        answered: 0,
+        isBoss: room.kind === "boss"
+      };
+
+      hideIdlePanel();
+      rewardPanel.style.display = "none";
+      levelUpBanner.style.display = "none";
+      inCombat = true;
+      combatPanel.style.display = "block";
+      enemyLine.textContent = `${currentEnemy.icon} ${currentEnemy.name}`;
+      message.textContent = `${currentEnemy.name} attacks! Combat takes place in the whole room.`;
+      combatMessage.innerHTML = "";
+      updateCombatText();
+      generateProblem(combatStats.isBoss);
+      answerInput.focus();
+    }
+
+    function updateCombatText() {
+      playerHpText.textContent = playerStats.hp;
+      enemyHpText.textContent = currentEnemy ? currentEnemy.hp : "-";
+      damageText.textContent = getDamage();
+      const accuracy = combatStats.answered === 0
+        ? 100
+        : Math.round((combatStats.correct / combatStats.answered) * 100);
+      accuracyText.textContent = `${accuracy}%`;
+      drawStatus();
+    }
+
+    function generateProblem(isBoss = false) {
+      let a;
+      let b;
+      const hardness = dungeonLevel - 1;
+
+      if (operation === "addition") {
+        const max = isBoss ? 18 + hardness * 8 : 9 + hardness * 4;
+        a = randomInt(0, max);
+        b = randomInt(0, max);
+        currentAnswer = a + b;
+        currentExpression = `${a} + ${b}`;
+        problem.textContent = `${currentExpression} = ?`;
+      } else {
+        const max = isBoss ? 24 + hardness * 8 : 12 + hardness * 4;
+        a = randomInt(0, max);
+        b = randomInt(0, a);
+        currentAnswer = a - b;
+        currentExpression = `${a} - ${b}`;
+        problem.textContent = `${currentExpression} = ?`;
+      }
+
+      answerInput.value = "";
+    }
+
+    function appendBattleLog(type, text) {
+      const line = document.createElement("div");
+      line.classList.add("battle-log-line");
+      line.classList.add(type === "success" ? "battle-log-success" : "battle-log-fail");
+      line.textContent = text;
+      combatMessage.appendChild(line);
+      combatMessage.scrollTop = combatMessage.scrollHeight;
+    }
+
+    function gainXp(enemy) {
+      const percentage = combatStats.answered === 0 ? 1 : combatStats.correct / combatStats.answered;
+      const xp = Math.ceil(enemy.maxHp * percentage);
+      const beforeLevel = playerStats.level;
+      const beforeXp = playerStats.xp;
+      const beforeNextXp = playerStats.nextXp;
+
+      playerStats.xp += xp;
+
+      let levelUps = 0;
+      while (playerStats.xp >= playerStats.nextXp) {
+        playerStats.xp -= playerStats.nextXp;
+        playerStats.level++;
+        levelUps++;
+        playerStats.nextXp = Math.ceil(playerStats.nextXp * 1.35);
+        playerStats.maxHp += 8;
+        playerStats.hp = Math.min(playerStats.maxHp, playerStats.hp + 12);
+      }
+
+      return {
+        xp,
+        hitPercent: Math.round(percentage * 100),
+        levelUps,
+        beforeLevel,
+        beforeXp,
+        beforeNextXp,
+        afterXp: playerStats.xp,
+        afterNextXp: playerStats.nextXp
+      };
+    }
+
+    function showReward(enemy, rewards) {
+      hideIdlePanel();
+      combatPanel.style.display = "none";
+      rewardPanel.style.display = "block";
+
+      rewardTitle.textContent = `You have defeated the ${enemy.name}.`;
+      rewardDetails.textContent = `${rewards.hitPercent}% hit. You gained ${rewards.xp} XP.`;
+
+      const startPercent = Math.min(100, Math.round((rewards.beforeXp / rewards.beforeNextXp) * 100));
+      const endPercent = Math.min(100, Math.round((rewards.afterXp / rewards.afterNextXp) * 100));
+      xpBar.style.transition = "none";
+      xpBar.style.width = `${startPercent}%`;
+      xpText.textContent = `XP ${rewards.beforeXp}/${rewards.beforeNextXp}`;
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          xpBar.style.transition = "width 0.8s ease-out";
+          xpBar.style.width = `${endPercent}%`;
+          xpText.textContent = `XP ${rewards.afterXp}/${rewards.afterNextXp}`;
+        });
+      });
+
+      if (rewards.levelUps > 0) {
+        levelUpBanner.style.display = "block";
+        levelUpBanner.textContent = `LEVEL UP! Hero Level ${playerStats.level} — Damage is now ${getDamage()}!`;
+      } else {
+        levelUpBanner.style.display = "none";
+      }
+    }
+
+    function submitCombatAnswer() {
+      if (!inCombat || !currentEnemy) return;
+
+      const userAnswer = Number(answerInput.value);
+      if (answerInput.value.trim() === "") {
+        appendBattleLog("fail", "Enter an answer first.");
+        return;
+      }
+
+      combatStats.answered++;
+      playerStats.totalAnswered++;
+
+      if (userAnswer === currentAnswer) {
+        combatStats.correct++;
+        playerStats.totalCorrect++;
+        currentEnemy.hp -= getDamage();
+        appendBattleLog("success", `Correct. ${currentExpression} = ${currentAnswer}. Monster loses ${getDamage()} HP.`);
+      } else {
+        const hurt = combatStats.isBoss ? 8 + dungeonLevel : 5 + Math.floor(dungeonLevel / 2);
+        playerStats.hp -= hurt;
+        appendBattleLog("fail", `Wrong. ${currentExpression} = ${currentAnswer}. You lose ${hurt} HP.`);
+      }
+
+      if (currentEnemy.hp <= 0) {
+        currentEnemy.hp = 0;
+        currentEnemy.defeated = true;
+        const defeatedEnemy = currentEnemy;
+        const wasBoss = combatStats.isBoss;
+        const rewards = gainXp(defeatedEnemy);
+        updateCombatText();
+
+        combatMessage.innerHTML = "";
+        showReward(defeatedEnemy, rewards);
+
+        if (wasBoss) {
+          if (dungeonLevel >= maxDungeonLevel) {
+            setTimeout(winGame, 950);
+            return;
+          }
+          message.textContent = "Press Enter for next level.";
+          waitingForNextLevel = true;
+        } else {
+          message.textContent = "Room cleared. Keep exploring.";
+        }
+
+        inCombat = false;
+        currentEnemy = null;
+        drawGrid();
+        return;
+      }
+
+      if (playerStats.hp <= 0) {
+        playerStats.hp = 0;
+        updateCombatText();
+        combatMessage.innerHTML = "";
+        appendBattleLog("fail", `${currentEnemy.name} defeated you!`);
+        message.textContent = "Game over. Generate a new dungeon to try again.";
+        inCombat = false;
+        currentEnemy = null;
+        showIdlePanel();
+        drawGrid();
+        return;
+      }
+
+      updateCombatText();
+      generateProblem(combatStats.isBoss);
+      answerInput.focus();
+    }
+
+    function nextLevel() {
+      dungeonLevel++;
+      operation = getOperationForDungeonLevel();
+      waitingForNextLevel = false;
+      rewardPanel.style.display = "none";
+      levelUpBanner.style.display = "none";
+      generateDungeon();
+      inCombat = false;
+      currentEnemy = null;
+      playerStats.hp = Math.min(playerStats.hp + 18, playerStats.maxHp);
+      message.textContent = `Level ${dungeonLevel} begins: ${operation}.`;
+      combatMessage.innerHTML = "";
+      showIdlePanel();
+      drawGrid();
+    }
+
+    function winGame() {
+      const totalAccuracy = playerStats.totalAnswered === 0
+        ? 100
+        : Math.round((playerStats.totalCorrect / playerStats.totalAnswered) * 100);
+
+      gameWon = true;
+      inCombat = false;
+      waitingForNextLevel = false;
+      currentEnemy = null;
+      combatPanel.style.display = "none";
+      emptyPanel.style.display = "none";
+      rewardPanel.style.display = "none";
+      levelUpBanner.style.display = "none";
+      winScreen.style.display = "block";
+      message.textContent = "You cleared the final dungeon!";
+      finalStats.textContent = `Hero Level ${playerStats.level} | XP ${playerStats.xp}/${playerStats.nextXp} | Final Accuracy ${totalAccuracy}% | Damage ${getDamage()}`;
+      drawGrid();
+    }
+
+    document.addEventListener("keydown", (event) => {
+      const keyPressed = event.key.toLowerCase();
+
+      if (waitingForNextLevel && event.key === "Enter") {
+        nextLevel();
+        return;
+      }
+
+      if (inCombat && event.key === "Enter") {
+        submitCombatAnswer();
+        return;
+      }
+
+      if (["w", "a", "s", "d"].includes(keyPressed)) event.preventDefault();
+
+      if (keyPressed === "w") movePlayer(-1, 0, "top");
+      if (keyPressed === "s") movePlayer(1, 0, "bottom");
+      if (keyPressed === "a") movePlayer(0, -1, "left");
+      if (keyPressed === "d") movePlayer(0, 1, "right");
+    });
+
+    submitAnswer.addEventListener("click", submitCombatAnswer);
+
+    themeCards.forEach(card => {
+      card.addEventListener("click", () => {
+        themeCards.forEach(other => other.classList.remove("selected"));
+        card.classList.add("selected");
+        selectedTheme = card.dataset.theme;
+        applyVisualTheme();
+      });
+    });
+
+    startButton.addEventListener("click", () => {
+      startScreen.style.display = "none";
+      applyVisualTheme();
+      newGame();
+    });
+
+    function newGame() {
+      applyVisualTheme();
+      dungeonLevel = 1;
+      operation = getOperationForDungeonLevel();
+      waitingForNextLevel = false;
+      gameWon = false;
+      inCombat = false;
+      currentEnemy = null;
+      playerStats = {
+        level: 1,
+        xp: 0,
+        nextXp: 50,
+        hp: 45,
+        maxHp: 45,
+        baseDamage: 5,
+        totalCorrect: 0,
+        totalAnswered: 0
+      };
+      generateDungeon();
+      message.textContent = "";
+      combatMessage.innerHTML = "";
+      rewardPanel.style.display = "none";
+      levelUpBanner.style.display = "none";
+      winScreen.style.display = "none";
+      showIdlePanel();
+      updateCombatText();
+      drawGrid();
+    }
+
+    applyVisualTheme();
+    // Start screen controls the first call to newGame().
+  </script>
+</body>
+</html>
