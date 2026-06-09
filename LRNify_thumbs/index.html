@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LRNify — Lær gjennom lek</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fff9f0;
+    --ink:#2b2118;
+    --yellow:#facc15;
+    --card:#ffffff;
+    --muted:#7a6f63;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    min-height:100%;
+    -webkit-tap-highlight-color:transparent;
+  }
+
+  /* ===== HEADER ===== */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 24px;
+    position:relative;
+  }
+  .logo{
+    font-family:'Chewy',cursive;
+    font-size:clamp(2rem,6vw,3rem);
+    transform:rotate(-2deg);
+    line-height:1;
+    user-select:none;
+  }
+  .logo b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400;}
+
+  /* hamburger */
+  .menu-btn{
+    width:54px;height:54px;
+    background:var(--yellow);
+    border:4px solid var(--ink);
+    box-shadow:0 6px 0 var(--ink);
+    cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+    transform:rotate(2deg);
+  }
+  .menu-btn:active{transform:rotate(2deg) translateY(4px);box-shadow:0 2px 0 var(--ink);}
+  .menu-btn span{display:block;width:26px;height:4px;background:var(--ink);border-radius:2px;}
+
+  /* drawer (voksent innhold gjemt her) */
+  .drawer{
+    position:fixed;top:0;right:0;height:100%;width:min(320px,82vw);
+    background:var(--card);
+    border-left:4px solid var(--ink);
+    box-shadow:-8px 0 0 rgba(43,33,24,.12);
+    transform:translateX(100%);
+    transition:transform .28s ease;
+    z-index:50;
+    padding:24px;
+    display:flex;flex-direction:column;gap:6px;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer h2{font-family:'Chewy',cursive;font-size:1.6rem;margin-bottom:12px;}
+  .drawer a{
+    display:block;text-decoration:none;color:var(--ink);
+    font-weight:800;font-size:1.05rem;
+    padding:12px 14px;border:3px solid var(--ink);
+    background:var(--cream);margin-bottom:4px;
+    transition:background .15s;
+  }
+  .drawer a:hover,.drawer a:focus-visible{background:var(--yellow);outline:none;}
+  .drawer .login{background:var(--yellow);}
+  .drawer-close{
+    align-self:flex-end;background:none;border:none;cursor:pointer;
+    font-family:'Chewy',cursive;font-size:1.8rem;color:var(--muted);
+    margin-bottom:4px;line-height:1;
+  }
+  .scrim{
+    position:fixed;inset:0;background:rgba(43,33,24,.4);
+    opacity:0;pointer-events:none;transition:opacity .28s;z-index:40;
+  }
+  .scrim.open{opacity:1;pointer-events:auto;}
+
+  /* ===== HERO ===== */
+  .hero{text-align:center;padding:8px 24px 28px;}
+  .hero h1{
+    font-family:'Cormorant Garamond',serif;
+    font-style:italic;font-weight:600;
+    font-size:clamp(1.3rem,4vw,2rem);
+    color:var(--ink);
+  }
+
+  /* ===== GRID ===== */
+  main{padding:0 20px 60px;max-width:1100px;margin:0 auto;}
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
+    gap:22px;
+  }
+  .card{
+    background:var(--card);
+    border:4px solid var(--ink);
+    box-shadow:0 8px 0 var(--ink);
+    text-decoration:none;color:var(--ink);
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    transition:transform .12s ease,box-shadow .12s ease;
+    min-height:230px;
+  }
+  .card:hover,.card:focus-visible{
+    transform:translateY(-4px) rotate(0deg);
+    box-shadow:0 12px 0 var(--ink);
+    outline:none;
+  }
+  .card:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink);}
+  .card .art{
+    position:relative;
+    aspect-ratio:1/1;
+    border-bottom:4px solid var(--ink);
+    overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+    background:var(--cream);
+  }
+  .card .art img{
+    position:absolute;inset:0;
+    width:100%;height:100%;
+    object-fit:cover;
+    display:block;
+  }
+  .card .art .icon-fallback{
+    display:flex;align-items:center;justify-content:center;
+    padding:26px;
+  }
+  .card .art .icon-fallback svg{width:72px;height:72px;}
+  .card .label{
+    padding:14px 16px;
+    background:var(--card);
+  }
+  .card .label .title{font-family:'Chewy',cursive;font-size:1.3rem;line-height:1.1;}
+  .card .label .tag{font-weight:800;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:4px;}
+
+  /* låst-tilstand (klar for Fase 2 — ikke aktiv ennå) */
+  .card[data-locked="true"]{opacity:.85;}
+  .card .lock{
+    position:absolute;top:10px;right:10px;
+    background:var(--yellow);border:3px solid var(--ink);
+    width:34px;height:34px;display:none;align-items:center;justify-content:center;
+  }
+  .card[data-locked="true"] .lock{display:flex;}
+  .card{position:relative;}
+
+  footer{
+    text-align:center;padding:24px;color:var(--muted);
+    font-weight:700;font-size:.85rem;
+    border-top:3px solid rgba(43,33,24,.12);
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">LRN<b>ify</b></div>
+    <button class="menu-btn" id="menuBtn" aria-label="Åpne meny" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- Voksent innhold gjemt bak meny -->
+  <div class="scrim" id="scrim"></div>
+  <nav class="drawer" id="drawer" aria-label="Hovedmeny">
+    <button class="drawer-close" id="drawerClose" aria-label="Lukk meny">✕</button>
+    <h2>Meny</h2>
+    <a href="#om">Om LRNify</a>
+    <a href="#laereplan">Læreplan (LK20)</a>
+    <a href="#skoler">For skoler</a>
+    <a href="#kontakt">Kontakt</a>
+    <!-- Aktiveres i Fase 2 (innlogging): -->
+    <!-- <a class="login" href="#logginn">Logg inn</a> -->
+  </nav>
+
+  <section class="hero">
+    <h1>Velg et spill og hopp inn</h1>
+  </section>
+
+  <main>
+    <div class="grid" id="grid" role="list" aria-label="Spill"></div>
+  </main>
+
+  <footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+/* =========================================================
+   SPILLDATA — eneste sted du redigerer for å legge til spill.
+   ENDRE "file" til det EKSAKTE filnavnet i games/-mappen.
+   "category" brukes ikke til filtrering ennå (klar for seinere).
+   "locked" styrer betalingsmur (Fase 2) — la stå false nå.
+   ========================================================= */
+const GAMES = [
+  { title:"Operasjon Frihet",  file:"operasjon-frihet.html",   category:"Historie",     icon:"shield",  color:"#d97706", locked:false },
+  { title:"Hitleroppskytning", file:"hitleroppskytning.html",  category:"Historie",     icon:"rocket",  color:"#b91c1c", locked:false },
+  { title:"WW2 – Klatringen",  file:"ww2-klatringen.html",     category:"Historie",     icon:"mountain",color:"#0f766e", locked:false },
+  { title:"The Stand",         file:"the-stand.html",          category:"Engelsk",      icon:"magnify", color:"#7c3aed", locked:false },
+  { title:"Wizard Launcher",   file:"wizard-launcher.html",    category:"Engelsk",      icon:"wizard",  color:"#6d28d9", locked:false },
+  { title:"Brøkstigen",        file:"brokstigen.html",         category:"Matematikk",   icon:"ladder",  color:"#2563eb", locked:false },
+  { title:"Fotball VM",        file:"fotball-vm.html",         category:"Geografi",     icon:"football",color:"#16a34a", locked:false },
+  { title:"Marmelade Lane",    file:"marmelade-lane.html",     category:"Engelsk",      icon:"house",   color:"#c026d3", locked:false },
+  { title:"Balloon Words",     file:"balloon-words.html",      category:"Engelsk",      icon:"balloon", color:"#0891b2", locked:false },
+];
+
+/* enkle, selvinneholdte SVG-ikoner (game-icons.net-stil) */
+const ICONS = {
+  shield:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 9 8 11 4.5-2 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg>',
+  rocket:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2 0-2.8a2 2 0 0 0-3 0z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.9A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.7-6 11a22.4 22.4 0 0 1-4 2z"/><path d="M9 12H4s.6-3.3 2-4c1.6-.8 5 0 5 0"/><path d="M12 15v5s3.3-.6 4-2c.8-1.6 0-5 0-5"/></svg>',
+  mountain:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m8 3 4 8 5-5 5 15H2z"/></svg>',
+  magnify:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>',
+  wizard:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 3 9H9z"/><path d="M6 11h12l2 8H4z"/><path d="M2 22h20"/></svg>',
+  ladder:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v20M17 2v20M7 7h10M7 12h10M7 17h10"/></svg>',
+  football:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m12 7 4 3-1.5 5h-5L8 10z"/></svg>',
+  house:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21v-6h6v6"/></svg>',
+  balloon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 1 6 6c0 4-3 7-6 8-3-1-6-4-6-8a6 6 0 0 1 6-6z"/><path d="M12 17v2l-1.5 2h3L12 19"/></svg>',
+};
+
+const lockSvg = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2b2118" stroke-width="2.5"><rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+
+const grid = document.getElementById('grid');
+GAMES.forEach((g,i)=>{
+  const a = document.createElement('a');
+  a.className = 'card';
+  a.href = g.locked ? '#' : ('games/' + g.file);
+  a.setAttribute('role','listitem');
+  a.setAttribute('aria-label', g.title + (g.locked ? ' (låst)' : '') );
+  a.dataset.locked = g.locked;
+  a.dataset.category = g.category;
+  a.style.transform = 'rotate(' + ((i % 2 === 0) ? -1 : 1) + 'deg)';
+  const imgPath = 'media/cards/' + g.file.replace(/\.html$/,'') + '.png';
+  a.innerHTML =
+    '<div class="lock" aria-hidden="true">'+lockSvg+'</div>' +
+    '<div class="art" style="color:'+g.color+'">' +
+      '<img src="'+imgPath+'" alt="" loading="lazy" ' +
+        'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
+      '<span class="icon-fallback" style="display:none">'+ (ICONS[g.icon]||ICONS.shield) +'</span>' +
+    '</div>' +
+    '<div class="label"><div class="title">'+g.title+'</div><div class="tag">'+g.category+'</div></div>';
+  grid.appendChild(a);
+});
+
+/* meny */
+const menuBtn=document.getElementById('menuBtn');
+const drawer=document.getElementById('drawer');
+const scrim=document.getElementById('scrim');
+const drawerClose=document.getElementById('drawerClose');
+function openMenu(){drawer.classList.add('open');scrim.classList.add('open');menuBtn.setAttribute('aria-expanded','true');}
+function closeMenu(){drawer.classList.remove('open');scrim.classList.remove('open');menuBtn.setAttribute('aria-expanded','false');}
+menuBtn.addEventListener('click',openMenu);
+drawerClose.addEventListener('click',closeMenu);
+scrim.addEventListener('click',closeMenu);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+</script>
+</body>
+</html>
