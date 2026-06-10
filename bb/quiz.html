@@ -127,6 +127,43 @@
       color: rgba(255, 255, 255, 0.92);
     }
 
+    .promo-section {
+      margin: 24px 0;
+      padding: 20px 22px;
+      border-left: 8px solid var(--bfk-orange);
+      background: rgba(240, 120, 34, 0.15);
+      box-shadow: 0 18px 45px rgba(28, 6, 39, 0.24);
+      border-radius: 24px;
+      backdrop-filter: blur(4px);
+    }
+
+    .promo-section a {
+      display: inline-block;
+      color: var(--bfk-gold);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: clamp(1rem, 2vw, 1.1rem);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .promo-section a::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--bfk-gold);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s ease;
+    }
+
+    .promo-section a:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
 
     .form-shell {
       padding: 12px;
@@ -211,6 +248,10 @@
         padding: 18px;
       }
 
+      .promo-section {
+        padding: 18px;
+      }
+
       .form-shell {
         padding: 8px;
         border-radius: 22px;
@@ -244,9 +285,13 @@
       </section>
     </header>
 
+    <section class="promo-section">
+      <p>Mens du venter på VM, kan du prøve badebyens egen <a href="takling.html">Martin Moen-Simulator</a></p>
+    </section>
+
     <section class="form-shell" aria-label="Innsendingsskjema">
       <div class="form-card">
-        <iframe width="640px" height="480px" src="https://forms.office.com/Pages/ResponsePage.aspx?id=dvos3GS-00G5w66Zda2TZA5Ue_xDGfNKlia1i5uJwKFUOTlDQllEODVROEE5NVJBOU00V1RCRTJDUi4u&amp;embed=true" frameborder="0" marginwidth="0" marginheight="0" style="border: none; max-width:100%; max-height:100vh" allowfullscreen webkitallowfullscreen mozallowfullscreen msallowfullscreen> </iframe>
+        <iframe width="640px" height="480px" src="https://forms.office.com/Pages/ResponsePage.aspx?id=dvos3GS-00G5w66Zda2TZA5Ue_xDGfNKlia1i5uJwKFUOTlDQllEODVROEE5NVJBOU00V1RCRTJDUi4u&amp;embed=true" frameborder="0" marginwidth="0" marginheight="0" style="border: none; max-width:100%" allowFullScreen webkitAllowFullScreen mozAllowFullScreen msAllowFullScreen> </iframe>
       </div>
     </section>
 
