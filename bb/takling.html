@@ -44,6 +44,22 @@
   #hud .title-hud { font-size:clamp(9px,1.8vw,14px); color:var(--bfk-gold); letter-spacing:2px; }
   #hud .pts-val   { color:var(--bfk-gold); }
 
+  #btn-back {
+    background:var(--bfk-gold); color:var(--bfk-purple-dark);
+    border:2px solid var(--bfk-purple);
+    font-family:'Press Start 2P',monospace;
+    font-size:clamp(8px,1.5vw,12px);
+    padding:clamp(6px,1.2vh,10px) clamp(8px,2vw,14px);
+    cursor:pointer;
+    letter-spacing:0.5px;
+    text-decoration:none;
+    display:inline-block;
+    border-radius:3px;
+    transition:background 0.2s;
+  }
+  #btn-back:hover { background:var(--bfk-gold-dark); }
+  #btn-back:active { transform:scale(0.95); }
+
   /* ── Canvas area ── */
   #canvas-wrap { flex:1; position:relative; overflow:hidden; min-height:0; background:var(--bfk-bg); }
   canvas { display:block; position:absolute; cursor:none; }
@@ -138,6 +154,7 @@
 <body>
 <div id="game-wrapper">
   <div id="hud">
+    <a href="../index.html" id="btn-back">← TILBAKE</a>
     <div class="hud-block">POENG<br><span class="hud-val pts-val" id="hud-pts">0</span></div>
     <div class="hud-block title-hud">KONGEN AV<br>SKLITAKLINGER</div>
     <div class="hud-block">TID<br><span class="hud-val" id="hud-time">30</span></div>
@@ -230,7 +247,7 @@ const cy  = y => OY + y;
 const clampX = x => Math.max(20*SP, Math.min(PW-20*SP, x));
 const clampY = y => Math.max(20*SP, Math.min(PH-20*SP, y));
 
-// ─── AUDIO ────────────────────────────────────────────────────────────────────
+// ─── AUDIO ──────────────────────────────────────────────────────────────
 const AC = new (window.AudioContext||window.webkitAudioContext)();
 function beep(freq,type,dur,vol=0.3,delay=0) {
   try {
@@ -249,7 +266,7 @@ function playRefWhistle() {
   beep(1600,'sine',0.08,0.5); beep(1600,'sine',0.08,0.5,0.10); beep(1600,'sine',0.12,0.5,0.20);
 }
 
-// ─── CONTENT ──────────────────────────────────────────────────────────────────
+// ─── CONTENT ───────────────────────────────────────────────────────────
 const TACKLE_MSGS = [
   "Gratis øl på Handelshuset!",
   "Jeg tar nesten bare ballen!",
@@ -299,7 +316,7 @@ const VERDICTS = [
   { min:130,  max:999, title:'VINNIE JONES',    text:'FIFA endrer reglene på grunn av DEG.' }
 ];
 
-// ─── SPAWN ────────────────────────────────────────────────────────────────────
+// ─── SPAWN ────────────────────────────────────────────────────────────
 function countActive(tierId) {
   return state.opponents.filter(o=>!o.knocked&&o.spawning<=0&&o.tier.id===tierId).length;
 }
@@ -342,7 +359,7 @@ function spawnReferee() {
   };
 }
 
-// ─── STATE ────────────────────────────────────────────────────────────────────
+// ─── STATE ────────────────────────────────────────────────────────────
 let state, keys={}, spaceWasUp=true;
 
 function initState() {
@@ -372,7 +389,7 @@ function reset() {
   updateHUD();
 }
 
-// ─── DRAW GRASS ───────────────────────────────────────────────────────────────
+// ─── DRAW GRASS ─────────────────────────────────────────────────────────
 function drawGrass() {
   ctx.fillStyle='#1a0a2e'; ctx.fillRect(0,0,CW,CH);
   ctx.fillStyle='#1a5c1a'; ctx.fillRect(OX,OY,PW,PH);
@@ -388,7 +405,7 @@ function drawGrass() {
   ctx.strokeRect(OX+PW-10*SP-paW,OY+PH/2-paH/2,paW,paH);
 }
 
-// ─── DRAW PLAYER ─────────────────────────────────────────────────────────────
+// ─── DRAW PLAYER ────────────────────────────────────────────────────────
 function drawPlayer(p) {
   const s=SP;
   const x=Math.round(cx(p.x)), y=Math.round(cy(p.y));
@@ -427,7 +444,7 @@ function drawPlayer(p) {
   ctx.restore();
 }
 
-// ─── DRAW OPPONENT ────────────────────────────────────────────────────────────
+// ─── DRAW OPPONENT ────────────────────────────────────────────────────────
 function drawOpponent(op) {
   if(op.spawning>0) return;
   const s=SP, x=Math.round(cx(op.x)), y=Math.round(cy(op.y)), t=op.tier;
@@ -470,7 +487,7 @@ function drawOpponent(op) {
   }
 }
 
-// ─── DRAW REFEREE ─────────────────────────────────────────────────────────────
+// ─── DRAW REFEREE ────────────────────────────────────────────────────────
 function drawReferee(ref) {
   if(!ref||ref.spawning>0) return;
   const s=SP, x=Math.round(cx(ref.x)), y=Math.round(cy(ref.y));
@@ -525,7 +542,7 @@ function drawReferee(ref) {
   ctx.restore();
 }
 
-// ─── DRAW EFFECTS ─────────────────────────────────────────────────────────────
+// ─── DRAW EFFECTS ────────────────────────────────────────────────────────
 function drawEffect(e) {
   ctx.save();
   const a=e.life/e.maxLife; ctx.globalAlpha=a;
@@ -547,7 +564,7 @@ function drawEffect(e) {
   ctx.restore();
 }
 
-// ─── GAME LOGIC ───────────────────────────────────────────────────────────────
+// ─── GAME LOGIC ─────────────────────────────────────────────────────────
 const BASE_SPEED=3.5, BASE_SLIDE=8, SLIDE_DUR=16, SLIDE_COOLDOWN=32;
 
 function updatePlayer() {
@@ -740,7 +757,7 @@ function updateHUD() {
   document.getElementById('hud-time').textContent = Math.max(0,state.time);
 }
 
-// ─── RENDER ───────────────────────────────────────────────────────────────────
+// ─── RENDER ──────────────────────────────────────────────────────────
 function render() {
   drawGrass();
 
@@ -771,7 +788,7 @@ function render() {
   }
 }
 
-// ─── LOOP ─────────────────────────────────────────────────────────────────────
+// ─── LOOP ───────────────────────────────────────────────────────────
 let lastTime=0;
 function loop(ts){
   if(!state.running) return;
@@ -781,7 +798,7 @@ function loop(ts){
   requestAnimationFrame(loop);
 }
 
-// ─── END GAME ─────────────────────────────────────────────────────────────────
+// ─── END GAME ─────────────────────────────────────────────────────────
 function endGame(){
   state.running=false;
   playWhistle(); setTimeout(playWhistle,220);
@@ -797,7 +814,7 @@ function endGame(){
   document.getElementById('screen-over').classList.remove('hidden');
 }
 
-// ─── CONTROLS ─────────────────────────────────────────────────────────────────
+// ─── CONTROLS ─────────────────────────────────────────────────────────
 document.addEventListener('keydown',e=>{
   keys[e.key]=true;
   if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
@@ -816,7 +833,7 @@ const tackleBtn=document.getElementById('btn-tackle-touch');
 tackleBtn.addEventListener('touchstart',e=>{keys[' ']=true;spaceWasUp=true;e.stopPropagation();e.preventDefault();},{passive:false});
 tackleBtn.addEventListener('touchend',  e=>{keys[' ']=false;e.stopPropagation();},{passive:true});
 
-// ─── BUTTONS ──────────────────────────────────────────────────────────────────
+// ─── BUTTONS ──────────────────────────────────────────────────────────
 document.getElementById('btn-start').addEventListener('click',()=>{
   AC.resume();
   document.getElementById('screen-start').classList.add('hidden');
