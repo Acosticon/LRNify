@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KONGEN AV SKLITAKLINGER</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; image-rendering:pixelated; }
+
+  :root {
+    --bfk-purple: #5a189a;
+    --bfk-purple-dark: #3a0d6e;
+    --bfk-purple-mid:  #6d28a8;
+    --bfk-gold:   #f5c400;
+    --bfk-gold-dark: #c49a00;
+    --bfk-bg:     #1a0a2e;
+  }
+
+  html, body {
+    background: var(--bfk-bg);
+    width:100%; height:100%;
+    overflow:hidden; touch-action:none;
+    font-family:'Press Start 2P', monospace, sans-serif;
+  }
+
+  body::after {
+    content:''; position:fixed; inset:0;
+    background:repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(0,0,0,0.10) 2px, rgba(0,0,0,0.10) 4px);
+    pointer-events:none; z-index:999;
+  }
+
+  #game-wrapper { position:fixed; inset:0; display:flex; flex-direction:column; align-items:stretch; }
+
+  /* ── HUD ── */
+  #hud {
+    flex-shrink:0; display:flex; justify-content:space-between; align-items:center;
+    padding:clamp(8px,2vh,18px) clamp(10px,3vw,28px);
+    background: var(--bfk-purple-dark);
+    border-bottom:3px solid var(--bfk-gold);
+  }
+  #hud .hud-block { font-size:clamp(10px,2.2vw,16px); color:var(--bfk-gold); text-align:center; line-height:1.7; }
+  #hud .hud-val   { font-size:clamp(18px,4.5vw,30px); color:#fff; display:block; }
+  #hud .title-hud { font-size:clamp(9px,1.8vw,14px); color:var(--bfk-gold); letter-spacing:2px; }
+  #hud .pts-val   { color:var(--bfk-gold); }
+
+  /* ── Canvas area ── */
+  #canvas-wrap { flex:1; position:relative; overflow:hidden; min-height:0; background:var(--bfk-bg); }
+  canvas { display:block; position:absolute; cursor:none; }
+
+  /* ── Message bar ── */
+  #message-bar {
+    flex-shrink:0;
+    background:var(--bfk-purple-dark);
+    border-top:3px solid var(--bfk-gold);
+    padding:clamp(8px,2vh,18px) clamp(10px,3vw,24px);
+    font-size:clamp(13px,3vw,22px);
+    color:var(--bfk-gold);
+    min-height:clamp(38px,7vh,64px);
+    display:flex; align-items:center; justify-content:center;
+    text-align:center; letter-spacing:1px; line-height:1.5;
+  }
+
+  /* ── Mobile D-pad ── */
+  #dpad { display:none; position:absolute; bottom:14px; left:14px; width:132px; height:132px; z-index:50; }
+  #dpad button {
+    position:absolute; width:40px; height:40px;
+    background:rgba(90,24,154,0.5); border:2px solid var(--bfk-gold);
+    color:var(--bfk-gold); font-size:16px;
+    display:flex; align-items:center; justify-content:center;
+    border-radius:5px; -webkit-tap-highlight-color:transparent; user-select:none;
+  }
+  #dpad button:active { background:rgba(90,24,154,0.85); }
+  #btn-up    { top:0;    left:46px; }
+  #btn-down  { bottom:0; left:46px; }
+  #btn-left  { top:46px; left:0; }
+  #btn-right { top:46px; right:0; }
+
+  #btn-tackle-touch {
+    display:none; position:absolute; bottom:14px; right:14px;
+    width:90px; height:90px;
+    background:rgba(245,196,0,0.5); border:3px solid var(--bfk-purple);
+    color:var(--bfk-purple-dark); font-family:'Press Start 2P',monospace; font-size:10px;
+    border-radius:50%; z-index:50;
+    -webkit-tap-highlight-color:transparent; user-select:none; line-height:1.4; cursor:pointer;
+  }
+  #btn-tackle-touch:active { background:rgba(245,196,0,0.9); }
+
+  @media (max-width:640px),(pointer:coarse) {
+    #dpad { display:block; }
+    #btn-tackle-touch { display:flex; align-items:center; justify-content:center; }
+  }
+
+  /* ── Overlay screens ── */
+  .screen {
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:rgba(10,3,24,0.95);
+    z-index:100; gap:clamp(10px,2.5vh,22px); padding:clamp(14px,4vw,32px);
+  }
+  .screen.hidden { display:none; }
+
+  .screen h1 {
+    font-size:clamp(18px,4.5vw,30px); color:var(--bfk-gold); text-align:center; line-height:1.5;
+    text-shadow:3px 3px 0 var(--bfk-purple-dark), 0 0 22px var(--bfk-gold);
+  }
+  .screen h2 { font-size:clamp(11px,2.2vw,17px); color:#ddd; text-align:center; line-height:2; }
+  .screen p  { font-size:clamp(9px,1.8vw,13px); color:#aaa; text-align:center; line-height:2.3; max-width:520px; }
+
+  .legend { display:flex; gap:18px; flex-wrap:wrap; justify-content:center; }
+  .legend-item { font-size:clamp(9px,1.8vw,12px); display:flex; align-items:center; gap:8px; color:#ccc; }
+  .dot { width:16px; height:16px; border-radius:3px; display:inline-block; flex-shrink:0; }
+
+  .btn {
+    font-family:'Press Start 2P',monospace; font-size:clamp(11px,2.2vw,16px);
+    padding:clamp(12px,2.5vh,18px) clamp(20px,5vw,36px);
+    background:var(--bfk-gold); color:var(--bfk-purple-dark);
+    border:3px solid var(--bfk-purple); cursor:pointer; letter-spacing:1px;
+  }
+  .btn:hover,.btn:active { background:var(--bfk-gold-dark); }
+
+  .score-grid { display:grid; grid-template-columns:auto auto; gap:8px 24px; font-size:clamp(9px,2vw,14px); color:#888; }
+  .score-grid span { color:var(--bfk-gold); }
+
+  /* BFK Logo SVG on start screen */
+  #bfk-logo { width:clamp(80px,18vw,140px); height:clamp(80px,18vw,140px); }
+
+  #ref-penalty-flash {
+    position:fixed; inset:0; background:rgba(255,220,0,0.3);
+    pointer-events:none; opacity:0; z-index:200; transition:opacity 0.06s;
+  }
+  #red-card-flash {
+    position:fixed; inset:0; background:rgba(255,0,0,0.30);
+    pointer-events:none; opacity:0; z-index:200; transition:opacity 0.06s;
+  }
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+  <div id="hud">
+    <div class="hud-block">POENG<br><span class="hud-val pts-val" id="hud-pts">0</span></div>
+    <div class="hud-block title-hud">KONGEN AV<br>SKLITAKLINGER</div>
+    <div class="hud-block">TID<br><span class="hud-val" id="hud-time">30</span></div>
+  </div>
+
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+
+    <div id="dpad">
+      <button id="btn-up">▲</button><button id="btn-down">▼</button>
+      <button id="btn-left">◀</button><button id="btn-right">▶</button>
+    </div>
+    <button id="btn-tackle-touch">TAKLING!</button>
+
+    <!-- Start screen -->
+    <div class="screen" id="screen-start">
+      <!-- BFK Logo drawn via inline SVG -->
+      <svg id="bfk-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- Purple circle bg -->
+        <circle cx="100" cy="100" r="96" fill="#5a189a" stroke="#f5c400" stroke-width="5"/>
+        <!-- Gold swoosh lines -->
+        <path d="M120 60 Q160 90 155 140 Q148 155 135 158" stroke="#f5c400" stroke-width="8" fill="none" stroke-linecap="round"/>
+        <path d="M128 68 Q168 95 163 148" stroke="#f5c400" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.6"/>
+        <!-- Ball -->
+        <circle cx="90" cy="115" r="28" fill="#f5c400" stroke="#3a0d6e" stroke-width="3"/>
+        <path d="M90 87 L85 100 L72 105 L80 115 L76 128 L90 123 L104 128 L100 115 L108 105 L95 100 Z" fill="#3a0d6e" opacity="0.6"/>
+        <!-- BFK letters -->
+        <text x="100" y="112" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="38" font-weight="900" fill="#5a189a" stroke="#f5c400" stroke-width="2" letter-spacing="2">BFK</text>
+        <!-- Eagle head silhouette -->
+        <path d="M70 45 Q80 30 95 32 Q108 28 115 38 Q120 44 112 50 Q120 48 124 54 Q118 56 110 54 Q105 62 95 60 Q82 62 70 55 Z" fill="white" stroke="#f5c400" stroke-width="1.5"/>
+        <circle cx="105" cy="42" r="3.5" fill="#f5c400"/>
+        <path d="M114 50 L122 48 L118 55 Z" fill="#f5c400"/>
+      </svg>
+
+      <h1>⚽ KONGEN AV<br>SKLITAKLINGER ⚽</h1>
+      <h2>Du er MARTIN "TOFOTS" MOEN<br>— Badebyens stolthet —</h2>
+      <div class="legend">
+        <div class="legend-item"><span class="dot" style="background:#33dd55"></span> GRØNN = 1 pt</div>
+        <div class="legend-item"><span class="dot" style="background:#ffaa00"></span> GUL = 3 pt</div>
+        <div class="legend-item"><span class="dot" style="background:#ff3333"></span> RØD = 10 pt</div>
+        <div class="legend-item"><span class="dot" style="background:#222;border:2px solid #fff"></span> DOMMER = -25 pt!</div>
+      </div>
+      <p>
+        PILTASTER / WASD = beveg deg<br>
+        MELLOMROM / ENTER = TAKLING<br><br>
+        Unngå dommeren — han trekker poeng!
+      </p>
+      <button class="btn" id="btn-start">SPARK I GANG!</button>
+    </div>
+
+    <!-- Game over screen -->
+    <div class="screen hidden" id="screen-over">
+      <h1>KAMPEN ER OVER!<br>🟥</h1>
+      <h2 id="over-subtitle">KAMPEN ER OVER</h2>
+      <div class="score-grid" id="score-grid"></div>
+      <p id="over-verdict"></p>
+      <button class="btn" id="btn-restart">NY KAMP</button>
+    </div>
+  </div>
+
+  <div id="message-bar">&nbsp;</div>
+</div>
+
+<div id="red-card-flash"></div>
+<div id="ref-penalty-flash"></div>
+
+<script>
+// ─── CANVAS + PITCH LAYOUT ────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const PITCH_RATIO = 105 / 68;
+let CW, CH, PW, PH, OX, OY, SP;
+
+function relayout() {
+  const wrap = document.getElementById('canvas-wrap');
+  CW = wrap.clientWidth; CH = wrap.clientHeight;
+  canvas.width = CW; canvas.height = CH;
+  canvas.style.left = '0'; canvas.style.top = '0';
+  if (CW / CH >= PITCH_RATIO) { PH = CH; PW = Math.round(PH * PITCH_RATIO); }
+  else                         { PW = CW; PH = Math.round(PW / PITCH_RATIO); }
+  OX = Math.round((CW - PW) / 2);
+  OY = Math.round((CH - PH) / 2);
+  SP = PH / 400;
+}
+relayout();
+window.addEventListener('resize', () => { relayout(); if (state) render(); });
+
+const cx  = x => OX + x;
+const cy  = y => OY + y;
+const clampX = x => Math.max(20*SP, Math.min(PW-20*SP, x));
+const clampY = y => Math.max(20*SP, Math.min(PH-20*SP, y));
+
+// ─── AUDIO ────────────────────────────────────────────────────────────────────
+const AC = new (window.AudioContext||window.webkitAudioContext)();
+function beep(freq,type,dur,vol=0.3,delay=0) {
+  try {
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.connect(g); g.connect(AC.destination);
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol, AC.currentTime+delay);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime+delay+dur);
+    o.start(AC.currentTime+delay); o.stop(AC.currentTime+delay+dur);
+  } catch(e){}
+}
+function playCrunch()  { [80,60,40].forEach((f,i)=>beep(f,'sawtooth',0.12,0.4,i*0.03)); beep(200,'square',0.08,0.2,0.05); }
+function playWhistle() { beep(1200,'sine',0.12,0.35); beep(1400,'sine',0.12,0.25,0.15); }
+function playHurt()    { [300,200,150].forEach((f,i)=>beep(f,'square',0.08,0.25,i*0.04)); }
+function playRefWhistle() {
+  beep(1600,'sine',0.08,0.5); beep(1600,'sine',0.08,0.5,0.10); beep(1600,'sine',0.12,0.5,0.20);
+}
+
+// ─── CONTENT ──────────────────────────────────────────────────────────────────
+const TACKLE_MSGS = [
+  "Gratis øl på Handelshuset!",
+  "Jeg tar nesten bare ballen!",
+  "Skjerpings, dommer!",
+  "Det er bare ett lag i Drøbak!",
+  "Jeg skal farge trynet ditt lilla!",
+  "Få på deg brillene, dommer!",
+  "Når du går inn med begge bena, er det viktig at ett av dem treffer!",
+  "Jeg var rask en gang i tiden!",
+  "Drøbak er lilla i dag!",
+  "Den kommer jeg til å kjenne i morgen!",
+  "Badebyen, her er vi!",
+  "But can he do it on a cold, rainy night in Eidsberg?",
+  "You boys took a hell of a beating!",
+  "Han sto jo helt stille — ballen var i nærheten!",
+  "Neste gang tar jeg ballen også!",
+  "Jeg prøvde å stoppe — støvlene var ikke med!",
+  "Det er ikke mitt problem at han er lav!",
+  "Var det rødt? Jeg så bare grønt!",
+  "Nå blir det stor meny på Maccern!",
+];
+
+const REF_MSGS = [
+  "DOMMEREN ER IKKE FORNØYD! -25 POENG!",
+  "DU TAKLET DOMMEREN! DIREKTE UTVISNING!",
+  "DOMMEREN BLÅSER... OG TREKKER POENG!",
+  "IKKE DOMMEREN, TOFOTS! -25!",
+  "HAN DØMMER DEG NÅ! -25 POENG!",
+  "SELV DOMMEREN ER IKKE TRYGG! -25!",
+  "DOMMEREN KREVER RESPEKT! -25 POENG!",
+  "TAKL IKKE MANNEN MED FLØYTA! -25!",
+];
+
+const TIERS = [
+  { id:'green',  color:'#33dd55', accent:'#1a8833', pts:1,  speed:1.0, flee:0.12 },
+  { id:'yellow', color:'#ffaa00', accent:'#bb6600', pts:3,  speed:1.5, flee:0.19 },
+  { id:'red',    color:'#ff3333', accent:'#990000', pts:10, speed:2.3, flee:0.30 },
+];
+
+const VERDICTS = [
+  { min:-999,max:0,   title:'DAN EGGEN',              text:'Dommeren saksøker deg personlig.' },
+  { min:1,   max:10,  title:'FRANCO BARESI',             text:'Dommeren kjedet seg faktisk.' },
+  { min:11,  max:25,  title:'ERIK "PANZER" HAGEN',         text:'Tre spillere trengte behandling.' },
+  { min:26,  max:50,  title:'VIRGIL VAN DIJK',              text:'Benken applauderte. Dommeren gråt.' },
+  { min:51,  max:90,  title:'ROY KEANE',          text:'Tofots forbys i 7 land.' },
+  { min:91,  max:129, title:'GENNARO GATTUSO',    text:'Kjærna er stolt av deg.' },
+  { min:130,  max:999, title:'VINNIE JONES',    text:'FIFA endrer reglene på grunn av DEG.' }
+];
+
+// ─── SPAWN ────────────────────────────────────────────────────────────────────
+function countActive(tierId) {
+  return state.opponents.filter(o=>!o.knocked&&o.spawning<=0&&o.tier.id===tierId).length;
+}
+
+function spawnOpponent(forceTier) {
+  let tier;
+  if (forceTier) {
+    tier = TIERS.find(t=>t.id===forceTier);
+  } else {
+    const g=countActive('green'), y=countActive('yellow'), r=countActive('red');
+    const opts=[];
+    if (g<8)  opts.push('green','green','green');
+    if (y<3)  opts.push('yellow','yellow');
+    if (r<1)  opts.push('red');
+    opts.push('green','green','yellow');
+    tier = TIERS.find(t=>t.id===opts[Math.floor(Math.random()*opts.length)]);
+  }
+  const side = Math.random()<0.5;
+  return {
+    x: side ? -30*SP : PW+30*SP,
+    y: 40*SP + Math.random()*(PH-80*SP),
+    vx: (side?1:-1)*(0.8+Math.random()*0.8)*SP,
+    vy: (Math.random()-0.5)*SP,
+    tier, num:Math.floor(Math.random()*99)+1,
+    knocked:false, knockTimer:0, spawning:12, legAnim:Math.random()*Math.PI*2,
+  };
+}
+
+function spawnReferee() {
+  return {
+    x: PW/2 + (Math.random()-0.5)*PW*0.4,
+    y: PH/2 + (Math.random()-0.5)*PH*0.4,
+    vx: (Math.random()-0.5)*SP*0.8,
+    vy: (Math.random()-0.5)*SP*0.8,
+    legAnim: 0,
+    knocked: false, knockTimer: 0,
+    // Wandering target
+    targetX: 0, targetY: 0, targetTimer: 0,
+    dir: 1,
+  };
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let state, keys={}, spaceWasUp=true;
+
+function initState() {
+  return {
+    running:false, time:30, timeAccum:0,
+    points:0, tackleCount:0,
+    player:{ x:PW/2, y:PH/2, vx:0, vy:0, sliding:false, slideTimer:0, slideCooldown:0, dir:1, legAnim:0 },
+    opponents:[], referee:null, effects:[],
+  };
+}
+
+function reset() {
+  relayout();
+  state = initState();
+  const plan=[...Array(8).fill('green'),...Array(3).fill('yellow'),'red'];
+  plan.forEach((tid,i)=>{
+    const op=spawnOpponent(tid);
+    op.x=40*SP+Math.random()*(PW-80*SP);
+    op.y=40*SP+Math.random()*(PH-80*SP);
+    op.spawning=20+i*4;
+    state.opponents.push(op);
+  });
+  const ref = spawnReferee();
+  ref.targetX = PW*0.3; ref.targetY = PH*0.5;
+  state.referee = ref;
+  spaceWasUp=true;
+  updateHUD();
+}
+
+// ─── DRAW GRASS ───────────────────────────────────────────────────────────────
+function drawGrass() {
+  ctx.fillStyle='#1a0a2e'; ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#1a5c1a'; ctx.fillRect(OX,OY,PW,PH);
+  ctx.fillStyle='#1e6b1e';
+  const sh=PH/10;
+  for(let y=0;y<PH;y+=sh*2) ctx.fillRect(OX,OY+y,PW,sh);
+  ctx.strokeStyle='rgba(255,255,255,0.13)'; ctx.lineWidth=Math.max(1,SP*1.5);
+  ctx.strokeRect(OX+10*SP,OY+10*SP,PW-20*SP,PH-20*SP);
+  ctx.beginPath(); ctx.moveTo(OX+PW/2,OY+10*SP); ctx.lineTo(OX+PW/2,OY+PH-10*SP); ctx.stroke();
+  ctx.beginPath(); ctx.arc(OX+PW/2,OY+PH/2,PH*0.14,0,Math.PI*2); ctx.stroke();
+  const paW=PW*0.13,paH=PH*0.38;
+  ctx.strokeRect(OX+10*SP,OY+PH/2-paH/2,paW,paH);
+  ctx.strokeRect(OX+PW-10*SP-paW,OY+PH/2-paH/2,paW,paH);
+}
+
+// ─── DRAW PLAYER ─────────────────────────────────────────────────────────────
+function drawPlayer(p) {
+  const s=SP;
+  const x=Math.round(cx(p.x)), y=Math.round(cy(p.y));
+  ctx.save();
+  if(p.dir<0){ctx.translate(x*2,0);ctx.scale(-1,1);}
+
+  if(p.sliding){
+    const bx=x-28*s, by=y-8*s;
+    // Feet forward
+    ctx.fillStyle='#c8845a'; ctx.fillRect(bx+18*s,by+4*s,20*s,7*s);
+    ctx.fillStyle='#111';    ctx.fillRect(bx+34*s,by+2*s,14*s,9*s);
+    ctx.fillStyle='#aaa';
+    for(let i=0;i<3;i++) ctx.fillRect(bx+(36+i*4)*s,by+11*s,3*s,3*s);
+    ctx.fillStyle='#6600cc'; ctx.fillRect(bx,by,26*s,11*s);
+    ctx.fillStyle='#f5c400'; ctx.fillRect(bx,by,26*s,3*s); ctx.fillRect(bx+10*s,by,6*s,11*s);
+    ctx.fillStyle='#c8845a'; ctx.fillRect(bx-13*s,by-8*s,14*s,12*s);
+    ctx.fillStyle='#331100'; ctx.fillRect(bx-13*s,by-11*s,14*s,5*s);
+    ctx.fillStyle='#111';    ctx.fillRect(bx-11*s,by-5*s,2*s,3*s); ctx.fillRect(bx-7*s,by-5*s,2*s,3*s);
+    ctx.fillStyle='#c8845a'; ctx.fillRect(bx+24*s,by+2*s,14*s,5*s);
+    ctx.fillStyle='rgba(180,150,80,0.3)'; ctx.fillRect(bx-18*s,by+8*s,20*s,5*s);
+  } else {
+    const la=p.legAnim;
+    const l1=Math.sin(la)*5*s, l2=Math.sin(la+Math.PI)*5*s;
+    const bx=x-8*s, by=y;
+    ctx.fillStyle='#c8845a'; ctx.fillRect(bx,by+6*s,7*s,10*s+l1); ctx.fillRect(bx+9*s,by+6*s,7*s,10*s+l2);
+    ctx.fillStyle='#111';    ctx.fillRect(bx-1*s,by+16*s+l1,9*s,6*s); ctx.fillRect(bx+8*s,by+16*s+l2,9*s,6*s);
+    ctx.fillStyle='#5500aa'; ctx.fillRect(bx-1*s,by+2*s,18*s,8*s);
+    ctx.fillStyle='#6600cc'; ctx.fillRect(bx-2*s,by-14*s,20*s,17*s);
+    ctx.fillStyle='#f5c400'; ctx.fillRect(bx-2*s,by-14*s,20*s,3*s); ctx.fillRect(bx+6*s,by-14*s,5*s,17*s);
+    ctx.fillStyle='#c8845a'; ctx.fillRect(bx-7*s,by-12*s,6*s,13*s); ctx.fillRect(bx+17*s,by-12*s,6*s,13*s);
+    ctx.fillStyle='#c8845a'; ctx.fillRect(bx-1*s,by-26*s,18*s,14*s);
+    ctx.fillStyle='#331100'; ctx.fillRect(bx-1*s,by-28*s,18*s,5*s);
+    ctx.fillStyle='#111';    ctx.fillRect(bx+2*s,by-22*s,3*s,3*s); ctx.fillRect(bx+11*s,by-22*s,3*s,3*s);
+    ctx.fillStyle='#884422'; ctx.fillRect(bx+1*s,by-16*s,14*s,2*s);
+  }
+  ctx.restore();
+}
+
+// ─── DRAW OPPONENT ────────────────────────────────────────────────────────────
+function drawOpponent(op) {
+  if(op.spawning>0) return;
+  const s=SP, x=Math.round(cx(op.x)), y=Math.round(cy(op.y)), t=op.tier;
+  if(op.knocked){
+    ctx.save(); ctx.translate(x,y);
+    ctx.rotate((1-op.knockTimer/50)*Math.PI*0.7);
+    ctx.fillStyle=t.color; ctx.fillRect(-16*s,-6*s,30*s,10*s);
+    ctx.fillStyle='#f5c07a'; ctx.fillRect(12*s,-8*s,12*s,11*s);
+    ctx.fillStyle='#000'; ctx.font=`bold ${Math.max(6,Math.round(9*s))}px monospace`;
+    ctx.fillText('x',13*s,-1*s); ctx.restore();
+    for(let i=0;i<3;i++){
+      const a=Date.now()*0.006+i*2.1;
+      ctx.fillStyle='#ffff00'; ctx.font=`${Math.max(8,Math.round(12*s))}px serif`;
+      ctx.fillText('★', x+Math.cos(a)*18*s-5*s, y-16*s+Math.sin(a)*9*s);
+    }
+  } else {
+    const la=op.legAnim, l1=Math.sin(la)*4*s, l2=Math.sin(la+Math.PI)*4*s;
+    ctx.fillStyle='#f5c07a'; ctx.fillRect(x-6*s,y+4*s,6*s,8*s+l1); ctx.fillRect(x+2*s,y+4*s,6*s,8*s+l2);
+    ctx.fillStyle='#113366'; ctx.fillRect(x-7*s,y+12*s+l1,8*s,5*s); ctx.fillRect(x+1*s,y+12*s+l2,8*s,5*s);
+    ctx.fillStyle=t.accent; ctx.fillRect(x-6*s,y,14*s,7*s);
+    ctx.fillStyle=t.color;  ctx.fillRect(x-7*s,y-14*s,16*s,16*s);
+    ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.font=`bold ${Math.max(5,Math.round(7*s))}px monospace`;
+    ctx.fillText(op.num,x-4*s,y-4*s);
+    ctx.fillStyle='#f5c07a'; ctx.fillRect(x-5*s,y-26*s,12*s,12*s);
+    ctx.fillStyle='#442200'; ctx.fillRect(x-5*s,y-28*s,12*s,4*s);
+    const distP=Math.hypot(state.player.x-op.x,state.player.y-op.y);
+    ctx.fillStyle='#111';
+    if(distP<100*s){
+      ctx.fillRect(x-3*s,y-23*s,3*s,4*s); ctx.fillRect(x+3*s,y-23*s,3*s,4*s);
+      ctx.fillStyle='#fff'; ctx.fillRect(x-2*s,y-22*s,1.5*s,2*s); ctx.fillRect(x+4*s,y-22*s,1.5*s,2*s);
+    } else {
+      ctx.fillRect(x-3*s,y-22*s,3*s,3*s); ctx.fillRect(x+2*s,y-22*s,3*s,3*s);
+    }
+    if(t.id!=='green'){
+      ctx.fillStyle=t.id==='red'?'#ff3333':'#ffaa00';
+      ctx.beginPath(); ctx.arc(x+1*s,y-33*s,6*s,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle='#fff'; ctx.font=`bold ${Math.max(5,Math.round(7*s))}px monospace`;
+      ctx.fillText(t.pts,x-3*s,y-29*s);
+    }
+  }
+}
+
+// ─── DRAW REFEREE ─────────────────────────────────────────────────────────────
+function drawReferee(ref) {
+  if(!ref||ref.spawning>0) return;
+  const s=SP, x=Math.round(cx(ref.x)), y=Math.round(cy(ref.y));
+  ctx.save();
+  if(ref.dir<0){ctx.translate(x*2,0);ctx.scale(-1,1);}
+
+  if(ref.knocked){
+    // Sprawled out
+    ctx.save(); ctx.translate(x,y);
+    ctx.rotate((1-ref.knockTimer/60)*Math.PI*0.5);
+    ctx.fillStyle='#222'; ctx.fillRect(-18*s,-6*s,34*s,11*s);
+    // Whistle flies off
+    ctx.fillStyle='#f5c400';
+    const wa=Date.now()*0.008;
+    ctx.fillRect(x+Math.cos(wa)*20*s-3*s, y+Math.sin(wa)*12*s-3*s, 6*s, 4*s);
+    // Head with angry face
+    ctx.fillStyle='#f5c07a'; ctx.fillRect(14*s,-9*s,13*s,13*s);
+    ctx.fillStyle='#c00'; ctx.font=`bold ${Math.max(6,Math.round(8*s))}px monospace`;
+    ctx.fillText('>_<',15*s,-2*s);
+    ctx.restore();
+    // Stars
+    for(let i=0;i<4;i++){
+      const a=Date.now()*0.007+i*1.57;
+      ctx.fillStyle='#f5c400'; ctx.font=`${Math.max(8,Math.round(11*s))}px serif`;
+      ctx.fillText('★', x+Math.cos(a)*20*s-4*s, y-18*s+Math.sin(a)*10*s);
+    }
+  } else {
+    const la=ref.legAnim, l1=Math.sin(la)*4*s, l2=Math.sin(la+Math.PI)*4*s;
+    // Legs
+    ctx.fillStyle='#f5c07a'; ctx.fillRect(x-6*s,y+4*s,6*s,8*s+l1); ctx.fillRect(x+2*s,y+4*s,6*s,8*s+l2);
+    ctx.fillStyle='#111';    ctx.fillRect(x-7*s,y+12*s+l1,8*s,5*s); ctx.fillRect(x+1*s,y+12*s+l2,8*s,5*s);
+    // Black shorts + shirt
+    ctx.fillStyle='#222';    ctx.fillRect(x-6*s,y,14*s,7*s);
+    ctx.fillStyle='#1a1a1a'; ctx.fillRect(x-7*s,y-14*s,16*s,16*s);
+    // White collar
+    ctx.fillStyle='#eee';    ctx.fillRect(x-2*s,y-14*s,6*s,3*s);
+    // Arms
+    ctx.fillStyle='#f5c07a'; ctx.fillRect(x-7*s,y-12*s,5*s,12*s); ctx.fillRect(x+18*s*0.9,y-12*s,5*s,12*s);
+    // Whistle in hand
+    ctx.fillStyle='#f5c400'; ctx.fillRect(x+18*s*0.9+2*s,y-3*s,8*s,4*s);
+    // Head
+    ctx.fillStyle='#f5c07a'; ctx.fillRect(x-5*s,y-26*s,12*s,12*s);
+    ctx.fillStyle='#555';    ctx.fillRect(x-5*s,y-28*s,12*s,4*s); // grey hair
+    // Eyes — stern
+    ctx.fillStyle='#111';    ctx.fillRect(x-3*s,y-22*s,2*s,2*s); ctx.fillRect(x+3*s,y-22*s,2*s,2*s);
+    // Frown
+    ctx.fillStyle='#333';    ctx.fillRect(x-2*s,y-16*s,6*s,2*s);
+    // REF label above head
+    ctx.fillStyle='#fff'; ctx.font=`bold ${Math.max(5,Math.round(6*s))}px 'Press Start 2P',monospace`;
+    ctx.fillText('REF',x-8*s,y-32*s);
+  }
+  ctx.restore();
+}
+
+// ─── DRAW EFFECTS ─────────────────────────────────────────────────────────────
+function drawEffect(e) {
+  ctx.save();
+  const a=e.life/e.maxLife; ctx.globalAlpha=a;
+  const ex=cx(e.x), ey=cy(e.y), s=SP;
+  if(e.type==='card'){
+    const yy=ey-(1-a)*30*s;
+    ctx.fillStyle=e.color||'#ff0000'; ctx.fillRect(ex,yy,20*s,28*s);
+    ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.strokeRect(ex,yy,20*s,28*s);
+  } else if(e.type==='text'){
+    const sz=(e.size||12)*s;
+    ctx.font=`bold ${Math.max(7,Math.round(sz))}px 'Press Start 2P',monospace`;
+    ctx.fillStyle=e.color||'#ffff00'; ctx.strokeStyle='#000'; ctx.lineWidth=3;
+    const yy=ey-(1-a)*28*s;
+    ctx.strokeText(e.text,ex,yy); ctx.fillText(e.text,ex,yy);
+  } else if(e.type==='dust'){
+    ctx.fillStyle='#c8a96e';
+    for(let i=0;i<6;i++){const d=(1-a)*35*s,ang=e.angle+i*1.05;ctx.fillRect(ex+Math.cos(ang)*d-4*s,ey+Math.sin(ang)*d-4*s,7*s,7*s);}
+  }
+  ctx.restore();
+}
+
+// ─── GAME LOGIC ───────────────────────────────────────────────────────────────
+const BASE_SPEED=3.5, BASE_SLIDE=8, SLIDE_DUR=16, SLIDE_COOLDOWN=32;
+
+function updatePlayer() {
+  const p=state.player;
+  const spd=BASE_SPEED*SP, ssp=BASE_SLIDE*SP;
+  if(p.slideCooldown>0) p.slideCooldown--;
+
+  if(p.sliding){
+    p.slideTimer--;
+    if(p.slideTimer<=0){p.sliding=false;p.vx*=0.2;p.vy*=0.2;}
+    checkTackles();
+  } else {
+    let dx=0,dy=0;
+    if(keys['ArrowLeft'] ||keys['a']||keys['A']) dx-=1;
+    if(keys['ArrowRight']||keys['d']||keys['D']) dx+=1;
+    if(keys['ArrowUp']   ||keys['w']||keys['W']) dy-=1;
+    if(keys['ArrowDown'] ||keys['s']||keys['S']) dy+=1;
+    if(dx||dy){
+      const len=Math.hypot(dx,dy);
+      p.vx=(dx/len)*spd; p.vy=(dy/len)*spd;
+      if(dx) p.dir=dx>0?1:-1;
+      p.legAnim+=0.22;
+    } else {p.vx*=0.7;p.vy*=0.7;}
+    const spaceDown=keys[' ']||keys['Enter'];
+    if(spaceDown&&spaceWasUp&&p.slideCooldown<=0){
+      p.sliding=true; p.slideTimer=SLIDE_DUR;
+      p.slideCooldown=SLIDE_DUR+SLIDE_COOLDOWN;
+      p.vx=p.dir*ssp; p.vy*=0.5; playCrunch();
+    }
+    spaceWasUp=!spaceDown;
+  }
+  p.x=clampX(p.x+p.vx); p.y=clampY(p.y+p.vy);
+}
+
+function checkTackles() {
+  const p=state.player;
+  const hitX=p.x+p.dir*20*SP;
+
+  // Check opponents
+  state.opponents.forEach(op=>{
+    if(op.knocked||op.spawning>0) return;
+    if(Math.hypot(op.x-hitX,op.y-p.y)<32*SP) knockOpponent(op);
+  });
+
+  // Check referee
+  const ref=state.referee;
+  if(ref&&!ref.knocked&&Math.hypot(ref.x-hitX,ref.y-p.y)<30*SP) tackleReferee(ref);
+}
+
+function knockOpponent(op) {
+  op.knocked=true; op.knockTimer=55+Math.floor(Math.random()*35);
+  const p=state.player;
+  const dx=op.x-p.x, dy=op.y-p.y, len=Math.hypot(dx,dy)||1;
+  op.vx=(dx/len)*4*SP+p.vx*0.5; op.vy=(dy/len)*2*SP+p.vy*0.4;
+  const pts=op.tier.pts;
+  state.points+=pts; state.tackleCount++;
+  updateHUD();
+  playCrunch(); playHurt();
+  document.getElementById('red-card-flash').style.opacity='1';
+  setTimeout(()=>document.getElementById('red-card-flash').style.opacity='0',80);
+  state.effects.push({type:'card',  x:op.x-10*SP, y:op.y-28*SP, life:55, maxLife:55});
+  state.effects.push({type:'dust',  x:op.x, y:op.y, angle:Math.atan2(dy,dx), life:22, maxLife:22});
+  state.effects.push({
+    type:'text', x:op.x-14*SP, y:op.y-14*SP,
+    text:pts>=10?`+${pts} LEGENDARISK!`:`+${pts}`,
+    life:60, maxLife:60, size:pts>=10?11:10,
+    color:pts>=10?'#ff3333':pts>=3?'#ffaa00':'#ffff66'
+  });
+  const msg=TACKLE_MSGS[Math.floor(Math.random()*TACKLE_MSGS.length)];
+  document.getElementById('message-bar').textContent='"'+msg+'"';
+  playWhistle();
+}
+
+function tackleReferee(ref) {
+  ref.knocked=true; ref.knockTimer=90;
+  const p=state.player;
+  const dx=ref.x-p.x, dy=ref.y-p.y, len=Math.hypot(dx,dy)||1;
+  ref.vx=(dx/len)*5*SP+p.vx*0.4; ref.vy=(dy/len)*3*SP+p.vy*0.3;
+  ref.dir=p.dir;
+
+  const penalty=25;
+  state.points-=penalty; state.tackleCount++;
+  updateHUD();
+  playRefWhistle();
+  document.getElementById('ref-penalty-flash').style.opacity='1';
+  setTimeout(()=>document.getElementById('ref-penalty-flash').style.opacity='0',120);
+
+  // Yellow card effect (penalty)
+  state.effects.push({type:'card', x:ref.x-10*SP, y:ref.y-30*SP, life:70, maxLife:70, color:'#f5c400'});
+  state.effects.push({
+    type:'text', x:ref.x-30*SP, y:ref.y-20*SP,
+    text:`-${penalty} DOMMER!`, life:80, maxLife:80, size:11, color:'#f5c400'
+  });
+  const msg=REF_MSGS[Math.floor(Math.random()*REF_MSGS.length)];
+  document.getElementById('message-bar').textContent=msg;
+}
+
+function updateReferee() {
+  const ref=state.referee;
+  if(!ref) return;
+
+  if(ref.knocked){
+    ref.knockTimer--;
+    ref.x+=ref.vx; ref.y+=ref.vy;
+    ref.vx*=0.88; ref.vy*=0.88;
+    if(ref.x<20*SP){ref.x=20*SP;ref.vx=Math.abs(ref.vx);}
+    if(ref.x>PW-20*SP){ref.x=PW-20*SP;ref.vx=-Math.abs(ref.vx);}
+    if(ref.y<20*SP){ref.y=20*SP;ref.vy=Math.abs(ref.vy);}
+    if(ref.y>PH-20*SP){ref.y=PH-20*SP;ref.vy=-Math.abs(ref.vy);}
+    if(ref.knockTimer<=0) ref.knocked=false;
+    return;
+  }
+
+  ref.legAnim+=0.14;
+  ref.targetTimer--;
+
+  // Pick a new wander target periodically
+  if(ref.targetTimer<=0){
+    ref.targetTimer=120+Math.floor(Math.random()*180);
+    // Sometimes move toward player (annoying), sometimes wander
+    if(Math.random()<0.35){
+      ref.targetX=state.player.x+(Math.random()-0.5)*100*SP;
+      ref.targetY=state.player.y+(Math.random()-0.5)*100*SP;
+    } else {
+      ref.targetX=PW*0.1+Math.random()*PW*0.8;
+      ref.targetY=PH*0.1+Math.random()*PH*0.8;
+    }
+  }
+
+  const dx=ref.targetX-ref.x, dy=ref.targetY-ref.y, dist=Math.hypot(dx,dy)||1;
+  if(dist>5*SP){
+    const refSpd=0.9*SP;
+    ref.vx+=(dx/dist)*refSpd*0.08;
+    ref.vy+=(dy/dist)*refSpd*0.08;
+    if(ref.vx>0) ref.dir=1; else if(ref.vx<0) ref.dir=-1;
+  }
+  const maxSpd=0.9*SP, spd=Math.hypot(ref.vx,ref.vy);
+  if(spd>maxSpd){ref.vx=(ref.vx/spd)*maxSpd;ref.vy=(ref.vy/spd)*maxSpd;}
+  ref.vx*=0.95; ref.vy*=0.95;
+  ref.x+=ref.vx; ref.y+=ref.vy;
+  const m=20*SP;
+  if(ref.x<m){ref.x=m;ref.vx=Math.abs(ref.vx);}
+  if(ref.x>PW-m){ref.x=PW-m;ref.vx=-Math.abs(ref.vx);}
+  if(ref.y<m){ref.y=m;ref.vy=Math.abs(ref.vy);}
+  if(ref.y>PH-m){ref.y=PH-m;ref.vy=-Math.abs(ref.vy);}
+}
+
+function updateOpponents() {
+  const g=countActive('green'),y=countActive('yellow'),r=countActive('red');
+  if(g<8&&Math.random()<0.04){state.opponents.push(spawnOpponent('green'));}
+  if(y<3&&Math.random()<0.04){state.opponents.push(spawnOpponent('yellow'));}
+  if(r<1&&Math.random()<0.015){state.opponents.push(spawnOpponent('red'));}
+
+  state.opponents.forEach(op=>{
+    if(op.spawning>0){op.spawning--;return;}
+    if(op.knocked){
+      op.knockTimer--; op.x+=op.vx; op.y+=op.vy; op.vx*=0.9; op.vy*=0.9;
+      if(op.x<-60*SP||op.x>PW+60*SP||op.y<-60*SP||op.y>PH+60*SP) op.knockTimer=0;
+      if(op.knockTimer<=0) Object.assign(op,spawnOpponent(op.tier.id));
+      return;
+    }
+    op.legAnim+=0.16+op.tier.speed*0.05;
+    const pdx=state.player.x-op.x, pdy=state.player.y-op.y, dist=Math.hypot(pdx,pdy)||1;
+    if(dist<130*SP){op.vx-=(pdx/dist)*op.tier.flee*SP;op.vy-=(pdy/dist)*op.tier.flee*SP;}
+    else{op.vx+=(Math.random()-0.5)*0.25*SP;op.vy+=(Math.random()-0.5)*0.25*SP;}
+    const maxSpd=op.tier.speed*SP,spd=Math.hypot(op.vx,op.vy);
+    if(spd>maxSpd){op.vx=(op.vx/spd)*maxSpd;op.vy=(op.vy/spd)*maxSpd;}
+    op.x+=op.vx;op.y+=op.vy;
+    const m=18*SP;
+    if(op.x<m){op.x=m;op.vx=Math.abs(op.vx);}if(op.x>PW-m){op.x=PW-m;op.vx=-Math.abs(op.vx);}
+    if(op.y<m){op.y=m;op.vy=Math.abs(op.vy);}if(op.y>PH-m){op.y=PH-m;op.vy=-Math.abs(op.vy);}
+  });
+  if(state.opponents.length>18) state.opponents=state.opponents.filter((o,i)=>i<18||!o.knocked);
+}
+
+function updateEffects() { state.effects=state.effects.filter(e=>{e.life--;return e.life>0;}); }
+
+function updateTimer(dt) {
+  state.timeAccum+=dt;
+  if(state.timeAccum>=1000){
+    state.timeAccum-=1000;state.time--;
+    updateHUD();
+    if(state.time<=0) endGame();
+    if(state.time<=5) playWhistle();
+  }
+}
+
+function updateHUD() {
+  document.getElementById('hud-pts').textContent  = state.points;
+  document.getElementById('hud-time').textContent = Math.max(0,state.time);
+}
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  drawGrass();
+
+  // Collect all entities and sort by y for depth
+  const ref=state.referee;
+  const allEntities=[
+    ...state.opponents.map(o=>({type:'op',obj:o,y:o.y})),
+    {type:'player',obj:state.player,y:state.player.y},
+    ...(ref?[{type:'ref',obj:ref,y:ref.y}]:[]),
+  ].sort((a,b)=>a.y-b.y);
+
+  for(const e of allEntities){
+    if(e.type==='op')     drawOpponent(e.obj);
+    else if(e.type==='player') drawPlayer(e.obj);
+    else if(e.type==='ref')    drawReferee(e.obj);
+  }
+
+  state.effects.forEach(e=>drawEffect(e));
+
+  // Cooldown arc
+  const p=state.player;
+  if(!p.sliding&&p.slideCooldown>0){
+    const pct=p.slideCooldown/(SLIDE_DUR+SLIDE_COOLDOWN);
+    ctx.strokeStyle='rgba(245,196,0,0.7)'; ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.arc(cx(p.x),cy(p.y)-34*SP,13*SP,-Math.PI/2,-Math.PI/2+(1-pct)*Math.PI*2);
+    ctx.stroke();
+  }
+}
+
+// ─── LOOP ─────────────────────────────────────────────────────────────────────
+let lastTime=0;
+function loop(ts){
+  if(!state.running) return;
+  const dt=Math.min(ts-lastTime,50); lastTime=ts;
+  updatePlayer(); updateOpponents(); updateReferee(); updateEffects(); updateTimer(dt);
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ─── END GAME ─────────────────────────────────────────────────────────────────
+function endGame(){
+  state.running=false;
+  playWhistle(); setTimeout(playWhistle,220);
+  const verdict=VERDICTS.find(v=>state.points>=v.min&&state.points<=v.max)||VERDICTS[VERDICTS.length-1];
+  document.getElementById('over-subtitle').textContent=verdict.title;
+  document.getElementById('over-verdict').textContent=verdict.text;
+  document.getElementById('score-grid').innerHTML=`
+    <div>Poeng:</div><div><span>${state.points}</span></div>
+    <div>Taklingen:</div><div><span>${state.tackleCount}</span></div>
+    <div>Røde kort:</div><div><span>${state.tackleCount}</span></div>
+    <div>FIFA-bot:</div><div><span>kr ${(Math.max(0,state.points)*18500).toLocaleString('nb-NO')}</span></div>
+  `;
+  document.getElementById('screen-over').classList.remove('hidden');
+}
+
+// ─── CONTROLS ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+
+['up','down','left','right'].forEach(dir=>{
+  const btn=document.getElementById('btn-'+dir);
+  const k={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[dir];
+  btn.addEventListener('touchstart',e=>{keys[k]=true;e.stopPropagation();},{passive:true});
+  btn.addEventListener('touchend',  e=>{keys[k]=false;e.stopPropagation();},{passive:true});
+  btn.addEventListener('mousedown',()=>keys[k]=true);
+  btn.addEventListener('mouseup',  ()=>keys[k]=false);
+});
+const tackleBtn=document.getElementById('btn-tackle-touch');
+tackleBtn.addEventListener('touchstart',e=>{keys[' ']=true;spaceWasUp=true;e.stopPropagation();e.preventDefault();},{passive:false});
+tackleBtn.addEventListener('touchend',  e=>{keys[' ']=false;e.stopPropagation();},{passive:true});
+
+// ─── BUTTONS ──────────────────────────────────────────────────────────────────
+document.getElementById('btn-start').addEventListener('click',()=>{
+  AC.resume();
+  document.getElementById('screen-start').classList.add('hidden');
+  reset(); state.running=true; lastTime=performance.now();
+  requestAnimationFrame(loop);
+});
+document.getElementById('btn-restart').addEventListener('click',()=>{
+  document.getElementById('screen-over').classList.add('hidden');
+  reset(); state.running=true; lastTime=performance.now();
+  requestAnimationFrame(loop);
+});
+
+reset(); render();
+</script>
+</body>
+</html>
