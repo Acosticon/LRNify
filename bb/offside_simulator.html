@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>OFFSIDE SIMULATOR</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+  * { margin:0; padding:0; box-sizing:border-box; image-rendering:pixelated; }
+  :root { --gold:#f5c400; --dark:#1a0a2e; --bg:#1a0a2e; --purple:#5a189a; --purple2:#3a0d6e; }
+  html,body { background:var(--bg); width:100%; height:100%; overflow:hidden; touch-action:none; font-family:'Press Start 2P',monospace,sans-serif; }
+  body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,0,0,0.10) 2px,rgba(0,0,0,0.10) 4px); pointer-events:none; z-index:999; }
+  #game-wrapper { position:fixed; inset:0; display:flex; flex-direction:column; }
+  #hud { flex-shrink:0; display:flex; justify-content:space-between; align-items:center; padding:clamp(6px,1.8vh,16px) clamp(10px,3vw,28px); background:var(--purple2); border-bottom:3px solid var(--gold); }
+  #hud .hud-block { font-size:clamp(9px,1.9vw,14px); color:var(--gold); text-align:center; line-height:1.7; }
+  #hud .hud-val { font-size:clamp(16px,4vw,28px); color:#fff; display:block; }
+  #hud .title-hud { font-size:clamp(7px,1.4vw,11px); color:var(--gold); letter-spacing:2px; }
+  #canvas-wrap { flex:1; position:relative; overflow:hidden; min-height:0; }
+  canvas { display:block; position:absolute; cursor:none; }
+  #message-bar { flex-shrink:0; background:var(--purple2); border-top:3px solid var(--gold); padding:clamp(6px,1.8vh,16px) clamp(10px,3vw,24px); font-size:clamp(10px,2.2vw,17px); color:var(--gold); min-height:clamp(34px,6.5vh,58px); display:flex; align-items:center; justify-content:center; text-align:center; letter-spacing:1px; line-height:1.4; }
+  #dpad { display:none; position:absolute; bottom:14px; left:14px; width:132px; height:132px; z-index:50; }
+  #dpad button { position:absolute; width:40px; height:40px; background:rgba(90,24,154,0.5); border:2px solid var(--gold); color:var(--gold); font-size:16px; display:flex; align-items:center; justify-content:center; border-radius:5px; -webkit-tap-highlight-color:transparent; user-select:none; }
+  #dpad button:active { background:rgba(90,24,154,0.85); }
+  #btn-up{top:0;left:46px} #btn-down{bottom:0;left:46px} #btn-left{top:46px;left:0} #btn-right{top:46px;right:0}
+  @media (max-width:640px),(pointer:coarse) { #dpad{display:block} }
+  .screen { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(10,3,24,0.96); z-index:100; gap:clamp(8px,2vh,18px); padding:clamp(14px,4vw,32px); }
+  .screen.hidden { display:none; }
+  .screen h1 { font-size:clamp(15px,3.8vw,26px); color:var(--gold); text-align:center; line-height:1.5; text-shadow:3px 3px 0 var(--purple2),0 0 22px var(--gold); }
+  .screen h2 { font-size:clamp(9px,1.9vw,14px); color:#ccc; text-align:center; line-height:2; }
+  .screen p { font-size:clamp(8px,1.5vw,11px); color:#aaa; text-align:center; line-height:2.3; max-width:520px; }
+  .btn { font-family:'Press Start 2P',monospace; font-size:clamp(10px,2vw,15px); padding:clamp(11px,2.2vh,16px) clamp(18px,4.5vw,32px); background:var(--gold); color:var(--purple2); border:3px solid var(--purple); cursor:pointer; letter-spacing:1px; }
+  .btn:hover,.btn:active { background:#c49a00; }
+  .score-grid { display:grid; grid-template-columns:auto auto; gap:8px 24px; font-size:clamp(9px,1.8vw,13px); color:#888; }
+  .score-grid span { color:var(--gold); }
+  #offside-flash { position:fixed; inset:0; background:rgba(255,0,0,0.32); pointer-events:none; opacity:0; z-index:200; transition:opacity 0.05s; }
+  /* ── Highscore ── */
+  #hs-form { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center; margin-top:4px; }
+  #hs-name { font-family:'Press Start 2P',monospace; font-size:clamp(9px,1.8vw,13px); padding:10px 12px; background:#0d1f0a; border:2px solid var(--gold); color:var(--gold); width:180px; outline:none; }
+  #hs-name::placeholder { color:#555; }
+  #hs-submit { font-family:'Press Start 2P',monospace; font-size:clamp(8px,1.5vw,11px); padding:10px 14px; background:var(--gold); color:var(--purple2); border:2px solid var(--purple); cursor:pointer; }
+  #hs-submit:hover { background:#c49a00; }
+  #hs-submit:disabled { background:#555; color:#999; cursor:default; }
+  #hs-list { width:100%; max-width:340px; font-size:clamp(7px,1.4vw,10px); color:#aaa; }
+  #hs-list table { width:100%; border-collapse:collapse; }
+  #hs-list td { padding:3px 6px; }
+  #hs-list tr:nth-child(1) td { color:var(--gold); }
+  #hs-list tr:nth-child(2) td { color:#ccc; }
+  #hs-list tr:nth-child(3) td { color:#cd7f32; }
+  #hs-list .hs-rank { width:28px; text-align:right; }
+  #hs-list .hs-score { text-align:right; color:var(--gold); }
+</style>
+</head>
+<body>
+<div id="game-wrapper">
+  <div id="hud">
+    <div class="hud-block">POENG<br><span class="hud-val" style="color:var(--gold)" id="hud-pts">0</span></div>
+    <div class="hud-block title-hud">OFFSIDE<br>SIMULATOR</div>
+    <div class="hud-block">TID<br><span class="hud-val" id="hud-round">0s</span></div>
+  </div>
+  <div id="canvas-wrap">
+    <canvas id="c"></canvas>
+    <div id="dpad">
+      <button id="btn-up">▲</button><button id="btn-down">▼</button>
+      <button id="btn-left">◀</button><button id="btn-right">▶</button>
+    </div>
+    <div class="screen" id="screen-start">
+      <h1>⚽ OFFSIDE<br>SIMULATOR ⚽</h1>
+      <h2>Hold deg på linja — så lenge du kan!</h2>
+      <p>
+        PILTASTER / WASD = beveg deg<br><br>
+        Hold deg tett på offside-linja<br>
+        Poeng = millisekunder nær linja<br><br>
+        Backene <b style="color:var(--gold)">dytter deg</b> — unngå å bli skjøvet ut!<br>
+        Går du i offside → ballen slås → 🚩<br><br>
+        Backene blir vanskeligere for hvert forsøk!
+      </p>
+      <button class="btn" id="btn-start">SPARK I GANG!</button>
+    </div>
+    <div class="screen hidden" id="screen-over">
+      <h1>🚩 OFFSIDE! 🚩</h1>
+      <h2 id="over-subtitle"></h2>
+      <div class="score-grid" id="score-grid"></div>
+      <p id="over-verdict"></p>
+      <div id="hs-form">
+        <input id="hs-name" maxlength="16" placeholder="Navn..." autocomplete="off" spellcheck="false"/>
+        <button id="hs-submit" class="btn">LAGRE</button>
+      </div>
+      <div id="hs-list"><p style="color:#555;text-align:center">Laster highscore…</p></div>
+      <button class="btn" id="btn-restart">PRØV IGJEN</button>
+    </div>
+  </div>
+  <div id="message-bar">&nbsp;</div>
+</div>
+<div id="offside-flash"></div>
+<script>
+// ─── CANVAS ───────────────────────────────────────────────────────────────────
+const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
+const PITCH_RATIO=105/68;
+let CW,CH,PW,PH,OX,OY,SP;
+function relayout(){
+  const w=document.getElementById('canvas-wrap');
+  CW=w.clientWidth; CH=w.clientHeight;
+  canvas.width=CW; canvas.height=CH;
+  canvas.style.left='0'; canvas.style.top='0';
+  if(CW/CH>=PITCH_RATIO){PH=CH;PW=Math.round(PH*PITCH_RATIO);}
+  else{PW=CW;PH=Math.round(PW/PITCH_RATIO);}
+  OX=Math.round((CW-PW)/2); OY=Math.round((CH-PH)/2);
+  SP=PH/400;
+}
+relayout();
+window.addEventListener('resize',()=>{relayout();if(state)render();});
+const wcx=x=>OX+x, wcy=y=>OY+y;
+const clampX=x=>Math.max(18*SP,Math.min(PW-18*SP,x));
+const clampY=y=>Math.max(18*SP,Math.min(PH-18*SP,y));
+
+// ─── CONSTANTS ───────────────────────────────────────────────────────────────
+const SCORE_ZONE_PX = 40;   // SP units behind offside line = scoring zone
+const PUSH_RADIUS   = 34;   // SP units — collision distance
+const PUSH_FORCE    = 2.2;  // push impulse — strong and clear
+const NUM_BACKS     = 4;
+// Y-slots: 4 evenly spaced rows
+const BACK_Y_SLOTS  = [0.16, 0.38, 0.62, 0.84];
+const BACK_BASE_X   = [0.72, 0.68, 0.75, 0.70]; // right half, staggered
+// Offside line must not cross halfway to the LEFT — backs stay right of centre
+const BACK_MIN_X    = 0.515; // fraction of PW — leftmost backs can go
+const BACK_MAX_X    = 0.90;  // rightmost
+// Speed at which nearest back hunts player when player is in score zone
+const HUNTER_SPEED  = 1.6;   // SP units/frame
+
+// ─── AUDIO ────────────────────────────────────────────────────────────────────
+const AC=new(window.AudioContext||window.webkitAudioContext)();
+function beep(freq,type,dur,vol=0.3,delay=0){
+  try{const o=AC.createOscillator(),g=AC.createGain();
+  o.connect(g);g.connect(AC.destination);
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,AC.currentTime+delay);
+  g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+delay+dur);
+  o.start(AC.currentTime+delay);o.stop(AC.currentTime+delay+dur);}catch(e){}
+}
+function playTick()    { beep(880,'sine',0.04,0.12); }
+function playOffside() { beep(1600,'sine',0.08,0.5); beep(1600,'sine',0.08,0.5,0.11); beep(1600,'sine',0.14,0.5,0.22); }
+function playKick()    { beep(130,'sawtooth',0.06,0.5); beep(320,'sine',0.04,0.2,0.04); }
+function playPush()    {
+  // Soft low thud — body contact, not a buzz
+  beep(90,'sine',0.08,0.18);
+  beep(55,'sine',0.06,0.10,0.04);
+}
+
+// ─── CONTENT ─────────────────────────────────────────────────────────────────
+const ONSIDE_MSGS=[
+  "På linja! Backen svetter!","Hårfint onside!",
+  "Akkurat der — mesterlig!","Inzaghi-posisjonering!",
+  "Perfekt! Hold den!","Som limt til linja!",
+  "Backene aner ingenting!","Skjønn posisjon!",
+];
+const TOO_FAR_MSGS=[
+  "Gå i bakrom, Hassan!","Kom deg opp, Hassan!",
+  "Hassan! Bakrom!","Gå på linja, Hassan!",
+  "Vær farlig, Hassan!","HASSAN! Fremover!",
+];
+const OFFSIDE_MSGS=[
+  "OFFSIDE! Flagget er oppe!","For tidlig! Du brøt linja!",
+  "VAR bekrefter: OFFSIDE!","Offsidefella klappes!",
+  "Du gikk for langt frem!","Linjemannen jublet akkurat nå.",
+];
+const VERDICTS=[
+  {min:0,    max:3000,  title:'4. DIV. KEEPERVIKAR',  text:'Offside er livsstilen din.'},
+  {min:3001, max:8000,  title:'LOKAL STALWART',        text:'Du forstår konseptet. Av og til.'},
+  {min:8001, max:18000, title:'HALVPROFF',             text:'Backene begynner å respektere deg.'},
+  {min:18001,max:35000, title:'OFFSIDE-JEGER',         text:'Du kjenner linja som din egen hånd.'},
+  {min:35001,max:60000, title:'INZAGHI-KANDIDAT',      text:'Du er aldri offside. Du er bare tidlig.'},
+  {min:60001,max:999999,title:'PIPPO INZAGHI',         text:'Du ble født i en offside-posisjon.'},
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let state, keys={}, lastTime=0;
+// totalPoints and currentRound reset on btn-restart → fresh game each time
+let totalPoints=0, currentRound=1;
+
+function makeBack(i, difficulty){
+  const baseX=PW*BACK_BASE_X[i];
+  return {
+    index:i,
+    x:baseX, y:PH*BACK_Y_SLOTS[i],
+    dir:1, legAnim:0,
+    phase:  Math.random()*Math.PI*2,
+    freq:   0.10 + i*0.02,
+    amp:    PW*(0.055 + i*0.005),
+    driftPhase: Math.random()*Math.PI*2,
+    driftAmp:   PW*0.025,
+    driftFreq:  0.04 + Math.random()*0.03,
+    baseX,
+  };
+}
+
+// Called every frame — ramps up back difficulty based on seconds survived
+function applyDifficulty(){
+  const diff = state.timeAlive / 10000; // 1 unit per 10 seconds
+  state.backs.forEach((b,i)=>{
+    b.freq     = 0.10 + diff*0.05 + i*0.02;
+    b.amp      = PW*(0.055 + diff*0.020 + i*0.005);
+    b.driftAmp = PW*(0.025 + diff*0.010);
+    b.driftFreq= 0.04 + i*0.015 + diff*0.015;
+  });
+}
+
+function initState(round){
+  return {
+    running:false, round,
+    points:0, timeAlive:0,
+    tooFarAccum:0, tooFarMsgIdx:0,
+    passer:{ x:PW*0.10, y:PH*0.50, legAnim:0, kickAnim:0 },
+    player:{ x:PW*0.60, y:PH*0.50, vx:0, vy:0, dir:1, legAnim:0, speed:3.0 },
+    backs: Array.from({length:NUM_BACKS},(_,i)=>makeBack(i,0)),
+    ball:  { x:PW*0.10, y:PH*0.50, vx:0, vy:0, flying:false,
+             targetX:0, targetY:0, ft:0, fd:0, visible:true },
+    phase:'playing',
+    offsideTimer:0,
+    effects:[],
+  };
+}
+
+function reset(round){ relayout(); state=initState(round); updateHUD(); }
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function offsideLineX(){
+  // Bakerste mann = furthest RIGHT (largest x) = closest to own goal
+  // Offside line sits on that player — attacker must stay left of him
+  // Line never crosses halfway (PW*0.51 minimum)
+  return Math.max(PW*0.51, Math.max(...state.backs.map(b=>b.x)));
+}
+function isOffside()   { return state.player.x > offsideLineX(); }
+function distToLine()  { return offsideLineX()-state.player.x; }
+function inScoreZone() { const d=distToLine(); return d>=0 && d<=SCORE_ZONE_PX*SP; }
+function setMsg(m)     { document.getElementById('message-bar').textContent=m; }
+function updateHUD()   {
+  document.getElementById('hud-pts').textContent   = Math.floor(totalPoints+state.points);
+  document.getElementById('hud-round').textContent = Math.floor(state.timeAlive/1000)+'s';
+}
+
+// ─── PITCH ────────────────────────────────────────────────────────────────────
+function drawGrass(){
+  ctx.fillStyle='#0d1f0a'; ctx.fillRect(0,0,CW,CH);
+  const sh=PH/8;
+  for(let i=0;i<8;i++){
+    ctx.fillStyle=i%2===0?'#1a5c1a':'#1e6b1e';
+    ctx.fillRect(OX,OY+i*sh,PW,sh);
+  }
+  ctx.strokeStyle='rgba(255,255,255,0.18)'; ctx.lineWidth=Math.max(1,SP*1.5);
+  ctx.strokeRect(OX+10*SP,OY+10*SP,PW-20*SP,PH-20*SP);
+  ctx.beginPath();ctx.moveTo(OX+PW/2,OY+10*SP);ctx.lineTo(OX+PW/2,OY+PH-10*SP);ctx.stroke();
+  ctx.beginPath();ctx.arc(OX+PW/2,OY+PH/2,PH*0.14,0,Math.PI*2);ctx.stroke();
+  const gaW=PW*0.03,gaH=PH*0.20;
+  ctx.strokeRect(OX+PW-10*SP-gaW,OY+PH/2-gaH/2,gaW,gaH);
+  const paW=PW*0.13,paH=PH*0.42;
+  ctx.strokeRect(OX+PW-10*SP-paW,OY+PH/2-paH/2,paW,paH);
+}
+
+function drawScoreZone(){
+  if(state.phase!=='playing') return;
+  const lx=offsideLineX();
+  const right=wcx(lx), left=wcx(lx-SCORE_ZONE_PX*SP), w=right-left;
+  ctx.save();
+  ctx.globalAlpha=inScoreZone()?0.16:0.06;
+  ctx.fillStyle='#f5c400';
+  ctx.fillRect(left,OY,w,PH);
+  ctx.restore();
+  ctx.save();
+  ctx.globalAlpha=inScoreZone()?0.45:0.13;
+  ctx.strokeStyle='#f5c400'; ctx.lineWidth=Math.max(1,SP*1.5);
+  ctx.setLineDash([4*SP,4*SP]);
+  ctx.beginPath();ctx.moveTo(left,OY+8*SP);ctx.lineTo(left,OY+PH-8*SP);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+}
+
+function drawOffsideLine(){
+  const lx=offsideLineX(), x=Math.round(wcx(lx));
+  const flagUp=state.phase==='offside_anim';
+  ctx.save();
+  ctx.globalAlpha=flagUp?0.22:0.10;
+  ctx.fillStyle=flagUp?'#ff0000':'#ff6600';
+  ctx.fillRect(x-4*SP,OY,8*SP,PH);
+  ctx.restore();
+  ctx.save();
+  ctx.strokeStyle=flagUp?'#ff2222':'#ff8800';
+  ctx.lineWidth=Math.max(2,SP*2.2);
+  ctx.setLineDash([7*SP,5*SP]);
+  ctx.beginPath();ctx.moveTo(x,OY+8*SP);ctx.lineTo(x,OY+PH-8*SP);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle='#ff6600'; ctx.lineWidth=Math.max(2,SP*2);
+  ctx.beginPath();ctx.moveTo(x,OY+8*SP);ctx.lineTo(x,OY+24*SP);ctx.stroke();
+  ctx.fillStyle='#ff6600';
+  ctx.beginPath();ctx.moveTo(x,OY+8*SP);ctx.lineTo(x+18*SP,OY+16*SP);ctx.lineTo(x,OY+24*SP);ctx.closePath();ctx.fill();
+  ctx.restore();
+}
+
+// ─── DRAW CHARACTERS ─────────────────────────────────────────────────────────
+function drawBack(b){
+  const s=SP,x=Math.round(wcx(b.x)),y=Math.round(wcy(b.y));
+  // Highlight hunter back with a subtle glow
+  if(b.isHunter){
+    ctx.save();ctx.globalAlpha=0.35;ctx.fillStyle='#ff4444';
+    ctx.beginPath();ctx.arc(x,y-10*s,20*s,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  ctx.save(); if(b.dir<0){ctx.translate(x*2,0);ctx.scale(-1,1);}
+  const la=b.legAnim,l1=Math.sin(la)*4*s,l2=Math.sin(la+Math.PI)*4*s;
+  ctx.fillStyle='#f5c07a'; ctx.fillRect(x-6*s,y+4*s,6*s,8*s+l1); ctx.fillRect(x+2*s,y+4*s,6*s,8*s+l2);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(x-7*s,y+12*s+l1,8*s,5*s); ctx.fillRect(x+1*s,y+12*s+l2,8*s,5*s);
+  ctx.fillStyle='#cc0000'; ctx.fillRect(x-6*s,y,14*s,7*s);
+  ctx.fillStyle='#cc0000'; ctx.fillRect(x-7*s,y-14*s,16*s,16*s);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(x-2*s,y-14*s,6*s,3*s);
+  ctx.fillStyle='#ffffff'; ctx.fillRect(x-7*s,y-2*s,3*s,3*s); ctx.fillRect(x+9*s,y-2*s,3*s,3*s);
+  ctx.fillStyle='#f5c07a'; ctx.fillRect(x-5*s,y-26*s,12*s,12*s);
+  ctx.fillStyle='#2a1000'; ctx.fillRect(x-5*s,y-28*s,12*s,5*s);
+  ctx.fillStyle='#111'; ctx.fillRect(x-3*s,y-23*s,3*s,3*s); ctx.fillRect(x+3*s,y-23*s,3*s,3*s);
+  ctx.fillStyle='#ffcccc'; ctx.font=`bold ${Math.max(5,Math.round(6*s))}px 'Press Start 2P',monospace`;
+  ctx.fillText('B'+(b.index+1),x-5*s,y-32*s);
+  ctx.restore();
+}
+
+function drawPasser(p){
+  const s=SP,x=Math.round(wcx(p.x)),y=Math.round(wcy(p.y));
+  ctx.save();
+  if(p.kickAnim>0){ctx.translate(x,y);ctx.rotate(0.2*Math.sin(p.kickAnim*0.35));ctx.translate(-x,-y);}
+  const la=p.legAnim,l1=Math.sin(la)*3*s,l2=Math.sin(la+Math.PI)*3*s;
+  ctx.fillStyle='#f5c07a'; ctx.fillRect(x-6*s,y+4*s,6*s,8*s+l1); ctx.fillRect(x+2*s,y+4*s,6*s,8*s+l2);
+  ctx.fillStyle='#113366'; ctx.fillRect(x-7*s,y+12*s+l1,8*s,5*s); ctx.fillRect(x+1*s,y+12*s+l2,8*s,5*s);
+  ctx.fillStyle='#1a3a88'; ctx.fillRect(x-6*s,y,14*s,7*s);
+  ctx.fillStyle='#2244aa'; ctx.fillRect(x-7*s,y-14*s,16*s,16*s);
+  ctx.fillStyle='#eee'; ctx.fillRect(x-2*s,y-14*s,6*s,3*s);
+  ctx.fillStyle='#f5c07a'; ctx.fillRect(x-5*s,y-26*s,12*s,12*s);
+  ctx.fillStyle='#5c3a00'; ctx.fillRect(x-5*s,y-28*s,12*s,4*s);
+  ctx.fillStyle='#111'; ctx.fillRect(x-3*s,y-23*s,3*s,3*s); ctx.fillRect(x+3*s,y-23*s,3*s,3*s);
+  ctx.fillStyle='#aabbff'; ctx.font=`bold ${Math.max(5,Math.round(6*s))}px 'Press Start 2P',monospace`;
+  ctx.fillText('SPILL',x-12*s,y-32*s);
+  ctx.restore();
+}
+
+function drawPlayer(p){
+  const s=SP,x=Math.round(wcx(p.x)),y=Math.round(wcy(p.y));
+  ctx.save(); if(p.dir<0){ctx.translate(x*2,0);ctx.scale(-1,1);}
+  const la=p.legAnim,l1=Math.sin(la)*4*s,l2=Math.sin(la+Math.PI)*4*s;
+  ctx.fillStyle='#f5c07a'; ctx.fillRect(x-6*s,y+4*s,6*s,8*s+l1); ctx.fillRect(x+2*s,y+4*s,6*s,8*s+l2);
+  ctx.fillStyle='#5a189a'; ctx.fillRect(x-7*s,y+12*s+l1,8*s,5*s); ctx.fillRect(x+1*s,y+12*s+l2,8*s,5*s);
+  ctx.fillStyle='#6d28a8'; ctx.fillRect(x-6*s,y,14*s,7*s);
+  ctx.fillStyle='#5a189a'; ctx.fillRect(x-7*s,y-14*s,16*s,16*s);
+  ctx.fillStyle='#f5c400'; ctx.fillRect(x-2*s,y-14*s,6*s,3*s);
+  ctx.fillStyle='#f5c400'; ctx.fillRect(x-7*s,y-2*s,3*s,3*s); ctx.fillRect(x+9*s,y-2*s,3*s,3*s);
+  ctx.fillStyle='#f5c07a'; ctx.fillRect(x-5*s,y-26*s,12*s,12*s);
+  ctx.fillStyle='#3a1a00'; ctx.fillRect(x-5*s,y-28*s,12*s,5*s);
+  ctx.fillStyle='#111'; ctx.fillRect(x-3*s,y-23*s,3*s,3*s); ctx.fillRect(x+3*s,y-23*s,3*s,3*s);
+  ctx.fillStyle='#f5c400'; ctx.font=`bold ${Math.max(5,Math.round(6*s))}px 'Press Start 2P',monospace`;
+  ctx.fillText('DEG',x-7*s,y-32*s);
+  // Hit flash: white semi-transparent overlay over whole sprite
+  if(p.hitFlash>0){
+    ctx.globalAlpha=p.hitFlash/8*0.55;
+    ctx.fillStyle='#ffffff';
+    ctx.fillRect(x-7*s,y-28*s,18*s,46*s);
+    p.hitFlash--;
+  }
+  ctx.restore();
+}
+
+function drawBall(ball){
+  if(!ball.visible) return;
+  const s=SP,x=Math.round(wcx(ball.x)),y=Math.round(wcy(ball.y));
+  let h=0;
+  if(ball.flying&&ball.fd>0){const t=ball.ft/ball.fd;h=Math.sin(t*Math.PI)*28*s;}
+  ctx.save();ctx.globalAlpha=0.2;ctx.fillStyle='#000';
+  ctx.beginPath();ctx.ellipse(x,y+2*s,8*s,3*s,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  ctx.save();
+  ctx.fillStyle='#fff';ctx.strokeStyle='#333';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.arc(x,y-h,7*s,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#222';
+  ctx.beginPath();ctx.arc(x-1*s,y-h-1*s,2.5*s,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(x+3*s,y-h+2*s,1.8*s,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+
+function drawEffects(){
+  state.effects.forEach(e=>{
+    ctx.save();const a=e.life/e.maxLife;ctx.globalAlpha=a;
+    const ex=wcx(e.x),ey=wcy(e.y),s=SP;
+    if(e.type==='text'){
+      const sz=(e.size||12)*s;
+      ctx.font=`bold ${Math.max(7,Math.round(sz))}px 'Press Start 2P',monospace`;
+      ctx.fillStyle=e.color||'#f5c400';ctx.strokeStyle='#000';ctx.lineWidth=3;
+      const yy=ey-(1-a)*28*s;
+      ctx.strokeText(e.text,ex,yy);ctx.fillText(e.text,ex,yy);
+    }
+    ctx.restore();
+  });
+}
+
+// ─── GAME LOGIC ──────────────────────────────────────────────────────────────
+function triggerOffside(){
+  if(state.phase!=='playing') return;
+  state.phase='offside_anim';
+  state.offsideTimer=130;
+  const ball=state.ball,lx=offsideLineX();
+  ball.targetX=Math.min(PW-20*SP,lx+PW*0.28);
+  ball.targetY=PH*(0.2+Math.random()*0.6);
+  ball.flying=true;ball.fd=55;ball.ft=ball.fd;
+  ball.vx=(ball.targetX-ball.x)/ball.fd;
+  ball.vy=(ball.targetY-ball.y)/ball.fd;
+  state.passer.kickAnim=22;
+  playKick();
+  document.getElementById('offside-flash').style.opacity='1';
+  setTimeout(()=>document.getElementById('offside-flash').style.opacity='0',180);
+  setTimeout(()=>playOffside(),200);
+  setMsg('🚩 '+OFFSIDE_MSGS[Math.floor(Math.random()*OFFSIDE_MSGS.length)]);
+  state.effects.push({type:'text',x:state.player.x,y:state.player.y-20*SP,
+    text:'OFFSIDE!',life:90,maxLife:90,size:14,color:'#ff3333'});
+}
+
+function updateBacks(dt){
+  const dtSec=dt/1000;
+  const p=state.player;
+
+  // Find nearest back to player — becomes hunter when player is in score zone
+  let hunterIdx=-1;
+  if(inScoreZone()){
+    let minDist=Infinity;
+    state.backs.forEach((b,i)=>{
+      const d=Math.hypot(b.x-p.x, b.y-p.y);
+      if(d<minDist){minDist=d;hunterIdx=i;}
+    });
+  }
+  state.backs.forEach((b,i)=>b.isHunter=(i===hunterIdx));
+
+  state.backs.forEach((b,i)=>{
+    if(b.isHunter){
+      // ── HUNTER: move freely in 2D toward player ──────────────────────────
+      const dx=p.x-b.x, dy=p.y-b.y;
+      const dist=Math.hypot(dx,dy)||1;
+      const spd=HUNTER_SPEED*SP;
+      b.x += (dx/dist)*spd;
+      b.y += (dy/dist)*spd;
+      b.x = Math.max(PW*BACK_MIN_X, Math.min(PW*BACK_MAX_X, b.x));
+      b.y = Math.max(18*SP, Math.min(PH-18*SP, b.y));
+      if(dx>0.2) b.dir=1; else if(dx<-0.2) b.dir=-1;
+      b.legAnim += spd*0.09;
+    } else {
+      // ── NORMAL: sine oscillation in x, return to y-lane ──────────────────
+      b.phase      += b.freq      * dtSec * Math.PI*2;
+      b.driftPhase += b.driftFreq * dtSec * Math.PI*2;
+      const drift   = Math.sin(b.driftPhase)*b.driftAmp;
+      const targetX = b.baseX + Math.sin(b.phase)*b.amp + drift;
+      const clampedX= Math.max(PW*BACK_MIN_X, Math.min(PW*BACK_MAX_X, targetX));
+      // Return y gently to lane
+      const laneY   = PH*BACK_Y_SLOTS[i];
+      b.y += (laneY-b.y)*0.06;
+      const moved   = clampedX-b.x;
+      if(moved>0.2) b.dir=1; else if(moved<-0.2) b.dir=-1;
+      b.legAnim    += Math.abs(moved)*0.09;
+      b.x           = clampedX;
+    }
+  });
+}
+
+function applyCollisions(){
+  const p=state.player;
+  let anyPush=false;
+  state.backs.forEach(b=>{
+    const dx=p.x-b.x, dy=p.y-b.y;
+    const dist=Math.hypot(dx,dy)||0.01;
+    const minDist=PUSH_RADIUS*SP;
+    if(dist<minDist){
+      const nx=dx/dist, ny=dy/dist;
+      const overlap=minDist-dist;
+      // Hard positional separation so figures don't overlap
+      p.x += nx*overlap*0.5;
+      p.y += ny*overlap*0.5;
+      p.x=clampX(p.x); p.y=clampY(p.y);
+      // Clear velocity impulse in push direction
+      p.vx += nx * PUSH_FORCE * SP;
+      p.vy += ny * PUSH_FORCE * SP;
+      // Only trigger flash+sound on fresh contact (not every frame)
+      if(!b.inContact){
+        anyPush=true;
+        p.hitFlash=8;
+      }
+      b.inContact=true;
+    } else {
+      b.inContact=false;
+    }
+  });
+  if(anyPush) playPush();
+}
+
+function updatePlayer(){
+  const p=state.player,spd=p.speed*SP;
+  let dx=0,dy=0;
+  if(keys['ArrowLeft']||keys['a']||keys['A']) dx-=1;
+  if(keys['ArrowRight']||keys['d']||keys['D']) dx+=1;
+  if(keys['ArrowUp']||keys['w']||keys['W'])   dy-=1;
+  if(keys['ArrowDown']||keys['s']||keys['S']) dy+=1;
+  if(dx||dy){
+    const len=Math.hypot(dx,dy);
+    p.vx+=(dx/len)*spd*0.3; p.vy+=(dy/len)*spd*0.3;
+    if(dx) p.dir=dx>0?1:-1;
+    p.legAnim+=0.22;
+  }
+  // Cap speed
+  const vel=Math.hypot(p.vx,p.vy);
+  if(vel>spd){p.vx=(p.vx/vel)*spd;p.vy=(p.vy/vel)*spd;}
+  // Friction
+  p.vx*=0.75; p.vy*=0.75;
+  p.x=clampX(p.x+p.vx);
+  p.y=clampY(p.y+p.vy);
+}
+
+function updateBall(){
+  const ball=state.ball;
+  if(!ball.flying) return;
+  ball.x+=ball.vx;ball.y+=ball.vy;ball.ft--;
+  if(ball.ft<=0){ball.x=ball.targetX;ball.y=ball.targetY;ball.flying=false;}
+}
+
+function updateEffects(){ state.effects=state.effects.filter(e=>{e.life--;return e.life>0;}); }
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render(){
+  drawGrass();
+  drawScoreZone();
+  drawOffsideLine();
+
+  const ents=[
+    {type:'passer',obj:state.passer,y:state.passer.y},
+    {type:'player',obj:state.player,y:state.player.y},
+    ...state.backs.map(b=>({type:'back',obj:b,y:b.y})),
+  ].sort((a,b)=>a.y-b.y);
+  for(const e of ents){
+    if(e.type==='passer')      drawPasser(e.obj);
+    else if(e.type==='player') drawPlayer(e.obj);
+    else if(e.type==='back')   drawBack(e.obj);
+  }
+  drawBall(state.ball);
+  drawEffects();
+
+  if(state.phase==='playing'){
+    const px=wcx(state.player.x),py=wcy(state.player.y);
+    ctx.save();
+    ctx.font=`bold ${Math.max(6,Math.round(7*SP))}px 'Press Start 2P',monospace`;
+    ctx.lineWidth=2; ctx.strokeStyle='#000';
+    if(isOffside()){
+      ctx.fillStyle='#ff3333';
+      ctx.strokeText('OFFSIDE!',px-22*SP,py-44*SP);
+      ctx.fillText('OFFSIDE!',px-22*SP,py-44*SP);
+    } else if(inScoreZone()){
+      ctx.fillStyle='#f5c400';
+      ctx.strokeText('✓ PÅ LINJA',px-26*SP,py-44*SP);
+      ctx.fillText('✓ PÅ LINJA',px-26*SP,py-44*SP);
+    }
+    ctx.restore();
+  }
+}
+
+// ─── LOOP ─────────────────────────────────────────────────────────────────────
+function loop(ts){
+  if(!state.running) return;
+  const dt=Math.min(ts-lastTime,50); lastTime=ts;
+
+  if(state.phase==='playing'){
+    updatePlayer();
+    updateBacks(dt);
+    applyCollisions();
+    applyDifficulty();
+
+    // Always count time alive and update HUD timer
+    state.timeAlive+=dt;
+    updateHUD();
+
+    if(isOffside()){
+      triggerOffside();
+    } else {
+      if(inScoreZone()){
+        state.points+=dt;
+        if(Math.floor((state.points-dt)/2000)<Math.floor(state.points/2000)){
+          setMsg(ONSIDE_MSGS[Math.floor(Math.random()*ONSIDE_MSGS.length)]);
+          playTick();
+        }
+        state.tooFarAccum=0;
+      } else {
+        state.tooFarAccum+=dt;
+        if(state.tooFarAccum>2200){
+          state.tooFarAccum=0;
+          setMsg('"'+TOO_FAR_MSGS[state.tooFarMsgIdx++%TOO_FAR_MSGS.length]+'"');
+        }
+      }
+    }
+  } else if(state.phase==='offside_anim'){
+    updateBall();
+    state.offsideTimer-=dt/16.67;
+    if(state.offsideTimer<=0) endRound();
+  }
+
+  if(state.passer.kickAnim>0){state.passer.kickAnim--;state.passer.legAnim+=0.3;}
+  updateEffects();
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ─── HIGHSCORE ────────────────────────────────────────────────────────────────
+const BIN_ID    = '6a296030da38895dfea68cb4';
+const BIN_KEY   = '$2a$10$v46Nd68djuE34jl8aGcpCOEW02BIB4BV8Lh2.KYRF/xx0enC2tx0G';
+const MASTER_KEY= '$2a$10$8F1aB51/b14ucs0NzO0gzewsxB65V3tXSjyK//YqWcGbpeZmjQCra';
+const BIN_URL   = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const HEADERS   = {
+  'Content-Type' : 'application/json',
+  'X-Access-Key' : BIN_KEY,
+  'X-Master-Key' : MASTER_KEY,
+};
+
+async function fetchScores(){
+  try{
+    const r=await fetch(BIN_URL+'/latest',{headers:HEADERS});
+    const d=await r.json();
+    return d.record.scores||[];
+  }catch(e){ return []; }
+}
+
+async function saveScore(name, pts){
+  const scores=await fetchScores();
+  scores.push({name:name.trim().slice(0,16), score:Math.floor(pts), date:new Date().toLocaleDateString('nb-NO')});
+  scores.sort((a,b)=>b.score-a.score);
+  const top=scores.slice(0,10);
+  await fetch(BIN_URL,{method:'PUT',headers:HEADERS,body:JSON.stringify({scores:top})});
+  return top;
+}
+
+function renderScores(scores, highlightName){
+  const el=document.getElementById('hs-list');
+  if(!scores.length){el.innerHTML='<p style="color:#555;text-align:center">Ingen scores ennå!</p>';return;}
+  const medals=['🥇','🥈','🥉'];
+  const rows=scores.map((s,i)=>{
+    const hi=s.name===highlightName?'style="color:var(--gold);font-weight:bold"':'';
+    return `<tr ${hi}>
+      <td class="hs-rank">${medals[i]||'#'+(i+1)}</td>
+      <td>${s.name}</td>
+      <td class="hs-score">${s.score.toLocaleString('nb-NO')}</td>
+      <td style="color:#555">${s.date||''}</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML=`<table>${rows}</table>`;
+}
+
+// ─── END ROUND ────────────────────────────────────────────────────────────────
+function endRound(){
+  state.running=false;
+  totalPoints+=state.points;
+  const v=VERDICTS.find(v=>totalPoints>=v.min&&totalPoints<=v.max)||VERDICTS[0];
+  document.getElementById('over-subtitle').textContent=v.title;
+  document.getElementById('over-verdict').textContent=v.text;
+  const secs=(state.timeAlive/1000).toFixed(1);
+  document.getElementById('score-grid').innerHTML=`
+    <div>Poeng (ms):</div><div><span>${Math.floor(state.points)}</span></div>
+    <div>Totalt:</div><div><span>${Math.floor(totalPoints)}</span></div>
+    <div>Tid onside:</div><div><span>${secs}s</span></div>
+    <div>Runde:</div><div><span>${state.round}</span></div>
+  `;
+  document.getElementById('screen-over').classList.remove('hidden');
+  // Reset submit button state
+  const btn=document.getElementById('hs-submit');
+  btn.disabled=false; btn.textContent='LAGRE';
+  document.getElementById('hs-name').value='';
+  // Load current scores
+  fetchScores().then(scores=>renderScores(scores,''));
+}
+
+// ─── CONTROLS ─────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  keys[e.key]=true;
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+});
+document.addEventListener('keyup',e=>{keys[e.key]=false;});
+['up','down','left','right'].forEach(dir=>{
+  const btn=document.getElementById('btn-'+dir);
+  const k={up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[dir];
+  btn.addEventListener('touchstart',e=>{keys[k]=true;e.stopPropagation();},{passive:true});
+  btn.addEventListener('touchend',  e=>{keys[k]=false;e.stopPropagation();},{passive:true});
+  btn.addEventListener('mousedown',()=>keys[k]=true);
+  btn.addEventListener('mouseup',  ()=>keys[k]=false);
+});
+
+document.getElementById('hs-submit').addEventListener('click', async ()=>{
+  const nameEl=document.getElementById('hs-name');
+  const name=nameEl.value.trim();
+  if(!name) { nameEl.focus(); return; }
+  const btn=document.getElementById('hs-submit');
+  btn.disabled=true; btn.textContent='LAGRER…';
+  const scores=await saveScore(name, totalPoints);
+  renderScores(scores, name);
+  btn.textContent='LAGRET ✓';
+});
+
+document.getElementById('btn-start').addEventListener('click',()=>{
+  AC.resume();
+  document.getElementById('screen-start').classList.add('hidden');
+  totalPoints=0; currentRound=1;
+  reset(currentRound); state.running=true; lastTime=performance.now();
+  setMsg('Hold deg tett på offside-linja!');
+  requestAnimationFrame(loop);
+});
+
+document.getElementById('btn-restart').addEventListener('click',()=>{
+  document.getElementById('screen-over').classList.add('hidden');
+  totalPoints=0; currentRound=1;
+  reset(currentRound); state.running=true; lastTime=performance.now();
+  setMsg('Hold deg tett på offside-linja!');
+  requestAnimationFrame(loop);
+});
+
+reset(1); render();
+</script>
+</body>
+</html>
