@@ -47,7 +47,7 @@
   #hs-list tr:nth-child(2) td { color:#ccc; }
   #hs-list tr:nth-child(3) td { color:#cd7f32; }
   #hs-list .hs-rank { width:28px; text-align:right; }
-  #hs-list .hs-score { text-align:right; color:var(--gold); }
+  #hs-list-start { width:100%; max-width:340px; font-size:clamp(7px,1.4vw,10px); color:#aaa; }
 </style>
 </head>
 <body>
@@ -74,6 +74,7 @@
         Går du i offside → ballen slås → 🚩<br><br>
         Backene blir vanskeligere for hvert forsøk!
       </p>
+      <div id="hs-list-start"><p style="color:#555;text-align:center">Laster highscore…</p></div>
       <button class="btn" id="btn-start">SPARK I GANG!</button>
     </div>
     <div class="screen hidden" id="screen-over">
@@ -631,20 +632,25 @@ async function saveScore(name, pts){
 }
 
 function renderScores(scores, highlightName){
-  const el=document.getElementById('hs-list');
-  if(!scores.length){el.innerHTML='<p style="color:#555;text-align:center">Ingen scores ennå!</p>';return;}
   const medals=['🥇','🥈','🥉'];
-  const rows=scores.map((s,i)=>{
-    const hi=s.name===highlightName?'style="color:var(--gold);font-weight:bold"':'';
+  const rows=scores.length ? scores.map((s,i)=>{
+    const hi=s.name===highlightName?'style="color:var(--gold)"':'';
     return `<tr ${hi}>
       <td class="hs-rank">${medals[i]||'#'+(i+1)}</td>
       <td>${s.name}</td>
       <td class="hs-score">${s.score.toLocaleString('nb-NO')}</td>
       <td style="color:#555">${s.date||''}</td>
     </tr>`;
-  }).join('');
-  el.innerHTML=`<table>${rows}</table>`;
+  }).join('') : '<tr><td colspan="4" style="color:#555;text-align:center">Ingen scores ennå!</td></tr>';
+  const html=`<table>${rows}</table>`;
+  const a=document.getElementById('hs-list');
+  const b=document.getElementById('hs-list-start');
+  if(a) a.innerHTML=html;
+  if(b) b.innerHTML=html;
 }
+
+// Load scores immediately on page load so start screen shows them
+fetchScores().then(scores=>renderScores(scores,''));
 
 // ─── END ROUND ────────────────────────────────────────────────────────────────
 function endRound(){
