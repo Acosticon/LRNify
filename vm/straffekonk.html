@@ -193,6 +193,20 @@ h1,h2{font-family:'Barlow Condensed',sans-serif;}
 .emoji-pop{position:absolute;font-size:24px;animation:epop 1.15s ease-out forwards;pointer-events:none;z-index:6;}
 @keyframes epop{from{transform:translateY(0) scale(0.6);opacity:1;}to{transform:translateY(-80px) scale(1.4);opacity:0;}}
 
+/* annonsering av hvem som skyter */
+#kickAnnounce{
+  position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;
+  background:rgba(0,0,0,0.55);z-index:7;text-align:center;
+}
+#kickAnnounce.show{display:flex;}
+.ka-shooter{
+  font-family:'Barlow Condensed',sans-serif;font-size:clamp(26px,6vw,42px);font-weight:800;
+  letter-spacing:1px;padding:6px 22px;border-radius:8px;color:#fff;
+  border:3px solid #fff;animation:kaPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ka-vs{font-family:'Oswald',sans-serif;font-size:13px;color:#ddd;letter-spacing:2px;margin-top:10px;}
+@keyframes kaPop{from{transform:scale(0.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+
 .touch-rows{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .touch-side{border-radius:10px;padding:8px;border:2px solid var(--tkit,transparent);}
 .touch-side.inactive{opacity:0.25;pointer-events:none;}
@@ -208,7 +222,7 @@ h1,h2{font-family:'Barlow Condensed',sans-serif;}
 #championScreen{text-align:center;padding:20px 0;}
 .champ-trophy{font-size:96px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 30px rgba(244,196,48,0.7));}
 @keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
-.champ-flag{font-size:64px;margin:8px 0;}
+.champ-flag{margin:16px 0;display:flex;justify-content:center;}
 .champ-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;letter-spacing:2px;color:var(--gold);}
 .champ-sub{font-size:14px;color:var(--muted);margin-top:6px;}
 
@@ -299,9 +313,10 @@ h1,h2{font-family:'Barlow Condensed',sans-serif;}
         <div class="vctrl" id="miCtrlB"></div>
       </div>
     </div>
-    <p class="muted" style="margin-top:16px;">Best av tre straffer. Likt etter tre? <strong style="color:var(--gold);">Sudden death.</strong><br>Skytter og keeper velger hjørne i skjul – samtidig!</p>
+    <div id="miFirstShot" style="margin-top:14px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;letter-spacing:1px;color:var(--gold);text-align:center;"></div>
+    <p class="muted" style="margin-top:10px;">Best av tre straffer. Likt etter tre? <strong style="color:var(--gold);">Sudden death.</strong><br>Skytter og keeper velger hjørne i skjul – samtidig!</p>
   </div>
-  <div class="btn-row"><button class="btn-primary" onclick="beginPenalties()">⚽ Til ellevemeteren</button></div>
+  <div class="btn-row"><button class="btn-primary" onclick="beginPenalties()">✅ Klar</button></div>
 </div>
 
 <div id="penaltyScreen" class="screen">
@@ -317,6 +332,7 @@ h1,h2{font-family:'Barlow Condensed',sans-serif;}
   <div id="arena">
     <div class="ready-chip left" id="readyL">SKYTTER</div>
     <div class="ready-chip right" id="readyR">KEEPER</div>
+    <div id="kickAnnounce"><div class="ka-shooter" id="kaShooter">⚽ HAALAND SKYTER</div><div class="ka-vs" id="kaKeeper">🧤 KEEPER: MBAPPÉ</div></div>
     <svg viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" aria-label="Straffesparkarena">
       <rect x="0" y="0" width="600" height="140" fill="#0d1410"/>
       <g id="crowdG" opacity="0.75">
@@ -434,55 +450,61 @@ h1,h2{font-family:'Barlow Condensed',sans-serif;}
 /* ============================================================
    KONFIG – 48 VM-lag med beste spiller og draktfarger [hoved, sekundær]
    ============================================================ */
+/* flagImg(iso, px) → <img> fra flagcdn.com. England/Skottland bruker gb-eng/gb-sct. */
+function flagImg(iso,px=20){
+  const s=px<=20?'w20':px<=40?'w40':px<=80?'w80':'w160';
+  return `<img src="https://flagcdn.com/${s}/${iso}.png" width="${px}" height="${Math.round(px*0.67)}" style="border-radius:2px;vertical-align:middle;display:inline-block;" alt="${iso}">`;
+}
+
 const TEAMS=[
- {name:"NORGE",flag:"🇳🇴",star:"Haaland",phrase:"Maskinen scorer igjen!",kit:["#d32f2f","#fff"]},
- {name:"FRANKRIKE",flag:"🇫🇷",star:"Mbappé",phrase:"Lynet fra Paris slår til!",kit:["#1a3a8f","#fff"]},
- {name:"ARGENTINA",flag:"🇦🇷",star:"Messi",phrase:"Magikeren leverer!",kit:["#75aadb","#fff"]},
- {name:"BRASIL",flag:"🇧🇷",star:"Vinícius Jr.",phrase:"Samba i nettmaskene!",kit:["#ffd600","#1a3a8f"]},
- {name:"ENGLAND",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",star:"Bellingham",phrase:"Hey Jude – for en straffe!",kit:["#f5f5f5","#1a3a8f"]},
- {name:"SPANIA",flag:"🇪🇸",star:"Lamine Yamal",phrase:"Vidunderbarnet er iskald!",kit:["#c62828","#ffd600"]},
- {name:"PORTUGAL",flag:"🇵🇹",star:"Ronaldo",phrase:"Siuuu!",kit:["#b71c1c","#1b5e20"]},
- {name:"TYSKLAND",flag:"🇩🇪",star:"Wirtz",phrase:"Tysk presisjon!",kit:["#f5f5f5","#111"]},
- {name:"NEDERLAND",flag:"🇳🇱",star:"Van Dijk",phrase:"Kapteinen viser vei!",kit:["#f57c00","#fff"]},
- {name:"ITALIA",flag:"🇮🇹",star:"Donnarumma",phrase:"Selv keeperen scorer!",kit:["#1565c0","#fff"]},
- {name:"BELGIA",flag:"🇧🇪",star:"De Bruyne",phrase:"Som en målgivende til seg selv!",kit:["#c62828","#111"]},
- {name:"KROATIA",flag:"🇭🇷",star:"Modrić",phrase:"Maestroen dirigerer!",kit:["#e53935","#fff"]},
- {name:"URUGUAY",flag:"🇺🇾",star:"Valverde",phrase:"Kanonkula fra Montevideo!",kit:["#64b5f6","#111"]},
- {name:"USA",flag:"🇺🇸",star:"Pulisic",phrase:"Captain America leverer!",kit:["#f5f5f5","#1a3a8f"]},
- {name:"MAROKKO",flag:"🇲🇦",star:"Hakimi",phrase:"Atlas-løvene brøler!",kit:["#c62828","#1b5e20"]},
- {name:"JAPAN",flag:"🇯🇵",star:"Kubo",phrase:"Samuraien hugger til!",kit:["#1a237e","#fff"]},
- {name:"MEXICO",flag:"🇲🇽",star:"S. Giménez",phrase:"El Bebote feirer!",kit:["#1b5e20","#fff"]},
- {name:"CANADA",flag:"🇨🇦",star:"Davies",phrase:"Raskere enn vinden!",kit:["#d32f2f","#fff"]},
- {name:"DANMARK",flag:"🇩🇰",star:"Højlund",phrase:"Dansk dynamitt!",kit:["#d32f2f","#fff"]},
- {name:"SVEITS",flag:"🇨🇭",star:"Xhaka",phrase:"Sveitsisk urverk!",kit:["#d32f2f","#fff"]},
- {name:"ØSTERRIKE",flag:"🇦🇹",star:"Alaba",phrase:"Wien jubler!",kit:["#d32f2f","#fff"]},
- {name:"SKOTTLAND",flag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿",star:"McTominay",phrase:"Sekkepipene spiller!",kit:["#1a237e","#fff"]},
- {name:"TYRKIA",flag:"🇹🇷",star:"Güler",phrase:"Krøllen fra Arda!",kit:["#d32f2f","#fff"]},
- {name:"POLEN",flag:"🇵🇱",star:"Lewandowski",phrase:"Lewangoalski!",kit:["#f5f5f5","#d32f2f"]},
- {name:"COLOMBIA",flag:"🇨🇴",star:"Luis Díaz",phrase:"Lucho danser forbi!",kit:["#ffd600","#1a3a8f"]},
- {name:"ECUADOR",flag:"🇪🇨",star:"Caicedo",phrase:"Midtbanegeneralen!",kit:["#ffd600","#1a237e"]},
- {name:"PARAGUAY",flag:"🇵🇾",star:"Almirón",phrase:"Guaraní-magi!",kit:["#d32f2f","#fff"]},
- {name:"SENEGAL",flag:"🇸🇳",star:"Mané",phrase:"Løvene fra Teranga!",kit:["#f5f5f5","#1b5e20"]},
- {name:"EGYPT",flag:"🇪🇬",star:"Salah",phrase:"Faraoenes konge!",kit:["#d32f2f","#fff"]},
- {name:"ALGERIE",flag:"🇩🇿",star:"Mahrez",phrase:"Ørkenrevene slår til!",kit:["#f5f5f5","#1b5e20"]},
- {name:"ELFENBENSKYSTEN",flag:"🇨🇮",star:"Kessié",phrase:"Elefantene tramper inn!",kit:["#f57c00","#fff"]},
- {name:"GHANA",flag:"🇬🇭",star:"Kudus",phrase:"Black Stars skinner!",kit:["#f5f5f5","#111"]},
- {name:"SØR-AFRIKA",flag:"🇿🇦",star:"Foster",phrase:"Bafana Bafana!",kit:["#ffd600","#1b5e20"]},
- {name:"KAPP VERDE",flag:"🇨🇻",star:"Mendes",phrase:"Øyfolket sjokkerer!",kit:["#1565c0","#fff"]},
- {name:"TUNISIA",flag:"🇹🇳",star:"Msakni",phrase:"Kartagos ørner!",kit:["#d32f2f","#fff"]},
- {name:"SØR-KOREA",flag:"🇰🇷",star:"Son",phrase:"Sonny smiler bredt!",kit:["#d32f2f","#111"]},
- {name:"IRAN",flag:"🇮🇷",star:"Taremi",phrase:"Persisk presisjon!",kit:["#f5f5f5","#c62828"]},
- {name:"SAUDI-ARABIA",flag:"🇸🇦",star:"Al-Dawsari",phrase:"Den grønne falken!",kit:["#1b5e20","#fff"]},
- {name:"AUSTRALIA",flag:"🇦🇺",star:"Irvine",phrase:"Socceroos hopper høyt!",kit:["#ffd600","#1b5e20"]},
- {name:"QATAR",flag:"🇶🇦",star:"Afif",phrase:"Ørkenstormen!",kit:["#7b1d3b","#fff"]},
- {name:"USBEKISTAN",flag:"🇺🇿",star:"Shomurodov",phrase:"Historisk for Usbekistan!",kit:["#f5f5f5","#1565c0"]},
- {name:"JORDAN",flag:"🇯🇴",star:"Al-Naimat",phrase:"Jordan skriver historie!",kit:["#d32f2f","#fff"]},
- {name:"NEW ZEALAND",flag:"🇳🇿",star:"Wood",phrase:"All Whites leverer!",kit:["#f5f5f5","#111"]},
- {name:"PANAMA",flag:"🇵🇦",star:"Carrasquilla",phrase:"Kanalfeber!",kit:["#d32f2f","#fff"]},
- {name:"CURAÇAO",flag:"🇨🇼",star:"Bacuna",phrase:"Karibisk fest!",kit:["#1565c0","#ffd600"]},
- {name:"HAITI",flag:"🇭🇹",star:"Pierrot",phrase:"Grenadierene jubler!",kit:["#1565c0","#d32f2f"]},
- {name:"JAMAICA",flag:"🇯🇲",star:"Antonio",phrase:"Reggae Boyz!",kit:["#ffd600","#1b5e20"]},
- {name:"SERBIA",flag:"🇷🇸",star:"Vlahović",phrase:"Ørnen fra Beograd!",kit:["#d32f2f","#1a3a8f"]},
+ {name:"NORGE",flag:"no",star:"Haaland",phrase:"Maskinen scorer igjen!",kit:["#d32f2f","#fff"]},
+ {name:"FRANKRIKE",flag:"fr",star:"Mbappé",phrase:"Lynet fra Paris slår til!",kit:["#1a3a8f","#fff"]},
+ {name:"ARGENTINA",flag:"ar",star:"Messi",phrase:"Magikeren leverer!",kit:["#75aadb","#fff"]},
+ {name:"BRASIL",flag:"br",star:"Vinícius Jr.",phrase:"Samba i nettmaskene!",kit:["#ffd600","#1a3a8f"]},
+ {name:"ENGLAND",flag:"gb-eng",star:"Bellingham",phrase:"Hey Jude – for en straffe!",kit:["#f5f5f5","#1a3a8f"]},
+ {name:"SPANIA",flag:"es",star:"Lamine Yamal",phrase:"Vidunderbarnet er iskald!",kit:["#c62828","#ffd600"]},
+ {name:"PORTUGAL",flag:"pt",star:"Ronaldo",phrase:"Siuuu!",kit:["#b71c1c","#1b5e20"]},
+ {name:"TYSKLAND",flag:"de",star:"Wirtz",phrase:"Tysk presisjon!",kit:["#f5f5f5","#111"]},
+ {name:"NEDERLAND",flag:"nl",star:"Van Dijk",phrase:"Kapteinen viser vei!",kit:["#f57c00","#fff"]},
+ {name:"ITALIA",flag:"it",star:"Donnarumma",phrase:"Selv keeperen scorer!",kit:["#1565c0","#fff"]},
+ {name:"BELGIA",flag:"be",star:"De Bruyne",phrase:"Som en målgivende til seg selv!",kit:["#c62828","#111"]},
+ {name:"KROATIA",flag:"hr",star:"Modrić",phrase:"Maestroen dirigerer!",kit:["#e53935","#fff"]},
+ {name:"URUGUAY",flag:"uy",star:"Valverde",phrase:"Kanonkula fra Montevideo!",kit:["#64b5f6","#111"]},
+ {name:"USA",flag:"us",star:"Pulisic",phrase:"Captain America leverer!",kit:["#f5f5f5","#1a3a8f"]},
+ {name:"MAROKKO",flag:"ma",star:"Hakimi",phrase:"Atlas-løvene brøler!",kit:["#c62828","#1b5e20"]},
+ {name:"JAPAN",flag:"jp",star:"Kubo",phrase:"Samuraien hugger til!",kit:["#1a237e","#fff"]},
+ {name:"MEXICO",flag:"mx",star:"S. Giménez",phrase:"El Bebote feirer!",kit:["#1b5e20","#fff"]},
+ {name:"CANADA",flag:"ca",star:"Davies",phrase:"Raskere enn vinden!",kit:["#d32f2f","#fff"]},
+ {name:"DANMARK",flag:"dk",star:"Højlund",phrase:"Dansk dynamitt!",kit:["#d32f2f","#fff"]},
+ {name:"SVEITS",flag:"ch",star:"Xhaka",phrase:"Sveitsisk urverk!",kit:["#d32f2f","#fff"]},
+ {name:"ØSTERRIKE",flag:"at",star:"Alaba",phrase:"Wien jubler!",kit:["#d32f2f","#fff"]},
+ {name:"SKOTTLAND",flag:"gb-sct",star:"McTominay",phrase:"Sekkepipene spiller!",kit:["#1a237e","#fff"]},
+ {name:"TYRKIA",flag:"tr",star:"Güler",phrase:"Krøllen fra Arda!",kit:["#d32f2f","#fff"]},
+ {name:"POLEN",flag:"pl",star:"Lewandowski",phrase:"Lewangoalski!",kit:["#f5f5f5","#d32f2f"]},
+ {name:"COLOMBIA",flag:"co",star:"Luis Díaz",phrase:"Lucho danser forbi!",kit:["#ffd600","#1a3a8f"]},
+ {name:"ECUADOR",flag:"ec",star:"Caicedo",phrase:"Midtbanegeneralen!",kit:["#ffd600","#1a237e"]},
+ {name:"PARAGUAY",flag:"py",star:"Almirón",phrase:"Guaraní-magi!",kit:["#d32f2f","#fff"]},
+ {name:"SENEGAL",flag:"sn",star:"Mané",phrase:"Løvene fra Teranga!",kit:["#f5f5f5","#1b5e20"]},
+ {name:"EGYPT",flag:"eg",star:"Salah",phrase:"Faraoenes konge!",kit:["#d32f2f","#fff"]},
+ {name:"ALGERIE",flag:"dz",star:"Mahrez",phrase:"Ørkenrevene slår til!",kit:["#f5f5f5","#1b5e20"]},
+ {name:"ELFENBENSKYSTEN",flag:"ci",star:"Kessié",phrase:"Elefantene tramper inn!",kit:["#f57c00","#fff"]},
+ {name:"GHANA",flag:"gh",star:"Kudus",phrase:"Black Stars skinner!",kit:["#f5f5f5","#111"]},
+ {name:"SØR-AFRIKA",flag:"za",star:"Foster",phrase:"Bafana Bafana!",kit:["#ffd600","#1b5e20"]},
+ {name:"KAPP VERDE",flag:"cv",star:"Mendes",phrase:"Øyfolket sjokkerer!",kit:["#1565c0","#fff"]},
+ {name:"TUNISIA",flag:"tn",star:"Msakni",phrase:"Kartagos ørner!",kit:["#d32f2f","#fff"]},
+ {name:"SØR-KOREA",flag:"kr",star:"Son",phrase:"Sonny smiler bredt!",kit:["#d32f2f","#111"]},
+ {name:"IRAN",flag:"ir",star:"Taremi",phrase:"Persisk presisjon!",kit:["#f5f5f5","#c62828"]},
+ {name:"SAUDI-ARABIA",flag:"sa",star:"Al-Dawsari",phrase:"Den grønne falken!",kit:["#1b5e20","#fff"]},
+ {name:"AUSTRALIA",flag:"au",star:"Irvine",phrase:"Socceroos hopper høyt!",kit:["#ffd600","#1b5e20"]},
+ {name:"QATAR",flag:"qa",star:"Afif",phrase:"Ørkenstormen!",kit:["#7b1d3b","#fff"]},
+ {name:"USBEKISTAN",flag:"uz",star:"Shomurodov",phrase:"Historisk for Usbekistan!",kit:["#f5f5f5","#1565c0"]},
+ {name:"JORDAN",flag:"jo",star:"Al-Naimat",phrase:"Jordan skriver historie!",kit:["#d32f2f","#fff"]},
+ {name:"NEW ZEALAND",flag:"nz",star:"Wood",phrase:"All Whites leverer!",kit:["#f5f5f5","#111"]},
+ {name:"PANAMA",flag:"pa",star:"Carrasquilla",phrase:"Kanalfeber!",kit:["#d32f2f","#fff"]},
+ {name:"CURAÇAO",flag:"cw",star:"Bacuna",phrase:"Karibisk fest!",kit:["#1565c0","#ffd600"]},
+ {name:"HAITI",flag:"ht",star:"Pierrot",phrase:"Grenadierene jubler!",kit:["#1565c0","#d32f2f"]},
+ {name:"JAMAICA",flag:"jm",star:"Antonio",phrase:"Reggae Boyz!",kit:["#ffd600","#1b5e20"]},
+ {name:"SERBIA",flag:"rs",star:"Vlahović",phrase:"Ørnen fra Beograd!",kit:["#d32f2f","#1a3a8f"]},
 ];
 
 const ROUND_NAMES=["ÅTTEDELSFINALE","KVARTFINALE","SEMIFINALE","VM-FINALE"];
@@ -509,14 +531,14 @@ function setPlayers(n){G={numHumans:n,humans:[],pickIdx:0};renderPick();showScre
 
 function renderPick(){
   document.getElementById('pickTurn').textContent=`Spiller ${G.pickIdx+1} velger lag`;
-  document.getElementById('pickedRow').innerHTML=G.humans.map((h,i)=>`<div class="picked-chip">${TEAMS[h.teamIdx].flag} Spiller ${i+1}: ${TEAMS[h.teamIdx].name}</div>`).join('');
+  document.getElementById('pickedRow').innerHTML=G.humans.map((h,i)=>`<div class="picked-chip">${flagImg(TEAMS[h.teamIdx].flag,20)} Spiller ${i+1}: ${TEAMS[h.teamIdx].name}</div>`).join('');
   const grid=document.getElementById('teamGrid');grid.innerHTML='';
   TEAMS.forEach((t,i)=>{
     const taken=G.humans.some(h=>h.teamIdx===i);
     const d=document.createElement('div');
     d.className='team-card'+(taken?' taken':'');
     d.style.setProperty('--kit',t.kit[0]);
-    d.innerHTML=`<div class="tflag">${t.flag}</div><div class="tname">${t.name}</div><div class="tstar">⭐ ${t.star}</div>`;
+    d.innerHTML=`<div class="tflag">${flagImg(t.flag,32)}</div><div class="tname">${t.name}</div><div class="tstar">⭐ ${t.star}</div>`;
     d.onclick=()=>pickTeam(i);
     grid.appendChild(d);
   });
@@ -561,7 +583,7 @@ function renderGroups(qualifiedSet){
         const t=TEAMS[r.ti];
         const q=qualifiedSet.has(r.ti);
         return `<div class="group-row ${q?'qualified':''} ${r.human?'human-team':''}">
-          <span>${t.flag}</span><span style="font-size:11px;font-weight:600;">${t.name}</span>
+          <span>${flagImg(t.flag,18)}</span><span style="font-size:11px;font-weight:600;">${t.name}</span>
           ${r.human?'<span class="you-marker">DU</span>':''}
           <span class="gpts">${r.pts}p</span></div>`;
       }).join('');
@@ -631,7 +653,7 @@ function brow(ti,m,isA){
   const cls=decided?(won?'winner':'loser'):'';
   const sc=m.score?(isA?m.score[0]:m.score[1]):'';
   return `<div class="brow ${cls} ${isHumanTeam(ti)?'human':''}" style="--kit:${t.kit[0]}">
-    <span class="bflag">${t.flag}</span><span class="bname">${t.name}</span>
+    <span class="bflag">${flagImg(t.flag,18)}</span><span class="bname">${t.name}</span>
     ${isHumanTeam(ti)?'<span class="you-marker">DU</span>':''}
     <span class="bscore">${sc}</span></div>`;
 }
@@ -667,7 +689,7 @@ function simulateAIMatches(){
     const line=document.createElement('div');
     line.className='sim-line';
     const w=TEAMS[m.winner];
-    line.innerHTML=`${TEAMS[m.a].flag} ${TEAMS[m.a].name} ${sa}–${sb} ${TEAMS[m.b].name} ${TEAMS[m.b].flag} · <span class="sw">${w.name} videre etter straffekonk!</span>`;
+    line.innerHTML=`${flagImg(TEAMS[m.a].flag,18)} ${TEAMS[m.a].name} ${sa}–${sb} ${TEAMS[m.b].name} ${flagImg(TEAMS[m.b].flag,18)} · <span class="sw">${w.name} videre etter straffekonk!</span>`;
     feed.appendChild(line);
     delay+=350;
     setTimeout(()=>line.classList.add('reveal'),delay);
@@ -704,11 +726,13 @@ function startMatch(matchIdx){
   const ta=TEAMS[m.a],tb=TEAMS[m.b];
   document.getElementById('miRound').textContent=ROUND_NAMES[G.curRound];
   setVs('A',ta,hA);setVs('B',tb,hB);
+  /* Vis hvem som skyter først – lag A skyter alltid først */
+  document.getElementById('miFirstShot').innerHTML=`${flagImg(ta.flag,24)} <strong>${ta.name}</strong> skyter først!`;
   showScreen('matchIntro');
 }
 
 function setVs(side,t,h){
-  document.getElementById('miFlag'+side).textContent=t.flag;
+  document.getElementById('miFlag'+side).innerHTML=flagImg(t.flag,64);
   document.getElementById('miName'+side).textContent=t.name;
   document.getElementById('miStar'+side).textContent='⭐ '+t.star;
   document.getElementById('miKit'+side).innerHTML=`<span style="background:${t.kit[0]}"></span><span style="background:${t.kit[1]}"></span>`;
@@ -718,14 +742,19 @@ function setVs(side,t,h){
 
 function beginPenalties(){
   const ta=TEAMS[M.a],tb=TEAMS[M.b];
-  document.getElementById('psFlagA').textContent=ta.flag;
-  document.getElementById('psFlagB').textContent=tb.flag;
+  document.getElementById('psFlagA').innerHTML=flagImg(ta.flag,28);
+  document.getElementById('psFlagB').innerHTML=flagImg(tb.flag,28);
   const nA=document.getElementById('psNameA'),nB=document.getElementById('psNameB');
   nA.textContent=ta.name;nA.style.background=ta.kit[0];nA.style.color=textColorOn(ta.kit[0]);
   nB.textContent=tb.name;nB.style.background=tb.kit[0];nB.style.color=textColorOn(tb.kit[0]);
   /* publikum i lagfarger */
   document.querySelectorAll('#crowdG .fanA').forEach(c=>c.setAttribute('fill',ta.kit[0]));
   document.querySelectorAll('#crowdG .fanB').forEach(c=>c.setAttribute('fill',tb.kit[0]));
+  /* nullstill arenaen før kampen vises – ingen rester fra forrige straffekonk */
+  resetArena();
+  setFace('k','neutral');setFace('s','neutral');
+  setStatus('Gjør dere klare...');
+  document.getElementById('countFill').style.width='100%';
   renderDots();updatePenScore();
   showScreen('penaltyScreen');
   setTimeout(nextKick,800);
@@ -801,31 +830,47 @@ function nextKick(){
   const shooterTeam=M.shooterIsA?M.a:M.b;
   const keeperTeam=M.shooterIsA?M.b:M.a;
   M.choices={shoot:null,save:null};
-  M.phase='select';
+  M.phase='announce';
   M.curShooterCtrl=M.shooterIsA?M.ctrlA:M.ctrlB;
   M.curKeeperCtrl=M.shooterIsA?M.ctrlB:M.ctrlA;
 
   const ts=TEAMS[shooterTeam],tk=TEAMS[keeperTeam];
-  setStatus(`⚽ ${ts.star} skyter · ${tk.star} i mål – VELG HJØRNE NÅ!`,'choosing');
 
   const rl=document.getElementById('readyL'),rr=document.getElementById('readyR');
   rl.className='ready-chip left';rr.className='ready-chip right';
   rl.style.setProperty('--chip',ts.kit[0]);
   rr.style.setProperty('--chip',tk.kit[0]);
-  rl.textContent='⚽ '+ts.flag+' '+ts.name+(M.curShooterCtrl==='AI'?' 🤖':'');
-  rr.textContent='🧤 '+tk.flag+' '+tk.name+(M.curKeeperCtrl==='AI'?' 🤖':'');
+  rl.innerHTML='⚽ '+flagImg(ts.flag,18)+' '+ts.name+(M.curShooterCtrl==='AI'?' 🤖':'');
+  rr.innerHTML='🧤 '+flagImg(tk.flag,18)+' '+tk.name+(M.curKeeperCtrl==='AI'?' 🤖':'');
 
   setupTouch(M.curShooterCtrl,M.curKeeperCtrl,ts,tk);
 
-  let t=3;
-  const fill=document.getElementById('countFill');
-  fill.style.width='100%';
-  clearInterval(M.countTimer);
-  M.countTimer=setInterval(()=>{
-    t-=0.05;
-    fill.style.width=Math.max(0,(t/3)*100)+'%';
-    if(t<=0){clearInterval(M.countTimer);resolveKick();}
-  },50);
+  /* 1) Annonser tydelig hvem som skyter */
+  const ka=document.getElementById('kickAnnounce');
+  const kaS=document.getElementById('kaShooter');
+  kaS.textContent='⚽ '+ts.star.toUpperCase()+' SKYTER';
+  kaS.style.background=ts.kit[0];
+  kaS.style.color=textColorOn(ts.kit[0]);
+  document.getElementById('kaKeeper').textContent='🧤 KEEPER: '+tk.star.toUpperCase()+' ('+tk.name+')';
+  ka.classList.add('show');
+  setStatus(`⚽ ${ts.star} på ellevemeteren...`);
+  document.getElementById('countFill').style.width='100%';
+
+  setTimeout(()=>{
+    /* 2) Valgfasen starter */
+    ka.classList.remove('show');
+    M.phase='select';
+    setStatus(`VELG HJØRNE NÅ! ⚽ ${ts.star} skyter · 🧤 ${tk.star} i mål`,'choosing');
+    let t=4;
+    const fill=document.getElementById('countFill');
+    fill.style.width='100%';
+    clearInterval(M.countTimer);
+    M.countTimer=setInterval(()=>{
+      t-=0.05;
+      fill.style.width=Math.max(0,(t/4)*100)+'%';
+      if(t<=0){clearInterval(M.countTimer);resolveKick();}
+    },50);
+  },1400);
 }
 
 function setupTouch(shooterCtrl,keeperCtrl,ts,tk){
@@ -836,8 +881,8 @@ function setupTouch(shooterCtrl,keeperCtrl,ts,tk){
     el.querySelector('.touch-label').textContent=role;
   };
   const lTeam=shooterCtrl==='L'?ts:tk, rTeam=shooterCtrl==='R'?ts:tk;
-  const lRole=shooterCtrl==='L'?`⚽ ${lTeam.flag} DU SKYTER`:(keeperCtrl==='L'?`🧤 ${lTeam.flag} DU ER KEEPER`:'–');
-  const rRole=shooterCtrl==='R'?`⚽ ${rTeam.flag} DU SKYTER`:(keeperCtrl==='R'?`🧤 ${rTeam.flag} DU ER KEEPER`:'–');
+  const lRole=shooterCtrl==='L'?`⚽ DU SKYTER (${lTeam.name})`:(keeperCtrl==='L'?`🧤 DU ER KEEPER (${lTeam.name})`:'–');
+  const rRole=shooterCtrl==='R'?`⚽ DU SKYTER (${rTeam.name})`:(keeperCtrl==='R'?`🧤 DU ER KEEPER (${rTeam.name})`:'–');
   conf(L,null,lRole,lTeam,shooterCtrl==='L'||keeperCtrl==='L');
   conf(R,null,rRole,rTeam,shooterCtrl==='R'||keeperCtrl==='R');
 }
@@ -848,6 +893,7 @@ function touchPick(side,zone){
 }
 
 function applyChoice(side,zone){
+  if(!M||M.phase!=='select')return;
   if(M.curShooterCtrl===side&&M.choices.shoot===null){M.choices.shoot=zone;markReady('shooter');}
   else if(M.curKeeperCtrl===side&&M.choices.save===null){M.choices.save=zone;markReady('keeper');}
   else if(M.soloHuman){
@@ -986,7 +1032,7 @@ function endMatch(winnerTi){
   const t=TEAMS[winnerTi];
   const isFinal=G.curRound===3;
   setStatus(`🏆 ${t.name} vinner straffekonkurransen ${M.scoreA}–${M.scoreB}!`);
-  bigBanner(isFinal?'VERDENSMESTER! 🏆':t.flag+' VIDERE!',t.name+' '+M.scoreA+'–'+M.scoreB,false);
+  bigBanner(isFinal?'VERDENSMESTER! 🏆':t.name+' VIDERE!',t.name+' '+M.scoreA+'–'+M.scoreB,false);
   spawnConfetti(40);
   setTimeout(()=>{
     hideBanner();M=null;
@@ -998,7 +1044,7 @@ function endMatch(winnerTi){
 function crownChampion(ti){
   G.champion=ti;
   const t=TEAMS[ti];
-  document.getElementById('champFlag').textContent=t.flag;
+  document.getElementById('champFlag').innerHTML=flagImg(t.flag,96);
   document.getElementById('champTitle').textContent=t.name+' ER VERDENSMESTER!';
   document.getElementById('champSub').textContent=isHumanTeam(ti)
     ?`${humanOf(ti).label} løfter VM-pokalen! ${t.star} var iskald fra straffemerket.`
@@ -1031,4 +1077,3 @@ document.addEventListener('keydown',(e)=>{
 </script>
 </body>
 </html>
-
