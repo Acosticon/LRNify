@@ -2,9 +2,11 @@
 
 import {
   createInitialState,
+  initYear,
+  selectRegion,
   applyChoice,
   advanceYear,
-  startYear,
+  TOTAL_YEARS,
 } from './game.js';
 
 import {
@@ -12,7 +14,8 @@ import {
   updateYearDisplay,
   renderMap,
   renderSidebar,
-  renderEvents,
+  renderEventPanel,
+  renderChoiceResult,
   updateLog,
   showToast,
   showYearTransition,
@@ -21,93 +24,65 @@ import {
 import { generateReport, renderReport } from './report.js';
 
 // ─── State ────────────────────────────────────────────
-
 let state = createInitialState();
 
-// ─── Skjerm-navigasjon ────────────────────────────────
-
+// ─── Skjerm ───────────────────────────────────────────
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const s = document.getElementById(`screen-${id}`);
-  if (s) s.classList.add('active');
+  document.getElementById(`screen-${id}`)?.classList.add('active');
 }
 
 // ─── Spillstart ───────────────────────────────────────
-
 function startGame() {
-  state = createInitialState();
-  state = startYear(state);
+  state = initYear(createInitialState());
   showScreen('game');
   renderAll();
 }
 
 // ─── Render alt ───────────────────────────────────────
-
 function renderAll() {
   updateMeters(state);
   updateYearDisplay(state);
   renderMap(state, onRegionClick);
   renderSidebar(state);
-  renderEvents(state, onChoiceMade);
+  renderEventPanel(state, onChoiceMade);
   updateLog(state);
 }
 
-// ─── Region valgt ─────────────────────────────────────
-
+// ─── Region klikket ───────────────────────────────────
 function onRegionClick(regionId) {
-  // Toggle
-  state.activeRegion = state.activeRegion === regionId ? null : regionId;
-
-  // Re-trekk hendelser med ny region som vekting (bare hvis ikke valgt ennå)
-  if (!state.choiceMade) {
-    state = startYear(state);
-  }
-
-  renderAll();
+  if (state.choiceMade) return;
+  state = selectRegion(state, regionId);
+  renderMap(state, onRegionClick);
+  renderSidebar(state);
+  renderEventPanel(state, onChoiceMade);
 }
 
 // ─── Valg tatt ────────────────────────────────────────
+function onChoiceMade(choiceIndex) {
+  if (state.choiceMade) return;
 
-function onChoiceMade(eventIdx, choiceIdx) {
-  const event = state.currentEvents[eventIdx];
-  if (!event || state.choiceMade) return;
+  state = applyChoice(state, choiceIndex);
 
-  const prevMeters = { ...state.meters };
-  state = applyChoice(state, event, choiceIdx);
+  // Oppdater målere
+  updateMeters(state);
+  updateLog(state);
+  renderSidebar(state);
 
-  renderAll();
+  // Vis konsekvenser i hendelsespanelet
+  renderChoiceResult(state);
 
-  // Vis meter-endringer som toast
-  const deltas = [];
-  if (state.meters.business !== prevMeters.business) {
-    const d = state.meters.business - prevMeters.business;
-    deltas.push(`💰 ${d > 0 ? '+' : ''}${d}`);
-  }
-  if (state.meters.people !== prevMeters.people) {
-    const d = state.meters.people - prevMeters.people;
-    deltas.push(`👥 ${d > 0 ? '+' : ''}${d}`);
-  }
-  if (state.meters.nature !== prevMeters.nature) {
-    const d = state.meters.nature - prevMeters.nature;
-    deltas.push(`🌳 ${d > 0 ? '+' : ''}${d}`);
-  }
-  if (deltas.length > 0) showToast(deltas.join('  '), '');
-
-  // Automatisk neste år etter kort pause
-  setTimeout(goToNextYear, 2200);
+  // Gå videre etter pause
+  setTimeout(goToNextYear, 2800);
 }
 
 // ─── Neste år ─────────────────────────────────────────
-
 function goToNextYear() {
-  const nextYear = state.year + 1;
-
-  if (state.year >= 15) {
-    // Siste år – gå til rapport
+  if (state.year >= TOTAL_YEARS) {
     endGame();
     return;
   }
-
+  const nextYear = state.year + 1;
   showYearTransition(nextYear, () => {
     state = advanceYear(state);
     renderAll();
@@ -115,24 +90,19 @@ function goToNextYear() {
 }
 
 // ─── Sluttrapport ─────────────────────────────────────
-
 async function endGame() {
   showScreen('report');
-
   const reportScreen = document.getElementById('screen-report');
   reportScreen.innerHTML = `
     <div class="report-inner">
-      <p class="report-eyebrow">Balanseposten · Etter 15 år</p>
-      <h1 class="report-headline" style="color:var(--muted)">Analyserer de 15 årene…</h1>
+      <p class="report-eyebrow">Balanseposten · Etter ${TOTAL_YEARS} år</p>
+      <h1 class="report-headline" style="color:var(--muted)">Analyserer de ${TOTAL_YEARS} årene…</h1>
       <div class="report-voices">
-        ${['💰 Næringslivet','👥 Innbyggerne','🌳 Naturen'].map(v => `
-          <div class="voice-card">
-            <p class="voice-text loading">Henter stemme…</p>
-          </div>
+        ${['💰 Næringslivet','👥 Innbyggerne','🌳 Naturen'].map(() => `
+          <div class="voice-card"><p class="voice-text loading">Henter stemme…</p></div>
         `).join('')}
       </div>
-    </div>
-  `;
+    </div>`;
 
   await generateReport(state, ({ status, data }) => {
     if (status === 'done') {
@@ -143,35 +113,20 @@ async function endGame() {
 }
 
 function setupReportListeners() {
-  document.getElementById('btn-restart')?.addEventListener('click', () => {
-    showScreen('title');
-  });
-
+  document.getElementById('btn-restart')?.addEventListener('click', () => showScreen('title'));
   document.getElementById('btn-share-result')?.addEventListener('click', () => {
     const { business, people, nature } = state.meters;
-    const text = `Jeg styrte øya i 15 år.\n💰 Næringsliv: ${business}\n👥 Innbyggere: ${people}\n🌳 Natur: ${nature}\n\nSpill 3S1F – Tre stemmer, én framtid`;
-    if (navigator.share) {
-      navigator.share({ text }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(text).then(() => {
-        showToast('Kopiert til utklippstavle!');
-      });
-    }
+    const text = `Jeg styrte øya i ${TOTAL_YEARS} år.\n💰 Næringsliv: ${business}\n👥 Innbyggere: ${people}\n🌳 Natur: ${nature}\n\n3S1F – Tre stemmer, én framtid`;
+    if (navigator.share) navigator.share({ text }).catch(() => {});
+    else navigator.clipboard?.writeText(text).then(() => showToast('Kopiert!'));
   });
 }
 
-// ─── Event-delegering for sidebar region-klikk ────────
-
-document.addEventListener('regionClick', (e) => {
-  onRegionClick(e.detail);
-});
+// ─── Sidebar region-klikk (event delegation) ──────────
+document.addEventListener('regionClick', e => onRegionClick(e.detail));
 
 // ─── Init ─────────────────────────────────────────────
-
 document.addEventListener('DOMContentLoaded', () => {
-  // Tittelskjerm-knapp
   document.getElementById('btn-start')?.addEventListener('click', startGame);
-
-  // Start direkte ved DOMContentLoaded
   showScreen('title');
 });

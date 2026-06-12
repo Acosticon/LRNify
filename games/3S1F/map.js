@@ -2,114 +2,85 @@
 
 import { REGIONS } from './events.js';
 
-// SVG-kartet som string (schematisk øy)
-export function createMapSVG(activeRegion, eventsThisYear) {
-  // Hvilke regioner har aktive hendelser?
-  const eventRegions = new Set(eventsThisYear.map(e => e.region));
+export function createMapSVG(activeRegions, selectedRegion) {
+  // activeRegions: { regionId: event } – de 3 som blinker
+  // selectedRegion: hvilken er klikket (åpen)
 
-  const regions = [
-    // [id, path-data, cx, cy, label-x, label-y]
-    {
-      id: 'nordkysten',
-      path: 'M 60 30 L 200 20 L 220 55 L 170 60 L 100 65 Z',
-      lx: 128, ly: 46,
-      color: '#E8C547',
-    },
-    {
-      id: 'skoglandet',
-      path: 'M 100 65 L 170 60 L 175 110 L 120 120 L 85 105 Z',
-      lx: 128, ly: 92,
-      color: '#5BBFAD',
-    },
-    {
-      id: 'fjordbygdene',
-      path: 'M 85 105 L 120 120 L 115 165 L 70 160 L 65 130 Z',
-      lx: 92, ly: 136,
-      color: '#7FB97F',
-    },
-    {
-      id: 'vesthavet',
-      path: 'M 20 80 L 85 105 L 65 130 L 30 145 L 15 110 Z',
-      lx: 46, ly: 113,
-      color: '#4A9CC2',
-    },
-    {
-      id: 'havnebyen',
-      path: 'M 170 60 L 220 55 L 235 100 L 200 115 L 175 110 Z',
-      lx: 198, ly: 88,
-      color: '#9A8EC0',
-    },
-    {
-      id: 'sentrum',
-      path: 'M 120 120 L 175 110 L 200 115 L 190 165 L 115 165 Z',
-      lx: 153, ly: 142,
-      color: '#E87D5B',
-    },
+  const regionDefs = [
+    { id: 'nordkysten',   path: 'M 60 30 L 200 20 L 220 55 L 170 60 L 100 65 Z',        lx: 128, ly: 46 },
+    { id: 'skoglandet',   path: 'M 100 65 L 170 60 L 175 110 L 120 120 L 85 105 Z',      lx: 130, ly: 92 },
+    { id: 'fjordbygdene', path: 'M 85 105 L 120 120 L 115 165 L 70 160 L 65 130 Z',      lx: 92,  ly: 136 },
+    { id: 'vesthavet',    path: 'M 20 80 L 85 105 L 65 130 L 30 145 L 15 110 Z',         lx: 46,  ly: 113 },
+    { id: 'havnebyen',    path: 'M 170 60 L 220 55 L 235 100 L 200 115 L 175 110 Z',     lx: 198, ly: 88 },
+    { id: 'sentrum',      path: 'M 120 120 L 175 110 L 200 115 L 190 165 L 115 165 Z',   lx: 153, ly: 142 },
   ];
 
-  const svgParts = regions.map(r => {
-    const isActive  = activeRegion === r.id;
-    const hasEvent  = eventRegions.has(r.id);
-    const baseOpacity = isActive ? 1 : 0.65;
-    const strokeW   = isActive ? 2 : 1;
+  const svgParts = regionDefs.map(r => {
+    const region      = REGIONS[r.id];
+    const isActive    = !!activeRegions[r.id];
+    const isSelected  = selectedRegion === r.id;
+    const isInactive  = !isActive;
 
-    let extraClass = 'map-region';
-    if (isActive)  extraClass += ' active';
-    if (hasEvent)  extraClass += ' has-event';
+    const fillOpacity = isInactive ? 0.18 : isSelected ? 1 : 0.7;
+    const strokeW     = isSelected ? 2.5 : isActive ? 1.5 : 1;
+    const strokeColor = isSelected ? '#F0EDE4' : '#0D1B2A';
 
-    // Event-indikator
-    const indicator = hasEvent
-      ? `<circle cx="${r.lx + 28}" cy="${r.ly - 10}" r="4" fill="${r.color}" opacity="0.9"/>`
-      : '';
+    // Blinkende utropstegn for aktive regioner
+    const exclamation = isActive && !isSelected ? `
+      <g class="region-alert" aria-hidden="true">
+        <circle cx="${r.lx + 20}" cy="${r.ly - 14}" r="7" fill="${region.color}" opacity="0.95"/>
+        <text x="${r.lx + 20}" y="${r.ly - 10}" text-anchor="middle" dominant-baseline="middle"
+              font-size="9" font-weight="bold" fill="#0D1B2A" font-family="Inter,sans-serif">!</text>
+      </g>` : '';
+
+    const cursor = isActive ? 'pointer' : 'default';
+    const tabIndex = isActive ? '0' : '-1';
+    const ariaLabel = isActive
+      ? `${region.name} – klikk for å se saken`
+      : `${region.name} – ingen sak dette året`;
 
     return `
-      <g class="${extraClass}" data-region="${r.id}" style="cursor:pointer">
+      <g class="map-region ${isActive ? 'active' : 'inactive'} ${isSelected ? 'selected' : ''}"
+         data-region="${r.id}"
+         style="cursor:${cursor}"
+         role="${isActive ? 'button' : 'presentation'}"
+         tabindex="${tabIndex}"
+         aria-label="${ariaLabel}">
         <path
           d="${r.path}"
-          fill="${r.color}"
-          fill-opacity="${baseOpacity}"
-          stroke="#0D1B2A"
+          fill="${region.color}"
+          fill-opacity="${fillOpacity}"
+          stroke="${strokeColor}"
           stroke-width="${strokeW}"
           stroke-linejoin="round"
         />
-        <text
-          x="${r.lx}" y="${r.ly}"
-          class="region-label"
-          text-anchor="middle"
-          dominant-baseline="middle"
-        >${REGIONS[r.id].icon} ${REGIONS[r.id].name}</text>
-        ${indicator}
+        <text x="${r.lx}" y="${r.ly}"
+              class="region-label"
+              text-anchor="middle"
+              dominant-baseline="middle"
+              opacity="${isInactive ? 0.35 : 1}">
+          ${region.icon} ${region.name}
+        </text>
+        ${exclamation}
       </g>`;
   });
 
   return `
-<svg id="island-map" viewBox="0 0 260 190" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Kart over øya">
-  <!-- Hav-bakgrunn -->
+<svg id="island-map" viewBox="0 0 260 190" xmlns="http://www.w3.org/2000/svg"
+     role="img" aria-label="Kart over øya. Tre regioner har aktive saker.">
   <rect width="260" height="190" fill="#0D1B2A" rx="6"/>
-
-  <!-- Øy-form (sammensatt) -->
   <path d="M 15 75 Q 40 15 120 15 Q 210 10 235 60 Q 250 110 200 165 Q 150 195 80 185 Q 20 175 10 130 Z"
         fill="#1A3A4A" stroke="#243B4A" stroke-width="1"/>
-
   ${svgParts.join('\n')}
-
-  <!-- Havet rundt -->
-  <text x="130" y="181" text-anchor="middle" fill="#243B4A" font-size="7" font-family="Inter,sans-serif">Vesthavet</text>
+  <text x="130" y="181" text-anchor="middle" fill="#243B4A"
+        font-size="7" font-family="Inter,sans-serif">Vesthavet</text>
 </svg>`;
 }
 
-// Sett opp event-lyttere på kartet
 export function setupMapListeners(container, onRegionClick) {
-  container.querySelectorAll('.map-region').forEach(el => {
-    el.addEventListener('click', () => {
-      const regionId = el.dataset.region;
-      onRegionClick(regionId);
-    });
+  container.querySelectorAll('.map-region.active').forEach(el => {
+    const handler = () => onRegionClick(el.dataset.region);
+    el.addEventListener('click', handler);
+    el.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') handler(); });
   });
-}
-
-// Hent region-info for sidebar
-export function getRegionInfo(regionId) {
-  if (!regionId) return null;
-  return REGIONS[regionId] || null;
 }

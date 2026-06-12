@@ -1,10 +1,10 @@
 // ui.js – Render-funksjoner
 
 import { REGIONS } from './events.js';
-import { createMapSVG, setupMapListeners, getRegionInfo } from './map.js';
+import { createMapSVG, setupMapListeners } from './map.js';
 import { TOTAL_YEARS } from './game.js';
 
-// Oppdater de tre pulsmålerne i sidebar
+// ─── Målere ───────────────────────────────────────────
 export function updateMeters(state) {
   ['business', 'people', 'nature'].forEach(m => {
     const wrap = document.querySelector(`[data-meter="${m}"]`);
@@ -13,224 +13,199 @@ export function updateMeters(state) {
     const val  = wrap.querySelector('.meter-value');
     if (fill) fill.style.height = `${state.meters[m]}%`;
     if (val)  val.textContent = state.meters[m];
+    wrap.setAttribute('aria-valuenow', state.meters[m]);
   });
 }
 
-// Oppdater år-header
+// ─── År-header ────────────────────────────────────────
 export function updateYearDisplay(state) {
-  const yearNum  = document.querySelector('.year-number');
-  const yearsLeft= document.querySelector('.years-left');
-  if (yearNum)   yearNum.textContent = `${state.year}`;
+  const yearNum   = document.querySelector('.year-number');
+  const yearsLeft = document.querySelector('.years-left');
+  if (yearNum)   yearNum.textContent = state.year;
   if (yearsLeft) yearsLeft.textContent = `av ${TOTAL_YEARS}`;
 }
 
-// Render kartet
+// ─── Kart ─────────────────────────────────────────────
 export function renderMap(state, onRegionClick) {
-  const container = document.querySelector('.map-container');
-  if (!container) return;
+  const wrap = document.getElementById('map-svg-wrap');
+  if (!wrap) return;
 
-  const mapDiv = container.querySelector('#map-svg-wrap') || (() => {
-    const d = document.createElement('div');
-    d.id = 'map-svg-wrap';
-    container.appendChild(d);
-    return d;
-  })();
-
-  mapDiv.innerHTML = createMapSVG(state.activeRegion, state.currentEvents || []);
-
-  setupMapListeners(mapDiv, (regionId) => {
-    onRegionClick(regionId);
-  });
-
-  // ARIA
-  const svg = mapDiv.querySelector('svg');
-  if (svg) svg.setAttribute('aria-label', `Øykart. Aktiv region: ${state.activeRegion ? REGIONS[state.activeRegion]?.name : 'ingen valgt'}`);
+  wrap.innerHTML = createMapSVG(state.activeRegions, state.selectedRegion);
+  setupMapListeners(wrap, onRegionClick);
 }
 
-// Render høyre sidebar
+// ─── Høyre sidebar ────────────────────────────────────
 export function renderSidebar(state) {
   const sidebar = document.querySelector('.sidebar-right');
   if (!sidebar) return;
 
-  const regionInfo = getRegionInfo(state.activeRegion);
+  const selRegion = state.selectedRegion ? REGIONS[state.selectedRegion] : null;
 
   sidebar.innerHTML = `
     <div>
-      <p class="sidebar-section-title">Regioner</p>
+      <p class="sidebar-section-title">Aktive regioner</p>
       <div class="region-list">
-        ${Object.values(REGIONS).map(r => `
-          <div class="region-list-item ${state.activeRegion === r.id ? 'active' : ''}" data-region="${r.id}">
+        ${Object.keys(state.activeRegions).map(id => {
+          const r = REGIONS[id];
+          const isSelected = state.selectedRegion === id;
+          return `<div class="region-list-item ${isSelected ? 'active' : ''}" data-region="${id}">
             <span class="region-dot" style="background:${r.color}"></span>
             <span>${r.icon} ${r.name}</span>
-          </div>
-        `).join('')}
+          </div>`;
+        }).join('')}
       </div>
     </div>
 
-    ${regionInfo ? `
+    ${selRegion ? `
       <div>
-        <p class="sidebar-section-title">Valgt region</p>
+        <p class="sidebar-section-title">Bærekraftsmål</p>
         <div class="region-info-card">
-          <p class="region-info-name">${regionInfo.icon} ${regionInfo.name}</p>
-          <p class="region-info-desc">${regionInfo.theme}</p>
+          <p class="region-info-name">${selRegion.icon} ${selRegion.name}</p>
+          <p class="region-info-desc">${selRegion.sdg}</p>
         </div>
-      </div>
-    ` : ''}
+      </div>` : ''}
 
-    <div>
-      <p class="sidebar-section-title">Siste endringer</p>
-      <div class="var-deltas" id="var-deltas">
-        ${renderVarDeltas(state)}
-      </div>
-    </div>
+    ${state.lastChoiceResult ? `
+      <div>
+        <p class="sidebar-section-title">Konsekvenser</p>
+        <div class="var-deltas">
+          ${renderMeterDeltas(state.lastChoiceResult.meterDeltas)}
+        </div>
+      </div>` : `
+      <div>
+        <p class="sidebar-section-title" style="opacity:0.5">Velg en region</p>
+      </div>`}
   `;
 
-  // Legg til region-klikk i sidebar også
+  // Sidebar-klikk på aktive regioner
   sidebar.querySelectorAll('.region-list-item').forEach(el => {
     el.addEventListener('click', () => {
-      const id = el.dataset.region;
-      el.closest('.sidebar-right').dispatchEvent(
-        new CustomEvent('regionClick', { detail: id, bubbles: true })
-      );
+      sidebar.dispatchEvent(new CustomEvent('regionClick', { detail: el.dataset.region, bubbles: true }));
     });
   });
 }
 
-function renderVarDeltas(state) {
-  const lastChoice = state.choiceHistory[state.choiceHistory.length - 1];
-  if (!lastChoice?.meterEffects) {
-    return `<p style="font-size:0.72rem;color:var(--muted)">Ingen valg ennå</p>`;
-  }
-
-  const { business = 0, people = 0, nature = 0 } = lastChoice.meterEffects;
-  const rows = [
-    { label: 'Næringsliv', val: business },
-    { label: 'Innbyggere', val: people },
-    { label: 'Natur',      val: nature },
-  ];
-
-  return rows.map(r => `
+function renderMeterDeltas(deltas) {
+  const labels = { business: '💰 Næringsliv', people: '👥 Innbyggere', nature: '🌳 Natur' };
+  return Object.entries(deltas).map(([k, v]) => `
     <div class="var-delta-row">
-      <span class="var-delta-name">${r.label}</span>
-      <span class="var-delta-val ${r.val > 0 ? 'pos' : r.val < 0 ? 'neg' : ''}">
-        ${r.val > 0 ? '+' : ''}${r.val || '–'}
+      <span class="var-delta-name">${labels[k]}</span>
+      <span class="var-delta-val ${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">
+        ${v > 0 ? '+' : ''}${v !== 0 ? v : '–'}
       </span>
-    </div>
-  `).join('');
+    </div>`).join('');
 }
 
-// Render hendelseskort
-export function renderEvents(state, onChoiceMade) {
-  const area = document.querySelector('.event-cards');
+// ─── Hendelsespanel ───────────────────────────────────
+export function renderEventPanel(state, onChoiceMade) {
+  const area = document.querySelector('.event-panel');
   if (!area) return;
 
-  if (!state.currentEvents || state.currentEvents.length === 0) {
-    area.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;">Ingen saker dette året.</p>';
-    return;
-  }
-
-  if (state.choiceMade) {
+  // Ingen region valgt ennå
+  if (!state.openEvent && !state.choiceMade) {
+    const count = Object.keys(state.activeRegions).length;
     area.innerHTML = `
-      <div style="text-align:center;padding:2rem;color:var(--muted)">
-        <p style="font-family:var(--font-display);font-size:1.1rem;margin-bottom:0.5rem">Valget er tatt.</p>
-        <p style="font-size:0.85rem">Neste år begynner snart.</p>
+      <div class="event-prompt">
+        <p class="event-prompt-text">${count} regioner har saker som trenger din oppmerksomhet.<br>Klikk på et utropstegn for å se saken.</p>
       </div>`;
     return;
   }
 
-  area.innerHTML = state.currentEvents.map((ev, evIdx) => {
-    const typeLabel = ev.type === 'A' ? 'Grunnhendelse'
-                    : ev.type === 'B' ? 'Konsekvens'
-                    : 'Systemhendelse';
-    const regionName = REGIONS[ev.region]?.name || ev.region;
-
-    return `
-      <div class="event-card ${ev.mandatory ? 'mandatory' : ''}" data-event-idx="${evIdx}" role="region" aria-label="${ev.title}">
-        <div class="event-card-header">
-          <h2 class="event-title">${ev.title}</h2>
-          <span class="event-type-tag">${typeLabel}</span>
-        </div>
-        <p class="event-region">${REGIONS[ev.region]?.icon || ''} ${regionName}${ev.mandatory ? ' · <strong>Obligatorisk</strong>' : ''}</p>
-        <p class="event-description">${ev.description}</p>
-        <div class="event-choices">
-          ${ev.choices.map((ch, chIdx) => `
-            <button
-              class="choice-btn"
-              data-event-idx="${evIdx}"
-              data-choice-idx="${chIdx}"
-              aria-label="${ch.text}"
-            >
-              <span>${ch.text}</span>
-              <span class="choice-effects">
-                ${renderEffectTags(ch.meterEffects || {})}
-              </span>
-            </button>
-          `).join('')}
-        </div>
+  // Valg allerede gjort dette året
+  if (state.choiceMade) {
+    const last = state.choiceHistory[state.choiceHistory.length - 1];
+    area.innerHTML = `
+      <div class="event-done">
+        <p class="event-done-title">Valget er tatt</p>
+        <p class="event-done-choice">«${last?.choiceText || ''}»</p>
+        <p class="event-done-sub">Konsekvensene vil vise seg over tid.</p>
       </div>`;
-  }).join('');
+    return;
+  }
 
-  // Hendelseslyttere
+  // Vis åpen hendelse
+  const ev = state.openEvent;
+  const region = REGIONS[ev.region];
+  const typeLabel = ev.type === 'A' ? 'Grunnhendelse' : ev.type === 'B' ? 'Konsekvens' : 'Systemhendelse';
+
+  area.innerHTML = `
+    <div class="event-card" role="region" aria-label="${ev.title}">
+      <div class="event-card-header">
+        <h2 class="event-title">${ev.title}</h2>
+        <span class="event-type-tag">${typeLabel}</span>
+      </div>
+      <p class="event-region">${region.icon} ${region.name} · ${region.sdg}</p>
+      <p class="event-description">${ev.description}</p>
+      <div class="event-choices">
+        ${ev.choices.map((ch, i) => `
+          <button class="choice-btn" data-choice-idx="${i}" aria-label="${ch.text}">
+            ${ch.text}
+          </button>`).join('')}
+      </div>
+    </div>`;
+
   area.querySelectorAll('.choice-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const evIdx  = parseInt(btn.dataset.eventIdx);
-      const chIdx  = parseInt(btn.dataset.choiceIdx);
-      onChoiceMade(evIdx, chIdx);
-    });
+    btn.addEventListener('click', () => onChoiceMade(parseInt(btn.dataset.choiceIdx)));
   });
 }
 
-function renderEffectTags(effects) {
-  const labels = {
-    business: '💰', people: '👥', nature: '🌳',
-  };
-  return Object.entries(effects)
+// ─── Konsekvens-visning etter valg ────────────────────
+export function renderChoiceResult(state) {
+  const area = document.querySelector('.event-panel');
+  if (!area || !state.lastChoiceResult) return;
+
+  const { choiceText, meterDeltas } = state.lastChoiceResult;
+  const last = state.choiceHistory[state.choiceHistory.length - 1];
+
+  const deltaHtml = Object.entries(meterDeltas)
     .filter(([, v]) => v !== 0)
     .map(([k, v]) => {
+      const icons = { business: '💰', people: '👥', nature: '🌳' };
       const cls = v > 0 ? 'pos' : 'neg';
-      const icon = labels[k] || '';
-      return `<span class="effect-tag ${cls}">${icon}${v > 0 ? '+' : ''}${v}</span>`;
-    })
+      return `<span class="result-delta ${cls}">${icons[k]} ${v > 0 ? '+' : ''}${v}</span>`;
+    }).join('');
+
+  area.innerHTML = `
+    <div class="choice-result">
+      <p class="result-event-title">${last?.eventTitle || ''}</p>
+      <p class="result-choice-text">«${choiceText}»</p>
+      ${deltaHtml ? `<div class="result-deltas">${deltaHtml}</div>` : ''}
+      <p class="result-sub">Konsekvensene kan vise seg i fremtiden.</p>
+    </div>`;
+}
+
+// ─── Logg ─────────────────────────────────────────────
+export function updateLog(state) {
+  const el = document.querySelector('.log-entries');
+  if (!el) return;
+  el.innerHTML = state.log.slice(-5).reverse()
+    .map(e => `<div class="log-entry"><span class="log-year">År ${e.year}</span>${e.text}</div>`)
     .join('');
 }
 
-// Logg
-export function updateLog(state) {
-  const container = document.querySelector('.log-entries');
-  if (!container) return;
-  const recent = state.log.slice(-5).reverse();
-  container.innerHTML = recent.map(e =>
-    `<div class="log-entry"><span class="log-year">År ${e.year}</span>${e.text}</div>`
-  ).join('');
-}
-
-// Toast-notifikasjon
+// ─── Toast ────────────────────────────────────────────
 export function showToast(message, type = '') {
   const container = document.getElementById('toast-container');
   if (!container) return;
-
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.textContent = message;
   container.appendChild(toast);
-
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transform = 'translateY(-10px)';
     toast.style.transition = 'opacity 0.4s, transform 0.4s';
     setTimeout(() => toast.remove(), 400);
-  }, 3500);
+  }, 3000);
 }
 
-// År-overgang
+// ─── År-overgang ──────────────────────────────────────
 export function showYearTransition(year, callback) {
   const overlay = document.getElementById('year-transition');
   const label   = overlay?.querySelector('.transition-year');
   if (!overlay || !label) { callback(); return; }
-
   label.textContent = `År ${year}`;
   overlay.classList.add('show');
-
   setTimeout(() => {
     overlay.classList.remove('show');
     setTimeout(callback, 400);

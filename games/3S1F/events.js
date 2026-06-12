@@ -1,17 +1,13 @@
 // events.js – Hendelsesdatabase
 
 export const REGIONS = {
-  nordkysten:  { id: 'nordkysten',  name: 'Nordkysten',   icon: '⚡', color: '#E8C547', theme: 'Energi' },
-  skoglandet:  { id: 'skoglandet',  name: 'Skoglandet',   icon: '🌲', color: '#5BBFAD', theme: 'Skog og natur' },
-  fjordbygdene:{ id: 'fjordbygdene',name: 'Fjordbygdene', icon: '🚜', color: '#7FB97F', theme: 'Landbruk' },
-  vesthavet:   { id: 'vesthavet',   name: 'Vesthavet',    icon: '🐟', color: '#4A9CC2', theme: 'Fiskeri og havbruk' },
-  havnebyen:   { id: 'havnebyen',   name: 'Havnebyen',    icon: '🏭', color: '#9A8EC0', theme: 'Industri' },
-  sentrum:     { id: 'sentrum',     name: 'Sentrum',      icon: '🏘️', color: '#E87D5B', theme: 'Bolig og helse' },
+  nordkysten:   { id: 'nordkysten',   name: 'Nordkysten',   icon: '⚡', color: '#E8C547', theme: 'Energi',               sdg: 'SDG 7 – Ren energi' },
+  skoglandet:   { id: 'skoglandet',   name: 'Skoglandet',   icon: '🌲', color: '#5BBFAD', theme: 'Skog og natur',         sdg: 'SDG 15 – Livet på land' },
+  fjordbygdene: { id: 'fjordbygdene', name: 'Fjordbygdene', icon: '🚜', color: '#7FB97F', theme: 'Landbruk',              sdg: 'SDG 2 – Utrydde sult' },
+  vesthavet:    { id: 'vesthavet',    name: 'Vesthavet',    icon: '🐟', color: '#4A9CC2', theme: 'Fiskeri og havbruk',    sdg: 'SDG 14 – Livet i havet' },
+  havnebyen:    { id: 'havnebyen',    name: 'Havnebyen',    icon: '🏭', color: '#9A8EC0', theme: 'Industri',              sdg: 'SDG 8 – Anstendig arbeid og vekst' },
+  sentrum:      { id: 'sentrum',      name: 'Sentrum',      icon: '🏘️', color: '#E87D5B', theme: 'Bolig og helse',        sdg: 'SDG 11 – Bærekraftige byer' },
 };
-
-// Type A – Grunnhendelser (kan komme når som helst)
-// Type B – Konsekvenser (krever flagg)
-// Type C – Systemhendelser (trigges av verdier under terskel)
 
 export const EVENTS = [
 
@@ -34,7 +30,7 @@ export const EVENTS = [
       {
         text: 'Utvid eksisterende vannkraft',
         shortLabel: 'Vannkraft',
-        effects: { jobs: 3, energy: 10, biodiversity: -6, wildernessArea: -8 },
+        effects: { jobs: 3, energy: 10, biodiversity: -6 },
         meterEffects: { business: 5, nature: -3 },
         flags: ['hydroExpansion'],
       },
@@ -46,7 +42,6 @@ export const EVENTS = [
         flags: ['energySaving'],
       },
     ],
-    weight: { nordkysten: 3, havnebyen: 2 },
   },
 
   {
@@ -78,7 +73,6 @@ export const EVENTS = [
         flags: ['housingCoops'],
       },
     ],
-    weight: { sentrum: 3, fjordbygdene: 1 },
   },
 
   {
@@ -110,7 +104,6 @@ export const EVENTS = [
         flags: ['fjordProtection'],
       },
     ],
-    weight: { vesthavet: 3, sentrum: 1 },
   },
 
   {
@@ -142,7 +135,6 @@ export const EVENTS = [
         flags: ['healthPrivate'],
       },
     ],
-    weight: { sentrum: 3 },
   },
 
   {
@@ -174,7 +166,6 @@ export const EVENTS = [
         flags: ['forestProtection'],
       },
     ],
-    weight: { skoglandet: 3, fjordbygdene: 1 },
   },
 
   {
@@ -206,7 +197,6 @@ export const EVENTS = [
         flags: ['greenPriority'],
       },
     ],
-    weight: { havnebyen: 3, nordkysten: 1 },
   },
 
   {
@@ -238,7 +228,6 @@ export const EVENTS = [
         flags: ['marketFarming'],
       },
     ],
-    weight: { fjordbygdene: 3, sentrum: 1 },
   },
 
   // ─── TYPE B: KONSEKVENSHENDELSER ─────────────────────
@@ -266,7 +255,6 @@ export const EVENTS = [
         flags: [],
       },
     ],
-    weight: { skoglandet: 2 },
   },
 
   {
@@ -278,7 +266,7 @@ export const EVENTS = [
     description: 'Villfisken sliter. Lakselus fra oppdrettsanleggene har bredt seg til nærliggende fjorder.',
     choices: [
       {
-        text: 'Stengt ned anlegg midlertidig',
+        text: 'Steng ned anlegg midlertidig',
         shortLabel: 'Steng ned',
         effects: { oceanEnv: 10, jobs: -8, treasury: -5 },
         meterEffects: { nature: 9, business: -7 },
@@ -292,7 +280,6 @@ export const EVENTS = [
         flags: [],
       },
     ],
-    weight: { vesthavet: 2 },
   },
 
   {
@@ -318,7 +305,6 @@ export const EVENTS = [
         flags: [],
       },
     ],
-    weight: { sentrum: 2 },
   },
 
   // ─── TYPE C: SYSTEMHENDELSER ──────────────────────────
@@ -346,7 +332,6 @@ export const EVENTS = [
         flags: [],
       },
     ],
-    weight: { sentrum: 3 },
   },
 
   {
@@ -372,50 +357,47 @@ export const EVENTS = [
         flags: ['tourism'],
       },
     ],
-    weight: { havnebyen: 2, fjordbygdene: 1 },
   },
 ];
 
-// Hjelpefunksjoner
+// ─── Trekk 3 aktive regioner for et år ────────────────
+// Returnerer et objekt: { regionId: event }
+export function drawYearRegions(variables, flags, usedEventIds) {
+  const regionIds = Object.keys(REGIONS);
 
-export function getEventsForYear(year, variables, flags, activeRegion) {
-  const available = EVENTS.filter(ev => {
-    // Sjekk krav
-    if (ev.requires) {
-      if (ev.requires.flags) {
-        const { flags: reqFlags, any } = ev.requires;
-        const hasFlags = reqFlags.some(f => flags.includes(f));
-        if (any && !hasFlags) return false;
-        if (!any && !reqFlags.every(f => flags.includes(f))) return false;
+  // For hver region: finn beste tilgjengelige hendelse
+  const regionEventMap = {};
+  for (const regionId of regionIds) {
+    const candidates = EVENTS.filter(ev => {
+      if (ev.region !== regionId) return false;
+      if (usedEventIds.has(ev.id)) return false;
+      if (ev.requires) {
+        if (ev.requires.flags) {
+          const { flags: reqFlags, any } = ev.requires;
+          const hasFlag = reqFlags.some(f => flags.includes(f));
+          if (any && !hasFlag) return false;
+          if (!any && !reqFlags.every(f => flags.includes(f))) return false;
+        }
+        if (ev.requires.variable) {
+          const val = variables[ev.requires.variable] ?? 50;
+          if (ev.requires.below !== undefined && val >= ev.requires.below) return false;
+          if (ev.requires.above !== undefined && val <= ev.requires.above) return false;
+        }
       }
-      if (ev.requires.variable) {
-        const val = variables[ev.requires.variable] ?? 50;
-        if (ev.requires.below !== undefined && val >= ev.requires.below) return false;
-        if (ev.requires.above !== undefined && val <= ev.requires.above) return false;
-      }
-    }
-    return true;
-  });
-
-  // Vekt basert på aktiv region
-  const weighted = [];
-  available.forEach(ev => {
-    const w = activeRegion && ev.weight?.[activeRegion] ? ev.weight[activeRegion] : 1;
-    for (let i = 0; i < w; i++) weighted.push(ev);
-  });
-
-  // Trekk ut 2–3 unike
-  const shuffled = weighted.sort(() => Math.random() - 0.5);
-  const seen = new Set();
-  const picked = [];
-  for (const ev of shuffled) {
-    if (!seen.has(ev.id)) {
-      seen.add(ev.id);
-      picked.push(ev);
-      if (picked.length >= 3) break;
+      return true;
+    });
+    if (candidates.length > 0) {
+      // Velg tilfeldig blant kandidater
+      regionEventMap[regionId] = candidates[Math.floor(Math.random() * candidates.length)];
     }
   }
 
-  // Første er obligatorisk
-  return picked.map((ev, i) => ({ ...ev, mandatory: i === 0 }));
+  // Trekk 3 regioner som har tilgjengelige hendelser
+  const available = Object.keys(regionEventMap);
+  const shuffled = available.sort(() => Math.random() - 0.5);
+  const picked = shuffled.slice(0, 3);
+
+  const result = {};
+  for (const r of picked) result[r] = regionEventMap[r];
+  return result;
 }
