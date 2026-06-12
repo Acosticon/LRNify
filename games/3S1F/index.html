@@ -1,1 +1,118 @@
-about:blank
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3S1F – Tre stemmer, én framtid</title>
+  <meta name="description" content="Du er leder for en øy i 15 år. Valgene dine påvirker næringslivet, innbyggerne og naturen – men aldri alle på en gang.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ─── TITTELSKJERM ─────────────────────────────────── -->
+  <main id="screen-title" class="screen active" role="main">
+    <p class="title-eyebrow">Et spill om bærekraft</p>
+
+    <h1 class="title-main">
+      Tre<em>stemmer</em><br>én&nbsp;framtid
+    </h1>
+
+    <p class="title-sub">
+      Du er leder for en øy i 15 år.
+      Hvert år velger du én sak – og lever med konsekvensene.
+    </p>
+
+    <div class="title-voices" role="list" aria-label="De tre stemmene">
+      <div class="voice-pill" role="listitem">💰 Næringslivet</div>
+      <div class="voice-pill" role="listitem">👥 Innbyggerne</div>
+      <div class="voice-pill" role="listitem">🌳 Naturen</div>
+    </div>
+
+    <button id="btn-start" class="btn-primary" aria-label="Start spillet">
+      Start
+    </button>
+  </main>
+
+
+  <!-- ─── SPILLSKJERM ──────────────────────────────────── -->
+  <div id="screen-game" class="screen" role="main" aria-label="Spillskjerm">
+
+    <!-- Venstre: pulsmålere -->
+    <aside class="sidebar-meters" aria-label="Tilstandsmålere">
+      <div class="meter-wrap" data-meter="business" aria-label="Næringsliv">
+        <div class="meter-track" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Næringsliv">
+          <div class="meter-fill" style="height:50%"></div>
+        </div>
+        <div class="meter-icon" aria-hidden="true">💰</div>
+        <div class="meter-value" aria-live="polite">50</div>
+      </div>
+      <div class="meter-wrap" data-meter="people" aria-label="Innbyggere">
+        <div class="meter-track" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Innbyggere">
+          <div class="meter-fill" style="height:50%"></div>
+        </div>
+        <div class="meter-icon" aria-hidden="true">👥</div>
+        <div class="meter-value" aria-live="polite">50</div>
+      </div>
+      <div class="meter-wrap" data-meter="nature" aria-label="Natur">
+        <div class="meter-track" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Natur">
+          <div class="meter-fill" style="height:50%"></div>
+        </div>
+        <div class="meter-icon" aria-hidden="true">🌳</div>
+        <div class="meter-value" aria-live="polite">50</div>
+      </div>
+    </aside>
+
+    <!-- Midten: kart + hendelser -->
+    <div class="main-content">
+      <header class="game-header">
+        <span class="game-title">Tre stemmer, én framtid</span>
+        <div class="year-display">
+          <span class="year-label">År</span>
+          <span class="year-number">1</span>
+          <span class="years-left">av 15</span>
+        </div>
+      </header>
+
+      <section class="map-area" aria-label="Øyakart">
+        <div class="map-container">
+          <p class="map-title">Velg en region for å påvirke hvilke saker som dukker opp</p>
+          <div id="map-svg-wrap"></div>
+        </div>
+      </section>
+
+      <section class="log-area" aria-label="Historikk">
+        <p class="log-title">Historikk</p>
+        <div class="log-entries" aria-live="polite"></div>
+      </section>
+
+      <section class="events-area" aria-label="Aktive saker">
+        <p class="events-header">Årets saker – velg én</p>
+        <div class="event-cards"></div>
+      </section>
+    </div>
+
+    <!-- Høyre: region-info -->
+    <aside class="sidebar-right" aria-label="Regioninformasjon">
+      <!-- Fylles av ui.js -->
+    </aside>
+
+  </div><!-- /#screen-game -->
+
+
+  <!-- ─── SLUTTRAPPORT ─────────────────────────────────── -->
+  <div id="screen-report" class="screen" role="main" aria-label="Sluttrapport">
+    <!-- Fylles av report.js -->
+  </div>
+
+
+  <!-- ─── OVERLAYS ────────────────────────────────────── -->
+  <div id="year-transition" role="status" aria-live="polite" aria-label="Årsovergang">
+    <span class="transition-year"></span>
+  </div>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
