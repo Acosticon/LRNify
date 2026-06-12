@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3S1F – Tre stemmer, én framtid</title>
-  <meta name="description" content="Du er leder for en øy i 15 år. Valgene dine påvirker næringslivet, innbyggerne og naturen – men aldri alle på en gang.">
+  <meta name="description" content="Du er leder for en øy i 15 år. Valgene dine påvirker næringslivet, innbyggerne og naturen.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,57 +12,45 @@
   <!-- ─── TITTELSKJERM ─────────────────────────────────── -->
   <main id="screen-title" class="screen active" role="main">
     <p class="title-eyebrow">Et spill om bærekraft</p>
-
-    <h1 class="title-main">
-      Tre<em>stemmer</em><br>én&nbsp;framtid
-    </h1>
-
-    <p class="title-sub">
-      Du er leder for en øy i 15 år.
-      Hvert år velger du én sak – og lever med konsekvensene.
-    </p>
-
-    <div class="title-voices" role="list" aria-label="De tre stemmene">
-      <div class="voice-pill" role="listitem">💰 Næringslivet</div>
-      <div class="voice-pill" role="listitem">👥 Innbyggerne</div>
-      <div class="voice-pill" role="listitem">🌳 Naturen</div>
+    <h1 class="title-main">Tre<em>stemmer</em><br>én&nbsp;framtid</h1>
+    <p class="title-sub">Du er leder for en øy i 15 år.<br>Hvert år møter du saker som krever beslutninger.<br>Ingen svar er åpenbart riktige.</p>
+    <div class="title-voices">
+      <div class="voice-pill">💰 Næringslivet</div>
+      <div class="voice-pill">👥 Innbyggerne</div>
+      <div class="voice-pill">🌳 Naturen</div>
     </div>
-
-    <button id="btn-start" class="btn-primary" aria-label="Start spillet">
-      Start
-    </button>
+    <div class="name-input-wrap">
+      <label class="name-label" for="player-name-input">Hva heter lederen?</label>
+      <input id="player-name-input" class="name-input" type="text"
+             placeholder="Skriv navn her" maxlength="30" autocomplete="off"/>
+    </div>
+    <button id="btn-start" class="btn-primary">Start</button>
   </main>
 
 
   <!-- ─── SPILLSKJERM ──────────────────────────────────── -->
-  <div id="screen-game" class="screen" role="main" aria-label="Spillskjerm">
+  <div id="screen-game" class="screen" role="main">
 
     <!-- Venstre: pulsmålere -->
     <aside class="sidebar-meters" aria-label="Tilstandsmålere">
-      <div class="meter-wrap" data-meter="business" aria-label="Næringsliv">
-        <div class="meter-track" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Næringsliv">
-          <div class="meter-fill" style="height:50%"></div>
-        </div>
+      <div class="meter-wrap" data-meter="business" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Næringsliv">
+        <div class="meter-track"><div class="meter-fill" style="height:50%"></div></div>
         <div class="meter-icon" aria-hidden="true">💰</div>
         <div class="meter-value" aria-live="polite">50</div>
       </div>
-      <div class="meter-wrap" data-meter="people" aria-label="Innbyggere">
-        <div class="meter-track" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Innbyggere">
-          <div class="meter-fill" style="height:50%"></div>
-        </div>
+      <div class="meter-wrap" data-meter="people" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Innbyggere">
+        <div class="meter-track"><div class="meter-fill" style="height:50%"></div></div>
         <div class="meter-icon" aria-hidden="true">👥</div>
         <div class="meter-value" aria-live="polite">50</div>
       </div>
-      <div class="meter-wrap" data-meter="nature" aria-label="Natur">
-        <div class="meter-track" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Natur">
-          <div class="meter-fill" style="height:50%"></div>
-        </div>
+      <div class="meter-wrap" data-meter="nature" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Natur">
+        <div class="meter-track"><div class="meter-fill" style="height:50%"></div></div>
         <div class="meter-icon" aria-hidden="true">🌳</div>
         <div class="meter-value" aria-live="polite">50</div>
       </div>
     </aside>
 
-    <!-- Midten: kart + hendelser -->
+    <!-- Midten: kart + panel -->
     <div class="main-content">
       <header class="game-header">
         <span class="game-title">Tre stemmer, én framtid</span>
@@ -71,46 +59,51 @@
           <span class="year-number">1</span>
           <span class="years-left">av 15</span>
         </div>
+        <span class="player-name-display"></span>
       </header>
 
       <section class="map-area" aria-label="Øyakart">
         <div class="map-container">
-          <p class="map-title">Velg en region for å påvirke hvilke saker som dukker opp</p>
+          <p class="map-title">Klikk på et utropstegn for å se saken</p>
           <div id="map-svg-wrap"></div>
         </div>
       </section>
 
-      <section class="log-area" aria-label="Historikk">
+      <section class="log-area">
         <p class="log-title">Historikk</p>
         <div class="log-entries" aria-live="polite"></div>
       </section>
 
-      <section class="events-area" aria-label="Aktive saker">
+      <section class="events-area">
         <div class="event-panel"></div>
+        <div class="next-year-wrap">
+          <button id="btn-next-year" class="btn-primary" disabled>Neste år →</button>
+        </div>
       </section>
     </div>
 
-    <!-- Høyre: region-info -->
-    <aside class="sidebar-right" aria-label="Regioninformasjon">
-      <!-- Fylles av ui.js -->
-    </aside>
+    <!-- Høyre sidebar -->
+    <aside class="sidebar-right" aria-label="Oversikt"></aside>
 
   </div><!-- /#screen-game -->
 
 
   <!-- ─── SLUTTRAPPORT ─────────────────────────────────── -->
-  <div id="screen-report" class="screen" role="main" aria-label="Sluttrapport">
-    <!-- Fylles av report.js -->
-  </div>
+  <div id="screen-report" class="screen" role="main"></div>
 
 
   <!-- ─── OVERLAYS ────────────────────────────────────── -->
-  <div id="year-transition" role="status" aria-live="polite" aria-label="Årsovergang">
+
+  <!-- Nyhetsoverlay for type B-hendelser -->
+  <div id="news-overlay" role="dialog" aria-modal="true" aria-label="Nyhetsoppslag"></div>
+
+  <!-- År-overgang -->
+  <div id="year-transition" role="status" aria-live="polite">
     <span class="transition-year"></span>
+    <span class="transition-sub"></span>
   </div>
 
   <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
-
 
   <script type="module" src="main.js"></script>
 </body>

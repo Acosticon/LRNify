@@ -1,12 +1,50 @@
 // events.js – Hendelsesdatabase
 
 export const REGIONS = {
-  nordkysten:   { id: 'nordkysten',   name: 'Nordkysten',   icon: '⚡', color: '#E8C547', theme: 'Energi',               sdg: 'SDG 7 – Ren energi' },
-  skoglandet:   { id: 'skoglandet',   name: 'Skoglandet',   icon: '🌲', color: '#5BBFAD', theme: 'Skog og natur',         sdg: 'SDG 15 – Livet på land' },
-  fjordbygdene: { id: 'fjordbygdene', name: 'Fjordbygdene', icon: '🚜', color: '#7FB97F', theme: 'Landbruk',              sdg: 'SDG 2 – Utrydde sult' },
-  vesthavet:    { id: 'vesthavet',    name: 'Vesthavet',    icon: '🐟', color: '#4A9CC2', theme: 'Fiskeri og havbruk',    sdg: 'SDG 14 – Livet i havet' },
-  havnebyen:    { id: 'havnebyen',    name: 'Havnebyen',    icon: '🏭', color: '#9A8EC0', theme: 'Industri',              sdg: 'SDG 8 – Anstendig arbeid og vekst' },
-  sentrum:      { id: 'sentrum',      name: 'Sentrum',      icon: '🏘️', color: '#E87D5B', theme: 'Bolig og helse',        sdg: 'SDG 11 – Bærekraftige byer' },
+  nordkysten:   { id: 'nordkysten',   name: 'Nordkysten',   icon: '⚡', color: '#E8C547', description: 'Energi og vind' },
+  skoglandet:   { id: 'skoglandet',   name: 'Skoglandet',   icon: '🌲', color: '#5BBFAD', description: 'Skog og villmark' },
+  fjordbygdene: { id: 'fjordbygdene', name: 'Fjordbygdene', icon: '🚜', color: '#7FB97F', description: 'Jordbruk og bygdeliv' },
+  vesthavet:    { id: 'vesthavet',    name: 'Vesthavet',    icon: '🐟', color: '#4A9CC2', description: 'Fiskeri og kyst' },
+  havnebyen:    { id: 'havnebyen',    name: 'Havnebyen',    icon: '🏭', color: '#9A8EC0', description: 'Industri og havn' },
+  sentrum:      { id: 'sentrum',      name: 'Sentrum',      icon: '🏘️', color: '#E87D5B', description: 'By, helse og utdanning' },
+};
+
+// Kart-ikoner som vises etter valg: { flagId: { emoji, region, label } }
+export const FLAG_MAP_ICONS = {
+  windFarm:           { emoji: '💨', region: 'nordkysten',   label: 'Vindpark' },
+  hydroExpansion:     { emoji: '💧', region: 'nordkysten',   label: 'Vannkraft' },
+  energySaving:       { emoji: '🔋', region: 'nordkysten',   label: 'Energisparing' },
+  urbanDensity:       { emoji: '🏗️',  region: 'sentrum',     label: 'Fortetting' },
+  suburbanExpansion:  { emoji: '🏘️', region: 'sentrum',      label: 'Boligfelt' },
+  housingCoops:       { emoji: '🤝', region: 'sentrum',      label: 'Kooperativer' },
+  bigAquaculture:     { emoji: '🐠', region: 'vesthavet',    label: 'Oppdrett' },
+  regulatedAquaculture:{ emoji: '🎣', region: 'vesthavet',   label: 'Regulert oppdrett' },
+  fjordProtection:    { emoji: '🌊', region: 'vesthavet',    label: 'Fjordvern' },
+  nursePayRise:       { emoji: '💊', region: 'sentrum',      label: 'Lønnsløft' },
+  nurseEducation:     { emoji: '📚', region: 'sentrum',      label: 'Sykepleierutdanning' },
+  healthPrivate:      { emoji: '🏥', region: 'sentrum',      label: 'Privat helse' },
+  industrialLogging:  { emoji: '🪵', region: 'skoglandet',   label: 'Industrihogst' },
+  sustainableForestry:{ emoji: '♻️', region: 'skoglandet',   label: 'Bærekraftig skog' },
+  forestProtection:   { emoji: '🌿', region: 'skoglandet',   label: 'Naturreservat' },
+  heavyIndustry:      { emoji: '🏭', region: 'havnebyen',    label: 'Tungindustri' },
+  conditionalIndustry:{ emoji: '⚙️', region: 'havnebyen',   label: 'Regulert industri' },
+  greenPriority:      { emoji: '🌱', region: 'havnebyen',    label: 'Grønn industri' },
+  farmSubsidy:        { emoji: '🌾', region: 'fjordbygdene', label: 'Gårdsstøtte' },
+  localFood:          { emoji: '🥕', region: 'fjordbygdene', label: 'Kortreist mat' },
+  marketFarming:      { emoji: '📉', region: 'fjordbygdene', label: 'Markedslandbruk' },
+  owlProtection:      { emoji: '🦉', region: 'skoglandet',   label: 'Hubrovjern' },
+  publicDialogue:     { emoji: '🗣️', region: 'sentrum',      label: 'Folkemøter' },
+  techInvestment:     { emoji: '💻', region: 'havnebyen',    label: 'Teknologi' },
+  tourism:            { emoji: '🧭', region: 'fjordbygdene', label: 'Reiseliv' },
+};
+
+// Konsekvens-ikoner som vises på kartet (uavhengig av valg – bare ved at hendelsen er aktiv)
+export const CONSEQUENCE_MAP_ICONS = {
+  owl_disappears:      { emoji: '⚠️', region: 'skoglandet',   label: 'Hubroen forsvinner' },
+  salmon_lice:         { emoji: '☠️', region: 'vesthavet',    label: 'Lakselus' },
+  health_crisis:       { emoji: '🚨', region: 'sentrum',      label: 'Helsekrise' },
+  big_protests:        { emoji: '✊', region: 'sentrum',      label: 'Protester' },
+  economic_stagnation: { emoji: '📉', region: 'havnebyen',    label: 'Stagnasjon' },
 };
 
 export const EVENTS = [
@@ -19,6 +57,7 @@ export const EVENTS = [
     region: 'nordkysten',
     title: 'Strømkrise',
     description: 'Bedriftene varsler at de trenger mer energi. Uten tiltak vil industrien stagnere – men utbygging koster.',
+    ignoreEffect: { effects: { energy: -5, jobs: -3 }, meterEffects: { business: -4 } },
     choices: [
       {
         text: 'Bygg vindpark på høyfjellet',
@@ -50,6 +89,7 @@ export const EVENTS = [
     region: 'sentrum',
     title: 'Boligmangel',
     description: 'Ventelistene på kommunale boliger er lange. Unge familier flytter fra øya. Noe må gjøres.',
+    ignoreEffect: { effects: { housing: -5, trust: -4 }, meterEffects: { people: -5 } },
     choices: [
       {
         text: 'Fortett i eksisterende byområder',
@@ -81,6 +121,7 @@ export const EVENTS = [
     region: 'vesthavet',
     title: 'Oppdrettsutvidelse',
     description: 'Et stort oppdrettsselskap vil etablere seg i Vesthavet. Mange arbeidsplasser – men naboene er urolige for havmiljøet.',
+    ignoreEffect: { effects: { jobs: -4, trust: -2 }, meterEffects: { business: -3 } },
     choices: [
       {
         text: 'Godkjenn full utbygging',
@@ -112,6 +153,7 @@ export const EVENTS = [
     region: 'sentrum',
     title: 'Sykepleiermangel',
     description: 'Sykehuset melder om kritisk underbemanning. Pasienter venter lenge. Ansatte er utbrent.',
+    ignoreEffect: { effects: { health: -8, trust: -5 }, meterEffects: { people: -7 } },
     choices: [
       {
         text: 'Øk lønningene betraktelig',
@@ -143,6 +185,7 @@ export const EVENTS = [
     region: 'skoglandet',
     title: 'Hogstpress',
     description: 'Trelastindustrien vil inn i Skoglandet. Skogeier-organisasjonen støtter det. Miljøgrupper advarer.',
+    ignoreEffect: { effects: { trust: -3 }, meterEffects: { business: -2 } },
     choices: [
       {
         text: 'Åpne for industriell hogst',
@@ -174,6 +217,7 @@ export const EVENTS = [
     region: 'havnebyen',
     title: 'Ny fabrikk vil etablere seg',
     description: 'En stor produksjonsbedrift vil flytte til Havnebyen. 200 arbeidsplasser – men fabrikken er kjent for høye utslipp.',
+    ignoreEffect: { effects: { jobs: -5, trust: -3 }, meterEffects: { business: -4 } },
     choices: [
       {
         text: 'Ønsk dem velkommen',
@@ -205,6 +249,7 @@ export const EVENTS = [
     region: 'fjordbygdene',
     title: 'Bønder krever støtte',
     description: 'Fjordbygdenes bønder trenger subsidier for å holde driften lønnsom. Uten støtte kan matproduksjonen falle.',
+    ignoreEffect: { effects: { jobs: -5, trust: -4 }, meterEffects: { people: -4, business: -2 } },
     choices: [
       {
         text: 'Øk landbruksstøtten',
@@ -231,14 +276,20 @@ export const EVENTS = [
   },
 
   // ─── TYPE B: KONSEKVENSHENDELSER ─────────────────────
+  // causedBy: forklarer koblingen med spillerens navn flettet inn
 
   {
     id: 'owl_disappears',
     type: 'B',
     region: 'skoglandet',
     requires: { flags: ['windFarm', 'industrialLogging'], any: true },
+    causedBy: {
+      windFarm:        'Etter at {navn} lot vindparken reise seg på høyfjellet, har trekkrutene til rovfuglene blitt brutt.',
+      industrialLogging: 'Etter at {navn} åpnet Skoglandet for industriell hogst, har habitatene blitt for forstyrrede.',
+    },
     title: 'Hubroen forsvinner',
-    description: 'Biologer registrerer at hubro ikke lenger hekker i Skoglandet. Habitatene er for forstyrrede.',
+    newsHeadline: 'Hubroen er nesten utryddet',
+    newsIngress: 'Biologer registrerer at hubro ikke lenger hekker i Skoglandet. Bestanden har falt med over 80 prosent på få år.',
     choices: [
       {
         text: 'Iverksett akutt verneplan',
@@ -248,7 +299,7 @@ export const EVENTS = [
         flags: ['owlProtection'],
       },
       {
-        text: 'Registrer tapet, gå videre',
+        text: 'Registrer tapet – gå videre',
         shortLabel: 'Godta tapet',
         effects: { biodiversity: -4, trust: -2 },
         meterEffects: { nature: -4 },
@@ -262,8 +313,12 @@ export const EVENTS = [
     type: 'B',
     region: 'vesthavet',
     requires: { flags: ['bigAquaculture'], any: false },
+    causedBy: {
+      bigAquaculture: 'Etter at {navn} godkjente full utbygging av oppdrettsanlegg i Vesthavet, har lakselusbestanden eksplodert.',
+    },
     title: 'Lakselus sprer seg',
-    description: 'Villfisken sliter. Lakselus fra oppdrettsanleggene har bredt seg til nærliggende fjorder.',
+    newsHeadline: 'Katastrofe i fjordene',
+    newsIngress: 'Villfisken sliter. Lakselus fra oppdrettsanleggene som {navn} godkjente, har nå bredt seg til nærliggende fjorder og truer hele bestanden.',
     choices: [
       {
         text: 'Steng ned anlegg midlertidig',
@@ -287,8 +342,12 @@ export const EVENTS = [
     type: 'B',
     region: 'sentrum',
     requires: { flags: ['healthPrivate'], any: false },
+    causedBy: {
+      healthPrivate: 'Etter at {navn} privatiserte deler av helsetilbudet, har køene på det offentlige sykehuset blitt kritisk lange.',
+    },
     title: 'Helsekrise i Sentrum',
-    description: 'Den private klinikken betjener bare betalende pasienter. Sykehuset er overbelastet. Folk med dårlig råd faller utenfor.',
+    newsHeadline: 'Folk dør i kø',
+    newsIngress: 'Den private klinikken betjener bare betalende pasienter. Sykehuset er overbelastet, og folk med dårlig råd faller utenfor – en direkte følge av privatiseringen {navn} innførte.',
     choices: [
       {
         text: 'Gjenkommunaliser helsetilbudet',
@@ -315,7 +374,8 @@ export const EVENTS = [
     region: 'sentrum',
     requires: { variable: 'trust', below: 30 },
     title: 'Store protester',
-    description: 'Innbyggerne er lei av å ikke bli hørt. Tusenvis marsjerer gjennom Sentrum. Noe må ofres.',
+    description: 'Innbyggerne er lei av å ikke bli hørt. Tusenvis marsjerer gjennom Sentrum.',
+    ignoreEffect: { effects: { trust: -12, treasury: -5 }, meterEffects: { people: -10 } },
     choices: [
       {
         text: 'Hold folkemøter og lytt',
@@ -341,6 +401,7 @@ export const EVENTS = [
     requires: { variable: 'jobs', below: 35 },
     title: 'Øya stagnerer',
     description: 'Unge flytter ut i hopetall. Butikker stenger. Øya trenger et løft – men hva slags?',
+    ignoreEffect: { effects: { jobs: -6, trust: -5 }, meterEffects: { business: -6, people: -3 } },
     choices: [
       {
         text: 'Tiltrekk ny teknologiindustri',
@@ -361,11 +422,9 @@ export const EVENTS = [
 ];
 
 // ─── Trekk 3 aktive regioner for et år ────────────────
-// Returnerer et objekt: { regionId: event }
 export function drawYearRegions(variables, flags, usedEventIds) {
   const regionIds = Object.keys(REGIONS);
 
-  // For hver region: finn beste tilgjengelige hendelse
   const regionEventMap = {};
   for (const regionId of regionIds) {
     const candidates = EVENTS.filter(ev => {
@@ -387,12 +446,10 @@ export function drawYearRegions(variables, flags, usedEventIds) {
       return true;
     });
     if (candidates.length > 0) {
-      // Velg tilfeldig blant kandidater
       regionEventMap[regionId] = candidates[Math.floor(Math.random() * candidates.length)];
     }
   }
 
-  // Trekk 3 regioner som har tilgjengelige hendelser
   const available = Object.keys(regionEventMap);
   const shuffled = available.sort(() => Math.random() - 0.5);
   const picked = shuffled.slice(0, 3);
