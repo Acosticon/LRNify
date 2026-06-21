@@ -50,6 +50,43 @@ let score=0, best=0, timeLeft=100, bumps=0, msg='', msgT=0, ttl='', body='', sha
 let quest=0, questPopMsg='';
 let paused=false, mondjoRect={x:0,y:0,w:0,h:0}, slideDoor=0;
 let roadCars=[];
+
+/* ---------- highscore (jsonbin.io) ---------- */
+const JSONBIN_ID  = '6a3825faf5f4af5e29193766';  // ← lim inn Bin ID her
+const JSONBIN_KEY = '$2a$10$8F1aB51/b14ucs0NzO0gzewsxB65V3tXSjyK//YqWcGbpeZmjQCra'; // ← lim inn Master Key her
+let leaderboard=[], lbStatus='';
+async function fetchLeaderboard(){
+  if(JSONBIN_ID.includes('SETT')) return;
+  try{
+    const r=await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`,
+      {headers:{'X-Master-Key':JSONBIN_KEY,'X-Bin-Meta':'false'}});
+    const d=await r.json();
+    leaderboard=(d.scores||[]).slice().sort((a,b)=>b.score-a.score).slice(0,10);
+  }catch(e){ leaderboard=[]; }
+}
+async function pushScore(name,s){
+  if(JSONBIN_ID.includes('SETT')) return;
+  const entry={name:name.slice(0,14).toUpperCase(),score:s,date:new Date().toLocaleDateString('no')};
+  leaderboard=[...leaderboard,entry].sort((a,b)=>b.score-a.score).slice(0,10);
+  try{
+    await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JSONBIN_KEY},
+      body:JSON.stringify({scores:leaderboard})
+    });
+  }catch(e){}
+}
+function maybeSubmitScore(s){
+  if(s<=0) return;
+  setTimeout(async ()=>{
+    const name=prompt('Skriv inn navn for highscore-lista\n(la stå blank for å hoppe over):','');
+    if(!name||!name.trim()) return;
+    lbStatus='Sender poeng...';
+    await pushScore(name.trim(),s);
+    await fetchLeaderboard();
+    lbStatus='';
+  },700);
+}
 const questDefs=[
   {popup:'FLYET GÅR SNART!\nDU MÅ SJEKKE INN!',    wx:288,wy:1480,r:16},
   {popup:'SÅNN! KOM DEG TIL\nVIP-LOUNGEN!',          wx:473,wy:740, r:16},
@@ -285,7 +322,8 @@ function update(dt){
   timeLeft-=dt;
   if(timeLeft<12){ const s=Math.ceil(timeLeft); if(s!==lastBeat){ lastBeat=s; beep(200,.07,'square',.1); } }
   if(timeLeft<=0){ timeLeft=0; state='lose'; ttl='FLYET GIKK UTEN DEG';
-    body='Du rakk ikke gaten i tide.\n\nPoeng '+Math.max(0,score)+'\n\nTRYKK / ENTER FOR NY RUNDE'; msgT=999; sLose(); return; }
+    body='Du rakk ikke gaten i tide.\n\nPoeng '+Math.max(0,score)+'\n\nTRYKK / ENTER FOR NY RUNDE'; msgT=999; sLose();
+    maybeSubmitScore(Math.max(0,score)); return; }
 
   const [ix,iy]=inputVec();
   player.vx += (ix*MAX-player.vx)*Math.min(1,(ix?ACC:FRIC)*dt);
@@ -347,6 +385,7 @@ function finish(){ if(state!=='playing'||paused) return;
   else { ttl='DU RAKK FLYET!';
     body='Men du glemte:\n'+missing.join(', ')+'\n\nPoeng '+Math.max(0,score)+'\n\nTRYKK / ENTER FOR NY RUNDE'; }
   if(score>best){ best=Math.max(0,score); try{ localStorage.setItem('macman_best',best); }catch(e){} }
+  maybeSubmitScore(Math.max(0,score));
 }
 
 /* ---------- draw primitives ---------- */
@@ -699,11 +738,17 @@ function drawQuestPopup(){
   Rs(11,py+1,pw-2,6,C.gold); // gold top stripe
   lines.forEach((l,i)=>T(l,CW/2,py+22+i*lh,11,C.gold,'center'));
   // Mondjø! button
-  const bw=110, bh=30, bx=CW/2-bw/2, by=py+ph-44;
-  mondjoRect={x:bx,y:by,w:bw,h:bh};
-  Rs(bx,by,bw,bh,C.gold);
-  ctx.strokeStyle='#7a5c00'; ctx.lineWidth=2; ctx.strokeRect(bx+1,by+1,bw-2,bh-2);
-  T('Mondjø!',CW/2,by+8,11,'#13112a','center');
+const bw=110, bh=30, bx=CW/2-bw/2, by=py+ph-44;
+mondjoRect={x:bx,y:by,w:bw,h:bh};
+Rs(bx,by,bw,bh,C.gold);
+ctx.strokeStyle='#7a5c00'; ctx.lineWidth=2; ctx.strokeRect(bx+1,by+1,bw-2,bh-2);
+// Tynn, klar tekst — ingen stroke, rent sans-serif
+ctx.font='bold 14px Arial,sans-serif';
+ctx.textAlign='center'; ctx.textBaseline='middle';
+ctx.fillStyle='rgba(0,0,0,.15)';
+ctx.fillText('Mondjø!', CW/2+1, by+bh/2+1); // subtil skygge
+ctx.fillStyle='#13112a';
+ctx.fillText('Mondjø!', CW/2, by+bh/2);
 }
 /* ---------- overlays ---------- */
 function drawTitle(){ Rs(0,0,CW,CH,'rgba(7,5,18,.86)'); drawPlane(144,74);
@@ -715,10 +760,31 @@ function drawTitle(){ Rs(0,0,CW,CH,'rgba(7,5,18,.86)'); drawPlane(144,74);
   T('WASD / piltaster',144,290,8,'#9fb0c4','center');
   T('eller dra på skjermen',144,308,8,'#9fb0c4','center');
   const p=(Math.sin(performance.now()/300)+1)/2; ctx.globalAlpha=.5+p*.5;
-  T('TRYKK FOR START',144,380,10,'#00ff8a','center'); ctx.globalAlpha=1; }
+  T('TRYKK FOR START',144,380,10,'#00ff8a','center'); ctx.globalAlpha=1;
+  if(leaderboard.length){
+    Rs(24,395,CW-48,1,'rgba(244,197,66,.3)');
+    T('TOP 5',144,401,7,C.gold,'center');
+    leaderboard.slice(0,5).forEach((e,i)=>{
+      T(`${i+1} ${e.name}`,30,415+i*17,7,i===0?C.gold:'#ccc','left');
+      T(''+e.score,258,415+i*17,7,C.cyan,'right');
+    });
+  } else if(JSONBIN_ID&&!JSONBIN_ID.includes('SETT')){
+    T('Henter highscore...',144,408,7,'#666','center');
+  }
+}
 function drawEnd(){ Rs(0,0,CW,CH,'rgba(7,5,18,.88)');
   T(ttl,144,130,13,state==='win'?'#00ff8a':'#ff5b5b','center');
-  body.split('\n').forEach((l,i)=>T(l,144,180+i*20,9,'#fff','center')); }
+  body.split('\n').forEach((l,i)=>T(l,144,180+i*20,9,'#fff','center'));
+  if(leaderboard.length){
+    Rs(24,310,CW-48,1,'rgba(244,197,66,.3)');
+    T('HIGHSCORE',144,316,7,C.gold,'center');
+    leaderboard.slice(0,5).forEach((e,i)=>{
+      T(`${i+1} ${e.name}`,30,330+i*17,7,i===0?C.gold:'#ccc','left');
+      T(''+e.score,258,330+i*17,7,C.cyan,'right');
+    });
+  }
+  if(lbStatus) T(lbStatus,144,420,7,'#aaa','center');
+}
 
 /* ---------- main ---------- */
 function draw(){ ctx.clearRect(0,0,CW,CH);
@@ -735,6 +801,7 @@ function loop(now){ const dt=Math.min(.033,(now-last)/1000); last=now; update(dt
 buildWorld();
 tCamX=camX=Math.max(0,Math.min(WW-CW,player.x-CW/2));
 tCamY=camY=Math.max(0,Math.min(WH-CH,player.y-CH*0.55));
+fetchLeaderboard();
 requestAnimationFrame(loop);
 })();
 </script>
