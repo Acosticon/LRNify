@@ -42,7 +42,7 @@ export function createInitialState(playerName = 'Lederen') {
 // ─── Trekk aktive regioner for nytt år ────────────────
 export function initYear(state) {
   const s = deepClone(state);
-  s.activeRegions = drawYearRegions(s.variables, s.flags, s.usedEventIds);
+  s.activeRegions = drawYearRegions(s.variables, s.flags, s.usedEventIds, s.year);
   s.regionDecisions = {};
   s.openRegion = null;
   s.pendingNewsSplash = null;
