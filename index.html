@@ -146,15 +146,21 @@
   .card .label .tag{font-weight:800;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:4px;}
 
   /* låst-tilstand (klar for Fase 2 — ikke aktiv ennå) */
-  .card[data-locked="true"]{opacity:.50;}
-  .card .lock{
-    position:absolute;top:10px;right:10px;
-    background:var(--yellow);border:3px solid var(--ink);
-    width:34px;height:34px;display:none;align-items:center;justify-content:center;
+  .card[data-locked="true"]{
+    opacity:.6;
+    pointer-events:none;
+    position:relative;
   }
-  .card[data-locked="true"] .lock{display:flex;}
-  .card{position:relative;}
-
+  .card[data-locked="true"]::after{
+  content:'🔒';
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(255,255,255,.7);
+  font-size:3rem;
+}
   footer{
     text-align:center;padding:24px;color:var(--muted);
     font-weight:700;font-size:.85rem;
