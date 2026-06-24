@@ -232,7 +232,7 @@
 const GAMES = [
   { title:"Koblinger",             file:"koblinger/index.html",          category:"Flere fag",    icon:"koblinger", color:"#d97706", size: "S", locked:false },
   { title:"Fotballgloser",         file:"fotballgloser/index.html",      category:"Engelsk",      icon:"football", color:"#b91c1c", size: "S", locked:false },
-  { title:"3 Stemmer, 1 Framtid",  file:"3s1f/index.html",               category:"Bærekraft",    icon:"football", color:"#0891b2", size: "L", locked:false },
+  { title:"3 Stemmer, 1 Framtid",  file:"3s1f/index.html",               category:"Bærekraft",    icon:"globe", color:"#0891b2", size: "L", locked:false },
   { title:"Brøkstigen",            file:"brokstigen/index.html",         category:"Matematikk",   icon:"ladder",  color:"#2563eb", size: "S", locked:false },
   { title:"Operasjon Frihet",      file:"operasjon-frihet/index.html",   category:"Historie",     icon:"shield",  color:"#d97706", size: "L", locked:true },
   { title:"Wizard Launcher",       file:"wizard-launcher/index.html",    category:"Engelsk",      icon:"wizard",  color:"#6d28d9", size: "S", locked:true },
@@ -256,11 +256,9 @@ const ICONS = {
   house:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 21v-6h6v6"/></svg>',
   balloon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 1 6 6c0 4-3 7-6 8-3-1-6-4-6-8a6 6 0 0 1 6-6z"/><path d="M12 17v2l-1.5 2h3L12 19"/></svg>',
   koblinger:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 1 6 6c0 4-3 7-6 8-3-1-6-4-6-8a6 6 0 0 1 6-6z"/><path d="M12 17v2l-1.5 2h3L12 19"/></svg>',
-  '3s1v':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 1 6 6c0 4-3 7-6 8-3-1-6-4-6-8a6 6 0 0 1 6-6z"/><path d="M12 17v2l-1.5 2h3L12 19"/></svg>',
+  globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><path d="M12 3a14.5 14.5 0 0 1 0 18M12 3a14.5 14.5 0 0 0 0 18"/></svg>',
 };
-
-const lockSvg = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2b2118" stroke-width="2.5"><rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
-  
+ 
 const grid = document.getElementById('grid');
 GAMES.forEach((g,i)=>{
   const a = document.createElement('a');
@@ -274,7 +272,6 @@ GAMES.forEach((g,i)=>{
   const imgPath = 'media/cards/' + g.file.replace(/\.html$/,'').split('/')[0] + '.png';
   a.innerHTML =
     '<div class="art" style="color:'+g.color+'">' +
-    '<div class="lock" aria-hidden="true">'+lockSvg+'</div>' +   
     '<div class="size" aria-label="Størrelse: '+g.size+'">'+g.size+'</div>' +
       '<img src="'+imgPath+'" alt="" loading="lazy" ' +
         'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
