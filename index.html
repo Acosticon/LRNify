@@ -264,9 +264,9 @@ GAMES.forEach((g,i)=>{
   a.style.transform = 'rotate(' + ((i % 2 === 0) ? -1 : 1) + 'deg)';
   const imgPath = 'media/cards/' + g.file.replace(/\.html$/,'').split('/')[0] + '.png';
   a.innerHTML =
+    '<div class="art" style="color:'+g.color+'">' +
     '<div class="lock" aria-hidden="true">'+lockSvg+'</div>' +
     '<div class="size" aria-label="Størrelse: '+g.size+'">'+g.size+'</div>' +
-    '<div class="art" style="color:'+g.color+'">' +
       '<img src="'+imgPath+'" alt="" loading="lazy" ' +
         'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
       '<span class="icon-fallback" style="display:none">'+ (ICONS[g.icon]||ICONS.shield) +'</span>' +
