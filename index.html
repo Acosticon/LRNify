@@ -236,7 +236,7 @@ const grid = document.getElementById('grid');
 GAMES.forEach((g,i)=>{
   const a = document.createElement('a');
   a.className = 'card';
-  a.href = g.locked ? '#' : ('games/' + g.file.replace(/\.html$/, '') + '/index.html');
+  a.href = g.locked ? '#' : ('games/' + g.file);
   a.setAttribute('role','listitem');
   a.setAttribute('aria-label', g.title + (g.locked ? ' (låst)' : '') );
   a.dataset.locked = g.locked;
