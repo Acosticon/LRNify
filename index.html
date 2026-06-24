@@ -252,6 +252,7 @@ GAMES.forEach((g,i)=>{
   a.innerHTML =
     '<div class="lock" aria-hidden="true">'+lockSvg+'</div>' +
     '<div class="art" style="color:'+g.color+'">' +
+    '<div class="size" aria-label="Størrelse: '+g.size+'">'+g.size+'</div>' +
       '<img src="'+imgPath+'" alt="" loading="lazy" ' +
         'onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' +
       '<span class="icon-fallback" style="display:none">'+ (ICONS[g.icon]||ICONS.shield) +'</span>' +
