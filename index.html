@@ -219,7 +219,7 @@ const GAMES = [
   { title:"WW2 – Klatringen",      file:"ww2-klatringen/index.html",     category:"Historie",     icon:"mountain",color:"#0f766e", locked:true },
   { title:"The Stand",             file:"the-stand/index.html",          category:"Engelsk",      icon:"magnify", color:"#7c3aed", locked:true },
   { title:"Fotball VM",            file:"fotball-vm/index.html",         category:"Geografi",     icon:"football",color:"#16a34a", locked:true },
-  { title:"Balloon Words",         file:"balloon-words/index.html",      category:"Engelsk",      icon:"balloon", color:"#0891b2", locked:true }
+  { title:"Balloon Words",         file:"balloon-words/index.html",      category:"Engelsk",      icon:"balloon", color:"#0891b2", locked:true },
 ];
 
 /* enkle, selvinneholdte SVG-ikoner (game-icons.net-stil) */
@@ -235,6 +235,8 @@ const ICONS = {
   balloon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 1 6 6c0 4-3 7-6 8-3-1-6-4-6-8a6 6 0 0 1 6-6z"/><path d="M12 17v2l-1.5 2h3L12 19"/></svg>',
   koblinger:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 1 6 6c0 4-3 7-6 8-3-1-6-4-6-8a6 6 0 0 1 6-6z"/><path d="M12 17v2l-1.5 2h3L12 19"/></svg>',
 };
+
+const lockSvg = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#2b2118" stroke-width="2.5"><rect x="5" y="11" width="14" height="9" rx="1"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
   
 const grid = document.getElementById('grid');
 GAMES.forEach((g,i)=>{
