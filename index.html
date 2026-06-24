@@ -240,7 +240,7 @@ GAMES.forEach((g,i)=>{
   a.dataset.locked = g.locked;
   a.dataset.category = g.category;
   a.style.transform = 'rotate(' + ((i % 2 === 0) ? -1 : 1) + 'deg)';
-  const imgPath = 'media/cards/' + g.file.replace(/\.html$/,'') + '.png';
+  const imgPath = 'media/cards/' + g.file.replace(/\.html$/,'').split('/')[0] + '.png';
   a.innerHTML =
     '<div class="lock" aria-hidden="true">'+lockSvg+'</div>' +
     '<div class="art" style="color:'+g.color+'">' +
