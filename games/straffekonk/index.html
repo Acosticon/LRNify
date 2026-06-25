@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STRAFFEKONK 2026 – VM-sluttspillet</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --green:#0a5c2e;--green3:#1a9e52;
+  --gold:#f4c430;--gold2:#e8a800;
+  --white:#fff;--text:#e8f0e8;--muted:#7a9a7a;
+  --red:#e53e3e;--blue:#1e88e5;
+  --card-bg:rgba(255,255,255,0.06);
+  --card-border:rgba(255,255,255,0.12);
+}
+body{
+  background:#070b07;
+  background-image:radial-gradient(ellipse at 50% 0%,rgba(10,92,46,0.45) 0%,transparent 60%);
+  color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh;overflow-x:hidden;
+}
+#app{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:14px;}
+.screen{display:none;}
+.screen.active{display:block;}
+h1,h2{font-family:'Barlow Condensed',sans-serif;}
+
+.vm-badge{display:inline-flex;gap:8px;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:3px;padding:5px 16px;border-radius:2px;text-transform:uppercase;}
+.logo-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(44px,9vw,76px);font-weight:800;line-height:0.95;letter-spacing:-1px;color:var(--white);text-shadow:0 0 50px rgba(244,196,48,0.3);}
+.logo-sub{font-family:'Barlow Condensed',sans-serif;font-size:clamp(20px,4vw,32px);font-weight:700;color:var(--gold);letter-spacing:6px;}
+.muted{color:var(--muted);font-size:13px;line-height:1.5;}
+
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:#000;border:none;font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:800;letter-spacing:2px;padding:14px 36px;border-radius:4px;cursor:pointer;text-transform:uppercase;box-shadow:0 8px 28px rgba(244,196,48,0.4);transition:all 0.15s;}
+.btn-primary:hover{transform:translateY(-2px);}
+.btn-primary:disabled{opacity:0.35;cursor:default;transform:none;box-shadow:none;}
+.btn-secondary{background:var(--card-bg);color:var(--text);border:1px solid var(--card-border);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;padding:11px 24px;border-radius:4px;cursor:pointer;text-transform:uppercase;}
+.btn-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px;}
+.section-label{font-size:10px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin:16px 0 10px;display:flex;align-items:center;gap:8px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--card-border);}
+
+#introScreen{text-align:center;padding:24px 0;}
+.count-grid{display:flex;gap:12px;justify-content:center;margin:22px 0;}
+.count-btn{width:74px;height:74px;border-radius:12px;background:var(--card-bg);border:2px solid var(--card-border);color:var(--white);font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.count-btn:hover{border-color:var(--gold);transform:translateY(-2px);}
+.count-btn small{display:block;font-size:9px;letter-spacing:1px;color:var(--muted);font-family:'Barlow',sans-serif;}
+.keys-info{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:18px;}
+.key-chip{background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px 16px;font-size:12px;}
+.key-chip b{font-family:'Oswald',sans-serif;color:var(--gold);}
+
+#pickHeader{text-align:center;margin-bottom:14px;}
+.pick-turn{font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:800;letter-spacing:2px;}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px;}
+.team-card{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:8px;padding:10px 6px;text-align:center;cursor:pointer;transition:all 0.12s;position:relative;overflow:hidden;}
+.team-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kit,#555);}
+.team-card:hover{border-color:var(--gold);transform:translateY(-2px);}
+.team-card.taken{opacity:0.3;pointer-events:none;}
+.team-card .tflag{font-size:26px;}
+.team-card .tname{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.5px;margin-top:2px;}
+.team-card .tstar{font-size:10px;color:var(--gold);margin-top:1px;}
+.picked-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px 0;}
+.picked-chip{background:rgba(244,196,48,0.1);border:1px solid var(--gold);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;}
+
+#groupScreen h2{text-align:center;font-size:26px;letter-spacing:2px;margin-bottom:4px;}
+.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:14px;}
+.group-box{background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:10px;opacity:0;transform:translateY(8px);transition:all 0.35s;}
+.group-box.reveal{opacity:1;transform:translateY(0);}
+.group-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:2px;color:var(--gold);margin-bottom:6px;}
+.group-row{display:flex;align-items:center;gap:6px;font-size:12px;padding:3px 4px;border-radius:4px;}
+.group-row .gpts{margin-left:auto;font-family:'Oswald',sans-serif;font-size:12px;color:var(--muted);}
+.group-row.qualified{background:rgba(26,158,82,0.18);}
+.group-row.qualified .gpts{color:var(--green3);font-weight:700;}
+.group-row.human-team{outline:1px solid var(--gold);}
+
+#bracketScreen h2{text-align:center;font-size:26px;letter-spacing:2px;}
+.bracket-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;align-items:center;}
+.round-col{display:flex;flex-direction:column;gap:8px;justify-content:space-around;height:100%;}
+.round-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:1.5px;color:var(--muted);text-align:center;text-transform:uppercase;}
+.bmatch{background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;overflow:hidden;font-size:12px;}
+.bmatch.next-human{border-color:var(--gold);box-shadow:0 0 14px rgba(244,196,48,0.3);}
+.brow{display:flex;align-items:center;gap:5px;padding:5px 8px;border-left:3px solid var(--kit,transparent);}
+.brow+.brow{border-top:1px solid var(--card-border);}
+.brow .bflag{font-size:15px;}
+.brow .bname{font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.5px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.brow .bscore{margin-left:auto;font-family:'Oswald',sans-serif;font-size:12px;color:var(--muted);}
+.brow.winner{background:rgba(244,196,48,0.12);}
+.brow.winner .bname,.brow.winner .bscore{color:var(--gold);}
+.brow.loser{opacity:0.45;}
+.you-marker{font-size:9px;background:var(--gold);color:#000;border-radius:3px;padding:0 4px;font-weight:800;}
+
+#matchIntro{text-align:center;}
+.vs-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:26px;margin:14px 0;}
+.vs-line{display:flex;align-items:center;justify-content:center;gap:20px;}
+.vs-team{text-align:center;flex:1;max-width:200px;}
+.vs-team .vflag{font-size:52px;}
+.vs-team .vname{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:1px;margin-top:4px;}
+.vs-team .vstar{font-size:12px;color:var(--gold);margin-top:2px;}
+.vs-team .vctrl{font-size:11px;color:var(--muted);margin-top:6px;}
+.kit-swatch{display:inline-flex;gap:4px;margin-top:8px;}
+.kit-swatch span{width:18px;height:18px;border-radius:50%;border:2px solid rgba(255,255,255,0.3);display:inline-block;}
+.vs-x{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:800;color:var(--gold);}
+
+/* ===== PENALTY ===== */
+#penaltyScreen{user-select:none;}
+.pen-scoreboard{display:flex;align-items:center;justify-content:space-between;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:8px 14px;margin-bottom:10px;gap:8px;}
+.pen-team{display:flex;align-items:center;gap:8px;flex:1;}
+.pen-team.right{justify-content:flex-end;}
+.pen-team .pflag{font-size:24px;}
+.pen-team .pname{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:1px;padding:1px 7px;border-radius:4px;color:#fff;}
+.pen-dots{display:flex;gap:4px;}
+.pdot{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.1);border:1px solid var(--card-border);font-size:10px;display:flex;align-items:center;justify-content:center;}
+.pdot.goal{background:var(--green3);border-color:var(--green3);}
+.pdot.miss{background:var(--red);border-color:var(--red);}
+.pen-status{
+  text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;
+  letter-spacing:1px;background:var(--card-bg);border:1px solid var(--card-border);
+  border-radius:8px;padding:9px;margin-bottom:10px;min-height:40px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.pen-status.goal-flash{background:rgba(26,158,82,0.25);border-color:var(--green3);color:#7be3a8;}
+.pen-status.save-flash{background:rgba(229,62,62,0.22);border-color:var(--red);color:#fc9b9b;}
+.pen-status.choosing{animation:pulseGold 0.8s ease-in-out infinite;border-color:var(--gold);color:var(--gold);}
+@keyframes pulseGold{50%{background:rgba(244,196,48,0.14);}}
+
+.count-track{height:7px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;margin-bottom:10px;}
+.count-fill{height:100%;background:var(--gold);border-radius:4px;width:100%;transition:width 0.08s linear;}
+
+#arena{
+  position:relative;border-radius:12px;overflow:hidden;
+  border:1px solid var(--card-border);
+  background:linear-gradient(180deg,#0d1410 0%,#0e2416 38%,#155c30 39%,#0f4a26 100%);
+  margin-bottom:10px;
+}
+#arena svg{display:block;width:100%;height:auto;}
+.ready-chip{
+  position:absolute;top:8px;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;
+  letter-spacing:1px;padding:3px 10px;border-radius:4px;background:rgba(0,0,0,0.55);
+  border:2px solid var(--chip,#444);color:#ddd;transition:all 0.15s;z-index:5;
+}
+.ready-chip.left{left:8px;}
+.ready-chip.right{right:8px;}
+.ready-chip.ready{background:var(--green3);color:#fff;border-color:var(--green3);}
+
+/* keeper-animasjoner */
+#keeperG{transform-origin:300px 208px;}
+#keeperG.dive-left{animation:diveL 0.55s cubic-bezier(0.3,1.3,0.6,1) forwards;}
+#keeperG.dive-right{animation:diveR 0.55s cubic-bezier(0.3,1.3,0.6,1) forwards;}
+#keeperG.dive-center{animation:diveC 0.45s ease-out forwards;}
+@keyframes diveL{to{transform:translate(-118px,-26px) rotate(-58deg);}}
+@keyframes diveR{to{transform:translate(118px,-26px) rotate(58deg);}}
+@keyframes diveC{50%{transform:translateY(-28px);}to{transform:translateY(-8px);}}
+#keeperBody.celebrate{animation:kJoy 0.4s ease-in-out 3;}
+@keyframes kJoy{50%{transform:translateY(-7px);}}
+
+/* skytter-animasjoner */
+#shooterG{transform-origin:252px 300px;}
+#shooterG.run{animation:runUp 0.42s ease-in forwards;}
+@keyframes runUp{0%{transform:translate(0,0);}50%{transform:translate(20px,4px) rotate(2deg);}100%{transform:translate(38px,10px) rotate(6deg);}}
+#shooterG.celebrate{animation:celebJump 0.45s ease-out 3;}
+@keyframes celebJump{0%{transform:translate(38px,10px);}50%{transform:translate(38px,-16px);}100%{transform:translate(38px,10px);}}
+#shooterG.sad{animation:droop 0.6s ease-out forwards;}
+@keyframes droop{to{transform:translate(38px,14px) rotate(-6deg);}}
+
+/* ball-animasjoner */
+#ballG{transform-origin:300px 330px;}
+#ballG.shoot-left{animation:shootL 0.5s cubic-bezier(0.2,0.7,0.4,1) forwards;}
+#ballG.shoot-center{animation:shootC 0.5s cubic-bezier(0.2,0.7,0.4,1) forwards;}
+#ballG.shoot-right{animation:shootR 0.5s cubic-bezier(0.2,0.7,0.4,1) forwards;}
+#ballG.shoot-over{animation:shootOver 0.6s ease-out forwards;}
+#ballG.caught-left{animation:caughtL 0.5s cubic-bezier(0.2,0.7,0.4,1) forwards;}
+#ballG.caught-center{animation:caughtC 0.5s cubic-bezier(0.2,0.7,0.4,1) forwards;}
+#ballG.caught-right{animation:caughtR 0.5s cubic-bezier(0.2,0.7,0.4,1) forwards;}
+@keyframes shootL{to{transform:translate(-150px,-178px) scale(0.55);}}
+@keyframes shootC{to{transform:translate(0,-182px) scale(0.55);}}
+@keyframes shootR{to{transform:translate(150px,-178px) scale(0.55);}}
+@keyframes shootOver{to{transform:translate(30px,-300px) scale(0.35);opacity:0.4;}}
+@keyframes caughtL{to{transform:translate(-112px,-136px) scale(0.5);}}
+@keyframes caughtC{to{transform:translate(0,-138px) scale(0.5);}}
+@keyframes caughtR{to{transform:translate(112px,-136px) scale(0.5);}}
+
+#netG.ripple{animation:netRipple 0.45s ease-out;}
+@keyframes netRipple{30%{transform:translateY(5px) skewX(2deg);}60%{transform:translateY(-2px);}100%{transform:none;}}
+.flash-light{animation:flash 0.5s ease-out 2;}
+@keyframes flash{50%{opacity:1;}}
+
+/* publikum */
+#crowdG circle{transform-box:fill-box;transform-origin:center;}
+#crowdG.jump circle{animation:cjump 0.28s ease-in-out 4 alternate;}
+@keyframes cjump{to{transform:translateY(-5px);}}
+#crowdG circle:nth-child(2n){animation-delay:0.08s;}
+#crowdG circle:nth-child(3n){animation-delay:0.15s;}
+
+/* emoji-burst over arenaen */
+.emoji-pop{position:absolute;font-size:24px;animation:epop 1.15s ease-out forwards;pointer-events:none;z-index:6;}
+@keyframes epop{from{transform:translateY(0) scale(0.6);opacity:1;}to{transform:translateY(-80px) scale(1.4);opacity:0;}}
+
+/* annonsering av hvem som skyter */
+#kickAnnounce{
+  position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;
+  background:rgba(0,0,0,0.55);z-index:7;text-align:center;
+}
+#kickAnnounce.show{display:flex;}
+.ka-shooter{
+  font-family:'Barlow Condensed',sans-serif;font-size:clamp(26px,6vw,42px);font-weight:800;
+  letter-spacing:1px;padding:6px 22px;border-radius:8px;color:#fff;
+  border:3px solid #fff;animation:kaPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ka-vs{font-family:'Oswald',sans-serif;font-size:13px;color:#ddd;letter-spacing:2px;margin-top:10px;}
+@keyframes kaPop{from{transform:scale(0.6);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+.touch-rows{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.touch-side{border-radius:10px;padding:8px;border:2px solid var(--tkit,transparent);}
+.touch-side.inactive{opacity:0.25;pointer-events:none;}
+.touch-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:1px;text-align:center;margin-bottom:6px;color:var(--text);}
+.touch-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.tbtn{background:var(--card-bg);border:1.5px solid var(--card-border);border-radius:8px;padding:13px 4px;color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;}
+.tbtn:active{transform:scale(0.95);background:rgba(244,196,48,0.15);}
+
+.sim-line{background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:9px 14px;margin-bottom:7px;font-size:13px;display:flex;align-items:center;gap:8px;opacity:0;transform:translateX(-8px);transition:all 0.3s;}
+.sim-line.reveal{opacity:1;transform:none;}
+.sim-line .sw{color:var(--gold);font-weight:700;}
+
+#championScreen{text-align:center;padding:20px 0;}
+.champ-trophy{font-size:96px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 0 30px rgba(244,196,48,0.7));}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.champ-flag{font-size:64px;margin:8px 0;}
+.champ-title{font-family:'Barlow Condensed',sans-serif;font-size:38px;font-weight:800;letter-spacing:2px;color:var(--gold);}
+.champ-sub{font-size:14px;color:var(--muted);margin-top:6px;}
+
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;animation:confettiFall linear forwards;pointer-events:none;z-index:200;}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+.big-banner{
+  position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;
+  background:rgba(0,0,0,0.72);z-index:100;pointer-events:none;opacity:0;transition:opacity 0.25s;
+}
+.big-banner.show{opacity:1;}
+.bb-text{font-family:'Barlow Condensed',sans-serif;font-size:clamp(50px,13vw,92px);font-weight:800;color:var(--gold);letter-spacing:-1px;text-shadow:0 0 40px rgba(244,196,48,0.8);animation:bbPop 0.35s cubic-bezier(0.34,1.56,0.64,1);}
+.bb-text.save{color:#ff8a80;text-shadow:0 0 40px rgba(229,62,62,0.8);}
+.bb-sub{font-family:'Oswald',sans-serif;font-size:15px;color:var(--white);letter-spacing:3px;margin-top:8px;}
+@keyframes bbPop{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+@media (max-width:560px){
+  .bracket-wrap{grid-template-columns:repeat(2,1fr);}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div id="introScreen" class="screen active">
+  <div style="text-align:center;">
+    <div class="vm-badge">⚽ VM 2026 · USA · CANADA · MEXICO ⚽</div>
+    <div style="margin:18px 0 4px;" class="logo-title">STRAFFEKONK</div>
+    <div class="logo-sub">VM-SLUTTSPILLET</div>
+    <p class="muted" style="max-width:460px;margin:16px auto;">48 lag. Ett gruppespill. 16 går videre til VM-sluttspillet – og alt avgjøres fra ellevemeteren. Velg lag, les motstanderen, og vær iskald fra straffemerket.</p>
+    <div class="section-label" style="max-width:300px;margin:18px auto 6px;">Hvor mange spillere?</div>
+    <div class="count-grid">
+      <button class="count-btn" onclick="setPlayers(1)">1<small>SPILLER</small></button>
+      <button class="count-btn" onclick="setPlayers(2)">2<small>SPILLERE</small></button>
+      <button class="count-btn" onclick="setPlayers(3)">3<small>SPILLERE</small></button>
+      <button class="count-btn" onclick="setPlayers(4)">4<small>SPILLERE</small></button>
+    </div>
+    <div class="keys-info">
+      <div class="key-chip">Venstre side: <b>A · W · D</b></div>
+      <div class="key-chip">Høyre side: <b>← · ↑ · →</b></div>
+      <div class="key-chip">iPad: <b>Trykk på sonene</b></div>
+    </div>
+  </div>
+</div>
+
+<div id="pickScreen" class="screen">
+  <div id="pickHeader">
+    <div class="vm-badge">VELG LAG</div>
+    <div class="pick-turn" id="pickTurn">Spiller 1 velger lag</div>
+    <div class="picked-row" id="pickedRow"></div>
+  </div>
+  <div class="team-grid" id="teamGrid"></div>
+</div>
+
+<div id="groupScreen" class="screen">
+  <div style="text-align:center;"><div class="vm-badge">GRUPPESPILLET</div></div>
+  <h2 style="margin-top:10px;">48 LAG · 12 GRUPPER</h2>
+  <p class="muted" style="text-align:center;">Gruppevinnerne og de fire beste toerne går videre til VM-sluttspillet.</p>
+  <div class="group-grid" id="groupGrid"></div>
+  <div class="btn-row"><button class="btn-primary" id="toBracketBtn" onclick="showBracket()" disabled>VM-SLUTTSPILLET →</button></div>
+</div>
+
+<div id="bracketScreen" class="screen">
+  <div style="text-align:center;"><div class="vm-badge">VM-SLUTTSPILLET</div></div>
+  <h2 style="margin-top:10px;" id="bracketTitle">ÅTTEDELSFINALER</h2>
+  <div class="bracket-wrap" id="bracketWrap"></div>
+  <div id="simFeed" style="margin-top:12px;"></div>
+  <div class="btn-row"><button class="btn-primary" id="bracketNextBtn" onclick="bracketNext()">Neste kamp →</button></div>
+</div>
+
+<div id="matchIntro" class="screen">
+  <div style="text-align:center;"><div class="vm-badge" id="miRound">ÅTTEDELSFINALE</div></div>
+  <div class="vs-card">
+    <div class="vs-line">
+      <div class="vs-team">
+        <div class="vflag" id="miFlagA"></div>
+        <div class="vname" id="miNameA"></div>
+        <div class="vstar" id="miStarA"></div>
+        <div class="kit-swatch" id="miKitA"></div>
+        <div class="vctrl" id="miCtrlA"></div>
+      </div>
+      <div class="vs-x">VS</div>
+      <div class="vs-team">
+        <div class="vflag" id="miFlagB"></div>
+        <div class="vname" id="miNameB"></div>
+        <div class="vstar" id="miStarB"></div>
+        <div class="kit-swatch" id="miKitB"></div>
+        <div class="vctrl" id="miCtrlB"></div>
+      </div>
+    </div>
+    <p class="muted" style="margin-top:16px;">Best av tre straffer. Likt etter tre? <strong style="color:var(--gold);">Sudden death.</strong><br>Skytter og keeper velger hjørne i skjul – samtidig!</p>
+  </div>
+  <div class="btn-row"><button class="btn-primary" onclick="beginPenalties()">⚽ Til ellevemeteren</button></div>
+</div>
+
+<div id="penaltyScreen" class="screen">
+  <div class="pen-scoreboard">
+    <div class="pen-team"><span class="pflag" id="psFlagA"></span><span class="pname" id="psNameA"></span><span class="pen-dots" id="dotsA"></span></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:var(--gold);" id="psScore">0 – 0</div>
+    <div class="pen-team right"><span class="pen-dots" id="dotsB"></span><span class="pname" id="psNameB"></span><span class="pflag" id="psFlagB"></span></div>
+  </div>
+
+  <div class="pen-status" id="penStatus">Gjør dere klare...</div>
+  <div class="count-track"><div class="count-fill" id="countFill"></div></div>
+
+  <div id="arena">
+    <div class="ready-chip left" id="readyL">SKYTTER</div>
+    <div class="ready-chip right" id="readyR">KEEPER</div>
+    <div id="kickAnnounce"><div class="ka-shooter" id="kaShooter">⚽ HAALAND SKYTER</div><div class="ka-vs" id="kaKeeper">🧤 KEEPER: MBAPPÉ</div></div>
+    <svg viewBox="0 0 600 360" xmlns="http://www.w3.org/2000/svg" aria-label="Straffesparkarena">
+      <rect x="0" y="0" width="600" height="140" fill="#0d1410"/>
+      <g id="crowdG" opacity="0.75">
+        <circle cx="40" cy="30" r="3" fill="#5a6a5a"/><circle cx="90" cy="50" r="3" fill="#6a5a5a"/><circle cx="150" cy="25" r="3" fill="#5a5a6a"/>
+        <circle cx="210" cy="55" r="3" fill="#6a6a5a"/><circle cx="280" cy="30" r="3" fill="#5a6a6a"/><circle cx="340" cy="50" r="3" fill="#6a5a6a"/>
+        <circle cx="410" cy="28" r="3" fill="#5a6a5a"/><circle cx="470" cy="52" r="3" fill="#6a6a5a"/><circle cx="540" cy="32" r="3" fill="#5a5a6a"/>
+        <circle cx="65" cy="80" r="3" fill="#6a5a5a"/><circle cx="130" cy="95" r="3" fill="#5a6a6a"/><circle cx="250" cy="85" r="3" fill="#6a6a5a"/>
+        <circle cx="370" cy="92" r="3" fill="#5a6a5a"/><circle cx="500" cy="84" r="3" fill="#6a5a6a"/>
+        <circle class="fanA" cx="25" cy="60" r="3.5"/><circle class="fanA" cx="115" cy="28" r="3.5"/><circle class="fanA" cx="185" cy="88" r="3.5"/>
+        <circle class="fanA" cx="240" cy="32" r="3.5"/><circle class="fanA" cx="310" cy="86" r="3.5"/><circle class="fanA" cx="80" cy="110" r="3.5"/>
+        <circle class="fanB" cx="360" cy="26" r="3.5"/><circle class="fanB" cx="435" cy="86" r="3.5"/><circle class="fanB" cx="505" cy="52" r="3.5"/>
+        <circle class="fanB" cx="560" cy="90" r="3.5"/><circle class="fanB" cx="455" cy="28" r="3.5"/><circle class="fanB" cx="530" cy="112" r="3.5"/>
+      </g>
+      <polygon points="80,0 30,140 130,140" fill="rgba(244,228,160,0.05)"/>
+      <polygon points="520,0 470,140 570,140" fill="rgba(244,228,160,0.05)"/>
+      <rect id="flashL" x="0" y="0" width="600" height="140" fill="rgba(255,255,220,0.18)" opacity="0"/>
+      <rect x="0" y="140" width="600" height="220" fill="#11522a"/>
+      <rect x="0" y="140" width="600" height="36" fill="#135c2f"/>
+      <rect x="0" y="212" width="600" height="36" fill="#135c2f"/>
+      <rect x="0" y="284" width="600" height="36" fill="#135c2f"/>
+      <g id="goalFrame">
+        <rect x="148" y="92" width="304" height="10" rx="3" fill="#f5f5f5"/>
+        <rect x="148" y="92" width="10" height="124" rx="3" fill="#f5f5f5"/>
+        <rect x="442" y="92" width="10" height="124" rx="3" fill="#f5f5f5"/>
+      </g>
+      <g id="netG" opacity="0.5">
+        <path d="M158 102 H442 M158 122 H442 M158 142 H442 M158 162 H442 M158 182 H442 M158 200 H442" stroke="#cfd8cf" stroke-width="1" fill="none"/>
+        <path d="M178 102 V210 M218 102 V210 M258 102 V210 M298 102 V210 M338 102 V210 M378 102 V210 M418 102 V210" stroke="#cfd8cf" stroke-width="1" fill="none"/>
+      </g>
+      <rect x="120" y="214" width="360" height="5" fill="rgba(255,255,255,0.85)"/>
+
+      <!-- KEEPER med ansikt og drakt -->
+      <g id="keeperG">
+        <g id="keeperBody">
+          <ellipse cx="300" cy="218" rx="22" ry="4" fill="rgba(0,0,0,0.3)"/>
+          <line id="kLegL" x1="294" y1="204" x2="288" y2="219" stroke="#263238" stroke-width="6" stroke-linecap="round"/>
+          <line id="kLegR" x1="306" y1="204" x2="312" y2="219" stroke="#263238" stroke-width="6" stroke-linecap="round"/>
+          <rect id="kShirt" x="287" y="177" width="26" height="29" rx="7" fill="#ffd54f"/>
+          <line id="kArmL" x1="291" y1="184" x2="274" y2="169" stroke="#ffd54f" stroke-width="6" stroke-linecap="round"/>
+          <line id="kArmR" x1="309" y1="184" x2="326" y2="169" stroke="#ffd54f" stroke-width="6" stroke-linecap="round"/>
+          <circle cx="274" cy="168" r="3.6" fill="#f0f0f0"/>
+          <circle cx="326" cy="168" r="3.6" fill="#f0f0f0"/>
+          <circle cx="300" cy="165" r="10" fill="#ffcc80"/>
+          <circle cx="296.5" cy="163" r="1.5" fill="#222"/>
+          <circle cx="303.5" cy="163" r="1.5" fill="#222"/>
+          <path id="kMouth" d="M295 169 H305" stroke="#222" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        </g>
+      </g>
+
+      <!-- SKYTTER med ansikt og drakt -->
+      <g id="shooterG">
+        <ellipse cx="252" cy="318" rx="18" ry="3.5" fill="rgba(0,0,0,0.3)"/>
+        <line id="sLegL" x1="248" y1="298" x2="243" y2="316" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/>
+        <line id="sLegR" x1="256" y1="298" x2="261" y2="316" stroke="#fff" stroke-width="5.5" stroke-linecap="round"/>
+        <rect id="sShorts" x="244" y="290" width="16" height="11" rx="3" fill="#fff"/>
+        <rect id="sShirt" x="243" y="268" width="18" height="25" rx="6" fill="#d32f2f"/>
+        <g id="sArmsIdle">
+          <line id="sArmL1" x1="246" y1="274" x2="237" y2="289" stroke="#d32f2f" stroke-width="5" stroke-linecap="round"/>
+          <line id="sArmR1" x1="258" y1="274" x2="267" y2="289" stroke="#d32f2f" stroke-width="5" stroke-linecap="round"/>
+        </g>
+        <g id="sArmsUp" style="display:none;">
+          <line id="sArmL2" x1="246" y1="274" x2="236" y2="256" stroke="#d32f2f" stroke-width="5" stroke-linecap="round"/>
+          <line id="sArmR2" x1="258" y1="274" x2="268" y2="256" stroke="#d32f2f" stroke-width="5" stroke-linecap="round"/>
+        </g>
+        <circle cx="252" cy="257" r="9" fill="#ffcc80"/>
+        <circle cx="249" cy="255" r="1.4" fill="#222"/>
+        <circle cx="255" cy="255" r="1.4" fill="#222"/>
+        <path id="sMouth" d="M248 261 H256" stroke="#222" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      </g>
+
+      <ellipse cx="300" cy="338" rx="30" ry="5" fill="rgba(255,255,255,0.25)"/>
+      <g id="ballG">
+        <circle cx="300" cy="326" r="13" fill="#fff"/>
+        <path d="M300 316 l6 4 -2 7 h-8 l-2 -7 z" fill="#222"/>
+        <circle cx="300" cy="326" r="13" fill="none" stroke="#bbb" stroke-width="1"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="touch-rows" id="touchRows">
+    <div class="touch-side" id="touchL">
+      <div class="touch-label" id="touchLabL">VENSTRE SIDE (A·W·D)</div>
+      <div class="touch-btns">
+        <button class="tbtn" onclick="touchPick('L','left')">⬅ VENSTRE</button>
+        <button class="tbtn" onclick="touchPick('L','center')">⬆ MIDTEN</button>
+        <button class="tbtn" onclick="touchPick('L','right')">➡ HØYRE</button>
+      </div>
+    </div>
+    <div class="touch-side" id="touchR">
+      <div class="touch-label" id="touchLabR">HØYRE SIDE (←·↑·→)</div>
+      <div class="touch-btns">
+        <button class="tbtn" onclick="touchPick('R','left')">⬅ VENSTRE</button>
+        <button class="tbtn" onclick="touchPick('R','center')">⬆ MIDTEN</button>
+        <button class="tbtn" onclick="touchPick('R','right')">➡ HØYRE</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="championScreen" class="screen">
+  <div class="champ-trophy">🏆</div>
+  <div class="champ-flag" id="champFlag"></div>
+  <div class="champ-title" id="champTitle"></div>
+  <div class="champ-sub" id="champSub"></div>
+  <div class="btn-row" style="margin-top:24px;">
+    <button class="btn-primary" onclick="location.reload()">⚽ Nytt VM</button>
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<div class="big-banner" id="bigBanner"><div class="bb-text" id="bbText">MÅL!</div><div class="bb-sub" id="bbSub"></div></div>
+
+<script>
+/* ============================================================
+   KONFIG – 48 VM-lag med beste spiller og draktfarger [hoved, sekundær]
+   ============================================================ */
+const TEAMS=[
+ {name:"NORGE",flag:"🇳🇴",star:"Haaland",phrase:"Maskinen scorer igjen!",kit:["#d32f2f","#fff"]},
+ {name:"FRANKRIKE",flag:"🇫🇷",star:"Mbappé",phrase:"Lynet fra Paris slår til!",kit:["#1a3a8f","#fff"]},
+ {name:"ARGENTINA",flag:"🇦🇷",star:"Messi",phrase:"Magikeren leverer!",kit:["#75aadb","#fff"]},
+ {name:"BRASIL",flag:"🇧🇷",star:"Vinícius Jr.",phrase:"Samba i nettmaskene!",kit:["#ffd600","#1a3a8f"]},
+ {name:"ENGLAND",flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",star:"Bellingham",phrase:"Hey Jude – for en straffe!",kit:["#f5f5f5","#1a3a8f"]},
+ {name:"SPANIA",flag:"🇪🇸",star:"Lamine Yamal",phrase:"Vidunderbarnet er iskald!",kit:["#c62828","#ffd600"]},
+ {name:"PORTUGAL",flag:"🇵🇹",star:"Ronaldo",phrase:"Siuuu!",kit:["#b71c1c","#1b5e20"]},
+ {name:"TYSKLAND",flag:"🇩🇪",star:"Wirtz",phrase:"Tysk presisjon!",kit:["#f5f5f5","#111"]},
+ {name:"NEDERLAND",flag:"🇳🇱",star:"Van Dijk",phrase:"Kapteinen viser vei!",kit:["#f57c00","#fff"]},
+ {name:"ITALIA",flag:"🇮🇹",star:"Donnarumma",phrase:"Selv keeperen scorer!",kit:["#1565c0","#fff"]},
+ {name:"BELGIA",flag:"🇧🇪",star:"De Bruyne",phrase:"Som en målgivende til seg selv!",kit:["#c62828","#111"]},
+ {name:"KROATIA",flag:"🇭🇷",star:"Modrić",phrase:"Maestroen dirigerer!",kit:["#e53935","#fff"]},
+ {name:"URUGUAY",flag:"🇺🇾",star:"Valverde",phrase:"Kanonkula fra Montevideo!",kit:["#64b5f6","#111"]},
+ {name:"USA",flag:"🇺🇸",star:"Pulisic",phrase:"Captain America leverer!",kit:["#f5f5f5","#1a3a8f"]},
+ {name:"MAROKKO",flag:"🇲🇦",star:"Hakimi",phrase:"Atlas-løvene brøler!",kit:["#c62828","#1b5e20"]},
+ {name:"JAPAN",flag:"🇯🇵",star:"Kubo",phrase:"Samuraien hugger til!",kit:["#1a237e","#fff"]},
+ {name:"MEXICO",flag:"🇲🇽",star:"S. Giménez",phrase:"El Bebote feirer!",kit:["#1b5e20","#fff"]},
+ {name:"CANADA",flag:"🇨🇦",star:"Davies",phrase:"Raskere enn vinden!",kit:["#d32f2f","#fff"]},
+ {name:"DANMARK",flag:"🇩🇰",star:"Højlund",phrase:"Dansk dynamitt!",kit:["#d32f2f","#fff"]},
+ {name:"SVEITS",flag:"🇨🇭",star:"Xhaka",phrase:"Sveitsisk urverk!",kit:["#d32f2f","#fff"]},
+ {name:"ØSTERRIKE",flag:"🇦🇹",star:"Alaba",phrase:"Wien jubler!",kit:["#d32f2f","#fff"]},
+ {name:"SKOTTLAND",flag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿",star:"McTominay",phrase:"Sekkepipene spiller!",kit:["#1a237e","#fff"]},
+ {name:"TYRKIA",flag:"🇹🇷",star:"Güler",phrase:"Krøllen fra Arda!",kit:["#d32f2f","#fff"]},
+ {name:"POLEN",flag:"🇵🇱",star:"Lewandowski",phrase:"Lewangoalski!",kit:["#f5f5f5","#d32f2f"]},
+ {name:"COLOMBIA",flag:"🇨🇴",star:"Luis Díaz",phrase:"Lucho danser forbi!",kit:["#ffd600","#1a3a8f"]},
+ {name:"ECUADOR",flag:"🇪🇨",star:"Caicedo",phrase:"Midtbanegeneralen!",kit:["#ffd600","#1a237e"]},
+ {name:"PARAGUAY",flag:"🇵🇾",star:"Almirón",phrase:"Guaraní-magi!",kit:["#d32f2f","#fff"]},
+ {name:"SENEGAL",flag:"🇸🇳",star:"Mané",phrase:"Løvene fra Teranga!",kit:["#f5f5f5","#1b5e20"]},
+ {name:"EGYPT",flag:"🇪🇬",star:"Salah",phrase:"Faraoenes konge!",kit:["#d32f2f","#fff"]},
+ {name:"ALGERIE",flag:"🇩🇿",star:"Mahrez",phrase:"Ørkenrevene slår til!",kit:["#f5f5f5","#1b5e20"]},
+ {name:"ELFENBENSKYSTEN",flag:"🇨🇮",star:"Kessié",phrase:"Elefantene tramper inn!",kit:["#f57c00","#fff"]},
+ {name:"GHANA",flag:"🇬🇭",star:"Kudus",phrase:"Black Stars skinner!",kit:["#f5f5f5","#111"]},
+ {name:"SØR-AFRIKA",flag:"🇿🇦",star:"Foster",phrase:"Bafana Bafana!",kit:["#ffd600","#1b5e20"]},
+ {name:"KAPP VERDE",flag:"🇨🇻",star:"Mendes",phrase:"Øyfolket sjokkerer!",kit:["#1565c0","#fff"]},
+ {name:"TUNISIA",flag:"🇹🇳",star:"Msakni",phrase:"Kartagos ørner!",kit:["#d32f2f","#fff"]},
+ {name:"SØR-KOREA",flag:"🇰🇷",star:"Son",phrase:"Sonny smiler bredt!",kit:["#d32f2f","#111"]},
+ {name:"IRAN",flag:"🇮🇷",star:"Taremi",phrase:"Persisk presisjon!",kit:["#f5f5f5","#c62828"]},
+ {name:"SAUDI-ARABIA",flag:"🇸🇦",star:"Al-Dawsari",phrase:"Den grønne falken!",kit:["#1b5e20","#fff"]},
+ {name:"AUSTRALIA",flag:"🇦🇺",star:"Irvine",phrase:"Socceroos hopper høyt!",kit:["#ffd600","#1b5e20"]},
+ {name:"QATAR",flag:"🇶🇦",star:"Afif",phrase:"Ørkenstormen!",kit:["#7b1d3b","#fff"]},
+ {name:"USBEKISTAN",flag:"🇺🇿",star:"Shomurodov",phrase:"Historisk for Usbekistan!",kit:["#f5f5f5","#1565c0"]},
+ {name:"JORDAN",flag:"🇯🇴",star:"Al-Naimat",phrase:"Jordan skriver historie!",kit:["#d32f2f","#fff"]},
+ {name:"NEW ZEALAND",flag:"🇳🇿",star:"Wood",phrase:"All Whites leverer!",kit:["#f5f5f5","#111"]},
+ {name:"PANAMA",flag:"🇵🇦",star:"Carrasquilla",phrase:"Kanalfeber!",kit:["#d32f2f","#fff"]},
+ {name:"CURAÇAO",flag:"🇨🇼",star:"Bacuna",phrase:"Karibisk fest!",kit:["#1565c0","#ffd600"]},
+ {name:"HAITI",flag:"🇭🇹",star:"Pierrot",phrase:"Grenadierene jubler!",kit:["#1565c0","#d32f2f"]},
+ {name:"JAMAICA",flag:"🇯🇲",star:"Antonio",phrase:"Reggae Boyz!",kit:["#ffd600","#1b5e20"]},
+ {name:"SERBIA",flag:"🇷🇸",star:"Vlahović",phrase:"Ørnen fra Beograd!",kit:["#d32f2f","#1a3a8f"]},
+];
+
+const ROUND_NAMES=["ÅTTEDELSFINALE","KVARTFINALE","SEMIFINALE","VM-FINALE"];
+const GOAL_SHOUTS=["RETT I KRYSSET!","NETTSUS!","ISKALDT!","HELT OPPE I VINKELEN!","KLOKKERENT!"];
+const SAVE_SHOUTS=["FOR EN REDNING!","KEEPEREN LESER DEG!","STRAFFEMUR!","HVILKEN HANSKE!"];
+const KEYMAP_L={a:'left',w:'center',d:'right'};
+const KEYMAP_R={ArrowLeft:'left',ArrowUp:'center',ArrowRight:'right'};
+
+/* ansiktsuttrykk (path d) */
+const FACE={
+  k:{smile:"M294 170 Q300 175 306 170",frown:"M294 172 Q300 167 306 172",neutral:"M295 170 H305",shock:"M297 169 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0"},
+  s:{smile:"M247 260 Q252 265 257 260",frown:"M247 263 Q252 258 257 263",neutral:"M248 261 H256",shock:"M249 260 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0"},
+};
+
+let G={};
+let M=null;
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function textColorOn(bg){return (bg==='#f5f5f5'||bg==='#ffd600'||bg==='#75aadb'||bg==='#64b5f6')?'#111':'#fff';}
+
+/* ============ OPPSETT ============ */
+function setPlayers(n){G={numHumans:n,humans:[],pickIdx:0};renderPick();showScreen('pickScreen');}
+
+function renderPick(){
+  document.getElementById('pickTurn').textContent=`Spiller ${G.pickIdx+1} velger lag`;
+  document.getElementById('pickedRow').innerHTML=G.humans.map((h,i)=>`<div class="picked-chip">${TEAMS[h.teamIdx].flag} Spiller ${i+1}: ${TEAMS[h.teamIdx].name}</div>`).join('');
+  const grid=document.getElementById('teamGrid');grid.innerHTML='';
+  TEAMS.forEach((t,i)=>{
+    const taken=G.humans.some(h=>h.teamIdx===i);
+    const d=document.createElement('div');
+    d.className='team-card'+(taken?' taken':'');
+    d.style.setProperty('--kit',t.kit[0]);
+    d.innerHTML=`<div class="tflag">${t.flag}</div><div class="tname">${t.name}</div><div class="tstar">⭐ ${t.star}</div>`;
+    d.onclick=()=>pickTeam(i);
+    grid.appendChild(d);
+  });
+}
+
+function pickTeam(i){
+  G.humans.push({teamIdx:i,label:'Spiller '+(G.pickIdx+1)});
+  G.pickIdx++;
+  if(G.pickIdx<G.numHumans)renderPick();
+  else runGroupStage();
+}
+
+/* ============ GRUPPESPILL ============ */
+function runGroupStage(){
+  const humanIdx=G.humans.map(h=>h.teamIdx);
+  const others=shuffle(TEAMS.map((_,i)=>i).filter(i=>!humanIdx.includes(i)));
+  const groups=[];for(let g=0;g<12;g++)groups.push([]);
+  humanIdx.forEach((ti,k)=>groups[k*3].push(ti));
+  let oi=0;
+  for(let g=0;g<12;g++)while(groups[g].length<4)groups[g].push(others[oi++]);
+  G.groups=groups.map(g=>{
+    const rows=g.map(ti=>({ti,pts:3+Math.floor(Math.random()*5),human:humanIdx.includes(ti)}));
+    rows.forEach(r=>{if(r.human)r.pts=9;});
+    rows.sort((a,b)=>b.pts-a.pts||Math.random()-0.5);
+    return rows;
+  });
+  const winners=G.groups.map(g=>g[0]);
+  const runners=G.groups.map(g=>g[1]).sort((a,b)=>b.pts-a.pts);
+  const qualifiedSet=new Set([...winners,...runners.slice(0,4)].map(r=>r.ti));
+  G.qualified=[...qualifiedSet];
+  renderGroups(qualifiedSet);
+  showScreen('groupScreen');
+}
+
+function renderGroups(qualifiedSet){
+  const grid=document.getElementById('groupGrid');grid.innerHTML='';
+  const letters='ABCDEFGHIJKL';
+  G.groups.forEach((g,gi)=>{
+    const box=document.createElement('div');box.className='group-box';
+    box.innerHTML=`<div class="group-title">GRUPPE ${letters[gi]}</div>`+
+      g.map(r=>{
+        const t=TEAMS[r.ti];
+        const q=qualifiedSet.has(r.ti);
+        return `<div class="group-row ${q?'qualified':''} ${r.human?'human-team':''}">
+          <span>${t.flag}</span><span style="font-size:11px;font-weight:600;">${t.name}</span>
+          ${r.human?'<span class="you-marker">DU</span>':''}
+          <span class="gpts">${r.pts}p</span></div>`;
+      }).join('');
+    grid.appendChild(box);
+    setTimeout(()=>box.classList.add('reveal'),gi*150);
+  });
+  setTimeout(()=>{document.getElementById('toBracketBtn').disabled=false;},12*150+300);
+}
+
+/* ============ BRACKET ============ */
+function showBracket(){
+  if(!G.rounds){
+    const humanTi=G.humans.map(h=>h.teamIdx);
+    const humanQ=G.qualified.filter(ti=>humanTi.includes(ti));
+    const aiQ=shuffle(G.qualified.filter(ti=>!humanTi.includes(ti)));
+    const seeds=new Array(16).fill(null);
+    const humanSlots=[0,8,4,12];
+    humanQ.forEach((ti,i)=>seeds[humanSlots[i]]=ti);
+    let ai=0;
+    for(let i=0;i<16;i++)if(seeds[i]===null)seeds[i]=aiQ[ai++];
+    G.rounds=[[],[],[],[]];
+    for(let i=0;i<8;i++)G.rounds[0].push({a:seeds[i*2],b:seeds[i*2+1],winner:null,score:null});
+    for(let i=0;i<4;i++)G.rounds[1].push({a:null,b:null,winner:null,score:null});
+    for(let i=0;i<2;i++)G.rounds[2].push({a:null,b:null,winner:null,score:null});
+    G.rounds[3].push({a:null,b:null,winner:null,score:null});
+    G.curRound=0;
+  }
+  renderBracket();
+  showScreen('bracketScreen');
+  updateBracketBtn();
+}
+
+function isHumanTeam(ti){return ti!==null&&ti!==undefined&&G.humans.some(h=>h.teamIdx===ti);}
+function humanOf(ti){return G.humans.find(h=>h.teamIdx===ti)||null;}
+
+function nextPendingMatch(){
+  const r=G.rounds[G.curRound];
+  for(let i=0;i<r.length;i++)if(r[i].winner===null&&r[i].a!==null&&r[i].b!==null)return i;
+  return -1;
+}
+
+function renderBracket(){
+  document.getElementById('bracketTitle').textContent=G.curRound===3?'VM-FINALEN · METLIFE STADIUM':ROUND_NAMES[G.curRound]+'R';
+  const wrap=document.getElementById('bracketWrap');wrap.innerHTML='';
+  const titles=['Åttedelsfinaler','Kvartfinaler','Semifinaler','Finale'];
+  G.rounds.forEach((round,ri)=>{
+    const col=document.createElement('div');
+    col.className='round-col '+(ri<2?'early':'late');
+    col.innerHTML=`<div class="round-title">${titles[ri]}</div>`;
+    round.forEach((m,mi)=>{
+      const div=document.createElement('div');
+      div.className='bmatch';
+      const isNext=ri===G.curRound&&mi===nextPendingMatch()&&(isHumanTeam(m.a)||isHumanTeam(m.b));
+      if(isNext)div.classList.add('next-human');
+      div.innerHTML=brow(m.a,m,true)+brow(m.b,m,false);
+      col.appendChild(div);
+    });
+    wrap.appendChild(col);
+  });
+}
+
+function brow(ti,m,isA){
+  if(ti===null)return `<div class="brow"><span class="bflag">·</span><span class="bname" style="color:var(--muted);">–</span></div>`;
+  const t=TEAMS[ti];
+  const decided=m.winner!==null;
+  const won=decided&&m.winner===ti;
+  const cls=decided?(won?'winner':'loser'):'';
+  const sc=m.score?(isA?m.score[0]:m.score[1]):'';
+  return `<div class="brow ${cls} ${isHumanTeam(ti)?'human':''}" style="--kit:${t.kit[0]}">
+    <span class="bflag">${t.flag}</span><span class="bname">${t.name}</span>
+    ${isHumanTeam(ti)?'<span class="you-marker">DU</span>':''}
+    <span class="bscore">${sc}</span></div>`;
+}
+
+function updateBracketBtn(){
+  const btn=document.getElementById('bracketNextBtn');
+  const idx=nextPendingMatch();
+  if(idx===-1){btn.textContent='Neste runde →';return;}
+  const m=G.rounds[G.curRound][idx];
+  btn.textContent=(isHumanTeam(m.a)||isHumanTeam(m.b))?'⚽ Spill kampen':'Simuler kamper →';
+}
+
+function bracketNext(){
+  const idx=nextPendingMatch();
+  if(idx===-1){advanceRound();return;}
+  const m=G.rounds[G.curRound][idx];
+  if(isHumanTeam(m.a)||isHumanTeam(m.b))startMatch(idx);
+  else simulateAIMatches();
+}
+
+function simulateAIMatches(){
+  const feed=document.getElementById('simFeed');feed.innerHTML='';
+  const r=G.rounds[G.curRound];
+  let delay=0;
+  r.forEach((m)=>{
+    if(m.winner!==null||m.a===null||isHumanTeam(m.a)||isHumanTeam(m.b))return;
+    const aWins=Math.random()<0.5;
+    let sa=Math.floor(Math.random()*3)+1,sb;
+    do{sb=Math.floor(Math.random()*3)+1;}while(sb===sa);
+    if(aWins&&sa<sb)[sa,sb]=[sb,sa];
+    if(!aWins&&sa>sb)[sa,sb]=[sb,sa];
+    m.winner=aWins?m.a:m.b;m.score=[sa,sb];
+    const line=document.createElement('div');
+    line.className='sim-line';
+    const w=TEAMS[m.winner];
+    line.innerHTML=`${TEAMS[m.a].flag} ${TEAMS[m.a].name} ${sa}–${sb} ${TEAMS[m.b].name} ${TEAMS[m.b].flag} · <span class="sw">${w.name} videre etter straffekonk!</span>`;
+    feed.appendChild(line);
+    delay+=350;
+    setTimeout(()=>line.classList.add('reveal'),delay);
+  });
+  setTimeout(()=>{renderBracket();updateBracketBtn();},delay+400);
+}
+
+function advanceRound(){
+  const r=G.rounds[G.curRound];
+  if(r.some(m=>m.winner===null))return;
+  if(G.curRound===3){crownChampion(G.rounds[3][0].winner);return;}
+  const next=G.rounds[G.curRound+1];
+  for(let i=0;i<next.length;i++){next[i].a=r[i*2].winner;next[i].b=r[i*2+1].winner;}
+  G.curRound++;
+  document.getElementById('simFeed').innerHTML='';
+  renderBracket();updateBracketBtn();
+}
+
+/* ============ KAMP ============ */
+function startMatch(matchIdx){
+  const m=G.rounds[G.curRound][matchIdx];
+  const hA=humanOf(m.a),hB=humanOf(m.b);
+  M={
+    matchIdx,a:m.a,b:m.b,
+    ctrlA:hA?'L':'AI',
+    ctrlB:hB?(hA?'R':'L'):'AI',
+    scoreA:0,scoreB:0,takenA:0,takenB:0,
+    resultsA:[],resultsB:[],
+    sudden:false,phase:'idle',choices:{shoot:null,save:null},
+    shooterIsA:true,countTimer:null,
+  };
+  M.soloHuman=(hA&&!hB)||(hB&&!hA);
+
+  const ta=TEAMS[m.a],tb=TEAMS[m.b];
+  document.getElementById('miRound').textContent=ROUND_NAMES[G.curRound];
+  setVs('A',ta,hA);setVs('B',tb,hB);
+  showScreen('matchIntro');
+}
+
+function setVs(side,t,h){
+  document.getElementById('miFlag'+side).textContent=t.flag;
+  document.getElementById('miName'+side).textContent=t.name;
+  document.getElementById('miStar'+side).textContent='⭐ '+t.star;
+  document.getElementById('miKit'+side).innerHTML=`<span style="background:${t.kit[0]}"></span><span style="background:${t.kit[1]}"></span>`;
+  const keys=side==='A'?(M.soloHuman?'A·W·D eller piltaster':'A · W · D'):(M.soloHuman?'A·W·D eller piltaster':'← · ↑ · →');
+  document.getElementById('miCtrl'+side).textContent=h?`🎮 ${h.label} · ${keys}`:'🤖 AI';
+}
+
+function beginPenalties(){
+  const ta=TEAMS[M.a],tb=TEAMS[M.b];
+  document.getElementById('psFlagA').textContent=ta.flag;
+  document.getElementById('psFlagB').textContent=tb.flag;
+  const nA=document.getElementById('psNameA'),nB=document.getElementById('psNameB');
+  nA.textContent=ta.name;nA.style.background=ta.kit[0];nA.style.color=textColorOn(ta.kit[0]);
+  nB.textContent=tb.name;nB.style.background=tb.kit[0];nB.style.color=textColorOn(tb.kit[0]);
+  /* publikum i lagfarger */
+  document.querySelectorAll('#crowdG .fanA').forEach(c=>c.setAttribute('fill',ta.kit[0]));
+  document.querySelectorAll('#crowdG .fanB').forEach(c=>c.setAttribute('fill',tb.kit[0]));
+  /* nullstill arenaen før kampen vises – ingen rester fra forrige straffekonk */
+  resetArena();
+  setFace('k','neutral');setFace('s','neutral');
+  setStatus('Gjør dere klare...');
+  document.getElementById('countFill').style.width='100%';
+  renderDots();updatePenScore();
+  showScreen('penaltyScreen');
+  setTimeout(nextKick,800);
+}
+
+function renderDots(){
+  const draw=(el,results)=>{
+    el.innerHTML='';
+    const n=Math.max(3,results.length);
+    for(let i=0;i<n;i++){
+      const d=document.createElement('span');
+      d.className='pdot'+(results[i]==='goal'?' goal':results[i]==='miss'?' miss':'');
+      d.textContent=results[i]==='goal'?'⚽':results[i]==='miss'?'✕':'';
+      el.appendChild(d);
+    }
+  };
+  draw(document.getElementById('dotsA'),M.resultsA);
+  draw(document.getElementById('dotsB'),M.resultsB);
+}
+
+function updatePenScore(){document.getElementById('psScore').textContent=`${M.scoreA} – ${M.scoreB}`;}
+
+function decided(){
+  if(!M.sudden){
+    const remA=3-M.takenA,remB=3-M.takenB;
+    if(M.scoreA>M.scoreB+remB)return M.a;
+    if(M.scoreB>M.scoreA+remA)return M.b;
+    if(M.takenA===3&&M.takenB===3&&M.scoreA!==M.scoreB)return M.scoreA>M.scoreB?M.a:M.b;
+    return null;
+  }
+  if(M.takenA===M.takenB&&M.scoreA!==M.scoreB)return M.scoreA>M.scoreB?M.a:M.b;
+  return null;
+}
+
+function setKits(){
+  const shooterTeam=M.shooterIsA?M.a:M.b;
+  const keeperTeam=M.shooterIsA?M.b:M.a;
+  const sk=TEAMS[shooterTeam].kit,kk=TEAMS[keeperTeam].kit;
+  document.getElementById('sShirt').setAttribute('fill',sk[0]);
+  document.getElementById('sArmL1').setAttribute('stroke',sk[0]);
+  document.getElementById('sArmR1').setAttribute('stroke',sk[0]);
+  document.getElementById('sArmL2').setAttribute('stroke',sk[0]);
+  document.getElementById('sArmR2').setAttribute('stroke',sk[0]);
+  document.getElementById('sShorts').setAttribute('fill',sk[1]);
+  document.getElementById('sLegL').setAttribute('stroke',sk[1]);
+  document.getElementById('sLegR').setAttribute('stroke',sk[1]);
+  document.getElementById('kShirt').setAttribute('fill',kk[0]);
+  document.getElementById('kArmL').setAttribute('stroke',kk[0]);
+  document.getElementById('kArmR').setAttribute('stroke',kk[0]);
+  document.getElementById('kLegL').setAttribute('stroke',kk[1]==='#fff'?'#263238':kk[1]);
+  document.getElementById('kLegR').setAttribute('stroke',kk[1]==='#fff'?'#263238':kk[1]);
+}
+
+function setFace(who,mood){
+  document.getElementById(who==='k'?'kMouth':'sMouth').setAttribute('d',FACE[who][mood]);
+}
+
+function nextKick(){
+  const w=decided();
+  if(w!==null){endMatch(w);return;}
+  if(!M.sudden&&M.takenA===3&&M.takenB===3){
+    M.sudden=true;
+    setStatus('🔥 SUDDEN DEATH – én og én straffe!');
+    setTimeout(nextKick,1500);
+    return;
+  }
+  M.shooterIsA=M.takenA===M.takenB?true:M.takenA<M.takenB;
+
+  resetArena();
+  setKits();
+  setFace('k','neutral');setFace('s','neutral');
+
+  const shooterTeam=M.shooterIsA?M.a:M.b;
+  const keeperTeam=M.shooterIsA?M.b:M.a;
+  M.choices={shoot:null,save:null};
+  M.phase='announce';
+  M.curShooterCtrl=M.shooterIsA?M.ctrlA:M.ctrlB;
+  M.curKeeperCtrl=M.shooterIsA?M.ctrlB:M.ctrlA;
+
+  const ts=TEAMS[shooterTeam],tk=TEAMS[keeperTeam];
+
+  const rl=document.getElementById('readyL'),rr=document.getElementById('readyR');
+  rl.className='ready-chip left';rr.className='ready-chip right';
+  rl.style.setProperty('--chip',ts.kit[0]);
+  rr.style.setProperty('--chip',tk.kit[0]);
+  rl.textContent='⚽ '+ts.flag+' '+ts.name+(M.curShooterCtrl==='AI'?' 🤖':'');
+  rr.textContent='🧤 '+tk.flag+' '+tk.name+(M.curKeeperCtrl==='AI'?' 🤖':'');
+
+  setupTouch(M.curShooterCtrl,M.curKeeperCtrl,ts,tk);
+
+  /* 1) Annonser tydelig hvem som skyter */
+  const ka=document.getElementById('kickAnnounce');
+  const kaS=document.getElementById('kaShooter');
+  kaS.textContent='⚽ '+ts.star.toUpperCase()+' SKYTER';
+  kaS.style.background=ts.kit[0];
+  kaS.style.color=textColorOn(ts.kit[0]);
+  document.getElementById('kaKeeper').textContent='🧤 KEEPER: '+tk.star.toUpperCase()+' ('+tk.name+')';
+  ka.classList.add('show');
+  setStatus(`⚽ ${ts.flag} ${ts.star} på ellevemeteren...`);
+  document.getElementById('countFill').style.width='100%';
+
+  setTimeout(()=>{
+    /* 2) Valgfasen starter */
+    ka.classList.remove('show');
+    M.phase='select';
+    setStatus(`VELG HJØRNE NÅ! ⚽ ${ts.star} skyter · 🧤 ${tk.star} i mål`,'choosing');
+    let t=4;
+    const fill=document.getElementById('countFill');
+    fill.style.width='100%';
+    clearInterval(M.countTimer);
+    M.countTimer=setInterval(()=>{
+      t-=0.05;
+      fill.style.width=Math.max(0,(t/4)*100)+'%';
+      if(t<=0){clearInterval(M.countTimer);resolveKick();}
+    },50);
+  },1400);
+}
+
+function setupTouch(shooterCtrl,keeperCtrl,ts,tk){
+  const L=document.getElementById('touchL'),R=document.getElementById('touchR');
+  const conf=(el,labelEl,role,team,active)=>{
+    el.className='touch-side '+(active?'':'inactive');
+    el.style.setProperty('--tkit',active?team.kit[0]:'transparent');
+    el.querySelector('.touch-label').textContent=role;
+  };
+  const lTeam=shooterCtrl==='L'?ts:tk, rTeam=shooterCtrl==='R'?ts:tk;
+  const lRole=shooterCtrl==='L'?`⚽ ${lTeam.flag} DU SKYTER`:(keeperCtrl==='L'?`🧤 ${lTeam.flag} DU ER KEEPER`:'–');
+  const rRole=shooterCtrl==='R'?`⚽ ${rTeam.flag} DU SKYTER`:(keeperCtrl==='R'?`🧤 ${rTeam.flag} DU ER KEEPER`:'–');
+  conf(L,null,lRole,lTeam,shooterCtrl==='L'||keeperCtrl==='L');
+  conf(R,null,rRole,rTeam,shooterCtrl==='R'||keeperCtrl==='R');
+}
+
+function touchPick(side,zone){
+  if(M===null||M.phase!=='select')return;
+  applyChoice(side,zone);
+}
+
+function applyChoice(side,zone){
+  if(!M||M.phase!=='select')return;
+  if(M.curShooterCtrl===side&&M.choices.shoot===null){M.choices.shoot=zone;markReady('shooter');}
+  else if(M.curKeeperCtrl===side&&M.choices.save===null){M.choices.save=zone;markReady('keeper');}
+  else if(M.soloHuman){
+    if(M.curShooterCtrl!=='AI'&&M.choices.shoot===null){M.choices.shoot=zone;markReady('shooter');}
+    else if(M.curKeeperCtrl!=='AI'&&M.choices.save===null){M.choices.save=zone;markReady('keeper');}
+  }
+  const shooterDone=M.curShooterCtrl==='AI'||M.choices.shoot!==null;
+  const keeperDone=M.curKeeperCtrl==='AI'||M.choices.save!==null;
+  if(shooterDone&&keeperDone){clearInterval(M.countTimer);setTimeout(resolveKick,250);}
+}
+
+function markReady(role){
+  const el=role==='shooter'?document.getElementById('readyL'):document.getElementById('readyR');
+  el.classList.add('ready');
+}
+
+function resolveKick(){
+  if(M.phase!=='select')return;
+  M.phase='resolve';
+  const zones=['left','center','right'];
+  let shoot=M.choices.shoot,save=M.choices.save;
+  if(M.curShooterCtrl==='AI')shoot=zones[Math.floor(Math.random()*3)];
+  if(M.curKeeperCtrl==='AI')save=zones[Math.floor(Math.random()*3)];
+
+  const shooterTeam=M.shooterIsA?M.a:M.b;
+  const ts=TEAMS[shooterTeam];
+
+  let outcome;
+  if(shoot===null)outcome='over';
+  else if(save===null){outcome=(shoot==='center')?'save':'goal';save='center';}
+  else outcome=(shoot===save)?'save':'goal';
+
+  setStatus('...');
+  /* 1) skytteren løper opp */
+  const shooter=document.getElementById('shooterG');
+  shooter.classList.add('run');
+
+  setTimeout(()=>{
+    /* 2) skudd + keeperstup */
+    const keeper=document.getElementById('keeperG');
+    const ball=document.getElementById('ballG');
+    const net=document.getElementById('netG');
+    keeper.classList.add('dive-'+(save||'center'));
+    if(outcome==='save')ball.classList.add('caught-'+shoot);
+    else ball.classList.add(outcome==='over'?'shoot-over':'shoot-'+shoot);
+
+    setTimeout(()=>{
+      /* 3) utfall, fjes og jubel */
+      if(outcome==='goal'){
+        net.classList.add('ripple');
+        document.getElementById('flashL').classList.add('flash-light');
+        document.getElementById('crowdG').classList.add('jump');
+        setFace('s','smile');setFace('k','frown');
+        shooter.classList.remove('run');
+        document.getElementById('sArmsIdle').style.display='none';
+        document.getElementById('sArmsUp').style.display='';
+        shooter.classList.add('celebrate');
+        setStatus('⚽ MÅL! '+GOAL_SHOUTS[Math.floor(Math.random()*GOAL_SHOUTS.length)],'goal-flash');
+        bigBanner('MÅL! ⚽',ts.phrase,false);
+        emojiBurst(['🎉','⚽','🔥','🙌']);
+        spawnConfetti(18);
+      } else if(outcome==='save'){
+        setFace('k','smile');setFace('s','shock');
+        document.getElementById('keeperBody').classList.add('celebrate');
+        shooter.classList.remove('run');shooter.classList.add('sad');
+        setStatus('🧤 '+SAVE_SHOUTS[Math.floor(Math.random()*SAVE_SHOUTS.length)],'save-flash');
+        bigBanner('REDNING! 🧤','Keeperen vant duellen!',true);
+        emojiBurst(['🧤','😱','🙅']);
+      } else {
+        setFace('s','frown');setFace('k','smile');
+        shooter.classList.remove('run');shooter.classList.add('sad');
+        setStatus('☁️ HIMMELSTRØKET! Over mål...','save-flash');
+        bigBanner('OVER! ☁️','Ballen forsvant mot tribunen',true);
+        emojiBurst(['☁️','😅','🫣']);
+      }
+
+      const res=outcome==='goal'?'goal':'miss';
+      if(M.shooterIsA){M.takenA++;M.resultsA.push(res);if(res==='goal')M.scoreA++;}
+      else{M.takenB++;M.resultsB.push(res);if(res==='goal')M.scoreB++;}
+      renderDots();updatePenScore();
+
+      setTimeout(()=>{hideBanner();nextKick();},1500);
+    },550);
+  },430);
+}
+
+function resetArena(){
+  const keeper=document.getElementById('keeperG');
+  const ball=document.getElementById('ballG');
+  const net=document.getElementById('netG');
+  const shooter=document.getElementById('shooterG');
+  [keeper,ball,shooter].forEach(el=>{el.style.animation='none';void el.getBoundingClientRect();el.style.animation='';});
+  keeper.classList.remove('dive-left','dive-right','dive-center');
+  document.getElementById('keeperBody').classList.remove('celebrate');
+  ball.classList.remove('shoot-left','shoot-center','shoot-right','shoot-over','caught-left','caught-center','caught-right');
+  shooter.classList.remove('run','celebrate','sad');
+  document.getElementById('sArmsIdle').style.display='';
+  document.getElementById('sArmsUp').style.display='none';
+  net.classList.remove('ripple');
+  document.getElementById('flashL').classList.remove('flash-light');
+  document.getElementById('crowdG').classList.remove('jump');
+}
+
+function setStatus(txt,cls){
+  const el=document.getElementById('penStatus');
+  el.textContent=txt;
+  el.className='pen-status'+(cls?' '+cls:'');
+}
+
+function bigBanner(txt,sub,isSave){
+  document.getElementById('bbText').textContent=txt;
+  document.getElementById('bbText').className='bb-text'+(isSave?' save':'');
+  document.getElementById('bbSub').textContent=sub||'';
+  document.getElementById('bigBanner').classList.add('show');
+}
+function hideBanner(){document.getElementById('bigBanner').classList.remove('show');}
+
+function emojiBurst(emojis){
+  const arena=document.getElementById('arena');
+  for(let i=0;i<6;i++){
+    const e=document.createElement('div');
+    e.className='emoji-pop';
+    e.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    e.style.left=(20+Math.random()*60)+'%';
+    e.style.top=(30+Math.random()*40)+'%';
+    e.style.animationDelay=(Math.random()*0.25)+'s';
+    arena.appendChild(e);
+    setTimeout(()=>e.remove(),1500);
+  }
+}
+
+function endMatch(winnerTi){
+  clearInterval(M.countTimer);
+  const m=G.rounds[G.curRound][M.matchIdx];
+  m.winner=winnerTi;m.score=[M.scoreA,M.scoreB];
+  const t=TEAMS[winnerTi];
+  const isFinal=G.curRound===3;
+  setStatus(`🏆 ${t.name} vinner straffekonkurransen ${M.scoreA}–${M.scoreB}!`);
+  bigBanner(isFinal?'VERDENSMESTER! 🏆':t.flag+' VIDERE!',t.name+' '+M.scoreA+'–'+M.scoreB,false);
+  spawnConfetti(40);
+  setTimeout(()=>{
+    hideBanner();M=null;
+    if(isFinal)crownChampion(winnerTi);
+    else showBracket();
+  },2400);
+}
+
+function crownChampion(ti){
+  G.champion=ti;
+  const t=TEAMS[ti];
+  document.getElementById('champFlag').textContent=t.flag;
+  document.getElementById('champTitle').textContent=t.name+' ER VERDENSMESTER!';
+  document.getElementById('champSub').textContent=isHumanTeam(ti)
+    ?`${humanOf(ti).label} løfter VM-pokalen! ${t.star} var iskald fra straffemerket.`
+    :`${t.star} og ${t.name} tok VM-pokalen denne gangen. Revansj?`;
+  spawnConfetti(60);
+  showScreen('championScreen');
+}
+
+function spawnConfetti(n){
+  const colors=['#f4c430','#22c55e','#e53e3e','#1e88e5','#fff'];
+  for(let i=0;i<n;i++){
+    setTimeout(()=>{
+      const c=document.createElement('div');
+      c.className='confetti-piece';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.animationDuration=(Math.random()*1.5+1)+'s';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),2600);
+    },i*25);
+  }
+}
+
+document.addEventListener('keydown',(e)=>{
+  if(M===null||M.phase!=='select')return;
+  if(KEYMAP_R[e.key]){e.preventDefault();applyChoice('R',KEYMAP_R[e.key]);}
+  const k=e.key.toLowerCase();
+  if(KEYMAP_L[k])applyChoice('L',KEYMAP_L[k]);
+});
+</script>
+</body>
+</html>
