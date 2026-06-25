@@ -1,0 +1,2460 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Operasjon Frihet: Motstandskampen</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Oswald:wght@400;600;700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap');
+:root{
+  --bg:#080805;--panel:#0e0e0a;--border:#252515;
+  --floor:#4b4532;--floor2:#3d3826;--void:#030301;
+  --start:#0d2e0d;
+  --boss-locked:#0e0e2a;--boss-open:#2e0808;
+  --wall:#0b0b08;
+  --door:#8b6914;--accent:#c8a830;
+  --red:#c0392b;--green:#27ae60;--text:#e8e0c8;--dimtext:#8a8060;
+  --corridor:#2a2618;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',serif;height:100vh;width:100vw;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+
+/* ── START ── */
+#startScreen{position:fixed;inset:0;z-index:30;background:radial-gradient(ellipse at top,#1a1a0a,#030301 70%);display:flex;align-items:center;justify-content:center;padding:20px;}
+.start-card{max-width:760px;width:100%;background:#0c0c08;border:1px solid #3a3420;border-radius:4px;padding:36px 32px;text-align:center;box-shadow:0 0 80px rgba(200,168,48,.08),inset 0 0 40px rgba(0,0,0,.5);position:relative;}
+.start-card::before,.start-card::after{content:'';position:absolute;border:1px solid #3a3420;border-radius:2px;}
+.start-card::before{inset:8px;}.start-card::after{inset:12px;}
+.start-ornament{font-size:42px;margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(200,168,48,.4));position:relative;z-index:1;}
+.start-title{font-family:'Oswald',sans-serif;font-size:38px;font-weight:700;letter-spacing:8px;color:var(--accent);text-shadow:0 0 40px rgba(200,168,48,.5);margin-bottom:4px;position:relative;z-index:1;}
+.start-sub{font-family:'Special Elite',cursive;font-size:13px;color:var(--dimtext);letter-spacing:3px;text-transform:uppercase;margin-bottom:16px;position:relative;z-index:1;}
+.start-desc{font-size:13px;color:#aaa090;line-height:1.8;margin-bottom:22px;position:relative;z-index:1;max-width:500px;margin-left:auto;margin-right:auto;}
+.hero-chips{display:flex;gap:12px;justify-content:center;margin-bottom:22px;position:relative;z-index:1;}
+.hero-chip-start{background:#141410;border:1px solid #3a3420;border-radius:4px;padding:12px 16px;text-align:center;}
+.hero-chip-start .hc-emoji{font-size:24px;margin-bottom:4px;}
+.hero-chip-start .hc-name{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:var(--accent);margin-bottom:2px;}
+.hero-chip-start .hc-ability{font-size:10px;color:var(--dimtext);line-height:1.4;}
+#startButton{font-family:'Oswald',sans-serif;font-size:17px;font-weight:600;letter-spacing:4px;padding:14px 36px;background:var(--accent);color:#0a0800;border:none;border-radius:2px;cursor:pointer;text-transform:uppercase;transition:all .2s;position:relative;z-index:1;}
+#startButton:hover{background:#e0bc3c;transform:translateY(-1px);box-shadow:0 4px 20px rgba(200,168,48,.4);}
+
+/* ── LAYOUT (single screen, no scroll) ── */
+#gameWrap{height:100vh;width:100vw;display:flex;flex-direction:column;overflow:hidden;}
+.wrap{flex:1;display:flex;flex-direction:column;min-height:0;padding:0;max-width:none;width:100%;}
+
+/* TOP HUD BAR – always visible, only essentials */
+.hud-bar{display:flex;align-items:center;gap:14px;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--border);flex-shrink:0;}
+.hud-title{font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:3px;color:var(--accent);text-transform:uppercase;white-space:nowrap;}
+.hud-lives{display:flex;align-items:center;gap:6px;}
+.hud-life{display:flex;align-items:center;gap:3px;font-size:18px;line-height:1;transition:all .3s;position:relative;}
+.hud-life.fallen{opacity:.3;filter:grayscale(1);}
+.hud-life.current::after{content:'';position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:#27ae60;box-shadow:0 0 6px #27ae60;}
+.hud-lives-label{font-family:'Special Elite',cursive;font-size:9px;letter-spacing:1px;color:var(--dimtext);text-transform:uppercase;}
+.hud-level{display:flex;align-items:center;gap:5px;font-family:'Oswald',sans-serif;}
+.hud-level .hl-val{font-size:18px;color:var(--accent);font-weight:700;}
+.hud-level .hl-key{font-size:9px;color:var(--dimtext);letter-spacing:1px;text-transform:uppercase;}
+.hud-hp{display:flex;align-items:center;gap:6px;min-width:120px;}
+.hud-hp .hp-track{flex:1;height:7px;background:#1a1a10;border-radius:2px;overflow:hidden;min-width:60px;}
+.hud-hp .hp-fill{height:100%;background:linear-gradient(90deg,#8b1a1a,var(--red));border-radius:2px;transition:width .3s;}
+.hud-hp .hp-num{font-family:'Oswald',sans-serif;font-size:11px;color:var(--dimtext);white-space:nowrap;}
+.hud-spacer{flex:1;}
+.hud-btn{font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:1px;padding:7px 12px;border:1px solid var(--border);border-radius:3px;background:#141410;color:var(--dimtext);cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.hud-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* MAP AREA – fills remaining height */
+.map-area{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;padding:8px;}
+.game-layout{display:none;}
+.map-panel{background:transparent;border:none;padding:0;}
+.side-panel{display:none;}
+
+/* INFO DRAWER */
+#infoDrawer{position:fixed;top:0;right:0;height:100vh;width:340px;max-width:88vw;background:var(--panel);border-left:1px solid var(--border);z-index:60;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column;gap:7px;padding:14px;overflow-y:auto;box-shadow:-8px 0 30px rgba(0,0,0,.5);}
+#infoDrawer.open{transform:translateX(0);}
+#infoDrawerBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55;opacity:0;pointer-events:none;transition:opacity .3s;}
+#infoDrawerBackdrop.open{opacity:1;pointer-events:auto;}
+.drawer-close{position:absolute;top:10px;right:12px;font-size:20px;color:var(--dimtext);cursor:pointer;background:none;border:none;z-index:1;}
+.drawer-close:hover{color:var(--accent);}
+
+.panel-section{border:1px solid var(--border);border-radius:2px;padding:9px 11px;background:rgba(0,0,0,.2);border-left:3px solid var(--accent);}
+.panel-label{font-family:'Special Elite',cursive;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--dimtext);margin-bottom:6px;}
+
+/* BOTTOM D-PAD (corner, touch-friendly, doesn't overlap map) */
+#dpad{position:fixed;bottom:18px;right:18px;z-index:40;display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:4px;opacity:.92;}
+#dpad .move-btn{width:46px;height:46px;background:rgba(20,20,16,.9);border:1px solid #3a3420;border-radius:6px;color:var(--accent);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .1s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#dpad .move-btn:active{background:var(--accent);color:#0a0800;transform:scale(.92);}
+#dpad .move-btn.empty{background:transparent;border-color:transparent;cursor:default;}
+
+/* ── HERO CHIPS ── */
+.hero-chips-panel{display:flex;gap:6px;}
+.hero-chip{flex:1;background:#141410;border:1px solid #2a2a1a;border-radius:3px;padding:7px 6px;text-align:center;position:relative;transition:all .3s;}
+.hero-chip.active{border-color:#27ae60;box-shadow:0 0 10px rgba(39,174,96,.25);}
+.hero-chip.fallen{border-color:#c0392b;opacity:0.45;filter:grayscale(0.8);}
+.hero-chip .hc-emoji{font-size:18px;line-height:1;margin-bottom:3px;}
+.hero-chip .hc-name{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1px;color:var(--accent);margin-bottom:2px;}
+.hero-chip .hc-status{font-size:9px;color:var(--green);}
+.hero-chip.fallen .hc-status{color:var(--red);}
+.hero-chip .hc-bonus{font-size:8px;color:var(--dimtext);line-height:1.3;}
+
+/* ── GRID ── */
+.grid-wrap{position:relative;width:max-content;margin:0 auto;}
+#grid{display:grid;background:var(--void);border-radius:2px;overflow:hidden;width:max-content;}
+
+/* ── BOSS PROGRESS ── */
+.boss-progress-list{display:flex;flex-direction:column;gap:4px;}
+.boss-progress-item{display:flex;align-items:center;gap:7px;font-size:11px;padding:4px 6px;border-radius:2px;background:rgba(0,0,0,.2);}
+.boss-progress-item.locked{opacity:0.45;}
+.boss-progress-item.unlocked{border-left:2px solid var(--red);}
+.boss-progress-item.defeated{border-left:2px solid var(--green);opacity:0.7;}
+.boss-progress-item .bp-icon{font-size:14px;width:18px;text-align:center;}
+.boss-progress-item .bp-name{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;flex:1;}
+.boss-progress-item .bp-status{font-size:9px;color:var(--dimtext);}
+
+/* ── FRIGJORT ── */
+.freed-counter{display:flex;gap:10px;flex-wrap:wrap;}
+.freed-item{text-align:center;}
+.freed-item .fi-count{font-family:'Oswald',sans-serif;font-size:18px;color:var(--accent);}
+.freed-item .fi-label{font-size:9px;color:var(--dimtext);margin-top:1px;}
+
+/* ── STATS ── */
+.bar-row{display:flex;align-items:center;gap:7px;margin-bottom:3px;}
+.bar-label{font-size:10px;color:var(--dimtext);width:24px;}
+.bar-track{flex:1;height:6px;background:#1a1a10;border-radius:1px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:1px;transition:width .3s;}
+.bar-fill.hp{background:linear-gradient(90deg,#8b1a1a,var(--red));}
+.bar-fill.xp{background:linear-gradient(90deg,#8b6914,var(--accent));}
+.bar-val{font-size:10px;color:var(--dimtext);width:50px;text-align:right;}
+.stats-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;}
+.stat-box{text-align:center;}
+.stat-val{font-family:'Oswald',sans-serif;font-size:17px;color:var(--accent);}
+.stat-key{font-size:9px;color:var(--dimtext);letter-spacing:1px;}
+
+/* ── ANSWERS ── */
+.answer-btn{font-family:'Source Serif 4',serif;font-size:12px;padding:7px 10px;background:#141410;border:1px solid #2a2a1a;border-radius:2px;color:var(--text);cursor:pointer;text-align:left;transition:all .15s;width:100%;}
+.answer-btn:hover{border-color:var(--accent);background:#1c1c0e;}
+.answer-btn.correct{border:2px solid #27ae60 !important;background:#0c2e0c !important;color:#9fff9f !important;font-weight:700;box-shadow:0 0 12px rgba(39,174,96,.5);}
+.answer-btn.correct::before{content:"✓ ";font-weight:900;}
+.answer-btn.wrong{border:2px solid #c0392b !important;background:#2e0808 !important;color:#ff9090 !important;font-weight:700;box-shadow:0 0 12px rgba(192,57,43,.5);}
+.answer-btn.wrong::before{content:"✗ ";font-weight:900;}
+.answer-btn:disabled{opacity:.6;cursor:default;}
+.type-inp{width:100%;background:#141410;border:1px solid #2a2a1a;border-radius:2px;color:var(--text);font-family:'Special Elite',cursive;font-size:13px;padding:7px 9px;outline:none;margin-bottom:4px;}
+.type-inp:focus{border-color:var(--accent);}
+
+/* ── BUTTONS ── */
+.game-btn{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:6px 12px;border:1px solid var(--border);border-radius:2px;background:#141410;color:var(--dimtext);cursor:pointer;transition:all .15s;}
+.game-btn:hover,.game-btn.primary{border-color:var(--accent);color:var(--accent);}
+
+/* ── MOVE ── */
+.move-grid{display:grid;grid-template-columns:repeat(3,30px);gap:3px;margin:7px auto 0;width:fit-content;}
+.move-btn{width:30px;height:30px;background:#141410;border:1px solid #2a2a1a;border-radius:2px;color:var(--dimtext);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.move-btn:hover{border-color:var(--accent);color:var(--accent);}
+.move-btn.empty{background:transparent;border-color:transparent;cursor:default;}
+
+/* ── MISC ── */
+#statusText{font-family:'Special Elite',cursive;font-size:11px;color:var(--dimtext);line-height:1.5;}
+.combat-log{font-size:11px;line-height:1.6;max-height:80px;overflow-y:auto;color:var(--dimtext);}
+.combat-log .g{color:var(--green);display:block;}
+.combat-log .b{color:var(--red);display:block;}
+.combat-log .i{color:var(--accent);display:block;}
+.combat-log .f{color:#a0d0ff;display:block;}
+::-webkit-scrollbar{width:3px;}::-webkit-scrollbar-track{background:#0a0a08;}::-webkit-scrollbar-thumb{background:#2a2a1a;}
+
+/* ── COMBAT OVERLAY ── */
+#combatOverlay{
+  display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  z-index:10;width:min(420px,calc(100% - 12px));
+  padding:14px 16px 16px;
+  background:rgba(6,6,3,.98);
+  border:1px solid var(--accent);border-radius:4px;
+  box-shadow:0 0 60px rgba(200,168,48,.15),0 0 120px rgba(0,0,0,.9);
+  text-align:center;
+}
+#combatOverlay.active{display:block;}
+#ovEnemyHeader{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;text-align:left;}
+#ovPortraitWrap{position:relative;flex-shrink:0;width:0;height:0;overflow:hidden;transition:width .2s,height .2s;}
+#ovPortraitWrap.has-portrait{width:90px;height:110px;}
+#ovPortrait{width:90px;height:110px;object-fit:cover;object-position:top center;border-radius:3px;border:2px solid var(--red);display:none;}
+#ovPortrait.visible{display:block;}
+#ovEnemyIcon{width:56px;height:56px;display:flex;align-items:center;justify-content:center;background:#1a0a0a;border:2px solid var(--red);border-radius:3px;flex-shrink:0;}
+#ovEnemyInfo{flex:1;min-width:0;}
+#ovEnemyName{font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;letter-spacing:2px;color:var(--red);line-height:1.2;margin-bottom:6px;}
+#ovEnemyName.final-boss{color:var(--accent);}
+#ovHPRow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;}
+#ovEnemyHP{font-size:12px;color:var(--text);font-family:'Special Elite',cursive;}
+#ovHPPct{font-family:'Oswald',sans-serif;font-size:13px;color:var(--dimtext);}
+#ovHPBarWrap{height:14px;background:#111109;border-radius:2px;overflow:hidden;border:1px solid #2a2a1a;margin-bottom:6px;}
+#ovHPBar{height:100%;width:100%;background:linear-gradient(90deg,#1a5c1a,#27ae60);border-radius:2px;transition:width .5s ease,background .5s ease;}
+#ovDmgFlash{font-family:'Oswald',sans-serif;font-size:28px;font-weight:700;min-height:34px;line-height:1;margin-bottom:8px;letter-spacing:2px;}
+#ovQuestion{font-size:13px;line-height:1.6;margin-bottom:8px;color:var(--text);}
+#ovAnswers{display:flex;flex-direction:column;gap:4px;margin-bottom:6px;}
+#ovFeedback{font-size:13px;font-weight:bold;min-height:18px;margin-bottom:6px;}
+#ovSpinArea{display:none;}
+#ovSpinBtn{font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:2px;padding:11px 28px;background:var(--accent);color:#0a0800;border:none;border-radius:2px;cursor:pointer;text-transform:uppercase;margin-bottom:10px;transition:background .15s;}
+#ovSpinBtn:hover{background:#e0bc3c;}
+#spinnerWrap{position:relative;width:180px;height:180px;margin:0 auto 10px;}
+#spinCanvas{border-radius:50%;box-shadow:0 0 20px rgba(200,168,48,.3);}
+#spinPointer{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:22px;line-height:1;}
+#ovSpinResult{font-family:'Oswald',sans-serif;font-size:18px;letter-spacing:2px;min-height:26px;margin-top:6px;}
+#ovTaunt{position:relative;background:linear-gradient(135deg,#2a0505,#1a0808);border:1px solid #8b1a1a;border-radius:8px;color:#f5c8c8;font-style:italic;font-family:'Special Elite',cursive;font-size:14px;line-height:1.6;padding:10px 14px;margin:0 0 10px 0;text-align:center;box-shadow:0 4px 16px rgba(192,57,43,.3);animation:taunFadeIn .4s ease-out;}
+#ovTaunt::before{content:'';position:absolute;top:-10px;left:30px;border-left:10px solid transparent;border-right:10px solid transparent;border-bottom:10px solid #8b1a1a;}
+#ovTaunt::after{content:'';position:absolute;top:-8px;left:31px;border-left:9px solid transparent;border-right:9px solid transparent;border-bottom:9px solid #2a0505;}
+@keyframes taunFadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+/* ── BOSS SCREEN ── */
+#bossScreen{display:none;}
+#bossScreen.active{display:flex;}
+#bossSpeechBubble{display:none;position:relative;width:100%;max-width:240px;background:linear-gradient(135deg,#1a0404,#120202);border:1px solid #8b1a1a;border-radius:10px;padding:14px 16px;margin-top:14px;font-family:'Special Elite',cursive;font-style:italic;font-size:14px;line-height:1.6;color:#f0c0c0;text-align:center;box-shadow:0 4px 20px rgba(192,57,43,.25);}
+#bossSpeechBubble.active{display:block;animation:bubbleFadeIn .4s ease-out;}
+@keyframes bubbleFadeIn{from{opacity:0;transform:scale(0.97);}to{opacity:1;transform:none;}}
+.boss-answer-btn{font-family:'Source Serif 4',serif;font-size:12px;padding:8px 12px;background:#141410;border:1px solid #2a2a1a;border-radius:2px;color:var(--text);cursor:pointer;text-align:left;transition:all .15s;width:100%;}
+.boss-answer-btn:hover{border-color:var(--accent);}
+.boss-answer-btn.correct{border:2px solid #27ae60 !important;background:#0c2e0c !important;color:#9fff9f !important;font-weight:700;box-shadow:0 0 12px rgba(39,174,96,.5);}
+.boss-answer-btn.correct::before{content:"✓ ";font-weight:900;}
+.boss-answer-btn.wrong{border:2px solid #c0392b !important;background:#2e0808 !important;color:#ff9090 !important;font-weight:700;box-shadow:0 0 12px rgba(192,57,43,.5);}
+.boss-answer-btn.wrong::before{content:"✗ ";font-weight:900;}
+.boss-type-inp{width:100%;background:#141410;border:1px solid #2a2a1a;border-radius:2px;color:var(--text);font-family:'Special Elite',cursive;font-size:13px;padding:7px 9px;outline:none;margin-bottom:4px;}
+.boss-type-inp:focus{border-color:var(--accent);}
+
+/* ── PLAYER DAMAGE ── */
+#playerDmgFlash{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:100;font-family:'Oswald',sans-serif;font-size:48px;font-weight:700;color:#c0392b;text-shadow:0 0 20px rgba(192,57,43,.8);pointer-events:none;animation:playerDmgPop 1.5s ease-out forwards;}
+@keyframes playerDmgPop{0%{opacity:1;transform:translate(-50%,-60%) scale(1.3);}30%{opacity:1;transform:translate(-50%,-55%) scale(1);}100%{opacity:0;transform:translate(-50%,-40%) scale(0.8);}}
+
+/* ── LEVEL UP ── */
+#levelUpFlash{display:none;position:fixed;inset:0;z-index:200;pointer-events:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6);}
+#levelUpFlash.active{display:flex;}
+#levelUpFlash span{font-family:'Oswald',sans-serif;font-size:72px;font-weight:700;color:var(--accent);letter-spacing:6px;text-shadow:0 0 40px rgba(200,168,48,.8);animation:lvlPop .8s ease-out forwards;}
+@keyframes lvlPop{0%{opacity:0;transform:scale(0.5);}40%{opacity:1;transform:scale(1.15);}70%{transform:scale(0.95);}85%{transform:scale(1.05);}100%{opacity:0;transform:scale(1);}}
+
+/* ── HERO FALLEN NOTIFICATION ── */
+#heroFallenNotif{display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:150;background:rgba(10,0,0,.96);border:2px solid #c0392b;border-radius:4px;padding:16px 24px;text-align:center;box-shadow:0 0 40px rgba(192,57,43,.5);}
+#heroFallenNotif.active{display:block;animation:notifPop .4s ease-out;}
+@keyframes notifPop{from{opacity:0;transform:translateX(-50%) scale(0.9);}to{opacity:1;transform:translateX(-50%) scale(1);}}
+
+/* ── HERO RESTORED NOTIFICATION ── */
+#heroRestoredNotif{display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);z-index:150;background:rgba(0,10,0,.96);border:2px solid #27ae60;border-radius:4px;padding:16px 24px;text-align:center;box-shadow:0 0 40px rgba(39,174,96,.5);}
+#heroRestoredNotif.active{display:block;animation:notifPop .4s ease-out;}
+
+/* DEATH FLASH */
+#deathFlash{position:fixed;inset:0;z-index:480;pointer-events:none;background:radial-gradient(ellipse at center,rgba(192,57,43,.5),rgba(120,10,10,.85));opacity:0;}
+@keyframes deathFlashAnim{0%{opacity:0;}15%{opacity:1;}100%{opacity:0;}}
+
+/* BOSS TURN BANNER */
+#bossTurnBanner{display:none;position:fixed;top:38%;left:50%;transform:translate(-50%,-50%);z-index:470;pointer-events:none;}
+#bossTurnBanner.active{display:block;animation:bossTurnPop 1.1s ease-out;}
+#bossTurnBanner span{display:inline-block;font-family:'Oswald',sans-serif;font-size:34px;font-weight:700;letter-spacing:3px;padding:10px 28px;border-radius:4px;text-shadow:0 2px 8px rgba(0,0,0,.6);}
+#bossTurnBanner.light span{color:#ffd9a0;background:rgba(140,70,10,.85);border:2px solid #d08030;}
+#bossTurnBanner.heavy span{color:#ffd0d0;background:rgba(150,15,15,.9);border:2px solid #e04040;}
+@keyframes bossTurnPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.6);}25%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}40%{transform:translate(-50%,-50%) scale(1);}80%{opacity:1;}100%{opacity:0;transform:translate(-50%,-50%) scale(1);}}
+
+/* GAME OVER SCREEN */
+#gameOverScreen{display:none;position:fixed;inset:0;z-index:500;background:#080404;align-items:center;justify-content:center;padding:20px;}
+#gameOverScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(60,10,10,.6),#050202 70%);}
+.gameover-card{position:relative;z-index:1;}
+#gameOverScreen.active{display:flex;animation:fadeInGO .6s ease-out;}
+@keyframes fadeInGO{from{opacity:0;}to{opacity:1;}}
+.gameover-card{max-width:520px;width:100%;text-align:center;background:#120606;border:2px solid #c0392b;border-radius:6px;padding:34px 30px;box-shadow:0 0 80px rgba(192,57,43,.3);}
+.gameover-title{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;letter-spacing:4px;color:#e04040;margin-bottom:6px;text-shadow:0 0 30px rgba(192,57,43,.5);}
+.gameover-sub{font-family:'Special Elite',cursive;font-size:13px;color:#c09090;letter-spacing:2px;margin-bottom:22px;}
+.gameover-heroes{display:flex;gap:14px;justify-content:center;margin-bottom:20px;}
+.go-hero{background:#1c0a0a;border:1px solid #4a2020;border-radius:4px;padding:12px 16px;opacity:.7;filter:grayscale(.6);}
+.go-name{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;color:#c8a830;margin:4px 0 2px;}
+.go-fallen{font-size:10px;color:#c0392b;}
+.gameover-stats{font-size:13px;color:#aaa090;line-height:1.9;margin-bottom:22px;}
+.gameover-btn{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;letter-spacing:3px;padding:13px 36px;background:var(--accent);color:#0a0800;border:none;border-radius:2px;cursor:pointer;text-transform:uppercase;transition:all .2s;}
+.gameover-btn:hover{background:#e0bc3c;transform:translateY(-1px);box-shadow:0 4px 20px rgba(200,168,48,.4);}
+
+/* WIN OVERLAY (fullscreen) */
+#winOverlay{display:none;position:fixed;inset:0;z-index:500;background:#040804;align-items:center;justify-content:center;padding:20px;}
+#winOverlay.active{display:flex;animation:fadeInGO .6s ease-out;}
+#winOverlay::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(10,50,10,.5),#020502 70%);}
+.winoverlay-card{position:relative;z-index:1;max-width:520px;width:100%;text-align:center;background:#0a120a;border:2px solid var(--green);border-radius:6px;padding:30px;box-shadow:0 0 80px rgba(39,174,96,.25);}
+.winoverlay-card h2{font-family:'Oswald',sans-serif;font-size:26px;color:var(--accent);letter-spacing:3px;margin-bottom:12px;}
+
+/* HERO CHIP STATES */
+.hero-chip.current{box-shadow:0 0 14px rgba(39,174,96,.5),inset 0 0 0 1px rgba(39,174,96,.4);}
+.hero-chip.waiting{opacity:.55;filter:grayscale(.4);}
+.hero-chip .hc-current-arrow{display:none;}
+.hero-chip.current .hc-current-arrow{display:block;position:absolute;left:-4px;top:50%;transform:translateY(-50%);color:#27ae60;font-size:12px;}
+
+/* ── COMBAT BANNER ── */
+#combatBanner{display:none;position:absolute;top:0;left:0;right:0;padding:10px;text-align:center;font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;letter-spacing:3px;border-radius:3px 3px 0 0;z-index:20;animation:bannerSlide .3s ease-out;}
+@keyframes bannerSlide{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:none;}}
+#combatBanner.hit{background:rgba(39,174,96,.25);color:#7fff7f;border-bottom:1px solid #27ae60;}
+#combatBanner.miss{background:rgba(192,57,43,.25);color:#ff8080;border-bottom:1px solid #c0392b;}
+#combatBanner.lucky{background:rgba(200,168,48,.25);color:#c8a830;border-bottom:1px solid #c8a830;}
+
+/* ── WIN SCREEN ── */
+#winScreen{display:none;text-align:center;padding:14px;}
+#winScreen h2{font-family:'Oswald',sans-serif;font-size:24px;color:var(--accent);letter-spacing:3px;margin-bottom:8px;}
+.win-freed-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;text-align:left;}
+.win-freed-item{background:#141410;border:1px solid #2a2a1a;border-radius:2px;padding:6px 10px;font-size:12px;}
+.win-freed-item .wfi-label{color:var(--dimtext);font-size:10px;}
+.win-freed-item .wfi-val{font-family:'Oswald',sans-serif;font-size:16px;color:var(--accent);}
+
+/* ── BOSS GLOW ANIMATIONS ── */
+@keyframes bossOpenGlow{0%,100%{box-shadow:inset 0 0 12px rgba(192,57,43,.3);}50%{box-shadow:inset 0 0 22px rgba(192,57,43,.7);}}
+@keyframes bossLockedPulse{0%,100%{opacity:.7;}50%{opacity:1;}}
+@keyframes bossShake{0%,100%{transform:none;}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+@keyframes bossGlow{0%,100%{box-shadow:0 0 30px rgba(192,57,43,.4);}50%{box-shadow:0 0 60px rgba(192,57,43,.9);}}
+@keyframes bossVictory{0%{opacity:1;transform:scale(1);}100%{opacity:0;transform:scale(0.8) translateY(20px);}}
+@keyframes msgType{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+@keyframes combatShake{0%,100%{transform:translate(-50%,-50%);}20%{transform:translate(calc(-50% - 4px),-50%);}40%{transform:translate(calc(-50% + 4px),-50%);}60%{transform:translate(calc(-50% - 3px),-50%);}80%{transform:translate(calc(-50% + 3px),-50%);}}
+@keyframes hpPulse{0%,100%{box-shadow:none;}50%{box-shadow:0 0 0 3px #c0392b,0 0 16px rgba(192,57,43,.7);}}
+@keyframes shimmer{0%{background-position:-200% center;}100%{background-position:200% center;}}
+@keyframes flash{0%{transform:scale(1);}40%{transform:scale(1.18);}100%{transform:scale(1);}}
+@keyframes dmgPop{0%{transform:scale(1.6) translateY(-6px);opacity:1;}30%{transform:scale(1.3) translateY(-3px);opacity:1;}100%{transform:scale(0.9) translateY(4px);opacity:0;}}
+.dmg-pop{animation:dmgPop 1.3s ease-out forwards;}
+.flash{animation:flash .4s ease-out;}
+.xp-shimmer{background:linear-gradient(90deg,#8b6914 0%,#c8a830 30%,#ffe97a 50%,#c8a830 70%,#8b6914 100%) !important;background-size:200% auto !important;animation:shimmer .6s linear;}
+#combatOverlay.player-hit{border-color:#c0392b;box-shadow:0 0 0 3px #c0392b,0 0 40px rgba(192,57,43,.5);animation:combatShake .4s ease-out;}
+#hpBar.pulse{animation:hpPulse .6s ease-in-out 2;}
+#bossPortraitWrap.shake{animation:bossShake .3s ease-out;}
+#bossPortraitWrap.glow{animation:bossGlow .6s ease-in-out infinite;}
+#bossMsgText.new-msg{animation:msgType .3s ease-out;}
+</style>
+</head>
+<body>
+<div id="playerDmgFlash"></div>
+<div id="levelUpFlash"><span id="levelUpFlashText">NIVÅ 2!</span></div>
+
+<div id="heroFallenNotif">
+  <div style="font-size:28px;margin-bottom:6px;">☠️</div>
+  <div id="heroFallenName" style="font-family:'Oswald',sans-serif;font-size:18px;color:#c0392b;letter-spacing:2px;margin-bottom:4px;"></div>
+  <div style="font-family:'Special Elite',cursive;font-size:12px;color:#f0c0c0;">har falt</div>
+</div>
+<div id="heroRestoredNotif">
+  <div style="font-size:28px;margin-bottom:6px;">🎖️</div>
+  <div id="heroRestoredName" style="font-family:'Oswald',sans-serif;font-size:18px;color:#27ae60;letter-spacing:2px;margin-bottom:4px;"></div>
+  <div style="font-family:'Special Elite',cursive;font-size:12px;color:#c0f0c0;">er tilbake i kampen!</div>
+</div>
+
+<!-- DEATH FLASH (rød fullskjerm når en helt faller) -->
+<div id="deathFlash"></div>
+
+<!-- BOSS TURN BANNER (vises når bossen kontraangriper) -->
+<div id="bossTurnBanner"><span id="bossTurnText"></span></div>
+
+<!-- GAME OVER SCREEN -->
+<div id="gameOverScreen">
+  <div class="gameover-card">
+    <div style="font-size:48px;margin-bottom:8px;">☠️</div>
+    <div class="gameover-title">OPERASJON FRIHET FEILET</div>
+    <div class="gameover-sub">Alle motstandsheltene er falt</div>
+    <div class="gameover-heroes">
+      <div class="go-hero"><div style="font-size:26px;">🪖</div><div class="go-name">Max Manus</div><div class="go-fallen">† Falt</div></div>
+      <div class="go-hero"><div style="font-size:26px;">🔫</div><div class="go-name">Kjakan</div><div class="go-fallen">† Falt</div></div>
+      <div class="go-hero"><div style="font-size:26px;">📡</div><div class="go-name">J.C. Hauge</div><div class="go-fallen">† Falt</div></div>
+    </div>
+    <div id="gameOverStats" class="gameover-stats"></div>
+    <button id="gameOverRetry" class="gameover-btn" onclick="newGame()">PRØV IGJEN</button>
+  </div>
+</div>
+
+<!-- START SCREEN -->
+<div id="startScreen">
+  <div class="start-card">
+    <div class="start-ornament">🎖️</div>
+    <div class="start-title">OPERASJON FRIHET</div>
+    <div class="start-sub">Motstandskampen · 1940–1945</div>
+    <div class="start-desc">Du leder Kompani Linge – Norges motstandsgruppe. De tre heltene er dine <b style="color:#c8a830;">tre liv</b>: du spiller som Max Manus først. Faller han, trer Kjakan inn – så J.C. Hauge. Faller alle tre, er kampen tapt. Besejr nazistene, frigjør de fangede, og møt Hitler i det avgjørende slaget.</div>
+    <div class="theme-label" style="margin-bottom:10px;">DINE TRE LIV – I REKKEFØLGE</div>
+    <div class="hero-chips" style="margin-bottom:22px;">
+      <div class="hero-chip-start"><div style="font-size:9px;color:#27ae60;letter-spacing:1px;margin-bottom:3px;">1 · SPILLER NÅ</div><div class="hc-emoji">🪖</div><div class="hc-name">MAX MANUS</div><div class="hc-ability">+25% spinner-skade</div></div>
+      <div class="hero-chip-start" style="opacity:.7;"><div style="font-size:9px;color:#8a8060;letter-spacing:1px;margin-bottom:3px;">2 · RESERVE</div><div class="hc-emoji">🔫</div><div class="hc-name">KJAKAN</div><div class="hc-ability">Blokkerer 30% av kontraangrep</div></div>
+      <div class="hero-chip-start" style="opacity:.7;"><div style="font-size:9px;color:#8a8060;letter-spacing:1px;margin-bottom:3px;">3 · RESERVE</div><div class="hc-emoji">📡</div><div class="hc-name">J.C. HAUGE</div><div class="hc-ability">Ser fiendenes HP på kartet</div></div>
+    </div>
+    <button id="startButton">START OPERASJON</button>
+  </div>
+</div>
+
+<!-- GAME WRAP -->
+<div id="gameWrap" style="display:none;">
+<div class="wrap">
+
+  <!-- TOP HUD: only lives + level + HP, plus buttons -->
+  <div class="hud-bar">
+    <div class="hud-title">⚔ Operasjon Frihet</div>
+    <div class="hud-lives">
+      <span class="hud-lives-label">Liv</span>
+      <span class="hud-life current" id="hudLife0">🪖</span>
+      <span class="hud-life" id="hudLife1">🔫</span>
+      <span class="hud-life" id="hudLife2">📡</span>
+    </div>
+    <div class="hud-hp">
+      <i class="fa-solid fa-heart" style="color:#c0392b;font-size:12px;"></i>
+      <div class="hp-track"><div class="hp-fill" id="hudHpFill" style="width:100%"></div></div>
+      <span class="hp-num" id="hudHpNum">60/60</span>
+    </div>
+    <div class="hud-level">
+      <span class="hl-val" id="hudLevel">1</span><span class="hl-key">Nivå</span>
+    </div>
+    <div class="hud-spacer"></div>
+    <button class="hud-btn" id="btnFullscreen" title="Fullskjerm"><i class="fa-solid fa-expand"></i></button>
+    <button class="hud-btn" id="btnInfo"><i class="fa-solid fa-circle-info"></i> Info</button>
+  </div>
+
+  <!-- MAP AREA -->
+  <div class="map-area">
+    <div class="map-panel">
+      <div class="grid-wrap">
+        <div id="grid"></div>
+        <div id="combatOverlay">
+          <div id="combatBanner"></div>
+          <div id="ovTaunt" style="display:none;"></div>
+          <div id="ovEnemyHeader">
+            <div id="ovPortraitWrap"><img id="ovPortrait" alt="" referrerpolicy="no-referrer"/></div>
+            <div id="ovEnemyIcon"></div>
+            <div id="ovEnemyInfo">
+              <div id="ovEnemyName"></div>
+              <div id="ovHPRow"><span id="ovEnemyHP"></span><span id="ovHPPct"></span></div>
+              <div id="ovHPBarWrap"><div id="ovHPBar"></div></div>
+            </div>
+          </div>
+          <div id="ovDmgFlash"></div>
+          <div id="ovQuestion"></div>
+          <div id="ovAnswers"></div>
+          <div id="ovFeedback"></div>
+          <div id="ovSpinArea">
+            <button id="ovSpinBtn"><i class="fa-solid fa-circle-notch"></i> SPIN</button>
+            <div id="spinnerWrap">
+              <canvas id="spinCanvas" width="180" height="180"></canvas>
+              <div id="spinPointer">▼</div>
+            </div>
+            <div id="ovSpinResult"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM CORNER D-PAD (touch-friendly for iPad) -->
+  <div id="dpad">
+    <div class="move-btn empty"></div>
+    <button class="move-btn" id="btnUp"><i class="fa-solid fa-arrow-up"></i></button>
+    <div class="move-btn empty"></div>
+    <button class="move-btn" id="btnLeft"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="move-btn empty"></div>
+    <button class="move-btn" id="btnRight"><i class="fa-solid fa-arrow-right"></i></button>
+    <div class="move-btn empty"></div>
+    <button class="move-btn" id="btnDown"><i class="fa-solid fa-arrow-down"></i></button>
+    <div class="move-btn empty"></div>
+  </div>
+
+</div>
+</div>
+
+<!-- INFO DRAWER (all detailed panels live here) -->
+<div id="infoDrawerBackdrop"></div>
+<div id="infoDrawer">
+  <button class="drawer-close" id="drawerClose">✕</button>
+
+  <!-- KOMPANI LINGE -->
+  <div class="panel-section">
+    <div class="panel-label">🎖 Kompani Linge</div>
+    <div class="hero-chips-panel" id="heroChipsPanel">
+      <div class="hero-chip active current" id="hero-0">
+        <div class="hc-current-arrow">▶</div>
+        <div class="hc-emoji">🪖</div>
+        <div class="hc-name">MAX MANUS</div>
+        <div class="hc-status">▶ AKTIV</div>
+        <div class="hc-bonus">+25% skade</div>
+      </div>
+      <div class="hero-chip waiting" id="hero-1">
+        <div class="hc-current-arrow">▶</div>
+        <div class="hc-emoji">🔫</div>
+        <div class="hc-name">KJAKAN</div>
+        <div class="hc-status">Venter...</div>
+        <div class="hc-bonus">Blokkerer angrep</div>
+      </div>
+      <div class="hero-chip waiting" id="hero-2">
+        <div class="hc-current-arrow">▶</div>
+        <div class="hc-emoji">📡</div>
+        <div class="hc-name">J.C. HAUGE</div>
+        <div class="hc-status">Venter...</div>
+        <div class="hc-bonus">Ser HP på kart</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="panel-section">
+    <div class="panel-label"><i class="fa-solid fa-bars-progress"></i> Status</div>
+    <div class="bar-row"><div class="bar-label"><i class="fa-solid fa-heart" style="color:#c0392b;font-size:10px;"></i></div><div class="bar-track"><div class="bar-fill hp" id="hpBar" style="width:100%"></div></div><div class="bar-val" id="hpVal">60/60</div></div>
+    <div class="bar-row"><div class="bar-label"><i class="fa-solid fa-star" style="color:#c8a830;font-size:10px;"></i></div><div class="bar-track"><div class="bar-fill xp" id="xpBar" style="width:0%"></div></div><div class="bar-val" id="xpVal">0/50</div></div>
+    <div class="stats-row">
+      <div class="stat-box"><div class="stat-val" id="statLevel">1</div><div class="stat-key">Nivå</div></div>
+      <div class="stat-box"><div class="stat-val" id="statDmg">–</div><div class="stat-key">Skade</div></div>
+      <div class="stat-box"><div class="stat-val" id="statAcc">–</div><div class="stat-key">Treff%</div></div>
+      <div class="stat-box"><div class="stat-val" id="statRyddet">0</div><div class="stat-key">Ryddet</div></div>
+    </div>
+  </div>
+
+  <!-- BOSS FREMGANG -->
+  <div class="panel-section">
+    <div class="panel-label"><i class="fa-solid fa-skull"></i> Fiendenes kommando</div>
+    <div class="boss-progress-list" id="bossProgressList"></div>
+  </div>
+
+  <!-- FRIGJORTE -->
+  <div class="panel-section">
+    <div class="panel-label">🇳🇴 Frigjorte nordmenn</div>
+    <div class="freed-counter">
+      <div class="freed-item"><div class="fi-count" id="freed-0">0</div><div class="fi-label">👦 Motstandsgutter</div></div>
+      <div class="freed-item"><div class="fi-count" id="freed-1">0</div><div class="fi-label">👩 Sykepleiere</div></div>
+      <div class="freed-item"><div class="fi-count" id="freed-2">0</div><div class="fi-label">👨 Lærere</div></div>
+      <div class="freed-item"><div class="fi-count" id="freed-3">0</div><div class="fi-label">✡️ Familier</div></div>
+    </div>
+  </div>
+
+  <!-- KAMPLOG -->
+  <div class="panel-section">
+    <div class="panel-label"><i class="fa-solid fa-scroll"></i> Kamplog</div>
+    <div class="combat-log" id="combatLog"></div>
+  </div>
+
+  <!-- MELDING -->
+  <div class="panel-section">
+    <div class="panel-label"><i class="fa-solid fa-triangle-exclamation"></i> Melding</div>
+    <div id="statusText">Klar.</div>
+  </div>
+
+  <div style="display:flex;gap:6px;">
+    <button class="game-btn" onclick="newGame()"><i class="fa-solid fa-rotate-right"></i> NY RUNDE</button>
+  </div>
+</div>
+
+<!-- Hidden elements kept for combat logic compatibility -->
+<div style="display:none;">
+  <div id="enemyLabel"></div>
+  <div id="questionText"></div>
+  <div id="answerOptions"></div>
+  <div id="winScreen"><h2>🇳🇴 NORGE ER FRIGJORT!</h2><div id="winContent"></div><button onclick="newGame()">NY OPERASJON</button></div>
+</div>
+
+<!-- WIN SCREEN (fullscreen overlay) -->
+<div id="winOverlay">
+  <div class="winoverlay-card">
+    <h2 id="winOverlayTitle">🇳🇴 NORGE ER FRIGJORT!</h2>
+    <div id="winOverlayContent"></div>
+    <button class="gameover-btn" style="margin-top:14px;" onclick="newGame()">NY OPERASJON</button>
+  </div>
+</div>
+
+<!-- BOSS BATTLE SCREEN -->
+<div id="bossScreen" style="display:none;position:fixed;inset:0;z-index:20;flex-direction:column;background:#0a0a08;">
+  <div id="bossArena" style="flex:1;display:flex;align-items:stretch;min-height:0;position:relative;">
+    <div id="bossSpinArea" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;text-align:center;visibility:hidden;background:rgba(8,6,2,.92);border:1px solid var(--accent);border-radius:4px;padding:14px 16px;box-shadow:0 0 30px rgba(200,168,48,.2);">
+      <button id="bossSpinBtn" style="font-family:Oswald,sans-serif;font-size:15px;letter-spacing:2px;padding:10px 28px;background:var(--accent);color:#0a0800;border:none;border-radius:2px;cursor:pointer;text-transform:uppercase;margin-bottom:10px;"><i class="fa-solid fa-circle-notch"></i> SPIN</button>
+      <div id="bossSpinnerWrap" style="position:relative;width:160px;height:160px;margin:0 auto 8px;">
+        <canvas id="bossSpinCanvas" width="160" height="160"></canvas>
+        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:20px;">▼</div>
+      </div>
+      <div id="bossSpinResult" style="font-family:Oswald,sans-serif;font-size:15px;letter-spacing:2px;min-height:20px;margin-top:4px;"></div>
+    </div>
+    <div id="bossSide" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:24px 20px 16px;background:linear-gradient(180deg,#1a0505 0%,#0a0a08 100%);">
+      <div id="bossPortraitWrap" style="position:relative;margin-bottom:12px;">
+        <img id="bossPortraitImg" alt="" style="width:140px;height:170px;object-fit:cover;object-position:top;border-radius:4px;border:3px solid #c0392b;box-shadow:0 0 30px rgba(192,57,43,.6);display:none;"/>
+        <div id="bossEmojiLarge" style="width:140px;height:170px;display:flex;align-items:center;justify-content:center;font-size:80px;background:#1a0808;border:3px solid #c0392b;border-radius:4px;box-shadow:0 0 30px rgba(192,57,43,.4);"></div>
+      </div>
+      <div id="bossNameLarge" style="font-family:Oswald,sans-serif;font-size:22px;font-weight:700;letter-spacing:3px;color:#c0392b;margin-bottom:8px;text-align:center;"></div>
+      <div id="bossSpeechBubble"></div>
+      <div style="width:100%;max-width:240px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#8a8060;margin-bottom:4px;"><span>HP</span><span id="bossHPText">– / –</span></div>
+        <div style="height:12px;background:#111;border-radius:2px;overflow:hidden;border:1px solid #2a2a1a;"><div id="bossHPBar" style="height:100%;width:100%;background:linear-gradient(90deg,#1a5c1a,#27ae60);border-radius:2px;transition:width .5s ease,background .5s;"></div></div>
+      </div>
+    </div>
+    <div id="playerSide" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:24px 20px 16px;background:linear-gradient(180deg,#05101a 0%,#0a0a08 100%);">
+      <div id="playerHeroDisplay" style="font-size:50px;margin-bottom:8px;filter:drop-shadow(0 0 12px rgba(200,168,48,.7));">🪖</div>
+      <div style="font-family:Oswald,sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;color:var(--accent);margin-bottom:8px;" id="playerHeroName">KOMPANI LINGE</div>
+      <div style="width:100%;max-width:220px;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:#8a8060;margin-bottom:4px;"><span>HP</span><span id="bossPlayerHPText">– / –</span></div>
+        <div style="height:12px;background:#111;border-radius:2px;overflow:hidden;border:1px solid #2a2a1a;"><div id="bossPlayerHPBar" style="height:100%;width:100%;background:linear-gradient(90deg,#1a5c1a,#27ae60);border-radius:2px;transition:width .5s ease,background .5s;"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:#8a8060;">
+          <span>Nivå <span id="bossPlayerLevel" style="color:var(--accent);">1</span></span>
+          <span>Skade <span id="bossPlayerDmg" style="color:var(--accent);">–</span></span>
+        </div>
+      </div>
+      <div style="margin-top:16px;width:100%;max-width:280px;">
+        <div id="bossQuestion" style="font-size:13px;line-height:1.6;color:var(--text);margin-bottom:8px;"></div>
+        <div id="bossAnswers" style="display:flex;flex-direction:column;gap:4px;margin-bottom:6px;"></div>
+        <div id="bossFeedback" style="font-size:13px;font-weight:bold;min-height:18px;margin-bottom:6px;"></div>
+        <div id="bossMsgText" style="font-family:'Special Elite',cursive;font-size:13px;color:#c8a830;min-height:20px;text-align:center;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── GAME-ICONS BASE URL ───
+const GI_BASE = "https://raw.githubusercontent.com/game-icons/icons/master/";
+const FILTER_ENEMY = "invert(30%) sepia(100%) saturate(500%) hue-rotate(320deg) brightness(0.9)";
+const FILTER_PLAYER = "invert(75%) sepia(80%) saturate(500%) hue-rotate(5deg) brightness(1.1)";
+const FILTER_MINIBOSS = "invert(20%) sepia(100%) saturate(600%) hue-rotate(330deg) brightness(1.1)";
+
+const MONSTER_ICONS_GI = {
+  "Nazisoldat":       "delapouite/flamethrower-soldier.svg",
+  "SS-vakt":          "lorc/crossed-pistols.svg",
+  "Gestapo-agent":    "delapouite/spy.svg",
+  "Propagandamaskin": "delapouite/newspaper.svg",
+  "Stuka-fly":        "lorc/bombing-run.svg",
+  "Quisling":         "delapouite/stabbed-note.svg",
+  "Panzervogn":       "lorc/battle-tank.svg",
+  "Panzerfaust":      "lorc/grenade.svg",
+  "Sniper":           "lorc/dead-eye.svg",
+  "Ubåt":             "delapouite/submarine.svg",
+  "NS-mann":          "delapouite/secret-book.svg",
+  "Grensevakt":       "delapouite/barrier.svg",
+  "Stikker":          "lorc/targeting.svg",
+  "Rommel":           "lorc/bullets.svg",
+  "Terboven":         "lorc/handcuffs.svg",
+  "Blücher":          "delapouite/submarine.svg",
+  "Göring":           "lorc/bombing-run.svg",
+  "Goebbels":         "delapouite/newspaper.svg",
+  "Himmler":          "lorc/autogun.svg",
+  "Hess":             "lorc/minigun.svg",
+  "ADOLF HITLER":     "lorc/crossed-pistols.svg",
+};
+const PLAYER_ICON_GI = "delapouite/guards.svg";
+
+function giIconHTML(name, sizePx, filter){
+  const path = MONSTER_ICONS_GI[name] || "lorc/dead-eye.svg";
+  const f = filter || FILTER_ENEMY;
+  return `<img src="${GI_BASE}${path}" width="${sizePx}" height="${sizePx}" style="filter:${f};display:block;" alt="${name}" onerror="this.style.display='none'">`;
+}
+
+// ─── PORTRAITS ───
+const PORTRAIT_PAGES = {
+  "Göring":       "Hermann_G%C3%B6ring",
+  "Goebbels":     "Joseph_Goebbels",
+  "Himmler":      "Heinrich_Himmler",
+  "Hess":         "Rudolf_Hess",
+  "ADOLF HITLER": "Adolf_Hitler",
+  "Rommel":       "Erwin_Rommel",
+  "Terboven":     "Josef_Terboven",
+};
+const PORTRAITS = {};
+async function loadPortraits(){
+  for(const [name, page] of Object.entries(PORTRAIT_PAGES)){
+    try{
+      const r=await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${page}`);
+      const d=await r.json();
+      if(d.thumbnail&&d.thumbnail.source) PORTRAITS[name]=d.thumbnail.source;
+    }catch(e){}
+  }
+}
+loadPortraits();
+
+// ─── QUESTION BANK ───
+</script>
+<script>
+const ALL_Q=[
+  {type:"mc",q:"Hvilket år angrep Tyskland Polen?",opts:["1937","1938","1939","1941"],ans:2,diff:1,theme:'front'},
+  {type:"mc",q:"Hva het den norske lederen som samarbeidet med nazistene?",opts:["Johan Nygaardsvold","Vidkun Quisling","Carl Hambro","Einar Gerhardsen"],ans:1,diff:1,theme:'norway'},
+  {type:"mc",q:"Hva kalles det tyske angrepet på Norge 9. april 1940?",opts:["Operation Sea Lion","Operation Barbarossa","Operation Weserübung","Operation Dynamo"],ans:2,diff:2,theme:'norway'},
+  {type:"mc",q:"Hvem kommanderte Oscarsborg 9. april 1940?",opts:["Kaptein Erlend Serck","Oberst Birger Eriksen","General Otto Ruge","Admiral Tank-Nielsen"],ans:1,diff:3,theme:'norway'},
+  {type:"mc",q:"Hvilken tysk krysser ble senket av Oscarsborg?",opts:["Bismarck","Tirpitz","Blücher","Scharnhorst"],ans:2,diff:2,theme:'norway'},
+  {type:"mc",q:"Hva er Holocaust?",opts:["Tysk angrep på Sovjet","Nazistenes folkemord på jøder og andre grupper","Bombingen av Dresden","Invasjonen av Polen"],ans:1,diff:1,theme:'any'},
+  {type:"mc",q:"Omtrent hvor mange jøder ble drept under Holocaust?",opts:["Ca. 600 000","Ca. 2 millioner","Ca. 6 millioner","Ca. 10 millioner"],ans:2,diff:1,theme:'norway'},
+  {type:"mc",q:"Hva var skipet som fraktet norske jøder til Polen i 1942?",opts:["Prinsesse Ragnhild","Bergensfjord","Donau","Oslofjord"],ans:2,diff:2,theme:'front'},
+  {type:"mc",q:"Hvilken by ble rammet av den første atombomben?",opts:["Nagasaki","Tokyo","Kyoto","Hiroshima"],ans:3,diff:1,theme:'any'},
+  {type:"mc",q:"Hva kalles de alliertes invasjon av Normandie 6. juni 1944?",opts:["D-dagen","V-dagen","H-dagen","N-dagen"],ans:0,diff:1,theme:'front'},
+  {type:"mc",q:"Hvem var Storbritannias statsminister under krigen?",opts:["Neville Chamberlain","Clement Attlee","Anthony Eden","Winston Churchill"],ans:3,diff:1,theme:'any'},
+  {type:"mc",q:"Hva var Munchenavtalen av 1938?",opts:["En avtale der Storbritannia og Frankrike tillot Hitler å annektere Sudetland for å unngå krig","En fredsavtale mellom Frankrike og Tyskland som avsluttet konflikten om Rhinland","En alliansetraktat mellom aksen og Sovjet om ikke-angrep i Sentral-Europa","En rustningsbegrensningsavtale mellom de europeiske stormaktene om flystyrker"],ans:0,diff:2,theme:'front'},
+  {type:"mc",q:"Hva betyr appeasement-politikk?",opts:["Å gi etter for en aggressor med innrømmelser for å unngå krig og bevare freden","Aggressiv konfrontasjon av fienden med militærmakt for å vise styrke og beslutsomhet","Hemmelig samarbeid med fienden gjennom diplomatiske kanaler bak fasaden","Rask mobilisering av alle militære ressurser for å møte en trussel med makt"],ans:0,diff:2,theme:'front'},
+  {type:"mc",q:"Hva var Blitzkrieg?",opts:["Lynangrep med koordinert bruk av tanks, fly og infanteri for å overrumple fienden","En langsom beleiring der man omringer byer og venter til forsyningene er oppbrukt","Bombing av sivile mål langt bak frontlinjen for å bryte fiendens moral og vilje","Ubåtkrig mot handelsskip for å hindre forsyninger fra å nå fiendens havner"],ans:0,diff:1,theme:'front'},
+  {type:"mc",q:"Hvilket land slo seg sammen med Tyskland og Italia?",opts:["Japan","Kina","Brasil","Tyrkia"],ans:0,diff:1,theme:'any'},
+  {type:"mc",q:"Hva var Milorg?",opts:["Det norske nazipartiet","Den norske militære motstandsorganisasjonen","En tysk etterretningsorganisasjon","Et norsk politikorps"],ans:1,diff:1,theme:'norway'},
+  {type:"mc",q:"Hva saboterte Kompani Linge på Vemork i 1943?",opts:["Tungtvannsproduksjonen – råmateriale for atomvåpen som hindret Nazi-Tysklands atombombe","En strategisk jernbanebro som stoppet tyske forsyningstransporter til den norske kysten","En militær flyplass som ble brukt til å sende Stuka-fly mot allierte konvoier i Nordsjøen","Et kommunikasjonssenter for krypterte tyske meldinger mellom Berlin og Oslo-kommandoen"],ans:0,diff:2,theme:'norway'},
+  {type:"mc",q:"Hva var Versaillestraktaten?",opts:["En fredsavtale etter 1. verdenskrig som straffet Tyskland hardt for krigens skyld","Et militærallianse mellom Frankrike, Storbritannia og USA mot fremtidige trusler","En handelsavtale fra 1919 som regulerte europeisk korneksport og industri","En grenseavtale mellom Polen og Russland om territorier øst for Oder-elven"],ans:0,diff:1,theme:'front'},
+  {type:"mc",q:"Hva var Den store depresjonen?",opts:["En militærkatastrofe","En internasjonal økonomisk krise fra 1929","En epidemi","En politisk krise"],ans:1,diff:1,theme:'front'},
+  {type:"mc",q:"Hva skjedde ved Stalingrad (1942–43)?",opts:["Tyskland inntok Moskva","Den tyske 6. arme kapitulerte – avgjørende vendepunkt","De allierte landet i Frankrike","Japan gikk inn i krigen"],ans:1,diff:2,theme:'front'},
+  {type:"mc",q:"Hvem var USAs president da Japan angrep Pearl Harbor?",opts:["Harry Truman","Dwight Eisenhower","Franklin D. Roosevelt","Herbert Hoover"],ans:2,diff:2,theme:'ocean'},
+  {type:"mc",q:"Hva var Nürnbergprosessene?",opts:["Rettssaker mot nazistiske krigsforbrytere","Grenseforhandlinger","Oppretting av FN","Deling av Tyskland"],ans:0,diff:2,theme:'any'},
+  {type:"mc",q:"Hva er VE-day?",opts:["Feiringa av Tysklands betingelsesløse kapitulasjon 8. mai 1945 – krigens slutt i Europa","Japans overgivelse i Stillehavet etter atombombingen av Hiroshima og Nagasaki i 1945","Norges offisielle frigjøringsdag da tyske tropper forlot landet i mai og juni 1945","Dagen de allierte landet i Normandie og åpnet den avgjørende vestfronten i 1944"],ans:0,diff:1,theme:'any'},
+  {type:"mc",q:"Hva er VJ-day?",opts:["Dagen Japan kapitulerte og krigen i Stillehavet offisielt sluttet i august 1945","Dagen de allierte krysset Rhinen og inntok vestlige Tyskland i mars 1945","Japans angrep på Pearl Harbor som dro USA inn i 2. verdenskrig i desember 1941","Dagen Sovjet erklærte krig mot Japan og invaderte Manchuria i august 1945"],ans:0,diff:2,theme:'ocean'},
+  {type:"mc",q:"Hva var Kompani Linge?",opts:["En norsk motstandsgruppe trent i Storbritannia som utførte sabotasje og etterretning","En tysk sikkerhetsenhet stasjonert i Norge med ansvar for å bekjempe motstandsbevegelsen","En norsk militæravdeling som kjempet under tysk kommando på Østfronten fra 1941","Et svensk frikorps av frivillige som hjalp norske flyktninger over grensen til Sverige"],ans:0,diff:2,theme:'norway'},
+  {type:"mc",q:"Hva betyr det at Quislings navn er blitt et eget ord?",opts:["Hans navn er blitt synonymt med landsforræder i mange språk verden over","Han var en berømt feltmarskalk som vant store slag mot de allierte styrkene i Norge","Han grunnla et viktig politisk parti som fortsatte å eksistere etter 2. verdenskrig","Han var en modig motstandshelt som skjulte hundrevis av jøder fra nazistene"],ans:0,diff:2,theme:'norway'},
+  {type:"mc",q:"Hvilken organisasjon ble grunnlagt etter 2. verdenskrig?",opts:["NATO","Folkeforbundet","FN","EU"],ans:2,diff:1,theme:'any'},
+  {type:"mc",q:"Hva var Nanjing-massakren i 1937?",opts:["Den japanske hærens massakre på hundretusener av sivile og krigsfanger i Nanjing, Kina","Et japansk overraskelsesangrep på den amerikanske marinbasen Pearl Harbor på Hawaii","Et kinesisk militært angrep på japanske tropper som utløste krigen i Stillehavet","En japansk bomberaid mot Shanghais industrikvarter som ødela kinesisk krigsproduksjon"],ans:0,diff:2,theme:'ocean'},
+  {type:"mc",q:"Hvem var Benito Mussolini?",opts:["Italias fascistiske diktator fra 1922, Hitlers viktigste allierte og medgrunnlegger av aksen","Japans keiser under hele 2. verdenskrig, som beordret angrepet på Pearl Harbor i 1941","Spanias fascistiske diktator under borgerkrigen, som holdt landet nøytralt under krigen","Frankrikes samarbeidsvillige statsminister under den tyske okkupasjonen 1940–1944"],ans:0,diff:1,theme:'ocean'},
+  {type:"mc",q:"Hva het nazistenes parti?",opts:["NSDAP","SPD","KPD","CDU"],ans:0,diff:2,theme:'any'},
+  {type:"mc",q:"Hva var Pearl Harbor?",opts:["Et sjøslag","Japans overraskelsesangrep på Hawaii 1941","En britisk flåtebase","Et D-dagsmål"],ans:1,diff:1,theme:'ocean'},
+  {type:"mc",q:"Hva var Nürnberglovene av 1935?",opts:["Rasistiske lover som fratok tyske jøder statsborgerskapet og forbød ekteskap med ikke-jøder","Militærlover som gjeninnførte verneplikt i Tyskland etter Versaillestraktatens forbud","Krigslover som regulerte behandlingen av krigsfanger og sivilbefolkning i okkuperte land","Handelsrestriksjoner rettet mot jødiske forretningsdrivende for å tvinge dem ut av næringslivet"],ans:0,diff:2,theme:'any'},
+  {type:"mc",q:"Hvem var Josef Stalin?",opts:["Sovjetunionens diktator fra 1924, som ledet landet gjennom 2. verdenskrig mot nazistene","Storbritannias forsvarsminister under Churchill, ansvarlig for koordinering med USA","Frankrikes eksilpresident i London, leder av Free France og senere Frankrikes statsminister","Italias forsvarssjef som forsøkte å megle fred mellom Mussolini og de allierte i 1943"],ans:0,diff:1,theme:'ocean'},
+  {type:"mc",q:"Hva het den tyske operasjonen mot Sovjet fra 1941?",opts:["Operation Barbarossa – det massivste landangrepet i historien med tre millioner tyske soldater","Operation Sea Lion – den planlagte tyske invasjonen av Storbritannia som aldri ble gjennomført","Operation Overlord – de alliertes invasjon av Normandie som åpnet vestfronten i 1944","Operation Market Garden – det allierte luftlandsettingsforsøket i Nederland i september 1944"],ans:0,diff:2,theme:'any'},
+  {type:"mc",q:"Hva var getto under Holocaust?",opts:["Avgrensede byområder der jøder ble tvunget til å bo under elendige og livstruende forhold","Konsentrasjonsleirer i Polen og Øst-Europa der jøder ble utsatt for tvangsarbeid og drap","Tyske militærleirer for internering av politiske fanger og krigsmotstandere fra alle land","Fangetransporter med godsvogner som fraktet jøder og andre grupper til utryddelsesleirene"],ans:0,diff:2,theme:'any'},
+  {type:"mc",q:"Hva sto det over porten til Auschwitz?",opts:["Arbeit macht frei – et kynisk slagord som betydde at arbeidet ville gjøre fangene fri","Sieg Heil – det nazistiske kampropet som ble brukt ved alle store partisammenkomster","Heil Hitler – den obligatoriske nazistiske hilsenen som alle tyske borgere måtte bruke","Deutschland über alles – den nasjonalistiske sangen som ble nazistenes uoffisielle hymne"],ans:0,diff:2,theme:'any'},
+  {type:"mc",q:"Hva var Altmark-saken i 1940?",opts:["Britiske marinestyrker frigjorde britiske fanger fra et tysk skip i norsk territorialfarvann","En norsk sabotasjeaksjon mot et tysk forsyningsskip i Oslofjorden vinteren 1940","Et tysk angrep på en norsk kystby som markerte starten på den tyske invasjonen","En diplomatisk krise mellom Norge og Sverige om retten til å huse tyske desertører"],ans:0,diff:3,theme:'norway'},
+  {type:"mc",q:"Hvem var Erwin Rommel?",opts:["Tysk feltmarskalk kjent som Ørkenfoksen for sine taktiske bragder i Nord-Afrika","Tysk marineoffiser som ledet ubåtkrigen i Atlanterhavet og bidro til enorme britiske tap","Sjefen for Gestapo og den tyske sikkerhetstjenesten under okkupasjonen av Vest-Europa","Tysklands øverstkommanderende i Norge, ansvarlig for administrasjonen av okkupasjonen"],ans:0,diff:3,theme:'front'},
+  {type:"mc",q:"Hva var Waffen-SS?",opts:["Den væpnede eliteavdelingen til det nazistiske SS, ansvarlig for noen av krigens verste forbrytelser","Den tyske marinen med ubåter og overflatefartøyer som opererte i Atlanterhavet og Nordsjøen","Det tyske luftvåpenet Luftwaffe som gjennomførte Blitz-bombingen av britiske byer 1940–41","Den tyske militæretterretningstjenesten Abwehr som koordinerte spionasje i okkuperte land"],ans:0,diff:3,theme:'front'},
+  {type:"tf",q:"Norsk politi deltok aktivt i arrestasjonen av norske jøder.",ans:true,diff:2,theme:'norway'},
+  {type:"tf",q:"Norge klarte å stoppe den tyske invasjonen i april 1940.",ans:false,diff:1,theme:'norway'},
+  {type:"tf",q:"Kongen og regjeringen flyktet til Storbritannia for å lede motstandskampen.",ans:true,diff:1,theme:'norway'},
+  {type:"tf",q:"Versaillestraktaten behandlet Tyskland rettferdig etter 1. verdenskrig.",ans:false,diff:2,theme:'front'},
+  {type:"tf",q:"Mer enn halvparten av dødsofrene i 2. verdenskrig var sivile.",ans:true,diff:2,theme:'any'},
+  {type:"tf",q:"USA kom inn i 2. verdenskrig etter Japans angrep på Pearl Harbor.",ans:true,diff:1,theme:'ocean'},
+  {type:"tf",q:"Sovjet var alliert med de allierte gjennom hele krigen.",ans:false,diff:2,theme:'any'},
+  {type:"tf",q:"Alle land regner krigens start fra 1. september 1939.",ans:false,diff:2,theme:'norway'},
+  {type:"tf",q:"Auschwitz var den største utryddelsesleiren under Holocaust.",ans:true,diff:2,theme:'any'},
+  {type:"tf",q:"Rundt 773 norske jøder ble deportert, og de fleste ble drept.",ans:true,diff:2,theme:'norway'},
+  {type:"tf",q:"Hitler tok makten gjennom en militærkupp.",ans:false,diff:2,theme:'any'},
+  {type:"tf",q:"Roosevelt var USAs president under mesteparten av 2. verdenskrig.",ans:true,diff:2,theme:'ocean'},
+  {type:"tf",q:"Tungtvannsaksjonen hindret Tysklands mulighet til å utvikle atomvåpen.",ans:true,diff:2,theme:'norway'},
+  {type:"tf",q:"FN ble grunnlagt delvis som følge av erfaringene fra 2. verdenskrig.",ans:true,diff:1,theme:'any'},
+  {type:"tf",q:"Munchenavtalen stoppet Hitlers ekspansjon.",ans:false,diff:3,theme:'front'},
+  {type:"tf",q:"Nürnberglovene fratok tyske jøder statsborgerskapet.",ans:true,diff:3,theme:'norway'},
+  {type:"type",q:"Hvilken dato angrep Tyskland Norge?",ans:["9. april","9 april","9. april 1940","niende april"],diff:1,theme:'norway'},
+  {type:"type",q:"Hva heter den mest beryktede utryddelsesleiren?",ans:["auschwitz","auschwitz-birkenau"],diff:1,theme:'any'},
+  {type:"type",q:"Hva kalte vi det norske nazistpartiet? (forkortelse OK)",ans:["nasjonal samling","ns"],diff:1,theme:'norway'},
+  {type:"type",q:"Hva var kodenavnet på invasjonen av Normandie 6. juni 1944?",ans:["operation overlord","overlord"],diff:2,theme:'front'},
+  {type:"type",q:"Hva heter Hitlers politiske manifest fra 1925?",ans:["mein kampf"],diff:2,theme:'any'},
+  {type:"type",q:"Hva heter sabotasjeaksjonen mot tungtvannsproduksjonen i Telemark?",ans:["tungtvannsaksjonen","operasjon gunnerside","gunnerside"],diff:2,theme:'norway'},
+  {type:"type",q:"Hvem var den norske kongen under 2. verdenskrig?",ans:["haakon","haakon 7","haakon vii","haakon den syvende"],diff:1,theme:'norway'},
+  {type:"type",q:"Hvilken japansk by ble rammet av den andre atombomben?",ans:["nagasaki"],diff:2,theme:'ocean'},
+  {type:"type",q:"Hvilket skip fraktet norske jøder til Polen i 1942?",ans:["donau","ms donau","ds donau"],diff:2,theme:'front'},
+  {type:"type",q:"Hva heter den franske generalen som ledet Free France fra London?",ans:["de gaulle","charles de gaulle"],diff:2,theme:'any'},
+  {type:"type",q:"Hva var kodenavnet på den tyske invasjonen av Sovjet i 1941?",ans:["barbarossa","operation barbarossa"],diff:2,theme:'any'},
+  {type:"mc",q:"Hvorfor var Versaillestraktaten en årsak til 2. verdenskrig?",opts:["Den krevde for lite av Tyskland","Den skapte ydmykelse og kollaps som nazistene utnyttet","Den ga Polen for mye land","Den svekket Frankrike militært"],ans:1,diff:3,theme:'front'},
+  {type:"mc",q:"Hva menes med stille motstand i det okkuperte Norge?",opts:["Hverdagshandlinger som å nekte å sitte ved siden av tyske soldater eller bære NS-merker i protest","Å gjemme seg i skogen og vente på at frigjøringen skulle komme uten å gjøre noe aktivt","Hemmelige radiomeldinger sendt til London om tyske troppers bevegelser og planer","Sabotasje av jernbanelinjene for å hindre tyske forsyningstransporter til fronten"],ans:0,diff:3,theme:'norway'},
+  {type:"mc",q:"Hvorfor ble depresjonen en årsak til Hitlers maktovertakelse?",opts:["Den svekket Frankrike","Desperate folk var mottakelige for Hitlers enkle løsninger","Den styrket Weimarrepublikken","Den isolerte USA"],ans:1,diff:3,theme:'front'},
+  {type:"mc",q:"Hva gjør jødedeportasjonene fra Norge ekstra vanskelig for vår historie?",opts:["Ingen nordmenn visste","Norsk politi og myndigheter deltok aktivt","De fleste overlevde","De ble sendt til arbeidsleirer"],ans:1,diff:3,theme:'norway'},
+  {type:"mc",q:"Hvorfor var Stalingrad et avgjørende vendepunkt?",opts:["Det fikk USA inn i krigen","Første tyske nederlag","Den tyske 6. arme kapitulerte og offensiven østover stoppet","Det åpnet for D-dagen"],ans:2,diff:3,theme:'front'},
+  {type:"mc",q:"Hva var kjernen i nazistisk ideologi?",opts:["Sosialisme og likhet","Ekstrem nasjonalisme, rasisme og tro på arisk overlegenhet","Konservativt kristendemokrati","Kommunisme"],ans:1,diff:3,theme:'any'},
+,
+// ── diff:1 norway ──
+{type:"mc",q:"Hva skjedde i Norge 8. mai 1945?",opts:["Krigen startet","Tyskland angrep","Freden kom – frigjøringsdagen","Quisling tok makten"],ans:2,diff:1,theme:'norway'},
+{type:"tf",q:"Vidkun Quisling var norsk statsborger.",ans:true,diff:1,theme:'norway'},
+{type:"mc",q:"Hva kalles motstandsfolk som gjemte seg i skogen?",opts:["Sjøfolk","Gutta på skauen","Frontkjemperne","Stikkerne"],ans:1,diff:1,theme:'norway'},
+{type:"type",q:"Hva heter Norges grunnlov (fra 1814)?",ans:["grunnloven","norges grunnlov"],diff:1,theme:'norway'},
+{type:"tf",q:"Kong Haakon VII nektet å abdisere under okkupasjonen.",ans:true,diff:1,theme:'norway'},
+{type:"mc",q:"Hvem var norsk statsminister i eksil i London?",opts:["Einar Gerhardsen","Johan Nygaardsvold","Carl Hambro","Trygve Lie"],ans:1,diff:1,theme:'norway'},
+{type:"tf",q:"Nazistene tillot norske elever å gå på skole som normalt under hele krigen.",ans:false,diff:1,theme:'norway'},
+{type:"mc",q:"Hva het den tyske lederen som styrte Norge under okkupasjonen?",opts:["Rommel","Himmler","Terboven","Göring"],ans:2,diff:1,theme:'norway'},
+{type:"type",q:"Hva kalles 17. mai i Norge?",ans:["grunnlovsdagen","nasjonaldagen","syttende mai"],diff:1,theme:'norway'},
+{type:"tf",q:"Alle nordmenn støttet okkupasjonen under krigen.",ans:false,diff:1,theme:'norway'},
+{type:"mc",q:"Hva het det norske nazistpartiet?",opts:["Venstre","Høyre","Nasjonal Samling","Arbeiderpartiet"],ans:2,diff:1,theme:'norway'},
+{type:"tf",q:"Radio London ble brukt til å sende meldinger til norske motstandsfolk.",ans:true,diff:1,theme:'norway'},
+// ── diff:1 front ──
+{type:"mc",q:"Hva betyr 'aksemaktene'?",opts:["De allierte landene","USA og Storbritannia","Tyskland, Italia og Japan","Frankrike og Polen"],ans:2,diff:1,theme:'front'},
+{type:"tf",q:"Frankrike kapitulerte for Tyskland i 1940.",ans:true,diff:1,theme:'front'},
+{type:"mc",q:"Hva het den britiske hæren som evakuerte fra Dunkerque i 1940?",opts:["British Expeditionary Force – den britiske ekspedisjonshæren stasjonert i Frankrike","Royal Air Force – det britiske luftforsvaret som dekket evakueringen fra luften","Royal Navy – den britiske marinen som koordinerte skipene under operasjonen","Home Guard – den britiske heimevernet som ble mobilisert til kystforsvaret"],ans:0,diff:1,theme:'front'},
+{type:"type",q:"Hva kalles det tyske angrepet på Sovjet i 1941? (ett ord OK)",ans:["barbarossa","operasjon barbarossa"],diff:1,theme:'front'},
+{type:"tf",q:"USA var med i krigen fra 1939.",ans:false,diff:1,theme:'front'},
+{type:"mc",q:"Hva het Frankrikes eksilregjering under krigen?",opts:["Free France","Vichy-Frankrike","La Résistance","Frankrike Libre"],ans:0,diff:1,theme:'front'},
+{type:"tf",q:"Storbritannia ble invadert av Tyskland under 2. verdenskrig.",ans:false,diff:1,theme:'front'},
+{type:"mc",q:"Hva kalles det faktum at Hitler tok livet av seg i 1945?",opts:["Henrettelse","Krigsforbrytelse","Selvmord","Naturlig død"],ans:2,diff:1,theme:'front'},
+// ── diff:1 ocean ──
+{type:"mc",q:"Hvilken nasjon brukte atombombe mot Japan?",opts:["Storbritannia","Sovjet","Frankrike","USA"],ans:3,diff:1,theme:'ocean'},
+{type:"tf",q:"Japan angrep Pearl Harbor om natten.",ans:false,diff:1,theme:'ocean'},
+{type:"mc",q:"Hva kalles krigen i Stillehavet?",opts:["Atlanterkrigføringen","Stillehavskrigen","Øst-krigen","Asiakrigen"],ans:1,diff:1,theme:'ocean'},
+{type:"type",q:"Hva er hovedstaden i Japan?",ans:["tokyo"],diff:1,theme:'ocean'},
+{type:"tf",q:"Kina var alliert med Japan under 2. verdenskrig.",ans:false,diff:1,theme:'ocean'},
+{type:"mc",q:"Hva heter den japanske keiseren under 2. verdenskrig?",opts:["Hiroshima","Nagasaki","Hirohito","Tojo"],ans:2,diff:1,theme:'ocean'},
+// ── diff:1 any ──
+{type:"mc",q:"Hva betyr 'genocide' (folkemord)?",opts:["En militær invasjon","Systematisk utryddelse av en folkegruppe","En krigsforbrytelse mot soldater","Deportasjon til arbeidsleir"],ans:1,diff:1,theme:'any'},
+{type:"tf",q:"FN ble grunnlagt i 1945.",ans:true,diff:1,theme:'any'},
+{type:"mc",q:"Hva er en konsentrasjonsleir?",opts:["Et sted der nazistene internerte, tvangskjørte til arbeid og massehenrettet grupper av mennesker","Et fengsel for kriminelle og tyske desertører etter spesielle militærdomstolenes avgjørelser","Et sted for ordentlig internering av krigsfanger etter Genève-konvensjonens regler om behandling","En militærbase der tyske elitesoldater ble trent i spesialtaktikker for Østfronten"],ans:0,diff:1,theme:'any'},
+{type:"tf",q:"Nürnbergprosessene dømte nazistiske ledere etter krigen.",ans:true,diff:1,theme:'any'},
+{type:"mc",q:"Hva betyr 'antisemittisme'?",opts:["Hat mot muslimer","Hat mot jøder","Hat mot kommunister","Hat mot sigøynere"],ans:1,diff:1,theme:'any'},
+{type:"tf",q:"Holocaust foregikk bare i Tyskland.",ans:false,diff:1,theme:'any'},
+{type:"mc",q:"Hva var Røde Kors sin rolle under krigen?",opts:["De kjempet mot nazistene","De hjalp krigsfanger og sivile som humanitær organisasjon","De spionerte for de allierte","De organiserte evakuering av jøder"],ans:1,diff:1,theme:'any'},
+{type:"type",q:"Hva heter FNs erklæring om menneskerettigheter?",ans:["verdenserklæringen om menneskerettigheter","fns menneskerettighetserklæring","menneskerettighetserklæringen","verdenserklæringen","menneskerettighetene","fn erklæringen","fn-erklæringen"],diff:1,theme:'any'},
+{type:"tf",q:"Nürnbergprosessene fant sted i Frankrike.",ans:false,diff:1,theme:'any'},
+{type:"mc",q:"Hva er et diktatur?",opts:["Et demokrati med sterk president","Et land styrt av én person eller gruppe uten folkets samtykke","Et kongedømme","Et militært styre valgt av folket"],ans:1,diff:1,theme:'any'},
+// ── diff:2 norway ──
+{type:"mc",q:"Hva var den norske motstandsbevegelsens viktigste kommunikasjonskanal?",opts:["BBC og illegale radiosendere som overførte krypterte meldinger til og fra London","Hemmelige aviser trykket i kjellere og distribuert til hverandre i konvolutter","Telegraflinjer som motstandsfolk tappe fra de tyske okkupasjonsstyrkenes nettverk","Brev sendt med fiskebåter til Sverige og videre til den norske eksilregjeringen"],ans:0,diff:2,theme:'norway'},
+{type:"mc",q:"Hva fikk konsekvenser for norske lærere som nektet å melde seg inn i NS?",opts:["De ble fengslet og sendt til tvangsarbeid i Kirkenes under umenneskelige forhold","De mistet stemmeretten og retten til å eie eiendom, men fikk fortsette å undervise","De måtte betale store bøter til okkupasjonsmyndighetene som alternativ til fengsel","Ingenting – de ble beskyttet av en kirkelig deklarasjon som nazistene respekterte"],ans:0,diff:2,theme:'norway'},
+{type:"tf",q:"Den norske kirke motsatte seg nazifiseringen aktivt under okkupasjonen.",ans:true,diff:2,theme:'norway'},
+{type:"mc",q:"Hva var Hjemmefronten i Norge?",opts:["Den sivile og militære motstandsbevegelsen innenlands, koordinert med eksilregjeringen","Den norske hæren i eksil i Storbritannia som trente for å delta i frigjøringen av Norge","NS-partiets ungdomsorganisasjon som rekrutterte unge nordmenn til nazistisk ideologi","En hemmelig radiokanal som sendte BBC-meldinger til norske motstandsfolk i skjul"],ans:0,diff:2,theme:'norway'},
+{type:"mc",q:"Hva skjedde med jøder som ikke rakk å flykte fra Norge i 1942?",opts:["De ble arrestert, deportert til Auschwitz og de aller fleste ble drept i gasskamrene","De ble beskyttet av norsk politi som nektet å adlyde tyske ordre om arrestasjoner","De ble internert i norske leirer og overlevde krigen under vanskelige men trygge forhold","De ble sendt til Sverige av norske hjelpere og fikk dermed opphold i nøytral nabo"],ans:0,diff:2,theme:'norway'},
+{type:"tf",q:"Frontkjemperne var nordmenn som frivillig kjempet for tyskerne på Østfronten.",ans:true,diff:2,theme:'norway'},
+{type:"mc",q:"Hva var 'statspolitiet' (Stapo) under okkupasjonen?",opts:["Det vanlige norske politiet","Et norsk nazistisk politikorps som samarbeidet med Gestapo","En tysk militærenhet stasjonert i Norge","Den norske sikkerhetstjenesten i eksil"],ans:1,diff:2,theme:'norway'},
+{type:"mc",q:"Hva var den symbolske betydningen av å bære bindersen på jakken under okkupasjonen?",opts:["Det markerte at man støttet NS","Det var et tegn på motstand og norsk identitet","Det var et jødisk tegn","Det markerte at man var i Milorg"],ans:1,diff:2,theme:'norway'},
+{type:"type",q:"Hva heter aksjonen der norsk politi arresterte norske jøder i november 1942?",ans:["razzia","razzia mot jødene","november-razzia","aksjon mot jødene"],diff:2,theme:'norway'},
+{type:"mc",q:"Hvor mange norske jøder overlevde deportasjonene under 2. verdenskrig?",opts:["Ingen","Rundt 30","Rundt 34","Alle ble reddet"],ans:2,diff:2,theme:'norway'},
+// ── diff:2 front ──
+{type:"mc",q:"Hva var den strategiske hensikten med D-dagen i Normandie?",opts:["Å åpne en vestfront som presset Tyskland fra to sider og lettet Sovjet på østfronten","Å angripe Japan fra Europa ved å gå gjennom Nazi-Tyskland og Sibir til Stillehavet","Å frigjøre Italia og gjennomføre en opprulling nordover langs Apennin-halvøya","Å hjelpe Sovjet med forsyninger via en direkterute gjennom Skandinavia og Baltikum"],ans:0,diff:2,theme:'front'},
+{type:"mc",q:"Hvorfor var slaget om Storbritannia (1940) avgjørende?",opts:["Det stoppet Japans ekspansjon","Det hindret Tyskland i å få luftherredømme og invadere Storbritannia","Det ødela den tyske flåten","Det fikk USA inn i krigen"],ans:1,diff:2,theme:'front'},
+{type:"tf",q:"Sovjet og Tyskland var allierte i starten av krigen gjennom Molotov-Ribbentrop-pakten.",ans:true,diff:2,theme:'front'},
+{type:"mc",q:"Hva var Hitlers mål med Operasjon Barbarossa?",opts:["Å erobre Sovjet, utrydde bolsjevismen og skaffe Lebensraum for den ariske rase i øst","Å erobre Storbritannia ved å angripe bakfra via Sovjet og Midtøsten som en klemme","Å ta kontroll over Nordafrikas oljereserver via Kaukasus og Persia for å slå USA","Å hente ressurser fra Skandinavia via en strategisk korridor gjennom finsk territorium"],ans:0,diff:2,theme:'front'},
+{type:"mc",q:"Hva var Vichy-Frankrike?",opts:["Den franske delen som samarbeidet med Nazi-Tyskland under marskalk Pétains ledelse 1940–44","Frankrike i eksil under de Gaulle i London, som koordinerte motstandsbevegelsen fra utlandet","Et frigjort område i Sør-Frankrike som de allierte kontrollerte fra 1942 og fremover","En fransk motstandsgruppe med base i Lyon som organiserte sabotasje mot okkupantene"],ans:0,diff:2,theme:'front'},
+{type:"tf",q:"Nanjing-massakren skjedde før den offisielle starten på 2. verdenskrig i Europa.",ans:true,diff:2,theme:'front'},
+{type:"mc",q:"Hva var den ideologiske begrunnelsen nazistene ga for å invadere Polen?",opts:["Polen angrep Tyskland først","Tyskere i Polen ble undertrykt og Germany trengte Lebensraum","Polen nektet å selge kull","Polen var en trussel mot tysk økonomi"],ans:1,diff:2,theme:'front'},
+{type:"mc",q:"Hva var 'Lend-Lease Act' (1941)?",opts:["En avtale der USA lånte soldat til Storbritannia","Et program der USA leverte militærutstyr til allierte uten krav om umiddelbar betaling","En handelsavtale mellom USA og Japan","En fredsavtale mellom USA og Sovjet"],ans:1,diff:2,theme:'front'},
+{type:"tf",q:"Erwin Rommel ble kalt 'Ørkenreven' på grunn av innsatsen sin i Nord-Afrika.",ans:true,diff:2,theme:'front'},
+{type:"mc",q:"Hva var Hitlers propaganda mest effektiv på i mellomkrigstiden?",opts:["Rike tyske borgere","Høyt utdannede akademikere","Arbeidsløse og fattige som følte seg sviktet av Weimar-republikken","Den katolske kirken"],ans:2,diff:2,theme:'front'},
+// ── diff:2 ocean ──
+{type:"mc",q:"Hva var den strategiske betydningen av slag ved Midway (1942)?",opts:["Det stoppet Japan fra å angripe Australia","Det var vendepunktet i Stillehavet der USA knekte japansk flåtemakt","Det åpnet sjøveien til Kina","Det tvang Japan til å søke fred"],ans:1,diff:2,theme:'ocean'},
+{type:"mc",q:"Hva var den japanske strategien bak angrepet på Pearl Harbor?",opts:["Å ødelegge den amerikanske stillehavsflåten for å forhindre innblanding i Japans ekspansjon i Asia","Å okkupere Hawaii permanent og bruke det som base for videre operasjoner mot fastlandet","Å sende et politisk signal til Roosevelt om at Japan var en seriøs militærmakt","Å frigjøre Filipinene fra amerikansk kontroll og innlemme dem i det japanske imperiet"],ans:0,diff:2,theme:'ocean'},
+{type:"tf",q:"Ubåtkrigen i Atlanterhavet hadde som mål å sulte ut Storbritannia ved å angripe forsyningsskip.",ans:true,diff:2,theme:'ocean'},
+{type:"mc",q:"Hva var 'kamikaze'?",opts:["Japansk spesialtropp i jungelen","Japanske piloter som flød fly i selvmordsangrep mot amerikanske skip","Et japansk atomvåpenprogram","Navnet på japansk marineinfanteri"],ans:1,diff:2,theme:'ocean'},
+{type:"mc",q:"Hva skjedde militært i Stillehavet etter atombombingen av Nagasaki?",opts:["Japan fortsatte å kjempe i seks måneder","Japan kapitulerte innen dager","USA invaderte Japan","Sovjet tok over Stillehavet"],ans:1,diff:2,theme:'ocean'},
+// ── diff:2 any ──
+{type:"mc",q:"Hva er forskjellen på en flyktning og en deportert person?",opts:["Flyktninger flykter frivillig fra fare, deporterte tvangsflyttes av myndighetene mot sin vilje","Flyktninger er jøder som flyktet til Palestina, deporterte er sigøynere sendt til leirer","Deporterte reiser til et fremmed land frivillig for arbeid, flyktninger gjør ikke det","Det er ingen juridisk eller praktisk forskjell mellom de to begrepene i folkeretten"],ans:0,diff:2,theme:'any'},
+{type:"mc",q:"Hva var den psykologiske effekten av nazistisk propaganda på den tyske befolkningen?",opts:["Propaganda skapte frykt, lydighet og dehumanisering av fiender som jøder og kommunister","Folk ble mer kritiske til Hitler ettersom propagandaen ble mer ekstrem og urealistisk","Propaganda fungerte kun overfor ukritiske masser, mens utdannede ignorerte den fullstendig","Den var primært rettet mot barn og ungdom, mens voksne gjennomskuet budskapet raskt"],ans:0,diff:2,theme:'any'},
+{type:"tf",q:"Røde Kors hadde fri tilgang til alle konsentrasjonsleirer under krigen.",ans:false,diff:2,theme:'any'},
+{type:"mc",q:"Hva betyr begrepet 'kollektiv straff'?",opts:["At én person straffes for alle","At en hel gruppe straffes for handlingene til enkeltpersoner","At straff avgjøres av folket","At straff overtas av militæret"],ans:1,diff:2,theme:'any'},
+{type:"mc",q:"Hva var den langsiktige betydningen av Nürnbergprosessene?",opts:["De etablerte prinsippet om individuelt ansvar for krigsforbrytelser i internasjonal rett","De løste alle etterkrigskonflikter ved å avgjøre grensespørsmål og erstatningskrav","De førte til umiddelbar og fullstendig avvæpning av alle europeiske nasjoner etter 1945","De skapte grunnlaget for NATO som ble etablert samme år for å hindre nye tyske angrep"],ans:0,diff:2,theme:'any'},
+{type:"tf",q:"Massemordet på sigøynere (Porajmos) er anerkjent som folkemord på lik linje med Holocaust.",ans:true,diff:2,theme:'any'},
+{type:"mc",q:"Hva var kallenavnet på den tyske krypteringsmaskinen de allierte klarte å knekke?",opts:["Colossus","Enigma","Bombe","Turing"],ans:1,diff:2,theme:'any'},
+{type:"mc",q:"Hva betyr det at en stat er totalitær?",opts:["At staten har full kontroll over alle aspekter av samfunns- og privatlivet","At staten styres av militæret","At staten ikke har noen grunnlov","At staten er nøytral i konflikter"],ans:0,diff:2,theme:'any'},
+// ── diff:3 norway ──
+{type:"mc",q:"Hva er det historisk problematiske ved det norske samfunnets etterpåklokskap om jødedeportasjonene?",opts:["Norsk politi og byråkrati deltok aktivt, mens mange nordmenn etterpå benektet ethvert medansvar","Norge sendte for lite mat og medisiner til leirene, noe ingen ville innrømme etter krigen","Kongen protesterte aldri mot deportasjonene, men dette ble skjult i etterkrigstiden","Norske jøder varslet ikke hverandre om farene, og dette ble aldri diskutert offentlig"],ans:0,diff:3,theme:'norway'},
+{type:"mc",q:"Hva er forskjellen på aktiv og passiv motstand, og hva var mest vanlig i Norge?",opts:["Aktiv var sabotasje og væpnet kamp; passiv var symbolhandlinger og sivil ulydighet – passiv var vanligst","Aktiv motstand var bombing og attentater; passiv var å gjemme seg – begge var like vanlige","Passiv motstand fantes knapt i Norge fordi folk var redde for represalier og kollektiv avstraffelse","Aktiv motstand ble straffet for hardt, så nesten ingen nordmenn drev aktivt med det"],ans:0,diff:3,theme:'norway'},
+{type:"tf",q:"Norges offisielle unnskyldning til jødene for statens rolle i deportasjonene kom i 1998.",ans:true,diff:3,theme:'norway'},
+{type:"mc",q:"Hvordan bidro Tungtvannsaksjonen på Vemork til den globale krigshistorien utover Norge?",opts:["Den stoppet tyske ubåter","Den hindret Nazi-Tysklands mulighet til å produsere atomvåpen","Den ødela Tysklands kommunikasjonssystem","Den åpnet en ny front i Skandinavia"],ans:1,diff:3,theme:'norway'},
+{type:"mc",q:"Hva viser det norske Frontkjemper-fenomenet om kompleksiteten i krigen?",opts:["At alle nordmenn støttet nazistene","At krigen skapte splittelse der noen nordmenn aktivt valgte å kjempe for fienden av ideologiske grunner","At norsk militær var svak","At nordmenn var tvunget til å kjempe for Tyskland"],ans:1,diff:3,theme:'norway'},
+{type:"mc",q:"Hva er 'lex Quisling' og hva forteller det om juridisk arv fra krigen?",opts:["En lov om krigsforbrytere vedtatt i 1945","At Quislings navn ble et internasjonalt juridisk begrep for landsforræder","En ny grunnlovsbestemmelse","En paragraf om nazisme i straffeloven"],ans:1,diff:3,theme:'norway'},
+// ── diff:3 front ──
+{type:"mc",q:"Hva er den historiske debatten rundt Churchills beslutning om å bombe Dresden i 1945?",opts:["Dresden var et militært mål, så det er ukontroversielt","Bombingen drepte titusener av sivile uten klar militær nødvendighet, noe som reiser etiske spørsmål","Churchill hadde ikke ansvaret – det var et amerikansk vedtak","Dresden var et feil mål fordi Hitler bodde der"],ans:1,diff:3,theme:'front'},
+{type:"mc",q:"Hva er historikerdebatten om 'Hitlers villige bødler' (Goldhagen vs. Browning)?",opts:["Om Holocaust startet i 1933 eller 1939","Om vanlige tyskere deltok i Holocaust av overbevisning eller ordre og gruppepress","Om Hitler beordret Holocaust direkte","Om SS eller Wehrmacht var mest ansvarlig"],ans:1,diff:3,theme:'front'},
+{type:"tf",q:"Appeasement-politikken i München i 1938 er av historikere i dag vurdert som en feil som oppmuntret Hitler.",ans:true,diff:3,theme:'front'},
+{type:"mc",q:"Hva er 'strukturalistisk' vs 'intensjonalistisk' tolkning av Holocaust?",opts:["Om Holocaust var planlagt fra start (intensjon) eller vokste frem gjennom byråkratiske prosesser (struktur)","Om Hitler eller Himmler er mest ansvarlig","Om Øst- eller Vest-Europa led mest","Om Holocaust er sammenlignbart med andre folkemord"],ans:0,diff:3,theme:'front'},
+{type:"mc",q:"Hva er paradokset ved Weimarrepublikkens demokratiske grunnlov og Hitlers maktovertakelse?",opts:["Hitler brøt grunnloven for å ta makten","Hitler brukte demokratiets egne regler og svakheter til å avskaffe demokratiet lovlig","Weimarrepublikken var ikke et demokrati","Hitler ble aldri valgt demokratisk"],ans:1,diff:3,theme:'front'},
+// ── diff:3 ocean ──
+{type:"mc",q:"Hva er den etiske debatten rundt bruken av atombombe mot Japan i 1945?",opts:["En kompleks debatt: bombene avsluttet krigen raskt men drepte hundretusener av sivile og startet atomvåpenkappløpet","Bombene var et klart og udiskutabelt krigsforbrytelse som ingen seriøse historikere forsvarer","Det er ikke noen reell debatt fordi bombene bare traff militære mål og reddet millioner av liv","Bombene var nødvendige fordi Japan aldri under noen omstendigheter ville ha kapitulert frivillig"],ans:0,diff:3,theme:'ocean'},
+{type:"mc",q:"Hva sier historikere om USAs internering av japansk-amerikanere under krigen?",opts:["Det var et rasistisk overgrep mot egne borgere uten juridisk grunnlag; USA beklaget det offisielt i 1988","Det var et nødvendig og lovlig sikkerhetstiltak for å beskytte nasjonal sikkerhet under krigen","Det rammet bare japanske statsborgere med dobbelt statsborgerskap, ikke amerikanske borgere","Det var midlertidig og alle ble behandlet godt med full kompensasjon underveis og etterpå"],ans:0,diff:3,theme:'ocean'},
+{type:"mc",q:"Hva er Japans historiske utfordring med å anerkjenne egne krigsforbrytelser i Asia?",opts:["Nasjonalisme, politisk motstand og en annen historiefortelling gjør at Japan har fått internasjonal kritikk","Japan har aldri hatt noe problem med det – landet har beklaget alle hendelser fullt ut","Japan har betalt full erstatning til alle berørte land og ble dermed frigjort fra historisk ansvar","Japan ble ikke holdt ansvarlig fordi USA trengte dem som alliert mot Sovjet under den kalde krigen"],ans:0,diff:3,theme:'ocean'},
+// ── diff:3 any ──
+{type:"mc",q:"Hva er forskjellen mellom Holocaust og begrepet folkemord slik det er definert av FN?",opts:["Folkemord (FNs definisjon fra 1948) er det juridiske begrepet; Holocaust er den spesifikke betegnelsen på nazistenes utryddelse av jøder","De er identiske begreper som brukes om hverandre uten noen juridisk eller historisk forskjell","Holocaust er et sterkere begrep enn folkemord fordi det alltid innebærer gass og leirer","Folkemord krever at hele folkegruppen er utryddet, mens Holocaust bare delvis lyktes"],ans:0,diff:3,theme:'any'},
+{type:"mc",q:"Hva er 'bystander effect' i Holocaust-kontekst?",opts:["At tilskuere er juridisk ansvarlige","Fenomenet der individer ikke griper inn fordi de antar andre vil gjøre det, brukt om dem som visste men ikke handlet","At de som ikke var jøder ikke visste noe","At tyske soldater fulgte ordre uten å tenke"],ans:1,diff:3,theme:'any'},
+{type:"mc",q:"Hvordan forandret 2. verdenskrig prinsippet om statlig suverenitet i internasjonal rett?",opts:["Krigsforbrytelsestribunalene etablerte at individer kan holdes ansvarlige uavhengig av statlige ordre, noe som begrenset absolutt suverenitet","Det forandret det ikke i det hele tatt – nasjonalstatene beholdt full suverenitet etter 1945","Suverenitetsprinsippet ble fullstendig avskaffet da FN overtok alle nasjonale beslutninger","FN overtok all makt fra nasjonalstatene og dannet en verdensregjering i 1946"],ans:0,diff:3,theme:'any'},
+{type:"mc",q:"Hva er den historiske sammenhengen mellom 1. og 2. verdenskrig som gjør dem til én lang konflikt i manges øyne?",opts:["De hadde de samme lederne","Versaillestraktaten skapte en ustabil fred med ydmyket og svekket Tyskland som grobunn for nazismen","De skjedde i samme område","De ble utkjempet mellom de samme landene"],ans:1,diff:3,theme:'any'},
+{type:"tf",q:"Den kalde krigen begynte delvis fordi Sovjet og de vestlige allierte hadde dypt ulike visjoner for etterkrigstidens Europa.",ans:true,diff:3,theme:'any'},
+{type:"mc",q:"Hva er det etiske dilemmaet knyttet til bruken av kjemiske og biologiske våpen i 2. verdenskrig?",opts:["Det var bare Japan som brukte det","Bruken av massedrapsvåpen mot sivile og soldater uten diskriminering bryter med humanitærrettens kjerneprinsipper om beskyttelse","Kjemiske våpen var lovlige i 1939","Det var et nødvendig onde for å vinne krigen"],ans:1,diff:3,theme:'any'},
+];
+</script>
+<script>
+const GENERAL_TAUNTS = [
+  "Du er bare et undermenneske!",
+  "Arisk blod rinner ikke i dine årer.",
+  "Din rase er dømt til å forsvinne.",
+  "Vi renser Europa for slike som deg.",
+  "Du hører ikke til her – dette er arierens land.",
+  "Bolsjevikenes slave!",
+  "Din stamme vil bli utslettet som ugresset den er.",
+  "Knekk deg, eller bli knekket!",
+  "Vi har knust sterkere enn deg før frokost.",
+  "Motstanden din er like meningsløs som å blåse mot kanonene.",
+  "Kapitulasjon er din eneste verdi.",
+  "Du kjemper som en bonde med en greip mot en panserdivisjon.",
+  "Kryp tilbake til hulen din.",
+  "Du er ikke verdig å se Führerens ansikt.",
+  "Ditt folk har alltid vært slaver – og slaver blir dere.",
+  "En bille har mer stolthet enn deg.",
+  "Nordmenn – et folk av fiskere som trodde de kunne stå mot det tyske riket.",
+  "Din Haakon flyktet som en redd hund. Følg hans eksempel.",
+  "Norsk motstand? En vits vi forteller i Berlin.",
+  "Du er allerede beseiret – du vet det bare ikke ennå.",
+  "Svake raser bukker under. Det er naturens lov.",
+  "Selv det minste barn i Riket er verdt mer enn deg.",
+  "Vi har millioner av soldater. Du har ingenting.",
+  "Führerens vilje er uknuselig – som deg om et øyeblikk.",
+  "Din motstandskamp er en sørgelig parodi.",
+];
+
+const BOSS_TAUNTS = {
+  "Himmler": [
+    "SS knuser alle motstandere. Alltid.",
+    "Ingen overlever Gestapo – ingen.",
+    "Rassen din forseglet din skjebne ved fødselen.",
+    "Vi har sett tusenvis som deg. De er alle borte.",
+    "Jeg kommanderer millioner. Du er ett nummer.",
+    "Gestapo sover aldri. Det gjør heller ikke skjebnen din.",
+    "Leiren venter på slike som deg.",
+  ],
+  "Goebbels": [
+    "Propagandaen min vil kneble deg og alt du tror på!",
+    "Sannheten er hva jeg sier den er – ingenting annet.",
+    "Massene følger meg, ikke deg. De vil alltid gjøre det.",
+    "Ord er mektigere enn sverd – og mine ord er ren gift.",
+    "Historien skrives av de som vinner. Vi vinner.",
+    "Din motstand finnes ikke. Den er aldri blitt rapportert.",
+    "Jeg kan gjøre hvem som helst til en helt – eller en skurk.",
+  ],
+  "Hess": [
+    "Jeg tjener Führeren til min siste åndedrett!",
+    "Du er ingen trussel mot det evige Riket.",
+    "Tyskland er uovervinnelig – det har alltid vært slik.",
+    "Vi vil herske i tusen år. Du vil ikke se neste uke.",
+    "Din motstand er en fnise i stormvinden.",
+    "For Führeren vil jeg gjøre alt – også dette.",
+    "Det tredje riket har ingen plass til din svakhet.",
+  ],
+  "ADOLF HITLER": [
+    "Ta den, undermenneske!",
+    "Du er intet mot Det tredje riket!",
+    "Kapitulasjon er den eneste verdige handling for deg.",
+    "Jeg har knust sterkere sivilisasjoner enn din.",
+    "Deutschland über alles – og over deg!",
+    "Du kjemper forgjeves, slave. Det er din natur.",
+    "Mitt rike vil vare evig. Du vil glemmes i morgen.",
+    "Schwein! Trodde du virkelig du kunne stå mot meg?",
+    "Europa er mitt. Du er en støvkorn i historien.",
+    "Den ariske rase er overlegen – dette er beviset.",
+    "Jeg har tilintetgjort nasjoner. Hva er du?",
+  ],
+  "Göring": [
+    "Luftwaffe vil male deg ut av himmelen!",
+    "Vi kontrollerer luften – og dermed alt.",
+    "Du er allerede omringet, uten å vite det.",
+    "Jeg har bygget den mektigste flåten i verden. Hvem er du?",
+  ],
+  "Rommel": [
+    "Taktikk er en kunst – en kunst du ikke forstår.",
+    "I ørkenen lærer man raskt hvem som er sterkest.",
+    "Jeg har beveget meg raskere enn fienden kan tenke.",
+    "Ørkenreven jakter. Og du er byttet.",
+  ],
+  "Terboven": [
+    "Norge tilhører Riket nå. Venn deg til det.",
+    "Motstand i Norge? Vi vet hvem dere er. Alle sammen.",
+    "Nordmenn er stubbornaste folk – men også de bøyer seg.",
+    "Kongen din er i eksil. Du er alene.",
+  ],
+};
+
+function getBossTaunt(name){
+  const list=BOSS_TAUNTS[name];
+  // Mix specific + general taunts, weight toward specific
+  const pool = list && list.length
+    ? (Math.random()<0.7 ? list : GENERAL_TAUNTS)
+    : GENERAL_TAUNTS;
+  return pool[rnd(0,pool.length-1)];
+}
+
+function getGeneralTaunt(){
+  return GENERAL_TAUNTS[rnd(0,GENERAL_TAUNTS.length-1)];
+}
+
+// Boss-angrepsmeldinger. LIGHT = etter spillerens RIKTIGE svar (lett skade).
+// HEAVY = etter spillerens FEIL svar (hardt slag, det er nå bossens tur).
+const BOSS_ATTACK_TAUNT_LIGHT = [
+  "Du slapp unna denne gangen...",
+  "Et streifsår – mer får du ikke!",
+  "Heldig, men jeg gir meg ikke!",
+  "Du blør litt for det der.",
+  "Tro ikke at du er trygg!",
+  "Jeg merket deg så vidt.",
+];
+const BOSS_ATTACK_TAUNT_HEAVY = [
+  "Haha! Nå er det MIN tur, undermenneske!",
+  "Feil svar – og nå betaler du prisen!",
+  "Du kan ingenting! Ta dette!",
+  "Dumheten din koster deg dyrt!",
+  "Slik straffer Riket de uvitende!",
+  "Du skulle ha lest leksene dine!",
+  "Nå skal du få føle min vrede!",
+];
+function getBossAttackTaunt(heavy){
+  const pool = heavy ? BOSS_ATTACK_TAUNT_HEAVY : BOSS_ATTACK_TAUNT_LIGHT;
+  return pool[rnd(0,pool.length-1)];
+}
+
+// ─────────────────────────────────────────────
+// PORTRAITS – Wikimedia Commons / public domain
+const FLOOR_BOSSES=[
+  {name:"Göring",       icon:"🎖️",hp:130,xp:90, dmg:25, isBoss:true},
+  {name:"Goebbels",     icon:"📺",hp:120,xp:85, dmg:22, isBoss:true},
+  {name:"Himmler",      icon:"💀",hp:150,xp:100,dmg:28, isBoss:true},
+  {name:"Hess",         icon:"✈️",hp:115,xp:80, dmg:20, isBoss:true},
+  {name:"ADOLF HITLER", icon:"👹",hp:250,xp:200,dmg:35, isBoss:true, isFinalBoss:true},
+];
+
+// ─────────────────────────────────────────────
+// SPINNER SECTORS
+// ─────────────────────────────────────────────
+// For correct answer: normal odds
+// For wrong answer: reversed odds (more damage to player)
+const SECTORS_HIT=[
+  {label:"💨 BOM",     color:"#555555", pHit:8,  pMiss:5,  mult:0},
+  {label:"🩹 LETT",    color:"#3a7a50", pHit:22, pMiss:10, mult:0.25},
+  {label:"⚔️ MIDDELS", color:"#9a8020", pHit:35, pMiss:20, mult:1.0},
+  {label:"💥 HARDT",   color:"#b05010", pHit:25, pMiss:30, mult:1.75},
+  {label:"☠️ LYKKE",   color:"#8a1010", pHit:10, pMiss:35, mult:3.0},
+];
+
+function weightedSector(isHit){
+  const key=isHit?"pHit":"pMiss";
+  const total=SECTORS_HIT.reduce((s,x)=>s+x[key],0);
+  let r=Math.random()*total;
+  for(const s of SECTORS_HIT){r-=s[key];if(r<=0)return s;}
+  return SECTORS_HIT[SECTORS_HIT.length-1];
+}
+
+// ─────────────────────────────────────────────
+// CANVAS SPINNER
+// ─────────────────────────────────────────────
+const SPIN_LABELS=["💨 BOM","🩹 LETT","⚔️ MID","💥 HARDT","☠️ LYKKE"];
+const SPIN_COLORS=["#555","#3a7a50","#9a8020","#b05010","#8a1010"];
+const SPIN_N=5;
+const SPIN_SLICE=(2*Math.PI)/SPIN_N;
+
+function drawWheel(angleOffset){
+  const canvas=document.getElementById("spinCanvas");
+  if(!canvas)return;
+  const ctx=canvas.getContext("2d");
+  const cx=90,cy=90,r=84;
+  ctx.clearRect(0,0,180,180);
+  for(let i=0;i<SPIN_N;i++){
+    const start=angleOffset+i*SPIN_SLICE;
+    const end=start+SPIN_SLICE;
+    ctx.beginPath();ctx.moveTo(cx,cy);
+    ctx.arc(cx,cy,r,start,end);
+    ctx.closePath();
+    ctx.fillStyle=SPIN_COLORS[i];ctx.fill();
+    ctx.strokeStyle="#1a1a10";ctx.lineWidth=2;ctx.stroke();
+    // label
+    const mid=start+SPIN_SLICE/2;
+    ctx.save();ctx.translate(cx+Math.cos(mid)*58,cy+Math.sin(mid)*58);
+    ctx.rotate(mid+Math.PI/2);
+    ctx.fillStyle="#fff";ctx.font="bold 10px Arial";ctx.textAlign="center";
+    ctx.fillText(SPIN_LABELS[i],0,0);ctx.restore();
+  }
+  // center circle
+  ctx.beginPath();ctx.arc(cx,cy,12,0,2*Math.PI);
+  ctx.fillStyle="#0a0a08";ctx.fill();
+  ctx.strokeStyle=var_accent();ctx.lineWidth=2;ctx.stroke();
+}
+
+function var_accent(){return "#c8a830";}
+
+let spinAnimId=null;
+let spinResolve=null;
+
+function runSpinner(targetSectorIndex){
+  return new Promise(resolve=>{
+    spinResolve=resolve;
+    const spinBtn=document.getElementById("ovSpinBtn");
+    if(spinBtn)spinBtn.disabled=true;
+
+    // Pointer sits at TOP of canvas = angle -PI/2 in standard coords.
+    // drawWheel draws sector i from angleOffset + i*SLICE to angleOffset + (i+1)*SLICE.
+    // Sector i center = angleOffset + (i+0.5)*SLICE.
+    // We need: angleOffset + (targetSectorIndex+0.5)*SLICE = -PI/2  (mod 2PI)
+    // => restAngle = -PI/2 - (targetSectorIndex+0.5)*SLICE
+    // Wheel spins forward (increasing angle), so finalAngle = restAngle + spins*2PI
+    const spins = 6 + Math.floor(Math.random()*3);
+    const jitter = (Math.random()-0.5)*SPIN_SLICE*0.45;
+    const restAngle = -Math.PI/2 - (targetSectorIndex+0.5)*SPIN_SLICE + jitter;
+    const finalAngle = restAngle + spins*2*Math.PI;
+
+    const duration=3000;
+    const startTime=performance.now();
+
+    function frame(now){
+      const elapsed=now-startTime;
+      const t=Math.min(elapsed/duration,1);
+      const ease=1-Math.pow(1-t,4);
+      const angle=finalAngle*ease;
+      drawWheel(angle);
+      if(t<1){
+        spinAnimId=requestAnimationFrame(frame);
+      } else {
+        drawWheel(angle);
+        if(spinResolve){spinResolve();spinResolve=null;}
+      }
+    }
+    spinAnimId=requestAnimationFrame(frame);
+  });
+}
+
+
+// ─── MONSTERS ───
+const NORMALS=[
+  {name:"Nazisoldat",   icon:"💂", hp:28, xp:12, dmg:8},
+  {name:"SS-vakt",      icon:"⚔️", hp:35, xp:16, dmg:10},
+  {name:"Gestapo-agent",icon:"🕵️", hp:32, xp:14, dmg:11},
+  {name:"Propagandamaskin",icon:"📢",hp:22,xp:10,dmg:6},
+  {name:"Stuka-fly",    icon:"✈️", hp:40, xp:18, dmg:13},
+  {name:"Quisling",     icon:"🐍", hp:30, xp:13, dmg:9},
+  {name:"Panzervogn",   icon:"🪖", hp:45, xp:20, dmg:15},
+  {name:"Panzerfaust",  icon:"💥", hp:25, xp:11, dmg:12},
+  {name:"Sniper",       icon:"🎯", hp:30, xp:14, dmg:14},
+  {name:"Ubåt",         icon:"🚢", hp:38, xp:17, dmg:13},
+  {name:"NS-mann",      icon:"🐍", hp:26, xp:11, dmg:8},
+  {name:"Grensevakt",   icon:"🚧", hp:22, xp:9,  dmg:7},
+  {name:"Stikker",      icon:"👁️", hp:24, xp:10, dmg:9},
+];
+const MINIBOSSES=[
+  {name:"Rommel",   icon:"🗡️", hp:100,xp:60, dmg:20, isMiniBoss:true},
+  {name:"Terboven", icon:"😈", hp:110,xp:65, dmg:22, isMiniBoss:true},
+  {name:"Blücher",  icon:"🚢", hp:85, xp:50, dmg:16, isMiniBoss:true},
+];
+
+// ─── BOSS DATA ───
+// 5 bosses on ONE map, progressive unlock
+
+// ─── HERO SYSTEM ───
+const HEROES = [
+  {name:"Max Manus",    emoji:"🪖", bonus:"dmg",     desc:"+25% spinner-skade"},
+  {name:"Kjakan",       emoji:"🔫", bonus:"block",   desc:"Blokkerer 30% av kontraangrep"},
+  {name:"J.C. Hauge",   emoji:"📡", bonus:"vision",  desc:"Ser fiende-HP på kart"},
+];
+// Heltene er spillerens tre liv, i fast rekkefølge.
+// currentHeroIdx peker på den aktive helten. Når den faller -> neste trer inn.
+let currentHeroIdx = 0; // 0=Max, 1=Kjakan, 2=Hauge, 3=alle falt (game over)
+
+function getCurrentHero(){
+  return currentHeroIdx < HEROES.length ? HEROES[currentHeroIdx] : null;
+}
+function getActiveHeroes(){
+  return currentHeroIdx < HEROES.length ? [HEROES[currentHeroIdx]] : [];
+}
+function hasBonus(bonus){
+  return currentHeroIdx < HEROES.length && HEROES[currentHeroIdx].bonus === bonus;
+}
+function renderHeroChips(){
+  for(let i=0;i<3;i++){
+    const el=document.getElementById('hero-'+i);
+    if(el){
+      const statusEl=el.querySelector('.hc-status');
+      if(i < currentHeroIdx){
+        el.className='hero-chip fallen';
+        statusEl.innerHTML='&#9760; Falt';
+        statusEl.style.color='#c0392b';
+      } else if(i === currentHeroIdx){
+        el.className='hero-chip active current';
+        statusEl.innerHTML='&#9654; AKTIV';
+        statusEl.style.color='#27ae60';
+      } else {
+        el.className='hero-chip waiting';
+        statusEl.textContent='Venter...';
+        statusEl.style.color='#8a8060';
+      }
+    }
+    // HUD lives
+    const hud=document.getElementById('hudLife'+i);
+    if(hud){
+      hud.className='hud-life'+(i<currentHeroIdx?' fallen':i===currentHeroIdx?' current':'');
+    }
+  }
+}
+function showHeroFallen(hero){
+  const el=document.getElementById('heroFallenNotif');
+  document.getElementById('heroFallenName').textContent=hero.emoji+' '+hero.name.toUpperCase();
+  el.classList.add('active');
+  setTimeout(()=>el.classList.remove('active'),2600);
+}
+function showHeroTakesOver(hero){
+  const el=document.getElementById('heroRestoredNotif');
+  document.getElementById('heroRestoredName').textContent=hero.emoji+' '+hero.name.toUpperCase();
+  el.querySelector('div:last-child').textContent='tar over kampen!';
+  el.classList.add('active');
+  setTimeout(()=>el.classList.remove('active'),2600);
+}
+function getPlayerEmoji(){
+  const h=getCurrentHero();
+  return h ? h.emoji : '💀';
+}
+
+// ─── DØD / HELTESKIFTE ───
+// Kalles når aktiv helt mister alt HP. Returnerer true hvis spillet er over.
+async function heroFalls(){
+  const fallen=getCurrentHero();
+  // Full-screen rød flash
+  flashScreenRed();
+  if(fallen) showHeroFallen(fallen);
+  addLog('☠ '+(fallen?fallen.name:'Helten')+' har falt!','b');
+  await sleep(2000);
+  currentHeroIdx++;
+  renderHeroChips();
+  if(currentHeroIdx >= HEROES.length){
+    // Alle tre er falt -> game over
+    triggerGameOver();
+    return true;
+  }
+  // Ny helt trer inn med friskt liv
+  const next=getCurrentHero();
+  playerStats.hp=playerStats.maxHp;
+  showHeroTakesOver(next);
+  addLog('🎖 '+next.name+' tar over kampen!','i');
+  renderStats();
+  return false;
+}
+
+function flashScreenRed(){
+  const el=document.getElementById('deathFlash');
+  if(!el)return;
+  el.style.animation='none';void el.offsetWidth;
+  el.style.animation='deathFlashAnim 0.8s ease-out';
+}
+
+function showBossTurnBanner(heavy){
+  const el=document.getElementById('bossTurnBanner');
+  const txt=document.getElementById('bossTurnText');
+  if(!el||!txt)return;
+  txt.textContent = heavy ? '⚡ FIENDENS TUR!' : '↩ Motangrep';
+  el.className = (heavy ? 'heavy' : 'light');
+  void el.offsetWidth;
+  el.classList.add('active');
+  setTimeout(()=>el.classList.remove('active'), 1100);
+}
+
+function triggerGameOver(){
+  gameWon=true; // stops movement/combat
+  inCombat=false; bossBattleActive=false; currentEnemy=null;
+  stopTauntLoop();
+  document.getElementById('bossScreen').style.display='none';
+  document.getElementById('bossScreen').classList.remove('active');
+  document.getElementById('combatOverlay').classList.remove('active');
+  const acc=playerStats.totalAnswered===0?0:Math.round((playerStats.totalCorrect/playerStats.totalAnswered)*100);
+  const totalFreed=freedCounts.reduce((a,b)=>a+b,0);
+  document.getElementById('gameOverStats').innerHTML=
+    'Rom ryddet: <b>'+killedCount+'</b> &nbsp;·&nbsp; Bosser beseiret: <b>'+bossesDefeated+'</b><br>'+
+    'Nordmenn frigjort: <b>'+totalFreed+'</b> &nbsp;·&nbsp; Nøyaktighet: <b>'+acc+'%</b>';
+  document.getElementById('gameOverScreen').classList.add('active');
+}
+
+// ─── FREED SYSTEM ───
+const FREED_TYPES=[
+  {label:"👦 Motstandsgutt", xpBonus:8,  hpBonus:0},
+  {label:"👩 Sykepleier",    xpBonus:0,  hpBonus:12},
+  {label:"👨 Lærer",         xpBonus:5,  hpBonus:0},
+  {label:"✡️ Jødisk familie",xpBonus:15, hpBonus:0},
+];
+let freedCounts=[0,0,0,0];
+
+function tryFreeNordmann(){
+  if(Math.random()>0.3)return;
+  const idx=Math.floor(Math.random()*4);
+  freedCounts[idx]++;
+  const ft=FREED_TYPES[idx];
+  if(ft.xpBonus>0){playerStats.xp+=ft.xpBonus;checkLevelUp();}
+  if(ft.hpBonus>0){playerStats.hp=Math.min(playerStats.hp+ft.hpBonus,playerStats.maxHp);}
+  addLog(ft.label+' frigjort!','f');
+  renderStats();
+  updateFreedCounters();
+}
+function updateFreedCounters(){
+  for(let i=0;i<4;i++){
+    const el=document.getElementById('freed-'+i);
+    if(el)el.textContent=freedCounts[i];
+  }
+}
+
+// ─── DUNGEON ───
+const GSIZE=30;
+let CELL=23; // recomputed to fit screen
+function computeCellSize(){
+  const area=document.querySelector('.map-area');
+  if(!area) return;
+  const rect=area.getBoundingClientRect();
+  const avail=Math.min(rect.width, rect.height) - 16;
+  CELL=Math.max(10, Math.floor(avail / GSIZE));
+}
+let mapGrid=[], fogGrid=[], roomList=[], playerPos={r:0,c:0}, currentRoomObj=null;
+let killedCount=0, bossesDefeated=0;
+
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+
+function generateDungeon(){
+  computeCellSize();
+  mapGrid=Array.from({length:GSIZE},()=>Array(GSIZE).fill('wall'));
+  roomList=[];
+  const attempts=400, minW=3,maxW=6,minH=3,maxH=5;
+  for(let i=0;i<attempts&&roomList.length<28;i++){
+    const w=rnd(minW,maxW),h=rnd(minH,maxH);
+    const c=rnd(1,GSIZE-w-2),r=rnd(1,GSIZE-h-2);
+    let ok=true;
+    for(const rm of roomList){
+      if(c<rm.c+rm.w+1&&c+w+1>rm.c&&r<rm.r+rm.h+1&&r+h+1>rm.r){ok=false;break;}
+    }
+    if(!ok)continue;
+    const id=roomList.length;
+    const room={id,r,c,h,w,kind:'normal',monster:null,defeated:false,
+      cr:r+Math.floor(h/2),cc:c+Math.floor(w/2)};
+    roomList.push(room);
+    for(let rr=r;rr<r+h;rr++)
+      for(let cc2=c;cc2<c+w;cc2++)
+        mapGrid[rr][cc2]='floor';
+  }
+  if(roomList.length<10){generateDungeon();return;}
+
+  // MST corridors
+  const visited=[roomList[0]],unvisited=roomList.slice(1);
+  while(unvisited.length){
+    let bestD=Infinity,bestA=null,bestB=null;
+    for(const a of visited)for(const b of unvisited){
+      const d=Math.abs(a.cr-b.cr)+Math.abs(a.cc-b.cc);
+      if(d<bestD){bestD=d;bestA=a;bestB=b;}
+    }
+    carveL(bestA.cr,bestA.cc,bestB.cr,bestB.cc);
+    visited.push(bestB);
+    unvisited.splice(unvisited.indexOf(bestB),1);
+  }
+
+  // Assign start room (top-left area)
+  let startRoom=roomList.reduce((best,rm)=>{
+    const d=rm.cr+rm.cc; return d<(best.cr+best.cc)?rm:best;
+  });
+  startRoom.kind='start';
+
+  // Sort remaining rooms by distance from start (nearest first)
+  const others=roomList.filter(r=>r.kind==='normal');
+  others.sort((a,b)=>{
+    const da=Math.abs(a.cr-startRoom.cr)+Math.abs(a.cc-startRoom.cc);
+    const db=Math.abs(b.cr-startRoom.cr)+Math.abs(b.cc-startRoom.cc);
+    return da-db; // nearest first
+  });
+
+  // Place 5 boss rooms spread by distance: Göring nearest, Hitler furthest
+  const bossRooms=[];
+  const n=others.length;
+  // Pick 5 evenly-spaced rooms along the distance gradient
+  const pickIdxs=[];
+  for(let i=0;i<5;i++){
+    // Map boss i to a position in the sorted list: i=0 -> ~30%, i=4 -> 100% (furthest)
+    const frac=0.3+(i/4)*0.7;
+    let idx=Math.min(n-1,Math.round(frac*(n-1)));
+    // Avoid collisions with already-picked rooms
+    while(pickIdxs.includes(idx)&&idx>0)idx--;
+    while(pickIdxs.includes(idx)&&idx<n-1)idx++;
+    pickIdxs.push(idx);
+  }
+  pickIdxs.forEach((idx,i)=>{
+    const bossRoom=others[idx];
+    if(!bossRoom)return;
+    bossRoom.kind='boss';
+    bossRoom.bossIdx=i;
+    bossRooms.push(bossRoom);
+  });
+
+  killedCount=0; bossesDefeated=0;
+
+  // Assign monsters
+  roomList.forEach(room=>{
+    if(room.kind==='start'){
+      room.defeated=true;
+      room.monster={defeated:true,name:'',hp:0,maxHp:1,xp:0,dmg:0};
+    } else if(room.kind==='boss'){
+      const b={...FLOOR_BOSSES[room.bossIdx]};
+      b.maxHp=b.hp; b.defeated=false; b.unlocked=false;
+      // First boss (Göring) requires kills, others require previous boss defeated
+      room.monster=b;
+    } else {
+      const useMini=Math.random()<0.1;
+      const pool=useMini?MINIBOSSES:NORMALS;
+      const m={...pool[rnd(0,pool.length-1)]};
+      m.maxHp=m.hp; m.defeated=false; room.monster=m;
+    }
+  });
+
+  // Unlock first boss (Göring) based on kill %
+  checkBossUnlocks();
+
+  playerPos={r:startRoom.cr,c:startRoom.cc};
+  currentRoomObj=startRoom;
+
+  fogGrid=Array.from({length:GSIZE},()=>Array(GSIZE).fill('hidden'));
+  // Boss rooms always visible
+  for(const br of bossRooms){
+    for(let r=br.r-1;r<br.r+br.h+1;r++)
+      for(let c=br.c-1;c<br.c+br.w+1;c++)
+        if(r>=0&&r<GSIZE&&c>=0&&c<GSIZE)fogGrid[r][c]='visible';
+  }
+  // Start room visited
+  for(let r=startRoom.r;r<startRoom.r+startRoom.h;r++)
+    for(let c=startRoom.c;c<startRoom.c+startRoom.w;c++)
+      if(r>=0&&r<GSIZE&&c>=0&&c<GSIZE)fogGrid[r][c]='visited';
+
+  updateFog(); renderMap(); renderStats(); updateKillCounter(); renderBossProgress();
+  statusText.textContent='Rydd rom for å åpne boss-dørene. WASD / piltaster.';
+}
+
+function carveL(r1,c1,r2,c2){
+  let c=c1;
+  while(c!==c2){if(mapGrid[r1][c]==='wall')mapGrid[r1][c]='corridor';c+=c<c2?1:-1;}
+  if(mapGrid[r1][c2]==='wall')mapGrid[r1][c2]='corridor';
+  let r=r1;
+  while(r!==r2){if(mapGrid[r][c2]==='wall')mapGrid[r][c2]='corridor';r+=r<r2?1:-1;}
+}
+
+function roomAt(r,c){
+  for(const room of roomList){
+    if(r>=room.r&&r<room.r+room.h&&c>=room.c&&c<room.c+room.w)return room;
+  }
+  return null;
+}
+
+// ─── BOSS UNLOCK LOGIC ───
+function checkBossUnlocks(){
+  const normalRooms=roomList.filter(r=>r.kind==='normal');
+  const totalNormal=normalRooms.length;
+  const killPct=killedCount/Math.max(1,totalNormal);
+
+  const bossRooms=roomList.filter(r=>r.kind==='boss').sort((a,b)=>a.bossIdx-b.bossIdx);
+
+  // Boss 0 (Göring): unlock at 20% kills
+  if(bossRooms[0]&&!bossRooms[0].monster.unlocked&&killPct>=0.2){
+    bossRooms[0].monster.unlocked=true;
+    addLog('🔓 Göring har avslørt seg – angrip nå!','i');
+  }
+  // Bosses 1-4: unlock when previous is defeated
+  for(let i=1;i<bossRooms.length;i++){
+    const prevRoom=bossRooms[i-1];
+    if(prevRoom&&prevRoom.monster.defeated&&!bossRooms[i].monster.unlocked){
+      bossRooms[i].monster.unlocked=true;
+      addLog('🔓 '+FLOOR_BOSSES[i].name+' har avslørt sin posisjon!','i');
+    }
+  }
+  renderMap();
+  renderBossProgress();
+}
+
+function updateKillCounter(){
+  const el=document.getElementById('statRyddet');
+  if(el)el.textContent=killedCount;
+}
+
+function renderBossProgress(){
+  const el=document.getElementById('bossProgressList');
+  if(!el)return;
+  const bossRooms=roomList.filter(r=>r.kind==='boss').sort((a,b)=>a.bossIdx-b.bossIdx);
+  el.innerHTML='';
+  FLOOR_BOSSES.forEach((boss,i)=>{
+    const room=bossRooms[i];
+    const defeated=room&&room.monster.defeated;
+    const unlocked=room&&room.monster.unlocked;
+    const item=document.createElement('div');
+    item.className='boss-progress-item'+(defeated?' defeated':unlocked?' unlocked':' locked');
+    let statusTxt=defeated?'☑ Beseiret':unlocked?'⚠ Tilgjengelig':'🔒 Låst';
+    item.innerHTML=`<span class="bp-icon">${boss.icon}</span><span class="bp-name">${boss.name}</span><span class="bp-status">${statusTxt}</span>`;
+    el.appendChild(item);
+  });
+}
+
+// ─── FOG OF WAR ───
+function updateFog(){
+  if(!fogGrid.length)return;
+  const RADIUS=4;
+  for(let r=0;r<GSIZE;r++)
+    for(let c=0;c<GSIZE;c++)
+      if(fogGrid[r][c]==='visible')fogGrid[r][c]='visited';
+  for(let dr=-RADIUS;dr<=RADIUS;dr++){
+    for(let dc=-RADIUS;dc<=RADIUS;dc++){
+      if(Math.abs(dr)+Math.abs(dc)>RADIUS)continue;
+      const nr=playerPos.r+dr,nc=playerPos.c+dc;
+      if(nr>=0&&nr<GSIZE&&nc>=0&&nc<GSIZE)fogGrid[nr][nc]='visible';
+    }
+  }
+  // Boss rooms always visible
+  for(const room of roomList){
+    if(room.kind!=='boss')continue;
+    for(let r=room.r-1;r<room.r+room.h+1;r++)
+      for(let c=room.c-1;c<room.c+room.w+1;c++)
+        if(r>=0&&r<GSIZE&&c>=0&&c<GSIZE)fogGrid[r][c]='visible';
+  }
+}
+
+// ─── RENDER MAP ───
+function renderMap(){
+  const gridEl=document.getElementById('grid');
+  gridEl.style.gridTemplateColumns=`repeat(${GSIZE},${CELL}px)`;
+  gridEl.style.gridTemplateRows=`repeat(${GSIZE},${CELL}px)`;
+  gridEl.innerHTML='';
+  const showHP=hasBonus('vision');
+
+  for(let r=0;r<GSIZE;r++){
+    for(let c=0;c<GSIZE;c++){
+      const div=document.createElement('div');
+      div.style.cssText=`width:${CELL}px;height:${CELL}px;position:relative;display:flex;align-items:center;justify-content:center;`;
+      const cell=mapGrid[r][c];
+      const room=roomAt(r,c);
+      const fog=fogGrid.length?fogGrid[r][c]:'visible';
+
+      if(fog==='hidden'){
+        div.style.background='#030301';
+        gridEl.appendChild(div);
+        continue;
+      }
+
+      // Base color
+      if(cell==='wall'){
+        div.style.cssText+=`background:#0a0906;border-right:3px solid #030200;border-bottom:3px solid #030200;`;
+      } else if(cell==='floor'){
+        if(room&&room.kind==='start') div.style.background='var(--start)';
+        else if(room&&room.kind==='boss'){
+          if(room.monster&&room.monster.defeated){
+            div.style.background='#1a1a1a';
+          } else if(room.monster&&room.monster.unlocked){
+            div.style.cssText+='background:var(--boss-open);'+(fog==='visible'?'animation:bossOpenGlow 2s ease-in-out infinite;':'')+';';
+          } else {
+            div.style.cssText+='background:var(--boss-locked);'+(fog==='visible'?'animation:bossLockedPulse 2s ease-in-out infinite;':'')+';';
+          }
+        } else {
+          div.style.background=((r+c)%2===0)?'var(--floor)':'var(--floor2)';
+          div.style.boxShadow='inset 0 0 0 1px rgba(109,93,45,0.15)';
+        }
+      } else if(cell==='corridor'){
+        div.style.cssText+='background:var(--corridor);background-image:radial-gradient(circle,#252310 1px,transparent 1px);background-size:5px 5px;';
+      }
+
+      if(fog==='visited'){
+        // Show faint monster silhouette in explored-but-not-current cells
+        if(room&&room.r===r&&room.c===c&&room.monster&&!room.monster.defeated&&room.kind==='normal'){
+          const ico=document.createElement('div');
+          ico.style.cssText='position:absolute;z-index:2;display:flex;align-items:center;justify-content:center;width:100%;height:100%;opacity:0.55;';
+          ico.innerHTML=giIconHTML(room.monster.name,13,FILTER_ENEMY);
+          div.appendChild(ico);
+        }
+        if(room&&room.r===r&&room.c===c&&room.monster&&room.monster.defeated&&room.kind==='normal'){
+          const ico=document.createElement('i');
+          ico.className='fa-solid fa-check';
+          ico.style.cssText='position:absolute;z-index:2;font-size:10px;color:#27ae60;opacity:0.6;';
+          div.appendChild(ico);
+        }
+        div.style.filter='brightness(0.5) sepia(0.35)';
+        gridEl.appendChild(div);
+        continue;
+      }
+
+      // Show monsters
+      if(room&&room.r===r&&room.c===c&&room.monster&&!room.monster.defeated){
+        const m=room.monster;
+        const ico=document.createElement('div');
+        ico.style.cssText='position:absolute;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:100%;';
+        
+        if(room.kind==='boss'){
+          if(m.unlocked){
+            ico.innerHTML=giIconHTML(m.name,16,FILTER_ENEMY);
+            ico.style.filter='drop-shadow(0 0 4px rgba(192,57,43,.9))';
+          } else {
+            // Locked boss shows lock icon
+            const lock=document.createElement('i');
+            lock.className='fa-solid fa-lock';
+            lock.style.cssText='font-size:10px;color:#4a4a8a;';
+            ico.appendChild(lock);
+          }
+        } else if(m.isMiniBoss){
+          ico.innerHTML=giIconHTML(m.name,15,FILTER_MINIBOSS);
+        } else {
+          ico.innerHTML=giIconHTML(m.name,14,FILTER_ENEMY);
+        }
+        
+        // Show HP if J.C. Hauge active
+        if(showHP&&m.hp>0&&room.kind!=='boss'){
+          const hpEl=document.createElement('div');
+          hpEl.style.cssText='position:absolute;bottom:1px;left:0;right:0;text-align:center;font-size:7px;font-family:Oswald,sans-serif;color:#c8a830;line-height:1;';
+          hpEl.textContent=m.hp;
+          div.appendChild(hpEl);
+        }
+        div.appendChild(ico);
+      }
+
+      // Cleared checkmark
+      if(room&&room.r===r&&room.c===c&&room.monster&&room.monster.defeated&&room.kind==='normal'){
+        const ico=document.createElement('i');
+        ico.className='fa-solid fa-check';
+        ico.style.cssText='position:absolute;z-index:2;font-size:10px;color:#27ae60;opacity:0.7;';
+        div.appendChild(ico);
+      }
+
+      // Player
+      if(r===playerPos.r&&c===playerPos.c){
+        const ico=document.createElement('div');
+        ico.style.cssText='position:absolute;z-index:4;display:flex;align-items:center;justify-content:center;width:100%;height:100%;';
+        ico.innerHTML=`<img src="${GI_BASE}${PLAYER_ICON_GI}" width="18" height="18" style="filter:${FILTER_PLAYER};display:block;" alt="spiller">`;
+        div.appendChild(ico);
+      }
+
+      gridEl.appendChild(div);
+    }
+  }
+}
+
+// ─── RENDER STATS ───
+function renderStats(){
+  const hpPct=Math.max(0,(playerStats.hp/playerStats.maxHp)*100);
+  document.getElementById('hpBar').style.width=`${hpPct}%`;
+  document.getElementById('hpVal').textContent=`${playerStats.hp}/${playerStats.maxHp}`;
+  document.getElementById('xpBar').style.width=`${Math.min(100,(playerStats.xp/playerStats.nextXp)*100)}%`;
+  document.getElementById('xpVal').textContent=`${playerStats.xp}/${playerStats.nextXp}`;
+  document.getElementById('statLevel').textContent=playerStats.level;
+  document.getElementById('statDmg').textContent=playerStats.baseDamage+playerStats.level*3;
+  document.getElementById('statAcc').textContent=playerStats.totalAnswered===0?'–':Math.round((playerStats.totalCorrect/playerStats.totalAnswered)*100)+'%';
+  // HUD
+  const hf=document.getElementById('hudHpFill');if(hf)hf.style.width=hpPct+'%';
+  const hn=document.getElementById('hudHpNum');if(hn)hn.textContent=`${playerStats.hp}/${playerStats.maxHp}`;
+  const hl=document.getElementById('hudLevel');if(hl)hl.textContent=playerStats.level;
+}
+
+// ─── MOVEMENT ───
+let inCombat=false, currentEnemy=null, pendingCorrect=false;
+let usedQIds=[];
+let gameWon=false;
+
+function canWalk(r,c){
+  if(r<0||r>=GSIZE||c<0||c>=GSIZE)return{ok:false};
+  const cell=mapGrid[r][c];
+  if(cell==='wall')return{ok:false};
+  const room=roomAt(r,c);
+  if(room&&room.kind==='boss'){
+    if(!room.monster.unlocked)return{ok:false,reason:'locked'};
+  }
+  return{ok:true};
+}
+
+function movePlayer(dir){
+  if(gameWon)return;
+  if(inCombat){statusText.textContent='Besejr fienden først!';return;}
+  const deltas={top:[-1,0],bottom:[1,0],left:[0,-1],right:[0,1]};
+  const [dr,dc]=deltas[dir];
+  const nr=playerPos.r+dr,nc=playerPos.c+dc;
+  const {ok,reason}=canWalk(nr,nc);
+  if(!ok){
+    const bossRooms=roomList.filter(r=>r.kind==='boss').sort((a,b)=>a.bossIdx-b.bossIdx);
+    const lockedBoss=bossRooms.find(b=>!b.monster.unlocked&&!b.monster.defeated);
+    if(reason==='locked'&&lockedBoss){
+      const prevDefeated=lockedBoss.bossIdx===0
+        ? 'Rydd 20% av rommene'
+        : FLOOR_BOSSES[lockedBoss.bossIdx-1].name+' må beseires først';
+      statusText.textContent=prevDefeated+' 🔒';
+    } else {
+      statusText.textContent='Veggen sperrer.';
+    }
+    return;
+  }
+  playerPos={r:nr,c:nc};
+  statusText.textContent='';
+  updateFog();
+  const room=roomAt(nr,nc);
+  if(room&&room!==currentRoomObj){
+    currentRoomObj=room;
+    if(room.monster&&!room.monster.defeated&&room.kind!=='start')startCombat(room);
+  }
+  renderMap();
+}
+
+// ─── COMBAT ───
+function pickQ(forBoss){
+  function diffOk(q){
+    if(forBoss)return q.diff===3;
+    return true;
+  }
+  let pool=ALL_Q.filter((q,i)=>!usedQIds.includes(i)&&diffOk(q));
+  if(!pool.length){
+    usedQIds=usedQIds.slice(Math.floor(usedQIds.length/2));
+    pool=ALL_Q.filter((q,i)=>!usedQIds.includes(i)&&diffOk(q));
+  }
+  if(!pool.length)pool=[...ALL_Q];
+  const q=pool[rnd(0,pool.length-1)];
+  usedQIds.push(ALL_Q.indexOf(q));
+  return q;
+}
+
+let tauntLoopTimer=null,lastTauntIdx=-1;
+function startTauntLoop(name){
+  stopTauntLoop();
+  function showNext(){
+    const list=BOSS_TAUNTS[name]||GENERAL_TAUNTS;
+    let idx;
+    do{idx=rnd(0,list.length-1);}while(idx===lastTauntIdx&&list.length>1);
+    lastTauntIdx=idx;
+    const bossEl=document.getElementById('bossSpeechBubble');
+    if(bossEl){bossEl.textContent='"'+list[idx]+'"';bossEl.classList.remove('active');void bossEl.offsetWidth;bossEl.classList.add('active');}
+    tauntLoopTimer=setTimeout(showNext,9000+Math.random()*5000);
+  }
+  showNext();
+}
+function stopTauntLoop(){
+  clearTimeout(tauntLoopTimer);tauntLoopTimer=null;lastTauntIdx=-1;
+  const b=document.getElementById('bossSpeechBubble');
+  if(b)b.classList.remove('active');
+}
+function showGeneralTaunt(){
+  const el=document.getElementById('ovTaunt');
+  if(!el)return;
+  el.textContent='"'+GENERAL_TAUNTS[rnd(0,GENERAL_TAUNTS.length-1)]+'"';
+  el.style.display='block';el.style.animation='none';void el.offsetWidth;el.style.animation='';
+  setTimeout(()=>{el.style.display='none';},7000);
+}
+function showTaunt(name){
+  const taunt=getBossTaunt(name);
+  const el=document.getElementById('ovTaunt');
+  if(!taunt||!el)return;
+  el.textContent='"'+taunt+'"';el.style.display='block';el.style.animation='none';void el.offsetWidth;el.style.animation='';
+}
+function showCombatBanner(text,cls){
+  const b=document.getElementById('combatBanner');
+  if(!b)return;
+  b.textContent=text;b.className=cls;b.style.display='block';
+  setTimeout(()=>{b.style.display='none';},1600);
+}
+let _levelFlashTimer=null;
+function showLevelUpFlash(level){
+  const el=document.getElementById('levelUpFlash');
+  const txt=document.getElementById('levelUpFlashText');
+  if(!el||!txt)return;
+  txt.textContent='NIVÅ '+level+'!';
+  el.classList.add('active');
+  if(_levelFlashTimer)clearTimeout(_levelFlashTimer);
+  _levelFlashTimer=setTimeout(()=>{el.classList.remove('active');_levelFlashTimer=null;},900);
+}
+function shimmerXP(){
+  const bar=document.getElementById('xpBar');
+  if(!bar)return;
+  bar.classList.remove('xp-shimmer');void bar.offsetWidth;bar.classList.add('xp-shimmer');
+  setTimeout(()=>bar.classList.remove('xp-shimmer'),700);
+}
+function showPlayerDamage(dmg){
+  if(dmg<=0)return;
+  const el=document.getElementById('playerDmgFlash');
+  el.textContent=`-${dmg} HP`;el.style.display='block';el.style.animation='none';void el.offsetWidth;
+  el.style.animation='playerDmgPop 1.5s ease-out forwards';
+  setTimeout(()=>{el.style.display='none';},1500);
+  const overlay=document.getElementById('combatOverlay');
+  overlay.classList.remove('player-hit');void overlay.offsetWidth;overlay.classList.add('player-hit');
+  setTimeout(()=>overlay.classList.remove('player-hit'),500);
+  const bar=document.getElementById('hpBar');
+  bar.classList.remove('pulse');void bar.offsetWidth;bar.classList.add('pulse');
+  setTimeout(()=>bar.classList.remove('pulse'),800);
+}
+
+function startCombat(room){
+  if(room.monster.isBoss||room.monster.isMiniBoss){startBossBattle(room);return;}
+  inCombat=true;currentEnemy=room.monster;
+  document.getElementById('enemyLabel').textContent=`⚔ ${currentEnemy.name}`;
+  const portrait=document.getElementById('ovPortrait');
+  const portraitUrl=PORTRAITS[currentEnemy.name];
+  const portraitWrap=document.getElementById('ovPortraitWrap');
+  portrait.onerror=()=>{portrait.removeAttribute('src');portrait.className='';portraitWrap.className='';};
+  if(portraitUrl){
+    portrait.referrerPolicy='no-referrer';portrait.src=portraitUrl;
+    portrait.className='visible';portraitWrap.className='has-portrait';
+  } else {
+    portrait.removeAttribute('src');portrait.className='';portraitWrap.className='';
+  }
+  const nameEl=document.getElementById('ovEnemyName');
+  nameEl.textContent=currentEnemy.name;nameEl.className='';
+  const iconEl=document.getElementById('ovEnemyIcon');
+  if(iconEl)iconEl.innerHTML=giIconHTML(currentEnemy.name,32,FILTER_ENEMY);
+  document.getElementById('ovDmgFlash').textContent='';
+  updateOvHP();
+  document.getElementById('combatOverlay').classList.add('active');
+  document.getElementById('ovSpinArea').style.display='none';
+  stopTauntLoop();
+  const tEl=document.getElementById('ovTaunt');
+  if(tEl)tEl.style.display='none';
+  showQ();
+}
+
+function updateOvHP(){
+  if(!currentEnemy)return;
+  const hp=Math.max(0,currentEnemy.hp);
+  const pct=Math.max(0,(hp/currentEnemy.maxHp)*100);
+  const bar=document.getElementById('ovHPBar');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>60?'linear-gradient(90deg,#1a5c1a,#27ae60)':pct>30?'linear-gradient(90deg,#7a5500,#c8a830)':'linear-gradient(90deg,#8b1a1a,#c0392b)';
+  document.getElementById('ovEnemyHP').textContent=`HP: ${hp} / ${currentEnemy.maxHp}`;
+  document.getElementById('ovHPPct').textContent=Math.round(pct)+'%';
+}
+
+function shuffleMC(q){
+  const correct=q.opts[q.ans];
+  const shuffled=[...q.opts].sort(()=>Math.random()-0.5);
+  return{opts:shuffled,ans:shuffled.indexOf(correct)};
+}
+
+function showQ(){
+  const isBossFight=currentEnemy&&(currentEnemy.isBoss||currentEnemy.isMiniBoss);
+  const q=pickQ(isBossFight);
+  currentEnemy._q=q;
+  document.getElementById('ovQuestion').textContent=q.q;
+  document.getElementById('ovAnswers').innerHTML='';
+  document.getElementById('ovFeedback').textContent='';
+  document.getElementById('ovSpinArea').style.display='none';
+  document.getElementById('ovSpinResult').textContent='';
+  document.getElementById('questionText').textContent=q.q;
+  document.getElementById('answerOptions').innerHTML='';
+
+  if(q.type==='mc'){
+    const sq=shuffleMC(q);
+    const btns=[];
+    sq.opts.forEach((opt,i)=>{
+      const btn=makeAnswerBtn(`${i+1}. ${opt}`,()=>{
+        revealAnswers(btns,i,sq.ans);
+        resolveAnswer(i===sq.ans,q,i!==sq.ans?sq.opts[sq.ans]:null);
+      });
+      btns.push(btn);
+      document.getElementById('ovAnswers').appendChild(btn);
+    });
+  } else if(q.type==='tf'){
+    const btns=[];
+    const correctIdx=q.ans?0:1;
+    ['Sant ✓','Usant ✗'].forEach((label,i)=>{
+      const btn=makeAnswerBtn(label,()=>{
+        revealAnswers(btns,i,correctIdx);
+        resolveAnswer((i===0)===q.ans,q,(i===0)!==q.ans?(q.ans?'Sant':'Usant'):null);
+      });
+      btns.push(btn);
+      document.getElementById('ovAnswers').appendChild(btn);
+    });
+  } else {
+    const inp=document.createElement('input');
+    inp.className='type-inp';inp.placeholder='Skriv svar...';
+    inp.setAttribute('autocomplete','off');inp.setAttribute('spellcheck','false');
+    const btn=document.createElement('button');
+    btn.className='game-btn primary';btn.style.marginTop='4px';btn.textContent='SVAR';
+    const check=()=>{
+      if(!inp.value.trim())return;
+      const norm=inp.value.trim().toLowerCase().replace(/\s+/g,' ');
+      const ok=q.ans.some(a=>fuzzyMatch(norm,a.toLowerCase()));
+      resolveAnswer(ok,q,ok?null:q.ans[0]);
+    };
+    btn.onclick=check;
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopPropagation();check();}});
+    document.getElementById('ovAnswers').appendChild(inp);
+    document.getElementById('ovAnswers').appendChild(btn);
+    setTimeout(()=>inp.focus(),50);
+  }
+}
+
+function revealBossAnswers(btns,chosenIdx,correctIdx){
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correctIdx)b.classList.add('correct');
+    else if(i===chosenIdx)b.classList.add('wrong');
+  });
+}
+function revealAnswers(btns,chosenIdx,correctIdx){
+  btns.forEach((b,i)=>{
+    b.disabled=true;
+    if(i===correctIdx)b.classList.add('correct');
+    else if(i===chosenIdx)b.classList.add('wrong');
+  });
+}
+
+function makeAnswerBtn(label,cb){
+  const btn=document.createElement('button');
+  btn.className='answer-btn';btn.textContent=label;
+  btn.onclick=()=>{if(!inCombat)return;cb();};
+  return btn;
+}
+
+function fuzzyMatch(input,target){
+  const a=input.trim().toLowerCase().replace(/\s+/g,' ');
+  const b=target.trim().toLowerCase().replace(/\s+/g,' ');
+  if(a===b)return true;
+  if(a.replace(/\s/g,'')===b.replace(/\s/g,''))return true;
+  if(a.includes(b)||b.includes(a))return true;
+  const maxDist=b.length<=5?1:2;
+  if(levenshtein(a,b)<=maxDist)return true;
+  return false;
+}
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  if(m===0)return n;if(n===0)return m;
+  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+function resolveAnswer(correct,q,correctAns){
+  if(!inCombat)return;
+  playerStats.totalAnswered++;
+  if(correct)playerStats.totalCorrect++;
+  document.getElementById('ovAnswers').querySelectorAll('button,input').forEach(el=>el.disabled=true);
+  const fb=document.getElementById('ovFeedback');
+  if(correct){
+    fb.innerHTML='<span style="font-size:16px;">✓ RIKTIG!</span>';
+    fb.style.color='#27ae60';
+  } else {
+    fb.innerHTML='<span style="font-size:16px;">✗ FEIL</span><br><span style="font-size:12px;color:#e8e0c8;">Riktig svar: <b style="color:#27ae60;">'+correctAns+'</b></span>';
+    fb.style.color='#c0392b';
+  }
+  pendingCorrect=correct;
+  // Longer pause when wrong so player can read the correct answer
+  setTimeout(()=>showSpinPhase(correct), correct?1100:2200);
+}
+
+// Apply Max Manus bonus to sector multiplier
+function applyHeroBonus(mult){
+  if(!hasBonus('dmg'))return mult;
+  return mult*1.25;
+}
+
+async function showSpinPhase(correct){
+  if(!inCombat)return;
+  const spinArea=document.getElementById('ovSpinArea');
+  spinArea.style.display='block';
+  document.getElementById('ovSpinBtn').disabled=false;
+  document.getElementById('ovSpinResult').textContent='';
+
+  // Keep the FEIL/RIKTIG feedback visible — just add spin instruction below it
+  const fb=document.getElementById('ovFeedback');
+  const existingFb=fb.innerHTML;
+  if(correct){
+    fb.innerHTML=existingFb+'<div style="font-size:11px;color:#8a8060;margin-top:4px;">Spinn for å avgjøre skaden du gjør:</div>';
+    document.getElementById('combatOverlay').style.borderColor='';
+    document.getElementById('ovSpinBtn').style.background='var(--accent)';
+    document.getElementById('ovSpinBtn').style.color='#0a0800';
+  } else {
+    fb.innerHTML=existingFb+'<div style="font-size:11px;color:#e04040;margin-top:4px;">⚔ Fienden spinner nå for å angripe deg:</div>';
+    document.getElementById('combatOverlay').style.borderColor='#c0392b';
+    document.getElementById('ovSpinBtn').style.background='#c0392b';
+    document.getElementById('ovSpinBtn').style.color='#fff';
+  }
+  drawWheel(0);
+
+  await new Promise(resolve=>{
+    document.getElementById('ovSpinBtn').onclick=()=>{document.getElementById('ovSpinBtn').onclick=null;resolve();};
+  });
+
+  // Reset overlay border
+  document.getElementById('combatOverlay').style.borderColor='';
+
+  const sector=weightedSector(correct);
+  const sectorIdx=SECTORS_HIT.indexOf(sector);
+  await runSpinner(sectorIdx);
+
+  const base=playerStats.baseDamage+playerStats.level*3;
+  const monsterBase=currentEnemy?currentEnemy.dmg||10:10;
+  let resultText='';
+
+  if(correct){
+    const boostedMult=applyHeroBonus(sector.mult);
+    let dmg=Math.round(base*boostedMult);
+    if(sector.mult===3.0&&currentEnemy&&!currentEnemy.isBoss){dmg=currentEnemy.hp;resultText=`${sector.label} – LYKKETREFF! ${dmg} skade!`;}
+    else resultText=`${sector.label} – Du gjør ${dmg} skade!`;
+    if(currentEnemy)currentEnemy.hp=Math.max(0,currentEnemy.hp-dmg);
+    addLog(`${sector.label} → ${dmg} skade på fienden`,'g');
+    const flash=document.getElementById('ovDmgFlash');
+    flash.textContent=sector.mult===0?'💨 BOMMERT!':`💥 -${dmg} HP`;
+    flash.style.color=sector.mult===0?'#888':'#27ae60';
+    if(sector.mult===3.0)showCombatBanner('☠ LYKKETREFF!','lucky');
+    else if(sector.mult===0)showCombatBanner('💨 BOMMERT!','miss');
+    else showCombatBanner(`TREFF! -${dmg} HP`,'hit');
+  } else {
+    let dmg=Math.round(monsterBase*sector.mult);
+    if(sector.mult===3.0)dmg=Math.round(monsterBase*2.5);
+    if(hasBonus('block')&&Math.random()<0.3){
+      dmg=0;resultText=`${sector.label} – Kjakan blokkerte angrepet!`;addLog('🔫 Kjakan blokkerer!','g');
+    } else if(dmg===0)resultText=`${sector.label} – Fienden bommet! Ingen skade.`;
+    else resultText=`${sector.label} – Du tar ${dmg} skade!`;
+    playerStats.hp=Math.max(0,playerStats.hp-dmg);
+    addLog(`Fiendens angrep → ${dmg} skade på deg`,'b');
+    renderStats();
+    if(dmg>0)showPlayerDamage(dmg);
+    if(currentEnemy&&dmg>0&&Math.random()<0.6)showGeneralTaunt();
+    const flash=document.getElementById('ovDmgFlash');
+    flash.textContent=dmg===0?'💨 BOMMERT!':`🩸 -${dmg} HP`;
+    flash.style.color=dmg===0?'#888':'#c0392b';
+    if(dmg===0)showCombatBanner('💨 BOMMERT!','hit');
+    else showCombatBanner(`AU! -${dmg} HP`,'miss');
+  }
+
+  document.getElementById('ovDmgFlash').className='dmg-pop';
+  setTimeout(()=>{document.getElementById('ovDmgFlash').className='';document.getElementById('ovDmgFlash').textContent='';},1400);
+
+  const resEl=document.getElementById('ovSpinResult');
+  resEl.textContent=resultText;
+  resEl.style.color=correct?'#27ae60':'#c0392b';
+  resEl.style.fontSize='14px';
+  resEl.style.fontWeight='700';
+  resEl.classList.remove('flash');void resEl.offsetWidth;resEl.classList.add('flash');
+
+  updateOvHP();renderStats();
+  await sleep(2000);
+  try{ afterRound(correct); }
+  catch(e){
+    console.error('afterRound error',e);
+    inCombat=false;currentEnemy=null;
+    document.getElementById('combatOverlay').classList.remove('active');
+    renderMap();
+  }
+}
+
+function afterRound(correct){
+  if(!inCombat)return;
+  if(playerStats.hp<=0){
+    inCombat=false;currentEnemy=null;
+    document.getElementById('combatOverlay').classList.remove('active');
+    statusText.textContent='';
+    document.getElementById('questionText').textContent='';
+    document.getElementById('enemyLabel').textContent='Venter...';
+    document.getElementById('answerOptions').innerHTML='';
+    (async()=>{
+      const over=await heroFalls();
+      if(over)return;
+      const start=roomList.find(rm=>rm.kind==='start');
+      if(start){playerPos={r:start.cr,c:start.cc};currentRoomObj=start;updateFog();}
+      document.getElementById('questionText').textContent='Beveg deg videre.';
+      renderMap();
+    })();
+    return;
+  }
+  if(currentEnemy&&currentEnemy.hp<=0){
+    currentRoomObj.monster.defeated=true;
+    playerStats.xp+=currentEnemy.xp;
+    addLog(`🏆 ${currentEnemy.name} beseiret! +${currentEnemy.xp} XP`,'i');
+    if(currentRoomObj.kind==='normal'){
+      killedCount++;
+      updateKillCounter();
+      checkBossUnlocks();
+      tryFreeNordmann();
+    }
+    checkLevelUp();
+    inCombat=false;
+    const wasEnemy=currentEnemy;currentEnemy=null;
+    setTimeout(()=>{
+      document.getElementById('combatOverlay').classList.remove('active');
+      renderMap();
+    },600);
+    document.getElementById('enemyLabel').textContent=`${wasEnemy.name} beseiret!`;
+    document.getElementById('questionText').textContent='Beveg deg videre.';
+    document.getElementById('answerOptions').innerHTML='';
+    return;
+  }
+  document.getElementById('ovSpinArea').style.display='none';
+  showQ();
+}
+
+function checkLevelUp(){
+  let leveled=false;
+  while(playerStats.xp>=playerStats.nextXp){
+    playerStats.xp-=playerStats.nextXp;playerStats.level++;
+    playerStats.nextXp=Math.floor(playerStats.nextXp*1.45);
+    playerStats.maxHp+=15;playerStats.hp=Math.min(playerStats.hp+25,playerStats.maxHp);
+    shimmerXP();
+    addLog(`⬆ NIVÅ ${playerStats.level}! +15 maks HP`,'i');
+    leveled=true;
+  }
+  if(leveled)showLevelUpFlash(playerStats.level);
+  renderStats();
+  if(leveled&&!inCombat)renderMap();
+}
+
+function addLog(text,cls){
+  const span=document.createElement('span');
+  span.className=cls;span.textContent=text;
+  const log=document.getElementById('combatLog');
+  log.appendChild(span);log.scrollTop=log.scrollHeight;
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+// ─── GAME STATE ───
+let playerStats={hp:60,maxHp:60,level:1,xp:0,nextXp:50,baseDamage:10,totalCorrect:0,totalAnswered:0};
+const statusText=document.getElementById('statusText');
+
+function endFloor(){
+  // In single-map mode, endFloor is called when a boss is defeated
+  // Boss rewards and unlock logic handled in boss battle code
+}
+
+function winGame(){
+  gameWon=true;inCombat=false;
+  document.getElementById('combatOverlay').classList.remove('active');
+  const acc=playerStats.totalAnswered===0?100:Math.round((playerStats.totalCorrect/playerStats.totalAnswered)*100);
+  const totalFreed=freedCounts.reduce((a,b)=>a+b,0);
+  const survivingHeroes=HEROES.slice(currentHeroIdx);
+  
+  let winHTML=`<div style="font-size:13px;color:#aaa090;line-height:1.8;margin-bottom:10px;">`;
+  winHTML+=`Nivå ${playerStats.level} · ${acc}% nøyaktighet · ${playerStats.totalCorrect}/${playerStats.totalAnswered} riktige</div>`;
+  winHTML+=`<div style="font-family:Oswald,sans-serif;font-size:14px;color:var(--accent);letter-spacing:2px;margin-bottom:8px;">🇳🇴 ${totalFreed} NORDMENN FRIGJORT</div>`;
+  winHTML+='<div class="win-freed-grid">';
+  const labels=['👦 Motstandsgutter','👩 Sykepleiere','👨 Lærere','✡️ Jødiske familier'];
+  freedCounts.forEach((c,i)=>{
+    winHTML+=`<div class="win-freed-item"><div class="wfi-label">${labels[i]}</div><div class="wfi-val">${c}</div></div>`;
+  });
+  winHTML+='</div>';
+  winHTML+=`<div style="font-size:12px;color:#8a8060;margin-top:8px;">Overlevende helter: ${survivingHeroes.map(h=>h.emoji+' '+h.name).join(', ')||'Ingen'}</div>`;
+  
+  document.getElementById('winContent').innerHTML=winHTML;
+  document.getElementById('winOverlayContent').innerHTML=winHTML;
+  document.getElementById('winOverlay').classList.add('active');
+  statusText.textContent='🏆 Operasjon Frihet – fullført!';
+}
+
+function newGame(){
+  gameWon=false;inCombat=false;currentEnemy=null;currentRoomObj=null;usedQIds=[];
+  playerStats={hp:60,maxHp:60,level:1,xp:0,nextXp:50,baseDamage:10,totalCorrect:0,totalAnswered:0};
+  currentHeroIdx=0;
+  document.getElementById('gameOverScreen').classList.remove('active');
+  document.getElementById('winOverlay').classList.remove('active');
+  if(typeof closeDrawer==='function')closeDrawer();
+  freedCounts=[0,0,0,0];
+  killedCount=0;bossesDefeated=0;
+  document.getElementById('winScreen').style.display='none';
+  document.getElementById('combatOverlay').classList.remove('active');
+  document.getElementById('combatLog').innerHTML='';
+  document.getElementById('questionText').textContent='Bruk WASD / piltaster.';
+  document.getElementById('enemyLabel').textContent='Venter...';
+  document.getElementById('answerOptions').innerHTML='';
+  stopTauntLoop();
+  renderHeroChips();
+  updateFreedCounters();
+  generateDungeon();
+  renderStats();
+}
+
+// ─── BOSS BATTLE ───
+let bossBattleActive=false;
+
+function updateBossHPBars(){
+  if(!currentEnemy)return;
+  const bpct=Math.max(0,(currentEnemy.hp/currentEnemy.maxHp)*100);
+  const bbar=document.getElementById('bossHPBar');
+  bbar.style.width=bpct+'%';
+  bbar.style.background=bpct>60?'linear-gradient(90deg,#1a5c1a,#27ae60)':bpct>30?'linear-gradient(90deg,#7a5500,#c8a830)':'linear-gradient(90deg,#8b1a1a,#c0392b)';
+  document.getElementById('bossHPText').textContent=currentEnemy.hp+' / '+currentEnemy.maxHp;
+  const ppct=Math.max(0,(playerStats.hp/playerStats.maxHp)*100);
+  const pbar=document.getElementById('bossPlayerHPBar');
+  pbar.style.width=ppct+'%';
+  pbar.style.background=ppct>60?'linear-gradient(90deg,#1a5c1a,#27ae60)':ppct>30?'linear-gradient(90deg,#7a5500,#c8a830)':'linear-gradient(90deg,#8b1a1a,#c0392b)';
+  document.getElementById('bossPlayerHPText').textContent=playerStats.hp+' / '+playerStats.maxHp;
+  document.getElementById('bossPlayerLevel').textContent=playerStats.level;
+  document.getElementById('bossPlayerDmg').textContent=playerStats.baseDamage+playerStats.level*3;
+  // Update player hero display
+  const phd=document.getElementById('playerHeroDisplay');
+  const phn=document.getElementById('playerHeroName');
+  if(phd)phd.textContent=getPlayerEmoji();
+  if(phn){const h=getCurrentHero();phn.textContent=h?h.name.toUpperCase():'ALENE';}
+}
+
+function setBossMsg(text,color){
+  const el=document.getElementById('bossMsgText');
+  el.textContent=text;el.style.color=color||'#e8e0c8';
+  el.classList.remove('new-msg');void el.offsetWidth;el.classList.add('new-msg');
+}
+
+function drawBossWheel(angle){
+  const canvas=document.getElementById('bossSpinCanvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const cx=80,cy=80,r=74;
+  ctx.clearRect(0,0,160,160);
+  const COLORS=["#555","#3a7a50","#9a8020","#b05010","#8a1010"];
+  const LABELS=["BOM","LETT","MID","HARDT","LYKKE"];
+  const N=5,SL=(2*Math.PI)/N;
+  for(let i=0;i<N;i++){
+    const s=angle+i*SL,e=s+SL;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,s,e);ctx.closePath();
+    ctx.fillStyle=COLORS[i];ctx.fill();
+    ctx.strokeStyle='#1a1a10';ctx.lineWidth=2;ctx.stroke();
+    const m=s+SL/2;
+    ctx.save();ctx.translate(cx+Math.cos(m)*54,cy+Math.sin(m)*54);
+    ctx.rotate(m+Math.PI/2);
+    ctx.fillStyle='#fff';ctx.font='bold 9px Arial';ctx.textAlign='center';
+    ctx.fillText(LABELS[i],0,0);ctx.restore();
+  }
+  ctx.beginPath();ctx.arc(cx,cy,11,0,2*Math.PI);
+  ctx.fillStyle='#0a0a08';ctx.fill();ctx.strokeStyle='#c8a830';ctx.lineWidth=2;ctx.stroke();
+}
+
+function runBossSpinner(targetIdx){
+  return new Promise(resolve=>{
+    document.getElementById('bossSpinBtn').disabled=true;
+    const SL=(2*Math.PI)/5;
+    const spins=6+Math.floor(Math.random()*3);
+    const jitter=(Math.random()-0.5)*SL*0.45;
+    const finalAngle=(-Math.PI/2-(targetIdx+0.5)*SL+jitter)+spins*2*Math.PI;
+    const dur=3000,t0=performance.now();
+    function frame(now){
+      const t=Math.min((now-t0)/dur,1),ease=1-Math.pow(1-t,4);
+      drawBossWheel(finalAngle*ease);
+      if(t<1)requestAnimationFrame(frame);
+      else{drawBossWheel(finalAngle);resolve();}
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+function shakeBoss(){
+  const w=document.getElementById('bossPortraitWrap');
+  w.classList.remove('shake');void w.offsetWidth;w.classList.add('shake');
+  setTimeout(()=>w.classList.remove('shake'),350);
+}
+function shakePlayer(){
+  const s=document.getElementById('playerSide');
+  s.style.animation='none';void s.offsetWidth;s.style.animation='bossShake .3s ease-out';
+  setTimeout(()=>s.style.animation='',400);
+}
+
+async function startBossBattle(room){
+  bossBattleActive=true;inCombat=true;currentEnemy=room.monster;
+  const screen=document.getElementById('bossScreen');
+  screen.style.display='flex';
+  screen.className='active'+(currentEnemy.isFinalBoss?' final-boss':'');
+
+  const img=document.getElementById('bossPortraitImg');
+  const emojiEl=document.getElementById('bossEmojiLarge');
+  const url=PORTRAITS[currentEnemy.name];
+  img.onerror=()=>{img.style.display='none';emojiEl.style.display='flex';};
+  if(url){img.referrerPolicy='no-referrer';img.src=url;img.style.display='block';emojiEl.style.display='none';}
+  else{img.style.display='none';emojiEl.style.display='flex';emojiEl.textContent=currentEnemy.icon||'?';}
+
+  document.getElementById('bossNameLarge').textContent=currentEnemy.name;
+  document.getElementById('bossSpinArea').style.visibility='hidden';
+  document.getElementById('bossFeedback').textContent='';
+  const bubbleEl=document.getElementById('bossSpeechBubble');
+  if(bubbleEl){bubbleEl.textContent='';bubbleEl.classList.remove('active');}
+  document.getElementById('bossSpinResult').textContent='';
+  document.getElementById('bossAnswers').innerHTML='';
+  document.getElementById('bossQuestion').textContent='';
+
+  const wrap=document.getElementById('bossPortraitWrap');
+  wrap.classList.remove('entering');void wrap.offsetWidth;
+  updateBossHPBars();
+
+  const taunt=getBossTaunt(currentEnemy.name);
+  setBossMsg(taunt?'"'+taunt+'"':currentEnemy.icon+' '+currentEnemy.name+' er klar til kamp!','#f0c0c0');
+  wrap.classList.add('glow');
+  startTauntLoop(currentEnemy.name);
+  await sleep(1400);
+  wrap.classList.remove('glow');
+  bossBattleLoop();
+}
+
+async function bossBattleLoop(){
+  if(!inCombat||!bossBattleActive)return;
+  const q=pickQ(true);
+  document.getElementById('bossQuestion').textContent=q.q;
+  document.getElementById('bossAnswers').innerHTML='';
+  document.getElementById('bossFeedback').textContent='';
+  document.getElementById('bossSpinArea').style.visibility='hidden';
+  document.getElementById('bossSpinResult').textContent='';
+  setBossMsg('Svar på spørsmålet:','#c8a830');
+
+  let answered=false;
+  const resolve=(correct,correctAns)=>{
+    if(answered)return;answered=true;
+    playerStats.totalAnswered++;if(correct)playerStats.totalCorrect++;
+    document.getElementById('bossAnswers').querySelectorAll('button,input').forEach(el=>el.disabled=true);
+    processBossAnswer(correct,correctAns,q);
+  };
+
+  if(q.type==='mc'){
+    const sq=shuffleMC(q);
+    const btns=[];
+    sq.opts.forEach((opt,i)=>{
+      const btn=document.createElement('button');
+      btn.className='boss-answer-btn';btn.textContent=(i+1)+'. '+opt;
+      btn.onclick=()=>{revealBossAnswers(btns,i,sq.ans);resolve(i===sq.ans,i!==sq.ans?sq.opts[sq.ans]:null);};
+      btns.push(btn);
+      document.getElementById('bossAnswers').appendChild(btn);
+    });
+  } else if(q.type==='tf'){
+    const btns=[];
+    const correctIdx=q.ans?0:1;
+    ['Sant ✓','Usant ✗'].forEach((label,i)=>{
+      const btn=document.createElement('button');
+      btn.className='boss-answer-btn';btn.textContent=label;
+      btn.onclick=()=>{revealBossAnswers(btns,i,correctIdx);resolve((i===0)===q.ans,(i===0)!==q.ans?(q.ans?'Sant':'Usant'):null);};
+      btns.push(btn);
+      document.getElementById('bossAnswers').appendChild(btn);
+    });
+  } else {
+    const inp=document.createElement('input');
+    inp.className='boss-type-inp';inp.placeholder='Skriv svar...';
+    inp.setAttribute('autocomplete','off');inp.setAttribute('spellcheck','false');
+    const btn=document.createElement('button');
+    btn.className='game-btn primary';btn.style.marginTop='4px';btn.textContent='SVAR';
+    const check=()=>{
+      if(!inp.value.trim())return;
+      const norm=inp.value.trim().toLowerCase().replace(/\s+/g,' ');
+      const ok=q.ans.some(a=>fuzzyMatch(norm,a.toLowerCase()));
+      resolve(ok,ok?null:q.ans[0]);
+    };
+    btn.onclick=check;
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.stopPropagation();check();}});
+    document.getElementById('bossAnswers').appendChild(inp);
+    document.getElementById('bossAnswers').appendChild(btn);
+    setTimeout(()=>inp.focus(),60);
+  }
+}
+
+async function processBossAnswer(correct,correctAns,q){
+  const fb=document.getElementById('bossFeedback');
+  if(correct){
+    fb.innerHTML='<span style="font-size:15px;">✓ RIKTIG!</span>';
+    fb.style.color='#27ae60';
+    setBossMsg('Riktig! Spinn for å slå til:','#27ae60');
+    await sleep(900);
+  } else {
+    fb.innerHTML='<span style="font-size:15px;">✗ FEIL</span><br><span style="font-size:11px;color:#e8e0c8;">Riktig: <b style="color:#27ae60;">'+correctAns+'</b></span>';
+    fb.style.color='#c0392b';
+    setBossMsg(currentEnemy.name+' utnytter feilen din...','#c0392b');
+    await sleep(2000);
+  }
+
+  document.getElementById('bossSpinArea').style.visibility='visible';
+  document.getElementById('bossSpinBtn').disabled=false;
+  document.getElementById('bossSpinResult').textContent='';
+  drawBossWheel(0);
+
+  await new Promise(res=>{
+    document.getElementById('bossSpinBtn').onclick=()=>{document.getElementById('bossSpinBtn').onclick=null;res();};
+  });
+
+  const sector=weightedSector(correct);
+  await runBossSpinner(SECTORS_HIT.indexOf(sector));
+
+  const base=playerStats.baseDamage+playerStats.level*3;
+  const boostedMult=applyHeroBonus(sector.mult);
+  let playerDmg=Math.round(base*boostedMult);
+  if(currentEnemy)currentEnemy.hp=Math.max(0,currentEnemy.hp-playerDmg);
+
+  const sr=document.getElementById('bossSpinResult');
+  if(playerDmg===0){sr.textContent='💨 Bommert!';sr.style.color='#888';setBossMsg('Angrepet ditt bommet!','#888');}
+  else{sr.textContent='💥 '+playerDmg+' skade på '+currentEnemy.name+'!';sr.style.color='#27ae60';setBossMsg('Du gjør '+playerDmg+' skade!','#27ae60');shakeBoss();}
+  addLog(sector.label+' → '+playerDmg+' skade på '+currentEnemy.name,'g');
+  updateBossHPBars();renderStats();
+
+  if(currentEnemy.hp<=0){await sleep(800);await endBossBattle(true);return;}
+  await sleep(1000);
+
+  // ── BOSSENS TUR ── Bossen kontraangriper ALLTID, men skaden skaleres:
+  //   Riktig svar  -> lett pirk (15% av boss-skade)
+  //   Feil svar    -> hardt slag (70% av boss-skade)
+  // Bossen "snakker" FØRST i taleballong, så spilleren skjønner hva som skjer.
+  document.getElementById('bossSpinArea').style.visibility='hidden';
+  const bossBase=currentEnemy.dmg||20;
+  let bossDmg = correct
+    ? Math.max(2, Math.round(bossBase*0.15))
+    : Math.max(8, Math.round(bossBase*0.7));
+
+  // Kjakan blokkerer kun det HARDE slaget (feil svar)
+  let blocked=false;
+  if(!correct && hasBonus('block') && Math.random()<0.30){
+    bossDmg=0; blocked=true;
+  }
+
+  // Boss snakker først
+  const atkTaunt=getBossAttackTaunt(!correct);
+  setBossMsg('"'+atkTaunt+'"', correct ? '#f0a080' : '#ff6060');
+  // Vis "MIN TUR"-banner så det er krystallklart at bossen angriper nå
+  showBossTurnBanner(!correct);
+  await sleep(correct ? 1000 : 1300);
+
+  if(blocked){
+    setBossMsg('🔫 Kjakan blokkerte slaget!','#27ae60');
+    addLog('🔫 Kjakan blokkerer kontraangrepet!','g');
+    await sleep(900);
+  } else {
+    shakePlayer();
+    playerStats.hp=Math.max(0,playerStats.hp-bossDmg);
+    setBossMsg(currentEnemy.name+' treffer deg for '+bossDmg+' skade!', correct ? '#f0a080' : '#ff6060');
+    addLog(currentEnemy.name+(correct?' pirker':' SLÅR HARDT')+' → '+bossDmg+' skade','b');
+    showPlayerDamage(bossDmg);
+    await sleep(1100);
+  }
+  updateBossHPBars();renderStats();
+  await sleep(600);
+
+  if(playerStats.hp<=0){
+    setBossMsg('☠ '+(getCurrentHero()?getCurrentHero().name:'Helten')+' faller!','#c0392b');
+    await sleep(900);
+    stopTauntLoop();bossBattleActive=false;inCombat=false;
+    document.getElementById('bossScreen').style.display='none';document.getElementById('bossScreen').classList.remove('active');
+    const over=await heroFalls();
+    if(over){currentEnemy=null;return;}
+    // Ny helt lever videre – tilbake til startrommet, kamp avbrutt
+    currentEnemy=null;
+    playerStats.xp=Math.max(0,playerStats.xp-15);
+    renderStats();
+    const start=roomList.find(rm=>rm.kind==='start');
+    if(start){playerPos={r:start.cr,c:start.cc};currentRoomObj=start;updateFog();}
+    document.getElementById('questionText').textContent='Bossen overlevde. Saml deg og prøv igjen.';
+    document.getElementById('enemyLabel').textContent='Venter...';
+    document.getElementById('answerOptions').innerHTML='';
+    renderMap();return;
+  }
+  await sleep(300);
+  bossBattleLoop();
+}
+
+async function endBossBattle(won){
+  if(!won)return;
+  setBossMsg('🏆 '+currentEnemy.name+' er beseiret!','#c8a830');
+  const wrap=document.getElementById('bossPortraitWrap');
+  wrap.style.animation='bossVictory 1s ease-out forwards';
+  await sleep(1400);
+  wrap.style.animation='';
+  currentRoomObj.monster.defeated=true;
+  playerStats.xp+=currentEnemy.xp;
+  addLog('🏆 '+currentEnemy.name+' beseiret! +'+currentEnemy.xp+' XP','i');
+  bossesDefeated++;
+
+  // Boss-seier gir permanent belønning (ikke heltegjenoppretting –
+  // heltene er liv som ikke kan vinnes tilbake).
+  const bossIdx=currentRoomObj.bossIdx;
+  const bossData=FLOOR_BOSSES[bossIdx];
+  if(bossData&&!bossData.isFinalBoss){
+    playerStats.maxHp+=10;
+    playerStats.hp=Math.min(playerStats.hp+15,playerStats.maxHp);
+    addLog('💪 Seier over '+bossData.name+': +10 maks HP, +15 HP healet!','i');
+  }
+
+  checkLevelUp();
+  stopTauntLoop();
+  bossBattleActive=false;inCombat=false;
+  const wasEnemy=currentEnemy;currentEnemy=null;
+  document.getElementById('bossScreen').style.display='none';document.getElementById('bossScreen').classList.remove('active');
+
+  checkBossUnlocks();
+  renderMap();renderStats();
+
+  // Check win (all bosses defeated)
+  const allDefeated=roomList.filter(r=>r.kind==='boss').every(r=>r.monster.defeated);
+  if(allDefeated){setTimeout(winGame,800);}
+}
+
+// ─── CONTROLS ───
+document.addEventListener('keydown',e=>{
+  const tag=document.activeElement&&document.activeElement.tagName;
+  if(tag==='INPUT'||tag==='TEXTAREA')return;
+  const map={ArrowUp:'top',ArrowDown:'bottom',ArrowLeft:'left',ArrowRight:'right',w:'top',s:'bottom',a:'left',d:'right'};
+  if(map[e.key]){e.preventDefault();movePlayer(map[e.key]);}
+});
+// D-pad: use pointer events so it works on touch (iPad) and mouse
+['btnUp','btnDown','btnLeft','btnRight'].forEach(id=>{
+  const dir={btnUp:'top',btnDown:'bottom',btnLeft:'left',btnRight:'right'}[id];
+  const el=document.getElementById(id);
+  el.addEventListener('click',e=>{e.preventDefault();movePlayer(dir);});
+});
+
+// INFO DRAWER
+function openDrawer(){
+  document.getElementById('infoDrawer').classList.add('open');
+  document.getElementById('infoDrawerBackdrop').classList.add('open');
+}
+function closeDrawer(){
+  document.getElementById('infoDrawer').classList.remove('open');
+  document.getElementById('infoDrawerBackdrop').classList.remove('open');
+}
+document.getElementById('btnInfo').onclick=openDrawer;
+document.getElementById('drawerClose').onclick=closeDrawer;
+document.getElementById('infoDrawerBackdrop').onclick=closeDrawer;
+
+// FULLSCREEN toggle (real browser fullscreen + hides HUD chrome via class)
+const btnFs=document.getElementById('btnFullscreen');
+btnFs.onclick=()=>{
+  if(!document.fullscreenElement){
+    (document.documentElement.requestFullscreen?document.documentElement.requestFullscreen():Promise.resolve()).catch(()=>{});
+    btnFs.innerHTML='<i class="fa-solid fa-compress"></i>';
+  } else {
+    (document.exitFullscreen?document.exitFullscreen():Promise.resolve()).catch(()=>{});
+    btnFs.innerHTML='<i class="fa-solid fa-expand"></i>';
+  }
+};
+document.addEventListener('fullscreenchange',()=>{
+  btnFs.innerHTML=document.fullscreenElement?'<i class="fa-solid fa-compress"></i>':'<i class="fa-solid fa-expand"></i>';
+  setTimeout(()=>{computeCellSize();renderMap();},120);
+});
+
+// RESIZE: recompute cell size so the map always fits without scroll
+let _resizeT=null;
+window.addEventListener('resize',()=>{
+  clearTimeout(_resizeT);
+  _resizeT=setTimeout(()=>{computeCellSize();if(roomList.length)renderMap();},120);
+});
+
+document.getElementById('startButton').onclick=()=>{
+  document.getElementById('startScreen').style.display='none';
+  document.getElementById('gameWrap').style.display='flex';
+  // compute after layout settles
+  requestAnimationFrame(()=>{computeCellSize();newGame();});
+};
+
+</script>
+</body>
+</html>
