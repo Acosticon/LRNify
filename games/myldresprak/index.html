@@ -1,1 +1,96 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Myldrespill</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
 
+<header>
+  <span class="logo" aria-hidden="true">🔍</span>
+  <h1>Myldrespill</h1>
+  <span class="theme-badge" id="theme-name"></span>
+</header>
+
+<main>
+
+  <!-- ── START SCREEN ──────────────────────────────────────── -->
+  <section id="screen-start" aria-label="Startskjerm">
+    <div class="start-card">
+      <h2>Velg vanskelighetsgrad</h2>
+      <p>
+        Lett: spørsmål på norsk.<br>
+        Vanskelig: spørsmål på spansk.
+      </p>
+      <div class="difficulty-grid">
+        <button id="btn-easy" class="diff-btn easy">
+          <span class="icon" aria-hidden="true">🟢</span>
+          <span class="label">Lett</span>
+          <span class="sublabel">Spørsmål på norsk</span>
+        </button>
+        <button id="btn-hard" class="diff-btn hard">
+          <span class="icon" aria-hidden="true">🔴</span>
+          <span class="label">Vanskelig</span>
+          <span class="sublabel">Spørsmål på spansk</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GAME SCREEN ────────────────────────────────────────── -->
+  <section id="screen-game" aria-label="Spillskjerm" hidden>
+
+    <!-- Scene / myldrebilde -->
+    <div class="scene-container" aria-hidden="true">
+      <div id="scene-wrap"></div>
+      <div id="hotspot-layer" aria-hidden="true"></div>
+    </div>
+
+    <!-- Progress -->
+    <div class="progress-wrap" aria-live="polite" aria-label="Fremdrift">
+      <span id="progress">1 / 8</span>
+      <div class="progress-track">
+        <div id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width:0%"></div>
+      </div>
+      <button id="btn-restart" class="btn-ghost">↩ Restart</button>
+    </div>
+
+    <!-- Question + choices -->
+    <div class="question-panel">
+      <p id="question-text" aria-live="polite"></p>
+
+      <div
+        id="choices"
+        role="group"
+        aria-label="Svaralternativer (tast 1–4)"
+      ></div>
+
+      <div id="feedback" class="feedback" aria-live="assertive" role="status"></div>
+    </div>
+
+  </section>
+
+  <!-- ── RESULT SCREEN ─────────────────────────────────────── -->
+  <section id="screen-result" aria-label="Resultat" hidden>
+    <div class="result-card">
+      <h2>Ferdig! 🎉</h2>
+      <div class="score-big" id="score-final" aria-label="Poengsum"></div>
+      <p id="score-message"></p>
+      <div class="result-actions">
+        <button id="btn-play-again" class="btn-primary">Spill igjen</button>
+        <button class="btn-secondary" onclick="location.reload()">Bytt vanskelighetsgrad</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+  // Set active theme before game.js loads
+  window.MYLDRESPILL_THEME = 'themes/es-ciudad';
+</script>
+<script src="game.js"></script>
+</body>
+</html>

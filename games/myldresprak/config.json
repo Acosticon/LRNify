@@ -1,0 +1,95 @@
+{
+  "theme": "La ciudad",
+  "language": "es",
+  "scene": "scene.svg",
+  "items": [
+    {
+      "id": "mercado",
+      "label_es": "el mercado",
+      "hotspot": { "x": 178, "y": 310 },
+      "questions": {
+        "easy": "Hva heter markedet på spansk?",
+        "hard": "¿Cómo se dice 'markedet' en español?"
+      },
+      "correct": "el mercado",
+      "distractors": ["la escuela", "el hospital", "la biblioteca"]
+    },
+    {
+      "id": "escuela",
+      "label_es": "la escuela",
+      "hotspot": { "x": 530, "y": 200 },
+      "questions": {
+        "easy": "Hva heter skolen på spansk?",
+        "hard": "¿Cómo se dice 'skolen' en español?"
+      },
+      "correct": "la escuela",
+      "distractors": ["el mercado", "el parque", "la iglesia"]
+    },
+    {
+      "id": "parque",
+      "label_es": "el parque",
+      "hotspot": { "x": 370, "y": 380 },
+      "questions": {
+        "easy": "Hva heter parken på spansk?",
+        "hard": "¿Cómo se dice 'parken' en español?"
+      },
+      "correct": "el parque",
+      "distractors": ["la plaza", "el jardín", "la escuela"]
+    },
+    {
+      "id": "iglesia",
+      "label_es": "la iglesia",
+      "hotspot": { "x": 95, "y": 175 },
+      "questions": {
+        "easy": "Hva heter kirken på spansk?",
+        "hard": "¿Cómo se dice 'kirken' en español?"
+      },
+      "correct": "la iglesia",
+      "distractors": ["el banco", "el mercado", "la escuela"]
+    },
+    {
+      "id": "banco",
+      "label_es": "el banco",
+      "hotspot": { "x": 470, "y": 310 },
+      "questions": {
+        "easy": "Hva heter banken på spansk?",
+        "hard": "¿Cómo se dice 'banken' en español?"
+      },
+      "correct": "el banco",
+      "distractors": ["la iglesia", "la farmacia", "el hotel"]
+    },
+    {
+      "id": "farmacia",
+      "label_es": "la farmacia",
+      "hotspot": { "x": 290, "y": 310 },
+      "questions": {
+        "easy": "Hva heter apoteket på spansk?",
+        "hard": "¿Cómo se dice 'apoteket' en español?"
+      },
+      "correct": "la farmacia",
+      "distractors": ["el banco", "la tienda", "el hospital"]
+    },
+    {
+      "id": "hotel",
+      "label_es": "el hotel",
+      "hotspot": { "x": 620, "y": 200 },
+      "questions": {
+        "easy": "Hva heter hotellet på spansk?",
+        "hard": "¿Cómo se dice 'hotellet' en español?"
+      },
+      "correct": "el hotel",
+      "distractors": ["la escuela", "el banco", "la farmacia"]
+    },
+    {
+      "id": "plaza",
+      "label_es": "la plaza",
+      "hotspot": { "x": 370, "y": 260 },
+      "questions": {
+        "easy": "Hva heter torget på spansk?",
+        "hard": "¿Cómo se dice 'torget' en español?"
+      },
+      "correct": "la plaza",
+      "distractors": ["el parque", "la calle", "el mercado"]
+    }
+  ]
+}
