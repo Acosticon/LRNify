@@ -153,7 +153,7 @@ function velgFag(fag){
           <span class="chip">${niva.puslespill.grupper.length} grupper</span>
           <span class="chip">${progress ? 'Beste: ' + starText(progress.stars) : 'Ikke spilt'}</span>
         </div>`;
-      card.addEventListener('click', () => startSpill(niva.puslespill, `${fag.navn}: ${niva.navn}`, key, 'niva', fag.nivaaer, nivaIndex));
+      card.addEventListener('click', () => startSpill(niva.puslespill, `${fag.navn}: ${niva.navn}`, key, 'niva', fag.nivaaer, idx));
       cont.appendChild(card);
     });
     aktivForrigeSkjerm = 'fag';
