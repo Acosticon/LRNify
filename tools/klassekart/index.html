@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klassekart</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f4f3f0;
+  --surface:#fff;
+  --border:#dedad0;
+  --border-strong:#bfbbb0;
+  --text:#1a1916;
+  --text-muted:#6b6860;
+  --text-faint:#a09e99;
+  --purple:#534AB7;
+  --purple-light:#EEEDFE;
+  --purple-mid:#AFA9EC;
+  --green:#0F6E56;
+  --green-light:#E1F5EE;
+  --red:#A32D2D;
+  --red-light:#FCEBEB;
+  --amber:#BA7517;
+  --amber-light:#FAEEDA;
+  --r:8px;
+  --rl:12px;
+}
+
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:18px;color:var(--text);background:var(--bg);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── HEADER / TABS ── */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:stretch;padding:0 24px;flex-shrink:0;flex-wrap:wrap;gap:0}
+.app-title{font-size:22px;font-weight:700;color:var(--text);display:flex;align-items:center;padding:0 28px 0 0;margin-right:16px;border-right:1px solid var(--border);white-space:nowrap}
+.tabs{display:flex;gap:0;flex:1;flex-wrap:wrap}
+.tab{padding:24px 32px;font-size:22px;cursor:pointer;border:none;background:none;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-1px;transition:color .15s;white-space:nowrap;font-family:inherit}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--purple);font-weight:700;border-bottom-color:var(--purple)}
+
+/* ── PANELS ── */
+.panels{flex:1;overflow:hidden;display:flex;flex-direction:column}
+.panel{display:none;flex:1;overflow-y:auto;padding:28px 24px;flex-direction:column;gap:22px;max-width:960px;width:100%;margin:0 auto}
+.panel.active{display:flex}
+
+.section-label{font-size:16px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
+
+/* ── ELEVER ── */
+.name-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:560px){.name-grid{grid-template-columns:1fr}}
+.name-col-header{display:flex;align-items:center;gap:9px;font-size:19px;font-weight:600;margin-bottom:12px}
+.dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.dot-j{background:#5DCAA5}.dot-g{background:#7F77DD}.dot-n{background:#888780}
+textarea{width:100%;height:150px;resize:vertical;border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;font-size:18px;font-family:inherit;background:var(--bg);color:var(--text);line-height:1.7}
+textarea:focus{outline:none;border-color:var(--purple);background:var(--surface)}
+
+/* ── CONSTRAINTS ── */
+.constraint-list{display:flex;flex-direction:column;gap:10px;min-height:40px}
+.constraint-empty{font-size:18px;color:var(--text-faint);padding:8px 0}
+.constraint-row{display:flex;align-items:center;gap:10px;background:var(--bg);border-radius:var(--r);padding:14px 16px;border:1px solid var(--border);flex-wrap:wrap}
+.constraint-row input[type=text]{flex:1;min-width:110px;padding:10px 14px;border:1px solid var(--border);border-radius:6px;font-size:18px;font-family:inherit;background:var(--surface);color:var(--text)}
+.constraint-row input[type=text]:focus{outline:none;border-color:var(--purple)}
+.badge{padding:6px 14px;border-radius:20px;font-size:17px;font-weight:700;white-space:nowrap}
+.badge-grønn{background:var(--green-light);color:var(--green)}
+.badge-rød{background:var(--red-light);color:var(--red)}
+.btn-remove{border:none;background:none;color:var(--text-faint);cursor:pointer;padding:6px 10px;border-radius:4px;font-size:20px;line-height:1}
+.btn-remove:hover{color:var(--red);background:var(--red-light)}
+.btn-add{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border:1.5px dashed var(--border-strong);border-radius:var(--r);font-size:18px;cursor:pointer;background:none;color:var(--text-muted);transition:all .15s;font-family:inherit}
+.btn-add:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-light)}
+
+/* ── SETTINGS ── */
+.settings-grid{display:flex;flex-direction:column;gap:22px}
+.setting-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.setting-row > label{font-size:18px;color:var(--text-muted);min-width:210px;flex-shrink:0}
+select,input[type=number]{border:1px solid var(--border);border-radius:var(--r);padding:11px 16px;font-size:18px;font-family:inherit;background:var(--surface);color:var(--text)}
+select:focus,input[type=number]:focus{outline:none;border-color:var(--purple)}
+input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--purple)}
+
+.seg-group{display:flex;border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.seg-btn{padding:11px 20px;border:none;border-right:1px solid var(--border);background:var(--surface);color:var(--text-muted);font-size:18px;cursor:pointer;transition:all .15s;font-family:inherit;flex:1;text-align:center}
+.seg-btn:last-child{border-right:none}
+.seg-btn:hover{background:var(--bg)}
+.seg-btn.active{background:var(--purple);color:#fff;font-weight:600}
+
+.info-box{background:var(--purple-light);border:1px solid var(--purple-mid);border-radius:var(--r);padding:16px 20px;font-size:18px;color:#3C3489;line-height:1.5}
+
+/* ── KART HEADER ── */
+.kart-header{display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex-shrink:0}
+.kart-name-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0 4px}
+.kart-name-row label{font-size:18px;color:var(--text-muted);white-space:nowrap}
+.kart-name-row input[type=text]{flex:1;min-width:200px;padding:11px 16px;border:1px solid var(--border);border-radius:var(--r);font-size:18px;font-family:inherit;background:var(--surface);color:var(--text)}
+.kart-name-row input[type=text]:focus{outline:none;border-color:var(--purple)}
+
+.btn-primary{display:inline-flex;align-items:center;gap:9px;padding:15px 26px;border:none;border-radius:var(--r);font-size:18px;font-weight:700;cursor:pointer;background:var(--purple);color:#fff;transition:background .15s;font-family:inherit}
+.btn-primary:hover{background:#3C3489}
+.btn-secondary{display:inline-flex;align-items:center;gap:9px;padding:15px 22px;border:1px solid var(--border-strong);border-radius:var(--r);font-size:18px;cursor:pointer;background:var(--surface);color:var(--text-muted);transition:all .15s;font-family:inherit}
+.btn-secondary:hover{background:var(--bg);color:var(--text);border-color:var(--purple)}
+.btn-danger{display:inline-flex;align-items:center;gap:9px;padding:15px 22px;border:1px solid #F7C1C1;border-radius:var(--r);font-size:18px;cursor:pointer;background:var(--red-light);color:var(--red);font-family:inherit;transition:background .15s}
+.btn-danger:hover{background:#F7C1C1}
+
+.stat-bar{display:flex;gap:24px;font-size:18px;color:var(--text-muted);flex-wrap:wrap;align-items:center}
+.stat-hint{color:var(--text-faint);font-size:16px}
+
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:17px;color:var(--text-muted)}
+.legend-item{display:flex;align-items:center;gap:8px}
+.legend-swatch{width:18px;height:18px;border-radius:3px;border:1.5px solid;flex-shrink:0}
+
+.blackboard{background:#2a4d10;color:#bef090;border-radius:var(--r);padding:14px 28px;font-size:18px;font-weight:700;text-align:center;letter-spacing:.08em;flex-shrink:0}
+
+/* ── CLASSROOM GRID ── */
+.map-scroll{flex:1;overflow:auto;min-height:200px}
+.classroom-grid{display:flex;flex-direction:column;gap:28px;align-items:center;padding:24px;min-width:max-content}
+.group-row-el{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.group-wrap{display:flex;flex-direction:column;align-items:center;gap:8px}
+.group-number{font-size:17px;font-weight:700;color:var(--text-faint);text-transform:uppercase;letter-spacing:.05em}
+.group-desks{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.group-desks.layout-2{flex-direction:row}
+.group-desks.layout-3{flex-direction:row}
+.group-desks.layout-4{display:grid;grid-template-columns:1fr 1fr}
+.group-desks.layout-6{display:grid;grid-template-columns:1fr 1fr 1fr}
+.group-desks.layout-1{flex-direction:row}
+
+.desk{width:140px;height:90px;border-radius:10px;border:1.5px solid var(--border-strong);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;user-select:none;position:relative;transition:border-color .15s,box-shadow .15s,background .15s;overflow:hidden}
+.desk:active{cursor:grabbing}
+.desk:hover{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-light)}
+.desk.dragging{opacity:.4;border-color:var(--purple)}
+.desk.drag-over{border-color:var(--green);box-shadow:0 0 0 3px var(--green-light)}
+.desk.empty{border-style:dashed;border-color:var(--border);cursor:default;background:var(--bg)}
+.desk.empty:hover{border-color:var(--green);box-shadow:0 0 0 3px var(--green-light)}
+.desk .d-name{font-size:18px;font-weight:600;text-align:center;padding:0 8px;line-height:1.25;color:var(--text)}
+.desk .d-gender{font-size:16px;position:absolute;top:6px;right:8px;color:var(--text-faint)}
+.desk.warn-together{background:var(--amber-light);border-color:var(--amber)!important;box-shadow:0 0 0 3px #FAC77555!important}
+.desk.warn-together .d-name{color:var(--amber)}
+.desk.warn-apart{background:var(--red-light);border-color:var(--red)!important;box-shadow:0 0 0 3px #F0959599!important}
+.desk.warn-apart .d-name{color:var(--red)}
+
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:64px 20px;gap:14px;color:var(--text-faint);text-align:center}
+.empty-state .es-icon{font-size:48px;opacity:.5}
+.empty-state p{font-size:19px;max-width:320px;line-height:1.6}
+
+/* ── LAGREDE ── */
+.saves-list{display:flex;flex-direction:column;gap:10px}
+.save-item{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;flex-wrap:wrap}
+.save-name{flex:1;min-width:140px}
+.save-name strong{font-size:19px;display:block}
+.save-name small{font-size:17px;color:var(--text-muted)}
+.save-actions{display:flex;gap:10px}
+.save-empty{font-size:19px;color:var(--text-faint);padding:28px 0}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px}
+.modal{background:var(--surface);border-radius:var(--rl);padding:36px;width:100%;max-width:480px;box-shadow:0 8px 32px rgba(0,0,0,.18)}
+.modal h3{font-size:24px;font-weight:700;margin-bottom:16px}
+.modal p{font-size:18px;color:var(--text-muted);margin-bottom:18px}
+.modal input[type=text]{width:100%;padding:14px 18px;border:1px solid var(--border);border-radius:var(--r);font-size:20px;font-family:inherit;color:var(--text);margin-bottom:22px}
+.modal input[type=text]:focus{outline:none;border-color:var(--purple)}
+.modal-actions{display:flex;gap:12px;justify-content:flex-end}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(10px);background:#1a1916;color:#fff;padding:15px 30px;border-radius:32px;font-size:19px;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── PRINT ── */
+@media print{
+  body{background:#fff;min-height:auto}
+  .app-header,.kart-header,.kart-name-row,.stat-bar,.legend,#toast,.modal-bg{display:none!important}
+  .panels,.panel{overflow:visible;display:block}
+  .panel{max-width:none;padding:0}
+  #panel-elever,#panel-innstillinger,#panel-lagrede{display:none!important}
+  #panel-kart{display:block!important}
+  .map-scroll{overflow:visible}
+  .classroom-grid{padding:4px}
+  .blackboard{margin-bottom:12px}
+  .desk.warn-together{background:#fffde7!important;border-color:#f9a825!important}
+  .desk.warn-apart{background:#ffebee!important;border-color:#c62828!important}
+}
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="app-title">📋 Klassekart</div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('elever',this)">👥 Elever</button>
+    <button class="tab" onclick="showTab('innstillinger',this)">⚙️ Innstillinger</button>
+    <button class="tab" onclick="showTab('kart',this)">🗺️ Kart</button>
+    <button class="tab" onclick="showTab('lagrede',this)">💾 Lagrede</button>
+  </div>
+</div>
+
+<div class="panels">
+
+  <!-- ELEVER -->
+  <div class="panel active" id="panel-elever">
+    <div>
+      <div class="section-label">Elevliste</div>
+      <div class="card">
+        <div class="name-grid">
+          <div>
+            <div class="name-col-header"><span class="dot dot-j"></span>Jenter</div>
+            <textarea id="jenter-input" placeholder="Emma&#10;Sofia&#10;Nora&#10;Leah&#10;Ingrid"></textarea>
+          </div>
+          <div>
+            <div class="name-col-header"><span class="dot dot-g"></span>Gutter</div>
+            <textarea id="gutter-input" placeholder="Oliver&#10;Liam&#10;Matteo&#10;Noah&#10;Emil"></textarea>
+          </div>
+        </div>
+        <div style="margin-top:14px">
+          <div class="name-col-header"><span class="dot dot-n"></span>Ikke oppgitt / annet (valgfritt)</div>
+          <textarea id="annet-input" style="height:70px" placeholder="Navn her..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Regler – må sitte sammen</div>
+      <div class="card">
+        <div class="constraint-list" id="together-list"></div>
+        <button class="btn-add" style="margin-top:12px" onclick="addConstraint('together')">+ Legg til regel</button>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Regler – må IKKE sitte sammen</div>
+      <div class="card">
+        <div class="constraint-list" id="apart-list"></div>
+        <button class="btn-add" style="margin-top:12px" onclick="addConstraint('apart')">+ Legg til regel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INNSTILLINGER -->
+  <div class="panel" id="panel-innstillinger">
+    <div class="card">
+      <div class="settings-grid">
+        <div class="setting-row">
+          <label>Gruppestørrelse</label>
+          <select id="group-size" onchange="updateInfoBox()">
+            <option value="1">1 – individuelt (rader og kolonner)</option>
+            <option value="2">2 – par</option>
+            <option value="3">3 – tripler</option>
+            <option value="4" selected>4 – grupper</option>
+            <option value="6">6 – større grupper</option>
+          </select>
+        </div>
+        <div class="setting-row">
+          <label>Antall kolonner</label>
+          <input type="number" id="cols" value="3" min="1" max="10" style="width:80px">
+        </div>
+        <div class="setting-row">
+          <label>Kjønnsfordeling</label>
+          <div class="seg-group">
+            <button class="seg-btn active" id="gm-bland" onclick="setGender('bland')">Bland alltid</button>
+            <button class="seg-btn" id="gm-skil" onclick="setGender('skil')">Skill kjønn</button>
+            <button class="seg-btn" id="gm-rand" onclick="setGender('rand')">Tilfeldig</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label>Overskytende elever</label>
+          <div class="seg-group">
+            <button class="seg-btn active" id="of-smaller" onclick="setOverflow('smaller')">Lag mindre grupper</button>
+            <button class="seg-btn" id="of-spread" onclick="setOverflow('spread')">Fordel på eksist. grupper</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <label>Ingen alene</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" id="no-alone" checked>
+            <span style="font-size:18px;color:var(--text-muted)">Slå grupper på 1 elev inn i naboen</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="info-box" id="info-box">Hver gruppe har 4 elever.</div>
+  </div>
+
+  <!-- KART -->
+  <div class="panel" id="panel-kart" style="gap:12px;max-width:none">
+    <div class="kart-name-row">
+      <label for="kart-name">Kartnavn:</label>
+      <input type="text" id="kart-name" placeholder="F.eks. 8A – høst 2025" style="max-width:320px">
+    </div>
+    <div class="kart-header">
+      <button class="btn-primary" onclick="genererKart()">🔀 Generer tilfeldig</button>
+      <button class="btn-secondary" onclick="lagreKart()">💾 Lagre kart</button>
+      <button class="btn-secondary" onclick="nyGruppe()">➕ Lag ny gruppe</button>
+      <button class="btn-secondary" id="btn-snutekst" onclick="snuTekst()">🙃 Snu tekst</button>
+      <button class="btn-secondary" onclick="skrivUt()">🖨️ Skriv ut / PDF</button>
+      <button class="btn-danger" onclick="toemKart()">🗑️ Tøm</button>
+    </div>
+    <div class="stat-bar">
+      <span>👤 <span id="stat-elever">–</span></span>
+      <span>📦 <span id="stat-grupper">–</span></span>
+      <span class="stat-hint">↕ Dra og slipp for å bytte plasser</span>
+    </div>
+    <div class="legend" id="legend" style="display:none">
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--amber-light);border-color:var(--amber)"></span>Skal sitte sammen, men er skilt</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--red-light);border-color:var(--red)"></span>Skal IKKE sitte sammen</span>
+    </div>
+    <div id="blackboard-top" class="blackboard" style="display:none">▬▬  Tavle / Lærer  ▬▬</div>
+    <div class="map-scroll">
+      <div class="classroom-grid" id="classroom-grid">
+        <div class="empty-state">
+          <div class="es-icon">📋</div>
+          <p>Legg inn elever under «Elever» og trykk «Generer tilfeldig»</p>
+        </div>
+      </div>
+      <div id="blackboard-bottom" class="blackboard" style="margin:20px 20px 4px">▬▬  Tavle / Lærer  ▬▬</div>
+    </div>
+  </div>
+
+  <!-- LAGREDE -->
+  <div class="panel" id="panel-lagrede">
+    <div class="section-label">Lagrede klassekart</div>
+    <div class="saves-list" id="saves-list">
+      <div class="save-empty">Ingen kart lagret ennå.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- LAGRE MODAL -->
+<div class="modal-bg" id="save-modal" style="display:none" onclick="if(event.target===this)closeSaveModal()">
+  <div class="modal">
+    <h3>💾 Lagre klassekart</h3>
+    <p style="font-size:18px;color:var(--text-muted);margin-bottom:16px">Gi kartet et navn så du kjenner det igjen:</p>
+    <input type="text" id="save-name-input" placeholder="F.eks. 8A – høst 2025" onkeydown="if(event.key==='Enter')confirmSave()">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeSaveModal()">Avbryt</button>
+      <button class="btn-primary" onclick="confirmSave()">Lagre</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let genderMode = 'bland';
+let overflowMode = 'smaller';
+let togetherRules = [];
+let apartRules = [];
+let currentMap = [];
+let flipped = true;
+let dragSrc = null, dragSrcGroup = -1, dragSrcSlot = -1;
+
+// ── TABS ──
+function showTab(id, btn) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='lagrede') renderSaves();
+}
+
+// ── SETTINGS ──
+function setGender(mode){
+  genderMode=mode;
+  ['bland','skil','rand'].forEach(m=>document.getElementById('gm-'+m).classList.toggle('active',m===mode));
+}
+function setOverflow(mode){
+  overflowMode=mode;
+  ['smaller','spread'].forEach(m=>document.getElementById('of-'+m).classList.toggle('active',m===mode));
+}
+function updateInfoBox(){
+  const s=parseInt(document.getElementById('group-size').value);
+  const d={1:'Elevene sitter enkeltvis i rader og kolonner.',2:'Elevene sitter i par side om side.',3:'Elevene sitter i grupper på tre.',4:'Elevene sitter i grupper på fire.',6:'Elevene sitter i grupper på seks.'};
+  document.getElementById('info-box').textContent=d[s]||'';
+}
+
+// ── CONSTRAINTS ──
+function addConstraint(type){
+  const id=Date.now();
+  (type==='together'?togetherRules:apartRules).push({id,a:'',b:''});
+  renderConstraints();
+}
+function removeConstraint(type,id){
+  if(type==='together') togetherRules=togetherRules.filter(r=>r.id!==id);
+  else apartRules=apartRules.filter(r=>r.id!==id);
+  renderConstraints();
+  if(currentMap.length) applyConstraintHighlights();
+}
+function updateConstraint(type,id,field,val){
+  const arr=type==='together'?togetherRules:apartRules;
+  const r=arr.find(x=>x.id===id);
+  if(r) r[field]=val;
+  if(currentMap.length) applyConstraintHighlights();
+}
+function renderConstraints(){
+  renderList('together',togetherRules,'badge-grønn','🟢 Må sitte sammen');
+  renderList('apart',apartRules,'badge-rød','🔴 Må IKKE sitte');
+}
+function renderList(type,rules,badgeClass,label){
+  const el=document.getElementById(type+'-list');
+  if(!rules.length){el.innerHTML='<div class="constraint-empty">Ingen regler lagt til.</div>';return;}
+  el.innerHTML=rules.map(r=>`
+    <div class="constraint-row">
+      <span class="badge ${badgeClass}">${label}</span>
+      <input type="text" placeholder="Elev 1" value="${esc(r.a)}" oninput="updateConstraint('${type}',${r.id},'a',this.value)">
+      <span style="color:var(--text-faint);font-size:18px">og</span>
+      <input type="text" placeholder="Elev 2" value="${esc(r.b)}" oninput="updateConstraint('${type}',${r.id},'b',this.value)">
+      <button class="btn-remove" onclick="removeConstraint('${type}',${r.id})" title="Fjern">✕</button>
+    </div>`).join('');
+}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+
+// ── GENERATE ──
+function getElever(){
+  const p=id=>document.getElementById(id).value.split('\n').map(n=>n.trim()).filter(Boolean);
+  return[...p('jenter-input').map(n=>({name:n,gender:'j'})),...p('gutter-input').map(n=>({name:n,gender:'g'})),...p('annet-input').map(n=>({name:n,gender:'n'}))];
+}
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]]}return arr}
+function norm(s){return(s||'').trim().toLowerCase()}
+
+function genererKart(){
+  const all=getElever();
+  if(!all.length){toast('Legg til elever i «Elever»-fanen først.');return;}
+  const gs=parseInt(document.getElementById('group-size').value);
+  const noAlone=document.getElementById('no-alone').checked;
+
+  let pool=genderMode==='skil'
+    ?[...shuffle(all.filter(e=>e.gender==='j')),...shuffle(all.filter(e=>e.gender==='g')),...shuffle(all.filter(e=>e.gender==='n'))]
+    :shuffle([...all]);
+
+  // Anchor "must sit together"
+  const usedNames=new Set();
+  let anchors=[];
+  for(const rule of togetherRules){
+    if(!rule.a||!rule.b) continue;
+    const ea=pool.find(e=>norm(e.name)===norm(rule.a));
+    const eb=pool.find(e=>norm(e.name)===norm(rule.b));
+    if(!ea||!eb) continue;
+    const ex=anchors.find(g=>g.some(e=>e.name===ea.name)||g.some(e=>e.name===eb.name));
+    if(ex){if(!ex.some(e=>e.name===ea.name))ex.push(ea);if(!ex.some(e=>e.name===eb.name))ex.push(eb);}
+    else anchors.push([ea,eb]);
+    usedNames.add(ea.name);usedNames.add(eb.name);
+  }
+
+  let remaining=pool.filter(e=>!usedNames.has(e.name));
+  let groups=[];
+  for(const ag of anchors){while(ag.length<gs&&remaining.length)ag.push(remaining.shift());groups.push(ag);}
+
+  if(overflowMode==='spread'){
+    // Fill normally then spread last undersized group into others
+    while(remaining.length){const g=[];while(g.length<gs&&remaining.length)g.push(remaining.shift());groups.push(g);}
+    const last=groups[groups.length-1];
+    if(last&&last.length<gs&&groups.length>1){
+      const ex=groups.pop();
+      ex.forEach((e,i)=>groups[i%groups.length].push(e));
+    }
+  } else {
+    // 'smaller': fewest groups where each has >= gs-1 members
+    // Formula: x = n % gs
+    //   small = gs - x  groups of gs-1
+    //   big   = (n - small*(gs-1)) / gs  groups of gs
+    // Fallback to one group if n is too small to split validly
+    const n=remaining.length;
+    if(n>0){
+      const x=n%gs;
+      const small=x===0?0:gs-x;
+      const bigN=n-small*(gs-1);
+      if(x===0||( bigN>=0 && bigN%gs===0 && bigN/gs>=0 )){
+        const big=bigN/gs;
+        for(let i=0;i<big;i++) groups.push(remaining.splice(0,gs));
+        for(let i=0;i<small;i++) groups.push(remaining.splice(0,gs-1));
+      } else {
+        // fallback: one group
+        groups.push(remaining.splice(0,n));
+      }
+    }
+  }
+
+  // No-alone
+  if(noAlone&&gs>1){
+    for(let i=groups.length-1;i>=0;i--){
+      if(groups[i].length===1&&groups.length>1){
+        const[a]=groups.splice(i,1);
+        groups[Math.max(0,i-1)].push(a[0]);
+      }
+    }
+  }
+
+  currentMap=groups.map(g=>{
+    const padded=[...g];
+    while(padded.length<gs) padded.push(null);
+    return padded;
+  });
+  renderMap();
+
+  // Sync kart name field
+  const kartName=document.getElementById('kart-name').value.trim();
+  // leave existing name if set
+}
+
+// ── RENDER MAP ──
+function renderMap(){
+  const cols=parseInt(document.getElementById('cols').value)||3;
+  const gs=parseInt(document.getElementById('group-size').value);
+  const grid=document.getElementById('classroom-grid');
+  grid.innerHTML='';
+
+  if(!currentMap.length){
+    grid.innerHTML='<div class="empty-state"><div class="es-icon">📋</div><p>Trykk «Generer tilfeldig» for å lage kart.</p></div>';
+    return;
+  }
+
+  // Normalise: pad each group to exactly gs slots with null
+  currentMap=currentMap.map(grp=>{
+    const padded=[...grp];
+    while(padded.length<gs) padded.push(null);
+    return padded;
+  });
+
+  const rows=[];
+  for(let i=0;i<currentMap.length;i+=cols) rows.push(currentMap.slice(i,i+cols));
+  if(flipped) rows.reverse();
+
+  rows.forEach((row,ri)=>{
+    const rowEl=document.createElement('div');
+    rowEl.className='group-row-el';
+    row.forEach((grp,ci)=>{
+      const gIdx=ri*cols+ci;
+      const wrap=document.createElement('div');
+      wrap.className='group-wrap';
+      const lbl=document.createElement('div');
+      lbl.className='group-number';
+      lbl.textContent=gs===1?`Plass ${gIdx+1}`:`Gruppe ${gIdx+1}`;
+      wrap.appendChild(lbl);
+
+      const desksEl=document.createElement('div');
+      desksEl.className='group-desks layout-'+gs;
+
+      grp.forEach((elev,si)=>{
+        const desk=document.createElement('div');
+        desk.dataset.g=gIdx;
+        desk.dataset.s=si;
+        if(elev){
+          desk.className='desk'+(elev.gender==='j'?' gender-j':elev.gender==='g'?' gender-g':'');
+          const g=elev.gender==='j'?'♀':elev.gender==='g'?'♂':'';
+          desk.innerHTML=`<span class="d-name">${esc(elev.name)}</span><span class="d-gender">${g}</span>`;
+          desk.draggable=true;
+          desk.addEventListener('dragstart',onDragStart);
+          desk.addEventListener('dragend',onDragEnd);
+        } else {
+          desk.className='desk empty';
+        }
+        // All desks accept drops (both occupied and empty)
+        desk.addEventListener('dragover',onDragOver);
+        desk.addEventListener('dragleave',()=>desk.classList.remove('drag-over'));
+        desk.addEventListener('drop',onDrop);
+        desksEl.appendChild(desk);
+      });
+      wrap.appendChild(desksEl);
+      rowEl.appendChild(wrap);
+    });
+    grid.appendChild(rowEl);
+  });
+
+  const total=currentMap.flat().filter(Boolean).length;
+  document.getElementById('stat-elever').textContent=total+' elever';
+  document.getElementById('stat-grupper').textContent=currentMap.length+' grupper';
+  applyConstraintHighlights();
+  // Re-apply text rotation if active
+  if(tekstSnudd){
+    document.querySelectorAll('.desk .d-name, .desk .d-gender, .group-number').forEach(el=>{
+      el.style.transform='rotate(180deg)';
+    });
+  }
+}
+
+// ── HIGHLIGHTS ──
+function applyConstraintHighlights(){
+  document.querySelectorAll('.desk').forEach(d=>d.classList.remove('warn-together','warn-apart'));
+  const ng={};
+  currentMap.forEach((g,gi)=>g.forEach(e=>{if(e)ng[norm(e.name)]=gi}));
+
+  for(const r of togetherRules){
+    if(!r.a||!r.b) continue;
+    const ga=ng[norm(r.a)],gb=ng[norm(r.b)];
+    if(ga===undefined||gb===undefined) continue;
+    if(ga!==gb){hlDesk(norm(r.a),'warn-together');hlDesk(norm(r.b),'warn-together');}
+  }
+  for(const r of apartRules){
+    if(!r.a||!r.b) continue;
+    const ga=ng[norm(r.a)],gb=ng[norm(r.b)];
+    if(ga===undefined||gb===undefined) continue;
+    if(ga===gb){hlDesk(norm(r.a),'warn-apart');hlDesk(norm(r.b),'warn-apart');}
+  }
+  const hasRules=togetherRules.some(r=>r.a&&r.b)||apartRules.some(r=>r.a&&r.b);
+  document.getElementById('legend').style.display=hasRules?'flex':'none';
+}
+function hlDesk(n,cls){
+  document.querySelectorAll('.desk:not(.empty)').forEach(d=>{
+    const el=d.querySelector('.d-name');
+    if(el&&norm(el.textContent)===n) d.classList.add(cls);
+  });
+}
+
+// ── DRAG & DROP ──
+function onDragStart(e){dragSrc=this;dragSrcGroup=+this.dataset.g;dragSrcSlot=+this.dataset.s;this.classList.add('dragging');e.dataTransfer.effectAllowed='move';}
+function onDragEnd(){document.querySelectorAll('.desk').forEach(d=>d.classList.remove('dragging','drag-over'));dragSrc=null;}
+function onDragOver(e){e.preventDefault();this.classList.add('drag-over');}
+function onDrop(e){
+  e.preventDefault();this.classList.remove('drag-over');
+  if(!dragSrc||dragSrc===this) return;
+  const dg=+this.dataset.g,ds=+this.dataset.s;
+  if(isNaN(dg)||isNaN(dragSrcGroup)) return;
+  // Swap – works whether destination is occupied or null
+  const tmp=currentMap[dragSrcGroup][dragSrcSlot];
+  currentMap[dragSrcGroup][dragSrcSlot]=currentMap[dg][ds];
+  currentMap[dg][ds]=tmp;
+  renderMap();
+}
+
+// ── SNU TEKST ──
+let tekstSnudd = false;
+function snuTekst(){
+  tekstSnudd=!tekstSnudd;
+  document.querySelectorAll('.desk .d-name, .desk .d-gender, .group-number').forEach(el=>{
+    el.style.transform=tekstSnudd?'rotate(180deg)':'';
+  });
+  document.getElementById('btn-snutekst').textContent=tekstSnudd?'🙂 Snu tekst tilbake':'🙃 Snu tekst';
+}
+
+// ── NY GRUPPE ──
+function nyGruppe(){
+  if(!currentMap.length){toast('Generer et kart først.');return;}
+  const gs=parseInt(document.getElementById('group-size').value);
+  currentMap.push(Array(gs).fill(null));
+  renderMap();
+  toast('➕ Ny tom gruppe lagt til');
+}
+
+// ── SAVE MODAL ──
+function lagreKart(){
+  if(!currentMap.length){toast('Generer et kart først.');return;}
+  const existing=document.getElementById('kart-name').value.trim();
+  document.getElementById('save-name-input').value=existing||defaultKartName();
+  document.getElementById('save-modal').style.display='flex';
+  setTimeout(()=>document.getElementById('save-name-input').select(),50);
+}
+function closeSaveModal(){document.getElementById('save-modal').style.display='none';}
+function confirmSave(){
+  const name=document.getElementById('save-name-input').value.trim()||defaultKartName();
+  document.getElementById('kart-name').value=name;
+  const saves=JSON.parse(localStorage.getItem('klassekart-saves')||'[]');
+  saves.push({name,map:currentMap,ts:Date.now()});
+  localStorage.setItem('klassekart-saves',JSON.stringify(saves));
+  closeSaveModal();
+  toast('✅ Lagret: '+name);
+}
+function defaultKartName(){
+  const n=new Date();
+  return`Kart ${n.getDate().toString().padStart(2,'0')}.${(n.getMonth()+1).toString().padStart(2,'0')} kl.${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')}`;
+}
+
+// ── SAVES LIST ──
+function renderSaves(){
+  const saves=JSON.parse(localStorage.getItem('klassekart-saves')||'[]');
+  const el=document.getElementById('saves-list');
+  if(!saves.length){el.innerHTML='<div class="save-empty">Ingen kart lagret ennå.</div>';return;}
+  el.innerHTML=saves.map((s,i)=>`
+    <div class="save-item">
+      <div class="save-name">
+        <strong>${esc(s.name)}</strong>
+        <small>${s.map.flat().filter(Boolean).length} elever · ${s.map.length} grupper</small>
+      </div>
+      <div class="save-actions">
+        <button class="btn-secondary" style="padding:8px 14px;font-size:18px" onclick="lastKart(${i})">Last inn</button>
+        <button class="btn-danger" style="padding:8px 14px;font-size:18px" onclick="slettKart(${i})">Slett</button>
+      </div>
+    </div>`).join('');
+}
+function lastKart(i){
+  const saves=JSON.parse(localStorage.getItem('klassekart-saves')||'[]');
+  currentMap=saves[i].map;
+  document.getElementById('kart-name').value=saves[i].name;
+  renderMap();
+  showTab('kart',document.querySelectorAll('.tab')[2]);
+  toast('📂 Lastet inn: '+saves[i].name);
+}
+function slettKart(i){
+  if(!confirm('Slette dette kartet?')) return;
+  const saves=JSON.parse(localStorage.getItem('klassekart-saves')||'[]');
+  saves.splice(i,1);
+  localStorage.setItem('klassekart-saves',JSON.stringify(saves));
+  renderSaves();
+}
+
+// ── UTILS ──
+function toemKart(){currentMap=[];renderMap();document.getElementById('stat-elever').textContent='–';document.getElementById('stat-grupper').textContent='–';}
+function skrivUt(){if(!currentMap.length){toast('Generer et kart først.');return;}window.print();}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+renderConstraints();
+updateInfoBox();
+</script>
+</body>
+</html>
