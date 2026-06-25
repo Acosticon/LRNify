@@ -93,12 +93,13 @@ const FAG = [
           { etikett:'Buddhisme', hint:'Se etter Buddha og buddhistiske symboler.', forklaring:'Begreper og symboler knyttet til buddhisme.', bank:['Buddha','nirvana','dharmahjul','lotus'] },
         ]
       }},
+      
       { navn:'Etikk', beskrivelse:'Verdier, valg og ansvar', puslespill:{ utvalg:'fast', ordPerKategori:4, forsok:4,
         grupper:[
-          { etikett:'Rettferdighet', hint:'Ordene handler om lik behandling og rimelige valg.', forklaring:'Rettferdighet handler om hva som er rimelig og riktig for flere parter.', bank:['likhet','rettighet','regel','ansvar'] },
-          { etikett:'Omsorg', hint:'Ordene handler om å ta vare på andre.', forklaring:'Omsorg viser seg i handlinger som hjelper eller støtter andre.', bank:['hjelpe','trøste','lytte','dele'] },
-          { etikett:'Dilemma', hint:'Ordene handler om vanskelige valg.', forklaring:'Et dilemma er en situasjon der flere hensyn trekker i ulike retninger.', bank:['valg','konflikt','konsekvens','avveining'] },
-          { etikett:'Respekt', hint:'Ordene handler om hvordan vi møter andre mennesker.', forklaring:'Respekt handler om å anerkjenne andres verdi, grenser og perspektiver.', bank:['toleranse','verdighet','hensyn','dialog'] },
+          { etikett:'Rettferdighet', hint:'Ordene handler om lik behandling, lover og det som er rett.', forklaring:'Rettferdighet handler om hva som er rimelig og riktig for flere parter.', bank:['likhet','rettighet','lov','urett'] },
+          { etikett:'Omsorg', hint:'Disse ordene er handlinger – ting du gjør for andre.', forklaring:'Omsorg viser seg i konkrete handlinger som hjelper eller støtter andre.', bank:['hjelpe','trøste','støtte','oppmuntre'] },
+          { etikett:'Dilemma', hint:'Ordene handler om vanskelige valg og det å veie alternativer.', forklaring:'Et dilemma er en situasjon der flere hensyn trekker i ulike retninger.', bank:['valg','konflikt','konsekvens','avveining'] },
+          { etikett:'Respekt', hint:'Ordene handler om hvordan vi møter andre med verdighet.', forklaring:'Respekt handler om å anerkjenne andres verdi og møte ulikhet med åpenhet.', bank:['toleranse','verdighet','høflighet','dialog'] },
         ]
       }}
     ]
