@@ -514,11 +514,14 @@ function renderMap(){
   for(let i=0;i<currentMap.length;i+=cols) rows.push(currentMap.slice(i,i+cols));
   if(flipped) rows.reverse();
 
+  const totalRows=Math.ceil(currentMap.length/cols);
   rows.forEach((row,ri)=>{
     const rowEl=document.createElement('div');
     rowEl.className='group-row-el';
     row.forEach((grp,ci)=>{
-      const gIdx=ri*cols+ci;
+      // ri is visual row index (may be reversed); map back to original data index
+      const dataRi=flipped?(totalRows-1-ri):ri;
+      const gIdx=dataRi*cols+ci;
       const wrap=document.createElement('div');
       wrap.className='group-wrap';
       const lbl=document.createElement('div');
