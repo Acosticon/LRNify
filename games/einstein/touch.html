@@ -200,6 +200,12 @@
     display:flex; align-items:center; gap:8px; padding:0 14px 8px;
   }
   #sheet-title{ font-family:'Chewy',cursive; font-weight:400; font-size:19px; flex:1; }
+  #sheet-close{
+    width:36px; height:36px; border:2.5px solid var(--ink); border-radius:10px;
+    background:#fff; box-shadow:0 3px 0 var(--ink); font-size:16px;
+    display:grid; place-items:center; cursor:pointer; touch-action:manipulation; flex:none;
+  }
+  #sheet-close:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--ink); }
   #clue-badge{
     background:var(--ink); color:var(--bg); border-radius:999px;
     padding:2px 9px; font-size:12px; font-weight:800;
@@ -332,6 +338,7 @@
       <span id="sheet-title">Vitneutsagn</span>
       <span id="clue-badge"></span>
       <span id="sheet-progress"></span>
+      <button id="sheet-close" aria-label="Lukk vitneutsagn">✕</button>
     </div>
   </div>
   <ul id="clues"></ul>
@@ -1121,11 +1128,42 @@
     document.getElementById('nav-prev').addEventListener('click', () => { if (currentHouse > 0) { currentHouse--; render(); } });
     document.getElementById('nav-next').addEventListener('click', () => { if (currentHouse < puzzle.N - 1) { currentHouse++; render(); } });
 
-    // Bunnark
+    // Bunnark – klikk på håndtak åpner/lukker
     const handleArea = document.getElementById('sheet-handle-area');
-    handleArea.addEventListener('click', () => toggleSheet());
     handleArea.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSheet(); } });
     document.getElementById('sheet-backdrop').addEventListener('click', () => toggleSheet(false));
+    document.getElementById('sheet-close').addEventListener('click', () => toggleSheet(false));
+
+    // Bunnark – touch-drag på hele arket: dra ned for å lukke, dra opp for å åpne
+    const sheet = document.getElementById('sheet');
+    let sheetTouchStartY = 0;
+    let sheetTouchStartX = 0;
+    let sheetDragging = false;
+
+    sheet.addEventListener('touchstart', e => {
+      sheetTouchStartY = e.touches[0].clientY;
+      sheetTouchStartX = e.touches[0].clientX;
+      sheetDragging = false;
+    }, { passive: true });
+
+    sheet.addEventListener('touchmove', e => {
+      const dy = e.touches[0].clientY - sheetTouchStartY;
+      const dx = e.touches[0].clientX - sheetTouchStartX;
+      // Regnes som vertikal drag (ikke horisontal scroll i clue-listen)
+      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) sheetDragging = true;
+    }, { passive: true });
+
+    sheet.addEventListener('touchend', e => {
+      if (!sheetDragging) return;
+      const dy = e.changedTouches[0].clientY - sheetTouchStartY;
+      // Dra ned > 60px → lukk; dra opp > 60px → åpne
+      if (dy > 60) toggleSheet(false);
+      else if (dy < -60) toggleSheet(true);
+      sheetDragging = false;
+    }, { passive: true });
+
+    // Klikk på håndtak-area toggler (bare hvis ingen drag skjedde)
+    handleArea.addEventListener('click', () => { if (!sheetDragging) toggleSheet(); });
 
     // Swipe på brettet (venstre/høyre)
     let touchStartX = 0;
