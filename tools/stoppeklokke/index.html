@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stoppeklokke – LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#fff9f0;--ink:#2b2118;--yellow:#facc15;
+  --card:#fff;--muted:#7a6f63;
+  --green:#0F6E56;--red:#b91c1c;--orange:#d97706;
+}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:24px}
+
+h1{font-family:'Chewy',cursive;font-size:clamp(2rem,5vw,2.8rem);transform:rotate(-1.5deg);display:inline-block}
+h1 b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400}
+
+.clock-card{
+  background:var(--card);
+  border:4px solid var(--ink);
+  box-shadow:0 10px 0 var(--ink);
+  padding:40px 48px;
+  display:flex;flex-direction:column;align-items:center;gap:28px;
+  width:100%;max-width:540px;
+  transform:rotate(.5deg);
+  transition:background .4s;
+}
+.clock-card.running{background:#fff9f0}
+.clock-card.warning{background:#fff3cd}
+.clock-card.danger{background:#fee2e2}
+.clock-card.done{background:#d1fae5}
+
+/* big time display */
+.time-display{
+  font-family:'Chewy',cursive;
+  font-size:clamp(5rem,20vw,9rem);
+  line-height:1;
+  letter-spacing:.04em;
+  color:var(--ink);
+  transition:color .3s;
+  text-align:center;
+}
+.clock-card.warning .time-display{color:var(--orange)}
+.clock-card.danger .time-display{color:var(--red)}
+.clock-card.done .time-display{color:var(--green)}
+
+/* progress bar */
+.progress-track{
+  width:100%;height:18px;
+  border:3px solid var(--ink);
+  background:var(--cream);
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background:var(--ink);
+  transition:width .5s linear, background .3s;
+  width:100%;
+}
+.clock-card.warning .progress-fill{background:var(--orange)}
+.clock-card.danger .progress-fill{background:var(--red)}
+.clock-card.done .progress-fill{background:var(--green);width:0%!important}
+
+/* preset buttons */
+.presets{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.preset{
+  padding:8px 18px;
+  border:3px solid var(--ink);
+  background:var(--cream);
+  font-family:'Nunito',sans-serif;font-size:17px;font-weight:800;
+  cursor:pointer;
+  transition:background .1s,transform .1s;
+  box-shadow:0 4px 0 var(--ink);
+}
+.preset:hover{background:var(--yellow);transform:translateY(-2px)}
+.preset:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+.preset.active{background:var(--yellow)}
+
+/* custom input */
+.custom-row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap}
+.custom-row label{font-weight:800;font-size:17px}
+.time-input{
+  width:80px;padding:8px 10px;
+  border:3px solid var(--ink);
+  font-size:20px;font-family:'Chewy',cursive;
+  text-align:center;background:var(--cream);
+}
+.time-input:focus{outline:none;border-color:var(--muted)}
+.sep{font-family:'Chewy',cursive;font-size:2rem;line-height:1}
+
+/* control buttons */
+.controls{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;width:100%}
+.btn{
+  flex:1;min-width:120px;
+  padding:14px 10px;
+  border:4px solid var(--ink);
+  font-family:'Chewy',cursive;font-size:1.5rem;
+  cursor:pointer;letter-spacing:.03em;
+  box-shadow:0 6px 0 var(--ink);
+  transition:transform .1s,box-shadow .1s;
+  background:var(--yellow);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.btn:disabled{background:var(--cream);color:var(--muted);box-shadow:0 4px 0 var(--muted);cursor:default;transform:none}
+.btn.red{background:#fee2e2}
+.btn.green{background:#d1fae5}
+
+.status-msg{font-family:'Chewy',cursive;font-size:1.8rem;color:var(--green);
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1);text-align:center}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* fullscreen note */
+.fs-hint{font-size:14px;color:var(--muted);font-weight:700}
+
+/* fullscreen overrides */
+:fullscreen body,::backdrop{background:var(--cream)}
+:fullscreen .clock-card{max-width:none;width:90vw;padding:60px}
+:fullscreen .time-display{font-size:clamp(8rem,28vw,18rem)}
+</style>
+</head>
+<body>
+
+<h1>⏱ Stoppe<b>klokke</b></h1>
+
+<div class="clock-card" id="clock-card">
+  <div class="time-display" id="time-display">05:00</div>
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+
+  <div class="presets">
+    <button class="preset" onclick="setPreset(1)">1 min</button>
+    <button class="preset active" onclick="setPreset(5)">5 min</button>
+    <button class="preset" onclick="setPreset(10)">10 min</button>
+    <button class="preset" onclick="setPreset(15)">15 min</button>
+    <button class="preset" onclick="setPreset(20)">20 min</button>
+    <button class="preset" onclick="setPreset(30)">30 min</button>
+  </div>
+
+  <div class="custom-row">
+    <label>Egendefinert:</label>
+    <input class="time-input" type="number" id="min-input" value="5" min="0" max="99" oninput="customTime()">
+    <span class="sep">:</span>
+    <input class="time-input" type="number" id="sec-input" value="00" min="0" max="59" oninput="customTime()">
+  </div>
+
+  <div class="controls">
+    <button class="btn green" id="start-btn" onclick="startStop()">▶ Start</button>
+    <button class="btn red" id="reset-btn" onclick="reset()">↺ Nullstill</button>
+    <button class="btn" id="fs-btn" onclick="toggleFullscreen()" title="Fullskjerm">⛶</button>
+  </div>
+
+  <div class="status-msg" id="status-msg" style="display:none">⏰ Tiden er ute!</div>
+  <div class="fs-hint">Trykk ⛶ for fullskjerm / projektorvisning</div>
+</div>
+
+<script>
+let totalSecs=5*60;
+let remainingSecs=totalSecs;
+let timer=null;
+let running=false;
+
+// Web Audio for alarm
+let audioCtx=null;
+function beep(){
+  try{
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    [0,300,600].forEach(delay=>{
+      const o=audioCtx.createOscillator();
+      const g=audioCtx.createGain();
+      o.connect(g);g.connect(audioCtx.destination);
+      o.type='sine';o.frequency.value=880;
+      g.gain.setValueAtTime(0,audioCtx.currentTime+delay/1000);
+      g.gain.linearRampToValueAtTime(.6,audioCtx.currentTime+delay/1000+.05);
+      g.gain.linearRampToValueAtTime(0,audioCtx.currentTime+delay/1000+.4);
+      o.start(audioCtx.currentTime+delay/1000);
+      o.stop(audioCtx.currentTime+delay/1000+.5);
+    });
+  }catch(e){}
+}
+
+function fmt(s){
+  const m=Math.floor(s/60),sec=s%60;
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+function updateDisplay(){
+  document.getElementById('time-display').textContent=fmt(remainingSecs);
+  const pct=totalSecs>0?remainingSecs/totalSecs:0;
+  document.getElementById('progress-fill').style.width=(pct*100)+'%';
+  const card=document.getElementById('clock-card');
+  card.classList.remove('running','warning','danger','done');
+  if(remainingSecs<=0){card.classList.add('done');}
+  else if(running){
+    if(pct<=.15)card.classList.add('danger');
+    else if(pct<=.35)card.classList.add('warning');
+    else card.classList.add('running');
+  }
+  document.getElementById('status-msg').style.display=remainingSecs<=0?'block':'none';
+}
+
+function startStop(){
+  if(running){
+    clearInterval(timer);running=false;
+    document.getElementById('start-btn').textContent='▶ Start';
+    document.getElementById('clock-card').classList.remove('running','warning','danger');
+  } else {
+    if(remainingSecs<=0)return;
+    running=true;
+    document.getElementById('start-btn').textContent='⏸ Pause';
+    timer=setInterval(()=>{
+      remainingSecs--;
+      if(remainingSecs<=0){
+        remainingSecs=0;clearInterval(timer);running=false;
+        document.getElementById('start-btn').textContent='▶ Start';
+        beep();
+      }
+      updateDisplay();
+    },1000);
+  }
+  updateDisplay();
+}
+
+function reset(){
+  clearInterval(timer);running=false;
+  remainingSecs=totalSecs;
+  document.getElementById('start-btn').textContent='▶ Start';
+  updateDisplay();
+}
+
+function setPreset(mins){
+  clearInterval(timer);running=false;
+  document.getElementById('start-btn').textContent='▶ Start';
+  totalSecs=mins*60;remainingSecs=totalSecs;
+  document.getElementById('min-input').value=mins;
+  document.getElementById('sec-input').value='00';
+  document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
+  event.target.classList.add('active');
+  updateDisplay();
+}
+
+function customTime(){
+  clearInterval(timer);running=false;
+  document.getElementById('start-btn').textContent='▶ Start';
+  const m=parseInt(document.getElementById('min-input').value)||0;
+  const s=parseInt(document.getElementById('sec-input').value)||0;
+  totalSecs=m*60+Math.min(s,59);remainingSecs=totalSecs;
+  document.querySelectorAll('.preset').forEach(b=>b.classList.remove('active'));
+  updateDisplay();
+}
+
+function toggleFullscreen(){
+  if(!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});
+  else document.exitFullscreen();
+}
+
+updateDisplay();
+</script>
+</body>
+</html>
