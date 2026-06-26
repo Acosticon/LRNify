@@ -106,8 +106,8 @@
   .mode-switch{
     position:relative;
     display:grid;
-    grid-template-columns:1fr 1fr;
-    width:min(540px,100%);
+    grid-template-columns:1fr 1fr 1fr;
+    width:min(760px,100%);
     background:var(--card);
     border:4px solid var(--ink);
     box-shadow:0 7px 0 var(--ink);
@@ -134,7 +134,7 @@
     z-index:1;
     top:0;
     left:0;
-    width:50%;
+    width:33.3333%;
     height:100%;
     background:var(--yellow);
     border-right:4px solid var(--ink);
@@ -142,6 +142,11 @@
   }
   .mode-switch[data-mode="tools"] .mode-pill{
     transform:translateX(100%);
+    border-right:4px solid var(--ink);
+    border-left:4px solid var(--ink);
+  }
+  .mode-switch[data-mode="activities"] .mode-pill{
+    transform:translateX(200%);
     border-right:0;
     border-left:4px solid var(--ink);
   }
@@ -275,6 +280,7 @@
     <div class="mode-switch" id="modeSwitch" data-mode="games">
       <button class="mode-option active" id="gamesMode" type="button" aria-pressed="true">Læringsspill</button>
       <button class="mode-option" id="toolsMode" type="button" aria-pressed="false">Klasseromsressurser</button>
+      <button class="mode-option" id="activitiesMode" type="button" aria-pressed="false">Aktiviteter</button>
       <span class="mode-pill" aria-hidden="true"></span>
     </div>
   </section>
@@ -332,11 +338,20 @@ const ICONS = {
    Legg til flere ved å kopiere objektet under og endre title/file/category.
    ========================================================= */
 const TEACHER_RESOURCES = [
-  { title:"Klassekart", file:"klassekart/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
-  { title:"Velg tilfeldig elev", file:"elevvelger/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
-  { title:"Nedtelling", file:"nedtelling/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
-  { title:"Stoppeklokke", file:"stoppeklokke/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
-  { title:"Lydmåler", file:"lyd/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
+   { title:"Klassekart", file:"klassekart/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
+    { title:"Velg tilfeldig elev", file:"elevvelger/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
+    { title:"Nedtelling", file:"nedtelling/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
+    { title:"Stoppeklokke", file:"stoppeklokke/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
+    { title:"Lydmåler", file:"lyd/index.html", category:"Klasserom", icon:"worksheet", color:"#2563eb", size:"", locked:false },
+];
+
+/* =========================================================
+   AKTIVITETER
+   Disse ligger i activities/-mappen.
+   Legg til flere ved å kopiere objektet under og endre title/file/category.
+   ========================================================= */
+const ACTIVITIES = [
+  { title:"Think pair share", file:"tps/index.html", category:"Aktivitet", icon:"activity", color:"#d97706", size:"", locked:false },
 ];
 
 /* Ekstra ikoner til lærerressurser */
@@ -344,7 +359,8 @@ Object.assign(ICONS, {
   book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg>',
   worksheet:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/><path d="M8 9h2"/></svg>',
   cards:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="12" height="16" rx="2"/><path d="M8 3h10a2 2 0 0 1 2 2v14"/></svg>',
-  screen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8"/><path d="M12 16v5"/></svg>'
+  screen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8"/><path d="M12 16v5"/></svg>',
+  activity:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>'
 });
 
 const grid = document.getElementById('grid');
@@ -352,20 +368,25 @@ const pageTitle = document.getElementById('pageTitle');
 const modeSwitch = document.getElementById('modeSwitch');
 const gamesMode = document.getElementById('gamesMode');
 const toolsMode = document.getElementById('toolsMode');
+const activitiesMode = document.getElementById('activitiesMode');
 
 let currentMode = 'games';
 
 function getCardBasePath(){
-  return currentMode === 'games' ? 'games/' : 'tools/';
+  if(currentMode === 'games') return 'games/';
+  if(currentMode === 'tools') return 'tools/';
+  return 'activities/';
 }
 
 function getImageBasePath(){
-  return currentMode === 'games' ? 'media/cards/' : 'media/tools/';
+  if(currentMode === 'games') return 'media/cards/';
+  if(currentMode === 'tools') return 'media/tools/';
+  return 'media/activities/';
 }
 
 function renderCards(items){
   grid.innerHTML = '';
-  grid.setAttribute('aria-label', currentMode === 'games' ? 'Spill' : 'Lærerressurser');
+  grid.setAttribute('aria-label', currentMode === 'games' ? 'Spill' : currentMode === 'tools' ? 'Lærerressurser' : 'Aktiviteter');
 
   items.forEach((g,i)=>{
     const a = document.createElement('a');
@@ -393,25 +414,42 @@ function renderCards(items){
   });
 }
 
+function getCurrentItems(){
+  if(currentMode === 'games') return GAMES;
+  if(currentMode === 'tools') return TEACHER_RESOURCES;
+  return ACTIVITIES;
+}
+
 function setMode(mode){
   currentMode = mode;
+  const isGames = mode === 'games';
   const isTools = mode === 'tools';
+  const isActivities = mode === 'activities';
 
-  modeSwitch.dataset.mode = isTools ? 'tools' : 'games';
-  gamesMode.classList.toggle('active', !isTools);
+  modeSwitch.dataset.mode = mode;
+
+  gamesMode.classList.toggle('active', isGames);
   toolsMode.classList.toggle('active', isTools);
-  gamesMode.setAttribute('aria-pressed', String(!isTools));
+  activitiesMode.classList.toggle('active', isActivities);
+
+  gamesMode.setAttribute('aria-pressed', String(isGames));
   toolsMode.setAttribute('aria-pressed', String(isTools));
+  activitiesMode.setAttribute('aria-pressed', String(isActivities));
 
-  pageTitle.textContent = isTools
-    ? 'Velg en ressurs til klasserommet'
-    : 'Velg et spill og hopp inn';
+  if(isTools){
+    pageTitle.textContent = 'Velg en ressurs til klasserommet';
+  }else if(isActivities){
+    pageTitle.textContent = 'Velg en aktivitet til klasserommet';
+  }else{
+    pageTitle.textContent = 'Velg et spill og hopp inn';
+  }
 
-  renderCards(isTools ? TEACHER_RESOURCES : GAMES);
+  renderCards(getCurrentItems());
 }
 
 gamesMode.addEventListener('click', () => setMode('games'));
 toolsMode.addEventListener('click', () => setMode('tools'));
+activitiesMode.addEventListener('click', () => setMode('activities'));
 
 setMode('games');
 
