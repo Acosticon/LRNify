@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stoppeklokke – LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#fff9f0;--ink:#2b2118;--yellow:#facc15;--card:#fff;--muted:#7a6f63;
+}
+html,body{height:100%;width:100%}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--cream);color:var(--ink);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:clamp(16px,4vh,48px);
+  padding:clamp(16px,4vw,48px);
+}
+
+h1{
+  font-family:'Chewy',cursive;
+  font-size:clamp(1.6rem,4vw,3rem);
+  transform:rotate(-1.5deg);
+  display:inline-block;
+  flex-shrink:0;
+}
+h1 b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400}
+
+.clock-card{
+  background:var(--card);
+  border:4px solid var(--ink);
+  box-shadow:0 10px 0 var(--ink);
+  padding:clamp(24px,5vw,72px) clamp(32px,8vw,120px);
+  display:flex;flex-direction:column;
+  align-items:center;
+  gap:clamp(20px,4vh,52px);
+  transform:rotate(.4deg);
+}
+
+.time-display{
+  font-family:'Chewy',cursive;
+  font-size:clamp(6rem,26vw,22rem);
+  line-height:1;
+  letter-spacing:.04em;
+  text-align:center;
+  white-space:nowrap;
+}
+
+.controls{
+  display:flex;gap:clamp(10px,2vw,24px);
+  flex-wrap:wrap;justify-content:center;
+}
+.btn{
+  padding:clamp(10px,2vh,22px) clamp(20px,4vw,52px);
+  border:4px solid var(--ink);
+  font-family:'Chewy',cursive;
+  font-size:clamp(1.3rem,3.5vw,2.4rem);
+  cursor:pointer;letter-spacing:.03em;
+  box-shadow:0 6px 0 var(--ink);
+  transition:transform .1s,box-shadow .1s;
+  background:var(--yellow);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.btn.grey{background:var(--cream)}
+</style>
+</head>
+<body>
+
+<h1>⏱ Stoppe<b>klokke</b></h1>
+
+<div class="clock-card">
+  <div class="time-display" id="display">00:00</div>
+  <div class="controls">
+    <button class="btn" id="start-btn" onclick="startStop()">▶ Start</button>
+    <button class="btn grey" onclick="nullstill()">↺ Nullstill</button>
+    <button class="btn grey" onclick="fullskjerm()">⛶ Fullskjerm</button>
+  </div>
+</div>
+
+<script>
+let secs = 0;
+let timer = null;
+let running = false;
+
+function fmt(s) {
+  const m = Math.floor(s / 60), r = s % 60;
+  return String(m).padStart(2,'0') + ':' + String(r).padStart(2,'0');
+}
+
+function startStop() {
+  const btn = document.getElementById('start-btn');
+  if (running) {
+    clearInterval(timer);
+    running = false;
+    btn.textContent = '▶ Start';
+  } else {
+    running = true;
+    btn.textContent = '⏸ Pause';
+    timer = setInterval(() => {
+      secs++;
+      document.getElementById('display').textContent = fmt(secs);
+    }, 1000);
+  }
+}
+
+function nullstill() {
+  clearInterval(timer);
+  running = false;
+  secs = 0;
+  document.getElementById('display').textContent = fmt(0);
+  document.getElementById('start-btn').textContent = '▶ Start';
+}
+
+function fullskjerm() {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+  else document.exitFullscreen();
+}
+</script>
+</body>
+</html>
