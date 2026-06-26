@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Think–Pair–Share – LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#fff9f0;--ink:#2b2118;--yellow:#facc15;
+  --card:#fff;--muted:#7a6f63;--faint:#b5aea6;
+  --think:#6366f1;--pair:#0891b2;--share:#16a34a;
+}
+html,body{height:100%;width:100%}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--cream);color:var(--ink);
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:24px 20px;gap:16px;
+}
+
+/* ── SETUP ── */
+#screen-setup{
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  width:100%;max-width:580px;
+}
+h1{
+  font-family:'Chewy',cursive;
+  font-size:clamp(1.8rem,4vw,2.6rem);
+  transform:rotate(-1.5deg);display:inline-block;
+}
+h1 b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400}
+.setup-card{
+  background:var(--card);border:4px solid var(--ink);
+  box-shadow:0 8px 0 var(--ink);
+  padding:24px;width:100%;
+  display:flex;flex-direction:column;gap:14px;
+}
+.setup-card label{font-family:'Chewy',cursive;font-size:1.3rem}
+textarea#question{
+  width:100%;height:110px;resize:vertical;
+  border:3px solid var(--ink);
+  padding:12px 14px;font-size:1.15rem;
+  font-family:'Nunito',sans-serif;font-weight:700;
+  background:var(--cream);color:var(--ink);line-height:1.6;
+}
+textarea#question:focus{outline:none;background:#fff}
+.btn-start{
+  width:100%;padding:16px;
+  border:4px solid var(--ink);
+  font-family:'Chewy',cursive;font-size:1.8rem;
+  background:var(--yellow);color:var(--ink);
+  cursor:pointer;letter-spacing:.04em;
+  box-shadow:0 7px 0 var(--ink);
+  transition:transform .1s,box-shadow .1s;
+}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 9px 0 var(--ink)}
+.btn-start:active{transform:translateY(4px);box-shadow:0 3px 0 var(--ink)}
+
+/* ── ACTIVITY ── */
+#screen-activity{
+  display:none;flex-direction:column;align-items:center;
+  gap:clamp(10px,2.5vh,24px);
+  width:100%;max-width:860px;
+}
+
+/* Phase strip */
+.phase-strip{
+  display:flex;width:100%;
+  border:3px solid var(--ink);overflow:hidden;
+}
+.phase-pip{
+  flex:1;padding:9px 4px;
+  font-family:'Chewy',cursive;font-size:clamp(.9rem,2vw,1.2rem);
+  text-align:center;background:var(--cream);color:var(--muted);
+  border-right:3px solid var(--ink);transition:background .3s,color .3s;
+}
+.phase-pip:last-child{border-right:none}
+.phase-pip.active-think{background:var(--think);color:#fff}
+.phase-pip.active-pair {background:var(--pair); color:#fff}
+.phase-pip.active-share{background:var(--share);color:#fff}
+.phase-pip.done{background:#e5e7eb;color:var(--faint)}
+
+/* Main card */
+.activity-card{
+  background:var(--card);
+  border:4px solid var(--ink);
+  box-shadow:0 10px 0 var(--ink);
+  padding:clamp(20px,4vw,48px) clamp(20px,5vw,56px);
+  width:100%;
+  display:flex;flex-direction:column;align-items:center;
+  gap:clamp(12px,2.5vh,24px);
+  transition:border-color .4s,box-shadow .4s;
+}
+.activity-card.phase-think{border-color:var(--think);box-shadow:0 10px 0 var(--think)}
+.activity-card.phase-pair {border-color:var(--pair); box-shadow:0 10px 0 var(--pair)}
+.activity-card.phase-share{border-color:var(--share);box-shadow:0 10px 0 var(--share)}
+
+/* Phase label – small */
+.phase-label{
+  font-family:'Chewy',cursive;
+  font-size:clamp(1.1rem,2.5vw,1.6rem);
+  color:var(--muted);letter-spacing:.04em;
+  display:flex;align-items:center;gap:8px;
+}
+.phase-label span.col{transition:color .3s}
+.phase-think .phase-label span.col{color:var(--think)}
+.phase-pair  .phase-label span.col{color:var(--pair)}
+.phase-share .phase-label span.col{color:var(--share)}
+
+/* THE QUESTION – biggest element */
+.question-display{
+  font-family:'Chewy',cursive;
+  font-size:clamp(2rem,6vw,4.5rem);
+  line-height:1.2;text-align:center;
+  color:var(--ink);width:100%;
+  animation:popin .35s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popin{from{transform:scale(.8);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* TIMER ROW – second biggest */
+.timer-row{
+  display:flex;align-items:center;gap:clamp(8px,2vw,20px);
+}
+.timer-display{
+  font-family:'Chewy',cursive;
+  font-size:clamp(4rem,14vw,9rem);
+  line-height:1;letter-spacing:.04em;
+  transition:color .3s;
+  min-width:3ch;text-align:center;
+}
+.phase-think .timer-display{color:var(--think)}
+.phase-pair  .timer-display{color:var(--pair)}
+.phase-share .timer-display{color:var(--share)}
+.timer-display.warning{color:#d97706!important}
+.timer-display.flash{animation:flash .5s ease 3}
+@keyframes flash{0%,100%{opacity:1}50%{opacity:.15}}
+
+.btn-nudge{
+  width:clamp(44px,8vw,64px);height:clamp(44px,8vw,64px);
+  border:3px solid var(--ink);background:var(--cream);
+  font-size:clamp(1.4rem,3vw,2rem);font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 0 var(--ink);
+  transition:transform .1s,box-shadow .1s;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Nunito',sans-serif;
+}
+.btn-nudge:hover{background:var(--yellow)}
+.btn-nudge:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+
+/* Controls row – small */
+.controls-row{
+  display:flex;gap:clamp(8px,2vw,16px);
+  align-items:center;flex-wrap:wrap;justify-content:center;
+}
+.btn-ctrl{
+  padding:clamp(8px,1.5vh,13px) clamp(14px,3vw,26px);
+  border:3px solid var(--ink);
+  font-family:'Chewy',cursive;font-size:clamp(1rem,2.2vw,1.4rem);
+  cursor:pointer;letter-spacing:.03em;
+  box-shadow:0 4px 0 var(--ink);
+  transition:transform .1s,box-shadow .1s;
+  background:var(--yellow);
+}
+.btn-ctrl:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--ink)}
+.btn-ctrl:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+.btn-ctrl.grey{background:var(--card)}
+.btn-ctrl.restart{background:#fee2e2;border-color:#b91c1c;color:#b91c1c;box-shadow:0 4px 0 #b91c1c}
+.btn-ctrl.restart:hover{box-shadow:0 6px 0 #b91c1c}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="screen-setup">
+  <h1>🤔 Think–Pair–<b>Share</b></h1>
+  <div class="setup-card">
+    <label for="question">Spørsmål (valgfritt)</label>
+    <textarea id="question" placeholder="Skriv inn spørsmålet her – eller la det stå tomt og la fasene tale for seg..."></textarea>
+    <button class="btn-start" onclick="startActivity()">▶ Start!</button>
+  </div>
+</div>
+
+<!-- ACTIVITY -->
+<div id="screen-activity">
+  <div class="phase-strip">
+    <div class="phase-pip" id="pip-think">🧠 Tenk selv</div>
+    <div class="phase-pip" id="pip-pair">👥 Del med partner</div>
+    <div class="phase-pip" id="pip-share">🗣 Del med klassen</div>
+  </div>
+
+  <div class="activity-card" id="activity-card">
+    <div class="phase-label">
+      <span id="phase-emoji"></span>
+      <span class="col" id="phase-title"></span>
+    </div>
+
+    <div class="question-display" id="question-display"></div>
+
+    <div class="timer-row" id="timer-row">
+      <button class="btn-nudge" onclick="adjustLive(-1)">−</button>
+      <div class="timer-display" id="timer-display">00:00</div>
+      <button class="btn-nudge" onclick="adjustLive(1)">+</button>
+    </div>
+
+    <div class="controls-row" id="controls-row"></div>
+  </div>
+</div>
+
+<script>
+let currentPhase = null;
+let timerSecs = 0;
+let timerInterval = null;
+let timerRunning = false;
+let audioCtx = null;
+
+const PHASES = ['think','pair','share'];
+const EMOJI  = {think:'🧠', pair:'👥', share:'🗣'};
+const TITLES = {think:'Tenk selv', pair:'Del med læringspartneren din', share:'Del med klassen!'};
+const DEFAULT_SECS = {think:120, pair:120, share:0};
+
+function startActivity(){
+  document.getElementById('screen-setup').style.display = 'none';
+  document.getElementById('screen-activity').style.display = 'flex';
+  goPhase('think');
+}
+
+function goPhase(phase){
+  currentPhase = phase;
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSecs = DEFAULT_SECS[phase];
+
+  // Pips
+  PHASES.forEach(p => {
+    const pip = document.getElementById('pip-'+p);
+    pip.className = 'phase-pip';
+    const pi = PHASES.indexOf(p), ci = PHASES.indexOf(phase);
+    if(p === phase) pip.classList.add('active-'+p);
+    else if(pi < ci) pip.classList.add('done');
+  });
+
+  // Card colour
+  const card = document.getElementById('activity-card');
+  card.className = 'activity-card phase-'+phase;
+
+  // Phase label
+  document.getElementById('phase-emoji').textContent = EMOJI[phase];
+  document.getElementById('phase-title').textContent = TITLES[phase];
+
+  // Question – use input or fall back to phase title
+  const q = document.getElementById('question').value.trim();
+  const qDisplay = document.getElementById('question-display');
+  qDisplay.textContent = q || TITLES[phase];
+  qDisplay.style.animation = 'none';
+  void qDisplay.offsetWidth;
+  qDisplay.style.animation = '';
+
+  // Timer row
+  const timerRow = document.getElementById('timer-row');
+  timerRow.style.display = phase === 'share' ? 'none' : 'flex';
+  document.getElementById('timer-display').classList.remove('warning','flash');
+
+  updateTimerDisplay();
+  renderControls();
+}
+
+function updateTimerDisplay(){
+  if(currentPhase === 'share') return;
+  const m = Math.floor(Math.abs(timerSecs)/60);
+  const s = Math.abs(timerSecs)%60;
+  const el = document.getElementById('timer-display');
+  el.textContent = String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  el.classList.toggle('warning', timerSecs <= 30 && timerSecs > 0);
+}
+
+function renderControls(){
+  const row = document.getElementById('controls-row');
+  if(currentPhase === 'share'){
+    row.innerHTML = `
+      <button class="btn-ctrl restart" onclick="restart()">↺ Nytt spørsmål</button>
+    `;
+    return;
+  }
+  const nextPhase = currentPhase === 'think' ? 'pair' : 'share';
+  const nextLabel = currentPhase === 'think' ? '👥 Del med partner →' : '🗣 Del med klassen →';
+  row.innerHTML = `
+    <button class="btn-ctrl grey" onclick="resetTimer()">↺</button>
+    <button class="btn-ctrl" id="btn-ss" onclick="toggleTimer()">▶ Start</button>
+    <button class="btn-ctrl" onclick="goPhase('${nextPhase}')">${nextLabel}</button>
+  `;
+}
+
+function toggleTimer(){
+  if(timerRunning){
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('btn-ss').textContent = '▶ Start';
+  } else {
+    timerRunning = true;
+    document.getElementById('btn-ss').textContent = '⏸ Pause';
+    timerInterval = setInterval(()=>{
+      timerSecs--;
+      updateTimerDisplay();
+      if(timerSecs <= 0){
+        clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('btn-ss').textContent = '▶ Start';
+        document.getElementById('timer-display').classList.add('flash');
+        beep();
+      }
+    }, 1000);
+  }
+}
+
+function adjustLive(delta){
+  timerSecs = Math.max(0, timerSecs + delta * 60);
+  document.getElementById('timer-display').classList.remove('flash');
+  updateTimerDisplay();
+}
+
+function resetTimer(){
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSecs = DEFAULT_SECS[currentPhase];
+  document.getElementById('timer-display').classList.remove('flash');
+  document.getElementById('btn-ss').textContent = '▶ Start';
+  updateTimerDisplay();
+}
+
+function restart(){
+  clearInterval(timerInterval);
+  timerRunning = false;
+  document.getElementById('screen-activity').style.display = 'none';
+  document.getElementById('screen-setup').style.display = 'flex';
+}
+
+function beep(){
+  try{
+    if(!audioCtx) audioCtx = new(window.AudioContext||window.webkitAudioContext)();
+    [0,280,560].forEach(d=>{
+      const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.connect(g);g.connect(audioCtx.destination);
+      o.type='sine';o.frequency.value=660;
+      const t=audioCtx.currentTime+d/1000;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(.45,t+.05);
+      g.gain.linearRampToValueAtTime(0,t+.38);
+      o.start(t);o.stop(t+.4);
+    });
+  }catch(e){}
+}
+</script>
+</body>
+</html>
