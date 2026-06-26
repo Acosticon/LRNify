@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elevvelger – LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#fff9f0;--ink:#2b2118;--yellow:#facc15;
+  --card:#fff;--muted:#7a6f63;
+  --purple:#534AB7;--green:#0F6E56;
+}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--ink);
+  min-height:100vh;padding:32px 20px 60px;display:flex;flex-direction:column;align-items:center;gap:28px}
+
+h1{font-family:'Chewy',cursive;font-size:clamp(2.2rem,6vw,3.2rem);transform:rotate(-1.5deg);display:inline-block}
+h1 b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400}
+
+.layout{display:flex;gap:28px;width:100%;max-width:900px;align-items:flex-start;flex-wrap:wrap}
+
+/* INPUT CARD */
+.input-card{
+  flex:0 0 280px;background:var(--card);
+  border:4px solid var(--ink);box-shadow:0 8px 0 var(--ink);
+  padding:22px;display:flex;flex-direction:column;gap:14px;
+  transform:rotate(-1deg)
+}
+.card-label{font-family:'Chewy',cursive;font-size:1.4rem}
+textarea{
+  width:100%;height:220px;resize:vertical;
+  border:3px solid var(--ink);padding:10px 12px;
+  font-size:17px;font-family:'Nunito',sans-serif;
+  background:var(--cream);color:var(--ink);line-height:1.8
+}
+textarea:focus{outline:none;border-color:var(--purple)}
+.meta{font-size:15px;color:var(--muted);font-weight:700}
+
+/* Toggle */
+.toggle-row{display:flex;gap:0;border:3px solid var(--ink);overflow:hidden}
+.tog-btn{
+  flex:1;padding:9px 6px;border:none;border-right:3px solid var(--ink);
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:800;
+  cursor:pointer;background:var(--cream);color:var(--ink);transition:background .12s;
+  text-align:center;line-height:1.2
+}
+.tog-btn:last-child{border-right:none}
+.tog-btn.active{background:var(--yellow)}
+.tog-btn:hover:not(.active){background:#fff3cd}
+
+.btn{
+  width:100%;padding:14px;border:4px solid var(--ink);
+  font-family:'Chewy',cursive;font-size:1.5rem;
+  cursor:pointer;letter-spacing:.03em;
+  box-shadow:0 6px 0 var(--ink);
+  transition:transform .1s,box-shadow .1s;
+  background:var(--yellow)
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.btn:disabled{background:var(--cream);color:var(--muted);box-shadow:0 4px 0 var(--muted);cursor:default;transform:none}
+.btn.secondary{font-family:'Nunito',sans-serif;font-size:16px;background:var(--card);box-shadow:0 4px 0 var(--ink)}
+
+/* STAGE */
+.stage{flex:1;min-width:280px;display:flex;flex-direction:column;gap:20px}
+
+.result-card{
+  background:var(--card);border:4px solid var(--ink);box-shadow:0 8px 0 var(--ink);
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  transform:rotate(.8deg);overflow:hidden;
+  position:relative;
+}
+
+/* Roller: tall window with fade mask */
+.roller-outer{
+  width:100%;
+  height:300px;          /* tall enough to show ~5 names */
+  position:relative;
+  overflow:hidden;
+  display:none;
+}
+.roller-outer::before,.roller-outer::after{
+  content:'';position:absolute;left:0;right:0;z-index:2;pointer-events:none;
+  height:90px;          /* fade zone top+bottom */
+}
+.roller-outer::before{top:0;background:linear-gradient(to bottom,var(--card),transparent)}
+.roller-outer::after{bottom:0;background:linear-gradient(to top,var(--card),transparent)}
+
+/* centre highlight bar */
+.roller-center-bar{
+  position:absolute;left:0;right:0;z-index:1;pointer-events:none;
+  top:50%;transform:translateY(-50%);
+  height:70px;
+  background:var(--yellow);
+  border-top:3px solid var(--ink);
+  border-bottom:3px solid var(--ink);
+  opacity:.55;
+}
+
+.roller-list{
+  display:flex;flex-direction:column;align-items:center;
+  will-change:transform;
+  position:absolute;left:0;right:0;top:0;
+}
+.roller-item{
+  font-family:'Chewy',cursive;font-size:2.2rem;color:var(--ink);
+  text-align:center;padding:0;line-height:70px;height:70px;
+  white-space:nowrap;width:100%;
+  transition:opacity .06s, font-size .06s;
+  opacity:.28;
+}
+.roller-item.center{opacity:1;font-size:2.6rem;color:var(--purple)}
+
+.result-name{
+  font-family:'Chewy',cursive;
+  font-size:clamp(3rem,10vw,4.5rem);
+  color:var(--purple);text-align:center;line-height:1;
+  padding:40px 24px;
+  animation:pop .4s cubic-bezier(.34,1.56,.64,1);
+  display:none;
+}
+@keyframes pop{from{transform:scale(.6) rotate(-4deg);opacity:0}to{transform:scale(1) rotate(0deg);opacity:1}}
+
+.idle-text{font-size:1.2rem;color:var(--muted);font-weight:700;text-align:center;padding:48px 24px}
+
+.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 20px 20px}
+.badge{padding:5px 14px;border:2px solid var(--ink);font-weight:800;font-size:15px}
+.badge-count{background:var(--yellow)}
+.badge-done{background:#d1fae5;color:var(--green)}
+
+/* HISTORY */
+.history-card{
+  background:var(--card);border:4px solid var(--ink);box-shadow:0 6px 0 var(--ink);
+  padding:18px 20px;transform:rotate(-.5deg)
+}
+.history-head{font-family:'Chewy',cursive;font-size:1.3rem;margin-bottom:12px;
+  display:flex;justify-content:space-between;align-items:center}
+.btn-tiny{padding:5px 12px;border:2px solid var(--ink);font-size:13px;font-weight:800;cursor:pointer;background:none;font-family:'Nunito',sans-serif}
+.btn-tiny:hover{background:var(--yellow)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{padding:5px 14px;background:var(--cream);border:2px solid var(--ink);font-size:16px;font-weight:700}
+.tag.drawn{background:var(--yellow)}
+.empty-msg{font-size:16px;color:var(--muted);font-weight:600}
+</style>
+</head>
+<body>
+
+<h1>🎲 Elev<b>velger</b></h1>
+
+<div class="layout">
+  <div class="input-card">
+    <div class="card-label">Elever</div>
+    <textarea id="names" placeholder="Emma&#10;Sofia&#10;Nora&#10;Oliver&#10;Liam&#10;Matteo&#10;Leah&#10;Noah&#10;Ingrid&#10;Emil"></textarea>
+    <div class="meta" id="meta">0 elever</div>
+
+    <div>
+      <div style="font-weight:800;font-size:15px;margin-bottom:6px">Trekningsmodus</div>
+      <div class="toggle-row">
+        <button class="tog-btn active" id="tog-once" onclick="setModus('once')">Hvert navn<br>én gang</button>
+        <button class="tog-btn" id="tog-free" onclick="setModus('free')">Trekk fra<br>alle hver gang</button>
+      </div>
+    </div>
+
+    <button class="btn" id="draw-btn" onclick="trekk()">🎲 Trekk!</button>
+    <button class="btn secondary" onclick="nullstill()">↺ Nullstill</button>
+  </div>
+
+  <div class="stage">
+    <div class="result-card" id="result-card">
+      <div class="roller-outer" id="roller-outer">
+        <div class="roller-center-bar"></div>
+        <div class="roller-list" id="roller-list"></div>
+      </div>
+      <div class="result-name" id="result-name"></div>
+      <div class="idle-text" id="idle-text">Legg inn elever og trykk Trekk!</div>
+      <div class="badges" id="badges" style="display:none">
+        <span class="badge badge-count" id="badge-count"></span>
+        <span class="badge badge-done" id="badge-done" style="display:none">✓ Alle trukket!</span>
+      </div>
+    </div>
+
+    <div class="history-card" id="history-card" style="display:none">
+      <div class="history-head">
+        Trukket denne runden
+        <button class="btn-tiny" onclick="nullstill()">Nullstill</button>
+      </div>
+      <div class="tags" id="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+let history=[];
+let rolling=false;
+let modus='once'; // 'once' | 'free'
+
+const namesEl=document.getElementById('names');
+namesEl.addEventListener('input',updateMeta);
+
+function getNames(){return namesEl.value.split('\n').map(n=>n.trim()).filter(Boolean)}
+function getPool(){
+  const all=getNames();
+  return modus==='once' ? all.filter(n=>!history.includes(n)) : all;
+}
+
+function setModus(m){
+  modus=m;
+  document.getElementById('tog-once').classList.toggle('active',m==='once');
+  document.getElementById('tog-free').classList.toggle('active',m==='free');
+  // show/hide history card
+  document.getElementById('history-card').style.display=m==='once'&&history.length?'block':'none';
+  updateMeta();
+}
+
+function updateMeta(){
+  const all=getNames();
+  const pool=getPool();
+  if(modus==='once'){
+    document.getElementById('meta').textContent=`${all.length} elever · ${pool.length} igjen`;
+  } else {
+    document.getElementById('meta').textContent=`${all.length} elever`;
+  }
+  document.getElementById('draw-btn').disabled=all.length===0;
+}
+
+function trekk(){
+  if(rolling)return;
+  let pool=getPool();
+  if(pool.length===0){
+    // reset and redraw
+    history=[];
+    pool=getNames();
+  }
+  if(!pool.length)return;
+
+  const winner=pool[Math.floor(Math.random()*pool.length)];
+  rolling=true;
+  document.getElementById('draw-btn').disabled=true;
+
+  // Hide other states
+  document.getElementById('result-name').style.display='none';
+  document.getElementById('idle-text').style.display='none';
+  document.getElementById('badges').style.display='none';
+
+  const outer=document.getElementById('roller-outer');
+  const list=document.getElementById('roller-list');
+  outer.style.display='block';
+
+  const all=getNames();
+  const ITEM_H=70;
+  const VISIBLE_H=300;   // roller-outer height
+  // Number of padding items above/below so winner lands at centre
+  const CENTER_SLOT=Math.floor(VISIBLE_H/2/ITEM_H); // ≈2
+
+  // Build spin list: lots of random names, winner at a known position near the end
+  const PRE=40; // items before winner
+  const items=[];
+  for(let i=0;i<PRE;i++) items.push(all[Math.floor(Math.random()*all.length)]);
+  items.push(winner);
+  // pad a few after so winner sits at centre when stopped
+  for(let i=0;i<CENTER_SLOT;i++) items.push(all[Math.floor(Math.random()*all.length)]);
+
+  list.innerHTML=items.map(n=>`<div class="roller-item">${n}</div>`).join('');
+  // Start position: list starts at top=0, centred on item 0
+  // We want to stop with winner centred → translate to -(PRE * ITEM_H) + centreOffset
+  const centreOffset=Math.floor(VISIBLE_H/2)-Math.floor(ITEM_H/2);
+  const startY=centreOffset;            // show first item at centre
+  const endY=centreOffset-(PRE*ITEM_H); // show winner (at index PRE) at centre
+
+  list.style.transform=`translateY(${startY}px)`;
+
+  const DURATION=2800;
+  let startTime=null;
+
+  // Ease: fast start, slow into target (cubic ease-out)
+  function ease(t){return 1-Math.pow(1-t,4)}
+
+  function step(ts){
+    if(!startTime)startTime=ts;
+    const elapsed=ts-startTime;
+    const progress=Math.min(elapsed/DURATION,1);
+    const eased=ease(progress);
+    const y=startY+(endY-startY)*eased;
+    list.style.transform=`translateY(${y}px)`;
+
+    // Highlight whichever item is currently nearest centre
+    const centreY=VISIBLE_H/2;
+    list.querySelectorAll('.roller-item').forEach((el,i)=>{
+      const elTop=i*ITEM_H+y;
+      const elCenter=elTop+ITEM_H/2;
+      el.classList.toggle('center',Math.abs(elCenter-centreY)<ITEM_H/2);
+    });
+
+    if(progress<1){
+      requestAnimationFrame(step);
+    } else {
+      // Done rolling
+      setTimeout(()=>{
+        outer.style.display='none';
+        const rn=document.getElementById('result-name');
+        rn.textContent=winner;
+        rn.style.display='block';
+
+        if(modus==='once') history.push(winner);
+        const pool2=getPool();
+
+        document.getElementById('badges').style.display='flex';
+        if(modus==='once'){
+          document.getElementById('badge-count').textContent=
+            `${history.length} av ${getNames().length} trukket`;
+          document.getElementById('badge-done').style.display=
+            pool2.length===0?'inline':'none';
+          document.getElementById('history-card').style.display='block';
+          renderHistory();
+        } else {
+          document.getElementById('badge-count').textContent=winner;
+          document.getElementById('badge-done').style.display='none';
+        }
+
+        updateMeta();
+        rolling=false;
+        document.getElementById('draw-btn').disabled=false;
+      },120);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
+function renderHistory(){
+  const el=document.getElementById('history-list');
+  const all=getNames();
+  if(!all.length){el.innerHTML='<span class="empty-msg">Ingen ennå</span>';return;}
+  el.innerHTML=all.map(n=>`<span class="tag${history.includes(n)?' drawn':''}">${n}</span>`).join('');
+}
+
+function nullstill(){
+  history=[];
+  document.getElementById('result-name').style.display='none';
+  document.getElementById('idle-text').style.display='block';
+  document.getElementById('badges').style.display='none';
+  document.getElementById('roller-outer').style.display='none';
+  document.getElementById('history-card').style.display='none';
+  updateMeta();
+}
+
+updateMeta();
+</script>
+</body>
+</html>
