@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lydmåler – LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#fff9f0;--ink:#2b2118;--yellow:#facc15;
+  --card:#fff;--muted:#7a6f63;
+  --green:#1a8a5a;--amber:#d97706;--red:#dc2626;
+}
+body{
+  font-family:'Nunito',sans-serif;background:var(--cream);color:var(--ink);
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:28px 20px;gap:24px;
+  transition:background .5s;
+}
+body.state-ok{background:var(--cream)}
+body.state-warn{background:#fff7e0}
+body.state-loud{background:#fff0f0}
+
+h1{font-family:'Chewy',cursive;font-size:clamp(2rem,5vw,2.8rem);
+  transform:rotate(-1.5deg);display:inline-block}
+h1 b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400}
+
+.main-card{
+  background:var(--card);border:4px solid var(--ink);
+  box-shadow:0 10px 0 var(--ink);
+  padding:36px 40px;width:100%;max-width:520px;
+  display:flex;flex-direction:column;align-items:center;gap:28px;
+  transform:rotate(.4deg);
+  transition:background .4s,border-color .4s;
+}
+
+/* BIG STATUS ICON + LABEL */
+.status-icon{
+  font-size:clamp(4rem,18vw,7rem);
+  line-height:1;
+  transition:transform .15s;
+  animation:none;
+}
+.status-icon.bounce{animation:boing .25s cubic-bezier(.36,.07,.19,.97)}
+@keyframes boing{0%,100%{transform:scale(1)}40%{transform:scale(1.25) rotate(-5deg)}70%{transform:scale(.92) rotate(2deg)}}
+
+.status-label{
+  font-family:'Chewy',cursive;font-size:clamp(2rem,8vw,3rem);
+  color:var(--ink);transition:color .3s;text-align:center;line-height:1
+}
+.state-ok .status-label{color:var(--green)}
+.state-warn .status-label{color:var(--amber)}
+.state-loud .status-label{color:var(--red)}
+
+/* METER BAR */
+.meter-wrap{
+  width:100%;display:flex;flex-direction:column;gap:8px
+}
+.meter-track{
+  width:100%;height:36px;
+  border:4px solid var(--ink);
+  background:var(--cream);
+  position:relative;overflow:hidden;
+}
+.meter-fill{
+  height:100%;width:0%;
+  transition:width .08s linear;
+  background:var(--green);
+}
+.meter-threshold{
+  position:absolute;top:0;bottom:0;width:4px;background:var(--ink);opacity:.5
+}
+.meter-labels{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--muted)}
+
+/* THRESHOLD SLIDERS */
+.sliders{width:100%;display:flex;flex-direction:column;gap:12px}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row label{font-weight:800;font-size:15px;min-width:110px}
+input[type=range]{flex:1;accent-color:var(--ink);height:6px;cursor:pointer}
+.slider-val{
+  min-width:40px;text-align:right;
+  font-family:'Chewy',cursive;font-size:1.2rem
+}
+
+/* BUTTONS */
+.controls{display:flex;gap:14px;width:100%}
+.btn{
+  flex:1;padding:14px 10px;
+  border:4px solid var(--ink);
+  font-family:'Chewy',cursive;font-size:1.5rem;
+  cursor:pointer;letter-spacing:.03em;
+  box-shadow:0 6px 0 var(--ink);
+  transition:transform .1s,box-shadow .1s;
+  background:var(--yellow);
+}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--ink)}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink)}
+.btn.off{background:var(--card)}
+
+.permission-msg{
+  font-size:15px;font-weight:700;color:var(--muted);text-align:center;
+  border:3px dashed var(--muted);padding:12px 20px;width:100%
+}
+</style>
+</head>
+<body class="state-ok">
+
+<h1>🎙 Lyd<b>måler</b></h1>
+
+<div class="main-card" id="main-card">
+  <div class="status-icon" id="status-icon">😊</div>
+  <div class="status-label" id="status-label">Stille og rolig</div>
+
+  <div class="meter-wrap">
+    <div class="meter-track" id="meter-track">
+      <div class="meter-fill" id="meter-fill"></div>
+      <div class="meter-threshold" id="thresh-warn-line"></div>
+      <div class="meter-threshold" id="thresh-loud-line"></div>
+    </div>
+    <div class="meter-labels"><span>Stille</span><span>Høyt</span></div>
+  </div>
+
+  <div class="sliders">
+    <div class="slider-row">
+      <label>⚠️ Advarsel</label>
+      <input type="range" id="warn-thresh" min="10" max="90" value="45" oninput="updateThresholds()">
+      <span class="slider-val" id="warn-val">45%</span>
+    </div>
+    <div class="slider-row">
+      <label>🔴 For høyt</label>
+      <input type="range" id="loud-thresh" min="10" max="90" value="70" oninput="updateThresholds()">
+      <span class="slider-val" id="loud-val">70%</span>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn off" id="start-btn" onclick="toggleMic()">🎙 Start</button>
+  </div>
+
+  <div class="permission-msg" id="perm-msg" style="display:none">
+    Klikk «Tillat» i nettleseren for å gi tilgang til mikrofonen.
+  </div>
+</div>
+
+<script>
+let audioCtx=null, analyser=null, source=null, stream=null;
+let animId=null;
+let running=false;
+let dbSmooth=0;
+let warnT=45, loudT=70;
+let lastState='ok';
+let iconBouncing=false;
+
+const ICONS={ok:'😊',warn:'😬',loud:'😱'};
+const LABELS={ok:'Stille og rolig',warn:'Litt bråkete!',loud:'For høyt nå!'};
+const FILLS={ok:'var(--green)',warn:'var(--amber)',loud:'var(--red)'};
+
+function updateThresholds(){
+  warnT=parseInt(document.getElementById('warn-thresh').value);
+  loudT=parseInt(document.getElementById('loud-thresh').value);
+  // Clamp: loud must be above warn
+  if(loudT<=warnT){loudT=warnT+5;document.getElementById('loud-thresh').value=loudT;}
+  document.getElementById('warn-val').textContent=warnT+'%';
+  document.getElementById('loud-val').textContent=loudT+'%';
+  // Move threshold lines
+  document.getElementById('thresh-warn-line').style.left=warnT+'%';
+  document.getElementById('thresh-loud-line').style.left=loudT+'%';
+}
+
+async function toggleMic(){
+  if(running){
+    stopMic();return;
+  }
+  document.getElementById('perm-msg').style.display='none';
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    analyser=audioCtx.createAnalyser();
+    analyser.fftSize=1024;
+    analyser.smoothingTimeConstant=0.5;
+    source=audioCtx.createMediaStreamSource(stream);
+    source.connect(analyser);
+    running=true;
+    document.getElementById('start-btn').textContent='⏹ Stopp';
+    document.getElementById('start-btn').classList.remove('off');
+    loop();
+  }catch(e){
+    document.getElementById('perm-msg').style.display='block';
+  }
+}
+
+function stopMic(){
+  running=false;
+  if(animId)cancelAnimationFrame(animId);
+  if(source)source.disconnect();
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  if(audioCtx)audioCtx.close();
+  audioCtx=analyser=source=stream=null;
+  document.getElementById('start-btn').textContent='🎙 Start';
+  document.getElementById('start-btn').classList.add('off');
+  setUIState('ok');
+  document.getElementById('meter-fill').style.width='0%';
+  dbSmooth=0;
+}
+
+const dataArr=new Uint8Array(512);
+function loop(){
+  if(!running)return;
+  animId=requestAnimationFrame(loop);
+  analyser.getByteFrequencyData(dataArr);
+  // RMS of frequency data → percentage
+  let sum=0;
+  for(let i=0;i<dataArr.length;i++)sum+=dataArr[i]*dataArr[i];
+  const rms=Math.sqrt(sum/dataArr.length);
+  const pct=Math.min(100,rms/128*100*2.2); // scale to 0-100
+
+  // Smooth: fast attack, slow decay
+  if(pct>dbSmooth) dbSmooth=dbSmooth*0.4+pct*0.6;
+  else             dbSmooth=dbSmooth*0.88+pct*0.12;
+
+  const level=Math.round(dbSmooth);
+  document.getElementById('meter-fill').style.width=level+'%';
+  document.getElementById('meter-fill').style.background=
+    level>=loudT?FILLS.loud:level>=warnT?FILLS.warn:FILLS.ok;
+
+  // State
+  const state=level>=loudT?'loud':level>=warnT?'warn':'ok';
+  if(state!==lastState){
+    setUIState(state);
+    lastState=state;
+  }
+}
+
+function setUIState(state){
+  document.body.className='state-'+state;
+  document.getElementById('status-icon').textContent=ICONS[state];
+  document.getElementById('status-label').textContent=LABELS[state];
+  // Bounce icon on state change
+  const iconEl=document.getElementById('status-icon');
+  iconEl.classList.remove('bounce');
+  void iconEl.offsetWidth; // reflow
+  iconEl.classList.add('bounce');
+}
+
+// Init threshold lines
+updateThresholds();
+</script>
+</body>
+</html>
