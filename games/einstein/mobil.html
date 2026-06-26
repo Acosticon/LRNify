@@ -8,203 +8,362 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{ --bg:#fff9f0; --ink:#2b2118; --yellow:#facc15; --green:#cdeecf; --greenink:#2f6b35;
-    --wall:#fffaf0; --gonepink:#f3dcd8; --goneblue:#dfe7f2; }
+  :root{
+    --bg:#fff9f0; --ink:#2b2118; --yellow:#facc15; --green:#cdeecf; --greenink:#2f6b35;
+    --wall:#fffaf0; --gonepink:#f3dcd8; --goneblue:#dfe7f2;
+    --bar-h:56px; --fab-size:58px; --sheet-peek:72px;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ margin:0; height:100%; overflow:hidden; background:var(--bg); color:var(--ink);
-    font-family:'Nunito',system-ui,sans-serif; font-weight:700; }
-  #app{ height:100%; display:flex; flex-direction:column; padding:12px; gap:9px; }
+    font-family:'Nunito',system-ui,sans-serif; font-weight:700; overscroll-behavior:none; }
 
-  /* ── HEADER ── */
-  header{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-  #title{ font-family:'Chewy',cursive; font-weight:400; font-size:clamp(17px,2.8vw,30px); margin:0; transform:rotate(-1.5deg); }
-  #sub{ font-size:11px; font-weight:800; background:var(--yellow); border:3px solid var(--ink);
-    border-radius:999px; padding:3px 10px; box-shadow:0 4px 0 var(--ink); transform:rotate(1deg); white-space:nowrap; }
-  .controls{ margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-  button,select{ font:inherit; font-weight:800; font-size:13px; padding:7px 12px; color:var(--ink);
-    background:#fff; border:3px solid var(--ink); border-radius:13px; box-shadow:0 4px 0 var(--ink);
-    cursor:pointer; touch-action:manipulation; min-height:44px; }
-  #new{ background:var(--yellow); }
-  button:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
-  button:disabled{ opacity:.4; cursor:not-allowed; box-shadow:0 4px 0 var(--ink); transform:none; }
+  /* ════════════════════════════════
+     TOPPBAR
+  ════════════════════════════════ */
+  #topbar{
+    position:fixed; top:0; left:0; right:0; height:var(--bar-h);
+    background:var(--bg); border-bottom:3px solid var(--ink);
+    display:flex; align-items:center; padding:0 12px; gap:10px; z-index:20;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  #title{ font-family:'Chewy',cursive; font-weight:400; font-size:22px; margin:0; flex:1; }
+  #sub{ font-size:11px; font-weight:800; background:var(--yellow); border:2.5px solid var(--ink);
+    border-radius:999px; padding:2px 9px; box-shadow:0 3px 0 var(--ink); }
+  #menu-btn{
+    width:44px; height:44px; border:3px solid var(--ink); border-radius:13px;
+    background:#fff; box-shadow:0 4px 0 var(--ink); font-size:20px; line-height:1;
+    display:grid; place-items:center; cursor:pointer; touch-action:manipulation; flex:none;
+  }
+  #menu-btn:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
 
-  /* ── MAIN ── */
-  main{ flex:1; display:flex; gap:12px; min-height:0; }
-  .left{ flex:3; display:flex; flex-direction:column; gap:9px; min-width:0; container-type:inline-size; }
-  .right{ flex:2; min-width:230px; display:flex; flex-direction:column; min-height:0;
-    background:#fffdf8; border:4px solid var(--ink); border-radius:18px; box-shadow:0 8px 0 var(--ink);
-    transform:rotate(-.5deg); padding:11px; }
-  .right h2{ font-family:'Chewy',cursive; font-weight:400; font-size:17px; margin:0 0 7px; }
+  /* ════════════════════════════════
+     HUS-NAVIGATOR (under toppbar)
+  ════════════════════════════════ */
+  #house-nav{
+    position:fixed; top:var(--bar-h); left:0; right:0; z-index:15;
+    display:flex; align-items:center; gap:8px; padding:8px 12px;
+    background:var(--bg); border-bottom:2px solid var(--ink);
+  }
+  .nav-arrow{
+    width:40px; height:40px; flex:none; border:3px solid var(--ink); border-radius:12px;
+    background:#fff; box-shadow:0 4px 0 var(--ink); font-size:18px;
+    display:grid; place-items:center; cursor:pointer; touch-action:manipulation;
+  }
+  .nav-arrow:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
+  .nav-arrow:disabled{ opacity:.3; pointer-events:none; }
+  #house-dots{ flex:1; display:flex; justify-content:center; gap:6px; }
+  .hdot{
+    width:28px; height:28px; border:2.5px solid var(--ink); border-radius:8px;
+    background:#fff; font-weight:800; font-size:12px;
+    display:grid; place-items:center; cursor:pointer; touch-action:manipulation;
+    transition:background .12s;
+  }
+  .hdot.active{ background:var(--ink); color:var(--bg); }
+  .hdot.done{ background:var(--green); }
 
-  /* ── BRETT ── */
-  #board-wrapper{ flex:1; min-height:0; display:flex; flex-direction:column; }
-  #board{ flex:1; display:grid; grid-template-columns:repeat(var(--n),1fr); gap:11px; min-height:0; }
-  .card{ display:flex; flex-direction:column; gap:6px; min-height:0; padding:0 7px 8px;
-    border:3.5px solid var(--ink); border-radius:16px; background:var(--wall); box-shadow:0 7px 0 var(--ink); }
+  /* ════════════════════════════════
+     SCROLLABLE MIDTFLATE
+  ════════════════════════════════ */
+  #scroll-area{
+    position:fixed;
+    top:calc(var(--bar-h) + 58px);   /* toppbar + nav */
+    left:0; right:0;
+    bottom:calc(var(--sheet-peek) + var(--safe-bottom));
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    padding:12px 12px 80px;          /* 80px = rom til FAB */
+  }
+
+  /* ════════════════════════════════
+     HUS-KORT (enkeltvisning)
+  ════════════════════════════════ */
+  .card{
+    border:3.5px solid var(--ink); border-radius:18px;
+    background:var(--wall); box-shadow:0 7px 0 var(--ink);
+    overflow:hidden; transition:background .2s;
+  }
   .card.tinted{ background:var(--facade); }
-  .card-title{ margin:0 -7px 3px; min-height:30px; background:var(--ink); color:var(--bg);
-    clip-path:polygon(50% 0, 100% 100%, 0 100%); display:flex; align-items:flex-end; justify-content:center; }
-  .card-title span{ font-family:'Chewy',cursive; font-weight:400; font-size:14px; padding-bottom:3px; }
+  .card-header{
+    background:var(--ink); color:var(--bg);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 16px;
+  }
+  .card-header-title{ font-family:'Chewy',cursive; font-weight:400; font-size:20px; }
+  .card-header-color{ width:24px; height:24px; border-radius:6px; border:2px solid rgba(255,255,255,.4); }
 
-  .cell{ flex:1; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:1px; padding:3px; background:#fff; border:3px solid var(--ink); border-radius:11px;
-    box-shadow:0 3px 0 var(--ink); overflow:hidden; touch-action:manipulation; }
-  .cat{ font-size:8px; text-transform:uppercase; letter-spacing:.02em; font-weight:800; opacity:.6; line-height:1; }
-  .cell.filled.manual{ background:#fffdf3; }
-  .cell.filled.auto{ background:var(--green); }
-  .cell.filled.auto .value{ color:var(--greenink); font-style:italic; }
-  .cell.filled.manual{ cursor:pointer; }
-  .cell.filled:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--ink); }
-  .art-wrap{ width:clamp(20px,4.6cqi,34px); aspect-ratio:1; }
-  .art{ width:100%; height:100%; display:block; }
-  .value{ font-weight:800; font-size:clamp(11px,1.8cqi,15px); line-height:1; text-align:center; }
+  .cat-rows{ display:flex; flex-direction:column; gap:0; }
+  .cat-row{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; border-top:2px solid var(--ink);
+  }
+  .cat-label{
+    font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em;
+    opacity:.55; width:72px; flex:none; line-height:1.2;
+  }
+  .cat-content{ flex:1; min-width:0; }
 
-  /* ── CHIPS ── */
-  .chips{ display:flex; flex-wrap:wrap; gap:2px; align-items:center; justify-content:center; }
-  .chip{ display:inline-flex; align-items:center; gap:2px; border:2px solid var(--ink); background:#fbf6ec;
-    border-radius:999px; padding:1px 5px 1px 2px; font-weight:800; font-size:clamp(8px,1.2cqi,11px);
-    line-height:1.05; cursor:pointer; color:var(--ink); touch-action:manipulation; }
+  /* Utfylt celle */
+  .filled-cell{
+    display:flex; align-items:center; gap:10px;
+    padding:6px 12px; border:3px solid var(--ink); border-radius:13px;
+    background:#fffdf3; box-shadow:0 4px 0 var(--ink);
+    cursor:pointer; touch-action:manipulation;
+    transition:transform .1s;
+  }
+  .filled-cell.auto{ background:var(--green); }
+  .filled-cell.auto .fill-value{ color:var(--greenink); font-style:italic; }
+  .filled-cell:active{ transform:translateY(3px); box-shadow:0 1px 0 var(--ink); }
+  .fill-art{ width:34px; height:34px; flex:none; }
+  .fill-art svg{ width:100%; height:100%; display:block; }
+  .fill-value{ font-weight:800; font-size:16px; }
+
+  /* Åpen celle – chip-grid */
+  .chip-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(58px, 1fr));
+    gap:6px;
+  }
+  .chip{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    border:2.5px solid var(--ink); border-radius:12px; background:#fbf6ec;
+    padding:7px 4px 5px; font-weight:800; font-size:11px; line-height:1.1;
+    cursor:pointer; color:var(--ink); touch-action:manipulation; text-align:center;
+  }
   .chip:active{ transform:translateY(2px); }
-  .chip-art{ width:13px; height:13px; flex:none; }
-  .chip.struck{ cursor:default; text-decoration:line-through; text-decoration-thickness:2px; opacity:.55; }
+  .chip-art{ width:30px; height:30px; }
+  .chip-art svg{ width:100%; height:100%; display:block; }
+  .chip.struck{
+    opacity:.5; text-decoration:line-through; text-decoration-thickness:2px;
+    pointer-events:none;
+  }
   .chip.struck.kat{ background:var(--gonepink); color:#a4665e; }
   .chip.struck.spor{ background:var(--goneblue); color:#5a6f8f; }
-  .chip.struck .art-wrap, .chip.struck .chip-art{ opacity:.5; }
 
-  /* ── FOOTER ── */
-  footer{ display:flex; align-items:center; gap:8px; }
-  #message{ flex:1; background:#fff; border:3px solid var(--ink); border-radius:13px; box-shadow:0 3px 0 var(--ink);
-    padding:7px 11px; font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .pill{ font-weight:800; font-size:12px; background:var(--yellow); border:3px solid var(--ink); border-radius:999px;
-    padding:6px 11px; box-shadow:0 3px 0 var(--ink); white-space:nowrap; }
-  .pill strong{ font-family:'Nunito'; }
+  /* ════════════════════════════════
+     MELDINGS-SNACK
+  ════════════════════════════════ */
+  #snack{
+    position:fixed; left:12px; right:12px;
+    bottom:calc(var(--sheet-peek) + var(--safe-bottom) + 68px);
+    background:var(--ink); color:var(--bg); border-radius:14px;
+    padding:10px 16px; font-size:13px; font-weight:800;
+    box-shadow:0 6px 0 rgba(0,0,0,.3); z-index:25;
+    opacity:0; transform:translateY(8px);
+    transition:opacity .2s, transform .2s;
+    pointer-events:none;
+  }
+  #snack.show{ opacity:1; transform:translateY(0); }
 
-  /* ── VITNEUTSAGN ── */
-  #clues{ list-style:none; margin:0; padding:0; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:6px; }
-  .clue{ display:grid; grid-template-columns:auto 1fr; gap:9px; align-items:start; text-align:left; width:100%;
-    padding:8px 9px; border:3px solid var(--ink); border-radius:13px; background:#fff; box-shadow:0 3px 0 var(--ink);
-    font-size:13px; font-weight:700; cursor:pointer; line-height:1.35; touch-action:manipulation; }
+  /* ════════════════════════════════
+     FAB – Sjekk
+  ════════════════════════════════ */
+  #fab-check{
+    position:fixed;
+    right:16px;
+    bottom:calc(var(--sheet-peek) + var(--safe-bottom) + 12px);
+    width:var(--fab-size); height:var(--fab-size);
+    background:var(--yellow); border:3px solid var(--ink);
+    border-radius:50%; box-shadow:0 6px 0 var(--ink);
+    font-family:'Chewy',cursive; font-size:13px; font-weight:400;
+    display:grid; place-items:center; cursor:pointer;
+    touch-action:manipulation; z-index:22; line-height:1.1; text-align:center;
+  }
+  #fab-check:active{ transform:translateY(4px); box-shadow:0 2px 0 var(--ink); }
+
+  /* ════════════════════════════════
+     BUNNARK – Vitneutsagn
+  ════════════════════════════════ */
+  #sheet-backdrop{
+    position:fixed; inset:0; background:rgba(43,33,24,.0);
+    z-index:29; pointer-events:none;
+    transition:background .25s;
+  }
+  #sheet-backdrop.open{ background:rgba(43,33,24,.35); pointer-events:all; }
+
+  #sheet{
+    position:fixed; left:0; right:0; bottom:0; z-index:30;
+    background:#fffdf8; border:3px solid var(--ink);
+    border-radius:22px 22px 0 0; box-shadow:0 -6px 0 var(--ink);
+    display:flex; flex-direction:column;
+    transform:translateY(calc(100% - var(--sheet-peek) - var(--safe-bottom)));
+    transition:transform .3s cubic-bezier(.32,.72,0,1);
+    padding-bottom:var(--safe-bottom);
+  }
+  #sheet.open{ transform:translateY(0); }
+
+  #sheet-handle-area{
+    padding:10px 0 4px; display:flex; flex-direction:column; align-items:center;
+    gap:6px; cursor:pointer; touch-action:manipulation; flex:none;
+  }
+  #sheet-handle{ width:40px; height:5px; border-radius:3px; background:#ccc; }
+  #sheet-top{
+    display:flex; align-items:center; gap:8px; padding:0 14px 8px;
+  }
+  #sheet-title{ font-family:'Chewy',cursive; font-weight:400; font-size:19px; flex:1; }
+  #clue-badge{
+    background:var(--ink); color:var(--bg); border-radius:999px;
+    padding:2px 9px; font-size:12px; font-weight:800;
+  }
+  #sheet-progress{ font-size:12px; font-weight:800; opacity:.65; }
+
+  #clues{
+    list-style:none; margin:0; padding:4px 12px 12px;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+    display:flex; flex-direction:column; gap:7px; flex:1;
+  }
+  .clue{
+    display:grid; grid-template-columns:auto 1fr; gap:10px;
+    align-items:start; text-align:left; width:100%;
+    padding:10px 11px; border:3px solid var(--ink); border-radius:14px;
+    background:#fff; box-shadow:0 3px 0 var(--ink);
+    font-size:14px; font-weight:700; cursor:pointer; line-height:1.4;
+    touch-action:manipulation;
+  }
   .clue:active{ transform:translateY(2px); box-shadow:0 1px 0 var(--ink); }
-  .clue .check{ width:21px; height:21px; border:2px solid var(--ink); border-radius:6px; background:#fff;
-    display:grid; place-items:center; font-size:13px; flex:none; }
+  .clue .check{
+    width:24px; height:24px; border:2px solid var(--ink); border-radius:7px;
+    background:#fff; display:grid; place-items:center; font-size:14px; flex:none;
+    margin-top:1px;
+  }
   .clue.used{ background:#eef7ec; color:#7b8c77; }
   .clue.used .check{ background:var(--green); }
 
-  /* ── WIN-MODAL ── */
-  #win{ position:fixed; inset:0; display:none; place-items:center; z-index:30; background:rgba(43,33,24,.4); }
-  #win.open{ display:grid; }
-  #win .wincard{ background:#fff; border:4px solid var(--ink); border-radius:22px; box-shadow:0 12px 0 var(--ink);
-    padding:22px 26px; text-align:center; max-width:430px; width:90%; transform:rotate(-1deg); }
-  #win h2{ font-family:'Chewy',cursive; font-weight:400; font-size:32px; margin:0 0 6px; color:var(--greenink); }
-  #wintext{ margin:0 0 16px; font-weight:800; }
-  .winbtns{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-  #nextlevel{ background:var(--yellow); }
+  /* ════════════════════════════════
+     MENY-MODAL
+  ════════════════════════════════ */
+  #menu-modal{
+    position:fixed; inset:0; z-index:50; display:none;
+    place-items:center; background:rgba(43,33,24,.45);
+  }
+  #menu-modal.open{ display:grid; }
+  .menu-card{
+    background:var(--bg); border:4px solid var(--ink); border-radius:22px;
+    box-shadow:0 10px 0 var(--ink); padding:20px; width:min(320px, 90vw);
+    display:flex; flex-direction:column; gap:10px;
+  }
+  .menu-card h2{ font-family:'Chewy',cursive; font-weight:400; font-size:24px; margin:0 0 4px; }
+  .menu-btn{
+    font:inherit; font-weight:800; font-size:15px; padding:13px 16px;
+    color:var(--ink); background:#fff; border:3px solid var(--ink);
+    border-radius:14px; box-shadow:0 5px 0 var(--ink); cursor:pointer;
+    touch-action:manipulation; text-align:left;
+  }
+  .menu-btn:active{ transform:translateY(4px); box-shadow:0 1px 0 var(--ink); }
+  .menu-btn.yellow{ background:var(--yellow); }
+  #menu-level{
+    font:inherit; font-weight:800; font-size:15px; padding:13px 16px;
+    color:var(--ink); background:#fff; border:3px solid var(--ink);
+    border-radius:14px; box-shadow:0 5px 0 var(--ink); cursor:pointer;
+    touch-action:manipulation; width:100%;
+  }
+  .menu-sep{ height:2px; background:var(--ink); border-radius:2px; opacity:.15; }
 
-  /* ── KONFETTI ── */
-  #confetti{ position:fixed; inset:0; pointer-events:none; z-index:40; }
-  #confetti .piece{ position:absolute; top:-14px; width:11px; height:16px; border:2px solid var(--ink);
-    border-radius:3px; animation:fall 1100ms ease-out forwards; }
+  /* ════════════════════════════════
+     WIN-MODAL
+  ════════════════════════════════ */
+  #win{
+    position:fixed; inset:0; display:none; place-items:center; z-index:60;
+    background:rgba(43,33,24,.4);
+  }
+  #win.open{ display:grid; }
+  #win .wincard{
+    background:#fff; border:4px solid var(--ink); border-radius:22px;
+    box-shadow:0 12px 0 var(--ink); padding:28px 24px; text-align:center;
+    max-width:340px; width:90%; transform:rotate(-1deg);
+  }
+  #win h2{ font-family:'Chewy',cursive; font-weight:400; font-size:34px; margin:0 0 8px; color:var(--greenink); }
+  #wintext{ margin:0 0 18px; font-weight:800; font-size:15px; line-height:1.45; }
+  .winbtns{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .winbtns button{
+    font:inherit; font-weight:800; font-size:14px; padding:11px 18px;
+    color:var(--ink); background:#fff; border:3px solid var(--ink);
+    border-radius:14px; box-shadow:0 5px 0 var(--ink); cursor:pointer;
+    touch-action:manipulation;
+  }
+  .winbtns button:active{ transform:translateY(4px); box-shadow:0 1px 0 var(--ink); }
+  #nextlevel{ background:var(--yellow) !important; }
+
+  /* ════════════════════════════════
+     KONFETTI
+  ════════════════════════════════ */
+  #confetti{ position:fixed; inset:0; pointer-events:none; z-index:70; }
+  #confetti .piece{
+    position:absolute; top:-14px; width:11px; height:16px;
+    border:2px solid var(--ink); border-radius:3px;
+    animation:fall 1100ms ease-out forwards;
+  }
   @keyframes fall{ to{ transform:translateY(108vh) rotate(280deg); opacity:.2; } }
   @media (prefers-reduced-motion:reduce){ #confetti{ display:none; } }
-
-  /* ── MOBIL: 600px og smalere ── */
-  @media (max-width:780px){
-    main{ flex-direction:column; }
-    .right{ flex:none; min-width:0; max-height:38vh; transform:none; }
-  }
-
-  @media (max-width:600px){
-    #app{ padding:8px; gap:6px; }
-
-    /* Header: tittel på topp, knapper under */
-    header{ flex-direction:column; align-items:stretch; gap:5px; }
-    #title{ font-size:20px; transform:none; }
-    #sub{ align-self:flex-start; }
-    .controls{ margin-left:0; justify-content:flex-start; }
-    button,select{ font-size:12px; padding:6px 10px; min-height:40px; }
-
-    /* Brett: horisontal scroll ved ekspert-modus (5 hus) */
-    #board-wrapper{ overflow-x:auto; -webkit-overflow-scrolling:touch; flex:1; min-height:0; }
-    #board{
-      /* Minimum 72px per hus-kolonne, vokser om det er plass */
-      grid-template-columns:repeat(var(--n), minmax(72px,1fr));
-      gap:7px;
-      height:100%;
-      min-width:calc(var(--n) * 76px);
-    }
-
-    /* Kortene: litt kompaktere */
-    .card{ gap:4px; padding:0 5px 6px; border-radius:13px; }
-    .card-title{ min-height:26px; }
-    .card-title span{ font-size:12px; }
-
-    /* Celler: chip-tekst skjult, kun ikon – sparer bredde */
-    .chip-lbl{ display:none; }
-    .chip{ padding:3px; border-radius:8px; }
-    .chip-art{ width:22px; height:22px; }
-    .chips{ gap:3px; }
-
-    /* Utfylte celler */
-    .art-wrap{ width:clamp(18px,6cqi,28px); }
-    .value{ font-size:clamp(9px,2.2cqi,13px); }
-    .cat{ font-size:7px; }
-
-    /* Footer: to-linje */
-    footer{ flex-wrap:wrap; }
-    #message{ width:100%; white-space:normal; font-size:12px; }
-    .pill{ font-size:11px; padding:5px 9px; }
-
-    /* Vitneutsagn: fast høyde, scrollbar */
-    .right{ max-height:32vh; border-radius:14px; transform:none; }
-    .right h2{ font-size:15px; margin-bottom:5px; }
-    .clue{ font-size:12px; padding:7px 8px; gap:7px; }
-  }
-
-  /* Veldig smal (under 380px) – skjul kategori-label og verdi-tekst i chips */
-  @media (max-width:380px){
-    .cat{ display:none; }
-    .value{ font-size:clamp(8px,3cqi,12px); }
-  }
 </style>
 </head>
 <body>
-<div id="app">
-  <header>
-    <h1 id="title">Mysteriet i Måkeveien</h1>
-    <span id="sub"></span>
-    <div class="controls">
-      <select id="level" aria-label="Vanskelighetsgrad"></select>
-      <button id="check">Sjekk</button>
-      <button id="undo">Angre</button>
-      <button id="reset">Nullstill</button>
-      <button id="new">Nytt brett</button>
-    </div>
-  </header>
-  <main>
-    <div class="left">
-      <div id="board-wrapper">
-        <div id="board"></div>
-      </div>
-      <footer>
-        <div id="message"></div>
-        <div class="pill" id="progress"></div>
-        <div class="pill" id="clueprog"></div>
-      </footer>
-    </div>
-    <div class="right">
-      <h2>Vitneutsagn</h2>
-      <ul id="clues"></ul>
-    </div>
-  </main>
+
+<!-- TOPPBAR -->
+<header id="topbar">
+  <h1 id="title">Mysteriet i Måkeveien</h1>
+  <span id="sub"></span>
+  <button id="menu-btn" aria-label="Meny">⋯</button>
+</header>
+
+<!-- HUS-NAVIGATOR -->
+<nav id="house-nav" aria-label="Husnavigasjon">
+  <button class="nav-arrow" id="nav-prev" aria-label="Forrige hus">◀</button>
+  <div id="house-dots"></div>
+  <button class="nav-arrow" id="nav-next" aria-label="Neste hus">▶</button>
+</nav>
+
+<!-- SCROLLBART BRETT -->
+<div id="scroll-area">
+  <div id="board"></div>
 </div>
-<div id="win" aria-live="assertive"><div class="wincard">
-  <h2>Saken er løst!</h2>
-  <p id="wintext"></p>
-  <div class="winbtns">
-    <button id="playagain">Spill på nytt</button>
-    <button id="nextlevel">Neste nivå</button>
+
+<!-- SNACK-MELDING -->
+<div id="snack" aria-live="polite"></div>
+
+<!-- FAB SJEKK -->
+<button id="fab-check" aria-label="Sjekk svar">Sjekk<br>svar</button>
+
+<!-- BUNNARK: VITNEUTSAGN -->
+<div id="sheet-backdrop" aria-hidden="true"></div>
+<div id="sheet" role="dialog" aria-label="Vitneutsagn">
+  <div id="sheet-handle-area" aria-label="Åpne vitneutsagn" role="button" tabindex="0">
+    <div id="sheet-handle"></div>
+    <div id="sheet-top">
+      <span id="sheet-title">Vitneutsagn</span>
+      <span id="clue-badge"></span>
+      <span id="sheet-progress"></span>
+    </div>
   </div>
-</div></div>
+  <ul id="clues"></ul>
+</div>
+
+<!-- MENY-MODAL -->
+<div id="menu-modal" role="dialog" aria-label="Meny">
+  <div class="menu-card">
+    <h2>Meny</h2>
+    <select id="menu-level" aria-label="Vanskelighetsgrad"></select>
+    <div class="menu-sep"></div>
+    <button class="menu-btn yellow" id="btn-new">🎲 Nytt brett</button>
+    <button class="menu-btn" id="btn-check">✔ Sjekk svar</button>
+    <button class="menu-btn" id="btn-undo">↩ Angre</button>
+    <button class="menu-btn" id="btn-reset">🔄 Nullstill</button>
+    <div class="menu-sep"></div>
+    <button class="menu-btn" id="btn-close-menu">✕ Lukk</button>
+  </div>
+</div>
+
+<!-- WIN-MODAL -->
+<div id="win" aria-live="assertive">
+  <div class="wincard">
+    <h2>Saken er løst!</h2>
+    <p id="wintext"></p>
+    <div class="winbtns">
+      <button id="playagain">Spill på nytt</button>
+      <button id="nextlevel">Neste nivå →</button>
+    </div>
+  </div>
+</div>
+
 <div id="confetti"></div>
 <script>
 /* LRNify – Einsteins gåte: ren logikkmotor (ingen DOM).
@@ -756,6 +915,11 @@
     newPuzzle(CONFIG.order[Math.min(CONFIG.order.length - 1, i + 1)]);
   }
 
+  // ---------- MOBIL UI-TILSTAND ----------
+  let currentHouse = 0;   // hvilken hus som vises
+  let sheetOpen = false;
+  let snackTimer = null;
+
   // ---------- RENDER ----------
   function render() {
     const cfg = CONFIG.levels[levelKey];
@@ -764,62 +928,107 @@
     const { val, src } = deriveDisplay();
     const pm = posMapFrom(val);
 
+    // Toppbar
     document.getElementById('title').textContent = THEME.title;
     document.getElementById('sub').textContent = cfg.label;
 
-    // brett: ett kort per hus
-    const board = document.getElementById('board');
-    board.style.setProperty('--n', N);
-    let html = '';
+    // Klem currentHouse innenfor gyldig rekkevidde
+    if (currentHouse >= N) currentHouse = N - 1;
+
+    // ── Navigator-prikker ──
+    const dotsEl = document.getElementById('house-dots');
+    let dotsHtml = '';
     for (let p = 0; p < N; p++) {
-      const fc = fargeIdx >= 0 ? val[p][fargeIdx] : null;
-      const cardCls = fc != null ? 'card tinted' : 'card';
-      const cardStyle = fc != null ? ' style="--facade:' + ART.houseFill(fc) + '"' : '';
-      html += '<div class="' + cardCls + '"' + cardStyle + '><div class="card-title"><span>Hus ' + (p + 1) + '</span></div>';
-      for (let c = 0; c < K; c++) {
-        const v = val[p][c];
-        const s = src[p][c];
-        let body, cls;
-        if (v != null) {
-          cls = 'cell filled ' + (s === 'auto' ? 'auto' : 'manual');
-          body = '<span class="art-wrap">' + cellArt(c, v) + '</span><span class="value">' + lbl(c, v) + '</span>';
-        } else {
-          cls = 'cell open';
-          const cands = candidatesFor(p, c, val, pm);
-          body = '<span class="chips">' + cands.map(o =>
-            '<button class="chip ' + (o.eliminated ? 'struck ' + o.reason : '') + '" data-p="' + p + '" data-c="' + c + '" data-v="' + o.v + '"' +
-            (o.eliminated ? ' disabled' : '') + ' aria-label="' + lbl(c, o.v) + (o.eliminated ? ', utelukket' : ', velg') + '">' +
-            '<span class="chip-art">' + cellArt(c, o.v) + '</span><span class="chip-lbl">' + lbl(c, o.v) + '</span></button>'
-          ).join('') + '</span>';
-        }
-        html += '<div class="' + cls + '" data-p="' + p + '" data-c="' + c + '">' +
-          '<span class="cat">' + THEME.categories[c].label + '</span>' + body + '</div>';
-      }
-      html += '</div>';
+      const allFilled = val[p].every(v => v != null);
+      const cls = (p === currentHouse ? 'active' : '') + (allFilled ? ' done' : '');
+      dotsHtml += '<button class="hdot ' + cls + '" data-p="' + p + '" aria-label="Hus ' + (p+1) + '">' + (p+1) + '</button>';
     }
-    board.innerHTML = html;
-    // tap på chip = velg; tap på utfylt manuell rute = tøm
-    board.querySelectorAll('button.chip:not([disabled])').forEach(b =>
+    dotsEl.innerHTML = dotsHtml;
+    dotsEl.querySelectorAll('.hdot').forEach(b =>
+      b.addEventListener('click', () => { currentHouse = +b.dataset.p; render(); }));
+    document.getElementById('nav-prev').disabled = currentHouse === 0;
+    document.getElementById('nav-next').disabled = currentHouse === N - 1;
+
+    // ── Kort for gjeldende hus ──
+    const p = currentHouse;
+    const fc = fargeIdx >= 0 ? val[p][fargeIdx] : null;
+    const tinted = fc != null;
+    const fillColor = tinted ? ART.houseFill(fc) : null;
+
+    let html = '<div class="card' + (tinted ? ' tinted' : '') + '"'
+      + (tinted ? ' style="--facade:' + fillColor + '"' : '') + '>';
+
+    // Korthodet
+    html += '<div class="card-header">';
+    html += '<span class="card-header-title">Hus ' + (p+1) + '</span>';
+    if (tinted) html += '<div class="card-header-color" style="background:' + fillColor + '"></div>';
+    html += '</div>';
+
+    // Kategori-rader
+    html += '<div class="cat-rows">';
+    for (let c = 0; c < K; c++) {
+      const v = val[p][c];
+      const s = src[p][c];
+      html += '<div class="cat-row">';
+      html += '<span class="cat-label">' + THEME.categories[c].label + '</span>';
+      html += '<div class="cat-content">';
+      if (v != null) {
+        const cls = 'filled-cell ' + (s === 'auto' ? 'auto' : 'manual');
+        html += '<div class="' + cls + '" data-p="' + p + '" data-c="' + c + '">'
+          + '<span class="fill-art">' + cellArt(c, v) + '</span>'
+          + '<span class="fill-value">' + lbl(c, v) + '</span>'
+          + '</div>';
+      } else {
+        const cands = candidatesFor(p, c, val, pm);
+        html += '<div class="chip-grid">';
+        cands.forEach(o => {
+          const struck = o.eliminated ? ' struck ' + o.reason : '';
+          html += '<button class="chip' + struck + '" data-p="' + p + '" data-c="' + c + '" data-v="' + o.v + '"'
+            + (o.eliminated ? ' disabled' : '')
+            + ' aria-label="' + lbl(c, o.v) + (o.eliminated ? ', utelukket' : ', velg') + '">'
+            + '<span class="chip-art">' + cellArt(c, o.v) + '</span>'
+            + lbl(c, o.v)
+            + '</button>';
+        });
+        html += '</div>';
+      }
+      html += '</div></div>';
+    }
+    html += '</div></div>';
+
+    document.getElementById('board').innerHTML = html;
+
+    // Events
+    document.querySelectorAll('.chip:not([disabled])').forEach(b =>
       b.addEventListener('click', e => { e.stopPropagation(); assign(+b.dataset.p, +b.dataset.c, +b.dataset.v); }));
-    board.querySelectorAll('.cell.filled.manual').forEach(el =>
+    document.querySelectorAll('.filled-cell.manual').forEach(el =>
       el.addEventListener('click', () => clearCell(+el.dataset.p, +el.dataset.c)));
 
-    // ledetråder
+    // ── Vitneutsagn (bunnark) ──
+    const used = usedClues.filter(Boolean).length;
+    const total = puzzle.clues.length;
+    document.getElementById('clue-badge').textContent = used + '/' + total + ' brukt';
+    document.getElementById('sheet-progress').textContent =
+      'Utfylt ' + st.filled + '/' + st.total;
+
     const cl = document.getElementById('clues');
     cl.innerHTML = puzzle.clues.map((c, i) =>
-      '<button class="clue ' + (usedClues[i] ? 'used' : '') + '" data-i="' + i + '">' +
-      '<span class="check">' + (usedClues[i] ? '✓' : '') + '</span><span>' + clueText(c) + '</span></button>'
+      '<button class="clue ' + (usedClues[i] ? 'used' : '') + '" data-i="' + i + '">'
+      + '<span class="check">' + (usedClues[i] ? '✓' : '') + '</span>'
+      + '<span>' + clueText(c) + '</span>'
+      + '</button>'
     ).join('');
     cl.querySelectorAll('button.clue').forEach(li =>
       li.addEventListener('click', () => { const i = +li.dataset.i; usedClues[i] = !usedClues[i]; render(); }));
 
-    // status-piller
-    document.getElementById('progress').innerHTML = 'Utfylt <strong>' + st.filled + '/' + st.total + '</strong>';
-    document.getElementById('clueprog').innerHTML = 'Spor brukt <strong>' + usedClues.filter(Boolean).length + '/' + puzzle.clues.length + '</strong>';
-    document.getElementById('message').textContent = message;
-    document.getElementById('undo').disabled = history.length === 0;
+    // Angre-knapp tilstand
+    document.getElementById('btn-undo').style.opacity = history.length === 0 ? '.4' : '1';
+    document.getElementById('btn-undo').disabled = history.length === 0;
 
-    // seier
+    // Snack fra message
+    if (message) showSnack(message);
+
+    // ── Seier ──
     const win = document.getElementById('win');
     if (won) {
       const last = CONFIG.order.indexOf(levelKey) === CONFIG.order.length - 1;
@@ -832,7 +1041,23 @@
     }
   }
 
-  // ---------- konfetti (lett) ----------
+  // ── Snack ──
+  function showSnack(txt) {
+    const el = document.getElementById('snack');
+    el.textContent = txt;
+    el.classList.add('show');
+    clearTimeout(snackTimer);
+    snackTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  // ── Bunnark toggle ──
+  function toggleSheet(force) {
+    sheetOpen = force !== undefined ? force : !sheetOpen;
+    document.getElementById('sheet').classList.toggle('open', sheetOpen);
+    document.getElementById('sheet-backdrop').classList.toggle('open', sheetOpen);
+  }
+
+  // ---------- konfetti ----------
   function launchConfetti() {
     const wrap = document.getElementById('confetti');
     if (wrap.dataset.on === '1') return;
@@ -865,23 +1090,64 @@
     reset() { pushHistory(); manual = Array.from({ length: puzzle.N }, () => new Array(puzzle.K).fill(null)); won = false; message = CONFIG.levels[levelKey].intro; render(); },
   };
 
-  // ---------- oppstart ----------
+  // ---------- OPPSTART ----------
   document.addEventListener('DOMContentLoaded', () => {
-    const sel = document.getElementById('level');
+
+    // Meny-modal level-velger
+    const sel = document.getElementById('menu-level');
     CONFIG.order.forEach(k => {
       const o = document.createElement('option'); o.value = k; o.textContent = CONFIG.levels[k].label;
       if (k === levelKey) o.selected = true; sel.appendChild(o);
     });
-    sel.addEventListener('change', () => newPuzzle(sel.value));
-    document.getElementById('new').addEventListener('click', () => newPuzzle());
-    document.getElementById('reset').addEventListener('click', () => window.__game.reset());
-    document.getElementById('undo').addEventListener('click', undo);
-    document.getElementById('check').addEventListener('click', check);
+    sel.addEventListener('change', () => { newPuzzle(sel.value); closeMenu(); });
+
+    // Meny åpne/lukke
+    function openMenu() { document.getElementById('menu-modal').classList.add('open'); }
+    function closeMenu() { document.getElementById('menu-modal').classList.remove('open'); }
+    document.getElementById('menu-btn').addEventListener('click', openMenu);
+    document.getElementById('btn-close-menu').addEventListener('click', closeMenu);
+    document.getElementById('menu-modal').addEventListener('click', e => { if (e.target === e.currentTarget) closeMenu(); });
+
+    // Meny-handlinger
+    document.getElementById('btn-new').addEventListener('click', () => { newPuzzle(); closeMenu(); });
+    document.getElementById('btn-check').addEventListener('click', () => { check(); closeMenu(); });
+    document.getElementById('btn-undo').addEventListener('click', () => { undo(); closeMenu(); });
+    document.getElementById('btn-reset').addEventListener('click', () => { window.__game.reset(); closeMenu(); });
+
+    // FAB
+    document.getElementById('fab-check').addEventListener('click', check);
+
+    // Navigasjon
+    document.getElementById('nav-prev').addEventListener('click', () => { if (currentHouse > 0) { currentHouse--; render(); } });
+    document.getElementById('nav-next').addEventListener('click', () => { if (currentHouse < puzzle.N - 1) { currentHouse++; render(); } });
+
+    // Bunnark
+    const handleArea = document.getElementById('sheet-handle-area');
+    handleArea.addEventListener('click', () => toggleSheet());
+    handleArea.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSheet(); } });
+    document.getElementById('sheet-backdrop').addEventListener('click', () => toggleSheet(false));
+
+    // Swipe på brettet (venstre/høyre)
+    let touchStartX = 0;
+    const scrollArea = document.getElementById('scroll-area');
+    scrollArea.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    scrollArea.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 50) {
+        if (dx < 0 && currentHouse < puzzle.N - 1) { currentHouse++; render(); }
+        else if (dx > 0 && currentHouse > 0) { currentHouse--; render(); }
+      }
+    }, { passive: true });
+
+    // Win-knapper
     document.getElementById('playagain').addEventListener('click', () => newPuzzle());
     document.getElementById('nextlevel').addEventListener('click', nextLevel);
+
+    // Tastatur-snarvei
     document.addEventListener('keydown', e => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z') { e.preventDefault(); undo(); }
     });
+
     newPuzzle();
   });
 })();
