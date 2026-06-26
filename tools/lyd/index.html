@@ -199,19 +199,6 @@ canvas#graph-canvas{
 </div>
 
 <script>
-let audioCtx=null, analyser=null, source=null, stream=null;
-let animId=null;
-let running=false;
-let dbSmooth=0;   // heavily smoothed – drives the display bar and state
-let dbPeak=0;     // fast-attack, slow-decay – drives the peak marker
-let warnT=CONFIG.DEFAULT_WARN, loudT=CONFIG.DEFAULT_LOUD;
-let lastState='ok';
-
-const ICONS={ok:'😊',warn:'😬',loud:'😱'};
-const LABELS={ok:'Stille og rolig',warn:'Litt bråkete!',loud:'For høyt nå!'};
-const FILLS={ok:'var(--green)',warn:'var(--amber)',loud:'var(--red)'};
-const FILL_HEX={ok:'#1a8a5a',warn:'#d97706',loud:'#dc2626'};
-
 // ╔══════════════════════════════════════════════════╗
 // ║  JUSTERBARE VERDIER – endre disse etter behov   ║
 // ╚══════════════════════════════════════════════════╝
@@ -234,10 +221,18 @@ const CONFIG = {
 
   // Toppmarkør (dbPeak): rask opp, langsom ned
   // Prøv attack: 0.50–0.80, decay: 0.04–0.10
-  PEAK_ATTACK: 1.50,
-  PEAK_DECAY:  0.06,
+  PEAK_ATTACK: 0.50,
+  PEAK_DECAY:  0.04,
 };
 // ══════════════════════════════════════════════════
+
+let audioCtx=null, analyser=null, source=null, stream=null;
+let animId=null;
+let running=false;
+let dbSmooth=0;   // heavily smoothed – drives the display bar and state
+let dbPeak=0;     // fast-attack, slow-decay – drives the peak marker
+let warnT=CONFIG.DEFAULT_WARN, loudT=CONFIG.DEFAULT_LOUD;
+let lastState='ok';
 // Store one sample per second: {t: ms since epoch, v: 0-100}
 const graphData=[];         // never cleared on window change
 let windowMins=1;           // currently selected window
