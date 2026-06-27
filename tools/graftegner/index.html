@@ -1,0 +1,1960 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Funksjonsgraf – LRNify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    html,
+    body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+
+    :root {
+      --bg: #fff9f0;
+      --panel: #ffffff;
+      --text: #2b2118;
+      --muted: #7a6f63;
+      --border: #2b2118;
+      --accent: #2b2118;
+      --accent-dark: #000000;
+      --danger: #b91c1c;
+      --grid: #e5e7eb;
+      --axis: #111827;
+      --point: #111827;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: 'Nunito', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    header {
+      padding: 16px 24px;
+      background: var(--panel);
+      border-bottom: 4px solid var(--border);
+      box-shadow: 0 4px 0 var(--border);
+      position: relative;
+      z-index: 5;
+    }
+
+    h1 {
+      margin: 0 0 2px;
+      font-family: 'Chewy', cursive;
+      font-size: 1.8rem;
+      letter-spacing: .02em;
+    }
+
+    h1 b {
+      color: #facc15;
+      -webkit-text-stroke: 1.5px #2b2118;
+      font-weight: 400;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 390px) minmax(0, 1fr);
+      gap: 18px;
+      padding: 18px;
+      width: 100%;
+      max-width: 100vw;
+      min-width: 0;
+    }
+
+    main > * {
+      min-width: 0;
+    }
+
+    .panel,
+    .canvas-card {
+      background: var(--panel);
+      border: 3px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 6px 0 var(--border);
+    }
+
+    .panel {
+      padding: 14px;
+      height: clamp(380px, calc(100vh - 150px), 760px);
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex: 0 0 auto;
+    }
+
+    .tab-button {
+      background: var(--bg);
+      color: var(--muted);
+      border: 2px solid var(--border);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+    }
+
+    .tab-button.active {
+      background: #facc15;
+      color: var(--text);
+      border-color: var(--border);
+    }
+
+    .tab-content {
+      display: none;
+      min-height: 0;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .tab-content.active {
+      display: block;
+      flex: 1 1 auto;
+    }
+
+    label {
+      display: block;
+      font-weight: 650;
+      margin: 14px 0 6px;
+    }
+
+    input,
+    select {
+      min-width: 0;
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 1rem;
+      background: white;
+    }
+
+    input:focus,
+    select:focus {
+      outline: 2px solid rgba(37, 99, 235, 0.2);
+      border-color: var(--accent);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .function-row {
+      display: grid;
+      grid-template-columns: 28px minmax(58px, 78px) minmax(0, 1fr) 42px 34px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      min-width: 0;
+    }
+
+    .analysis-popup {
+      position: fixed;
+      z-index: 60;
+      display: none;
+      width: min(300px, calc(100vw - 20px));
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    .analysis-popup.open {
+      display: block;
+    }
+
+    .analysis-popup-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .analysis-choice {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .analysis-choice input {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+
+    .function-row input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+    }
+
+    .color-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 0 0 1px var(--border);
+    }
+
+    .delete-button {
+      padding: 9px 0;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .floating-keypad {
+      position: fixed;
+      z-index: 50;
+      display: none;
+      grid-template-columns: repeat(4, minmax(42px, 1fr));
+      gap: 7px;
+      width: min(330px, calc(100vw - 20px));
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.98);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+    }
+
+    .floating-keypad.open {
+      display: grid;
+    }
+
+    .floating-keypad button {
+      padding: 9px 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-weight: 650;
+      cursor: pointer;
+      background: #e2e8f0;
+      color: var(--text);
+    }
+
+    button:hover { filter: brightness(0.97); }
+
+    .primary {
+      width: 100%;
+      margin-top: 16px;
+      background: #facc15;
+      color: var(--text);
+      font-size: 1rem;
+      border: 3px solid var(--border);
+      box-shadow: 0 4px 0 var(--border);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      transition: transform .1s, box-shadow .1s;
+    }
+
+    .primary:hover {
+      background: #facc15;
+      filter: none;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 0 var(--border);
+    }
+
+    .primary:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 var(--border);
+    }
+
+    .secondary {
+      width: 100%;
+      margin-top: 10px;
+      background: var(--bg);
+      color: var(--text);
+      border: 2px solid var(--border);
+      font-family: 'Nunito', sans-serif;
+      font-weight: 700;
+    }
+
+    .secondary:hover {
+      background: #facc15;
+      filter: none;
+    }
+
+    .analysis-button {
+      background: #f0fdf4;
+      color: #14532d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .analysis-button:active {
+      background: #16a34a;
+      color: white;
+      border-color: #15803d;
+    }
+
+    .help,
+    .result-box {
+      margin-top: 14px;
+      padding: 12px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .result-box {
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .point-choice {
+      display: grid;
+      grid-template-columns: 22px minmax(44px, 70px) 1fr 30px;
+      align-items: center;
+      gap: 8px;
+      margin: 7px 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .point-choice input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      flex: 0 0 auto;
+    }
+
+    .point-name-input {
+      padding: 7px 8px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .point-delete-button {
+      padding: 7px 0;
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .variable-panel {
+      margin-top: 8px;
+      min-height: 160px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .variable-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 74px;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .variable-row strong {
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .variable-row input[type="range"] {
+      padding: 0;
+    }
+
+    .variable-row input[type="number"] {
+      padding: 7px 8px;
+      font-size: 0.92rem;
+    }
+
+    .error {
+      margin-top: 12px;
+      color: var(--danger);
+      font-weight: 650;
+      min-height: 1.4em;
+    }
+
+    .canvas-card {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      height: clamp(380px, calc(100vh - 150px), 760px);
+      min-height: 0;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      min-width: 0;
+      min-height: 0;
+      display: block;
+      background: white;
+      cursor: move;
+      touch-action: none;
+    }
+
+    canvas.dragging {
+      cursor: grabbing;
+    }
+
+    .status {
+      position: absolute;
+      right: 14px;
+      bottom: 14px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      pointer-events: none;
+    }
+
+    code {
+      background: #eef2ff;
+      padding: 1px 4px;
+      border-radius: 4px;
+      color: #1e3a8a;
+    }
+
+    @media (max-width: 1050px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        order: 1;
+      }
+
+      .canvas-card {
+        order: 2;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .panel {
+        height: min(58vh, 430px);
+        min-height: 320px;
+      }
+
+      header {
+        padding: 14px 14px;
+      }
+
+      h1 {
+        font-size: 1.15rem;
+      }
+
+      .subtitle {
+        font-size: 0.88rem;
+      }
+
+      main {
+        padding: 10px;
+        gap: 10px;
+      }
+
+      .panel {
+        padding: 12px;
+        border-radius: 12px;
+      }
+
+      .tabs {
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+
+      .canvas-card {
+        height: min(58vh, 430px);
+        min-height: 320px;
+        border-radius: 12px;
+      }
+
+      canvas {
+        height: 100%;
+        border-radius: 12px;
+      }
+
+      .function-row {
+        grid-template-columns: 24px minmax(48px, 64px) minmax(0, 1fr) 30px;
+      }
+
+      .function-row .color-dot {
+        display: none;
+      }
+
+      .floating-keypad {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .analysis-grid,
+      .row {
+        grid-template-columns: 1fr;
+      }
+
+      .status {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        text-align: center;
+        border-radius: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <h1>Funksjons<b>graf</b></h1>
+      <div class="subtitle">Legg til flere funksjoner, tegn grafene og analyser valgt funksjon.</div>
+    </header>
+
+    <main>
+      <section class="panel">
+        <div class="tabs">
+          <button class="tab-button active" id="functionsTabButton" type="button">Funksjoner</button>
+          <button class="tab-button" id="analysisTabButton" type="button">Analyse</button>
+        </div>
+
+        <div class="tab-content active" id="functionsTab">
+        <label>Funksjoner</label>
+        <div id="functionList"></div>
+        <button class="secondary" id="addFunctionButton" type="button">Legg til funksjon</button>
+
+        <div class="row">
+          <div>
+            <label for="xMinInput">x-min</label>
+            <input id="xMinInput" type="number" step="any" placeholder="Tom = auto" />
+          </div>
+          <div>
+            <label for="xMaxInput">x-maks</label>
+            <input id="xMaxInput" type="number" step="any" placeholder="Tom = auto" />
+          </div>
+        </div>
+
+        <button class="primary" id="drawButton" type="button">Tegn grafer</button>
+        <button class="secondary" id="resetButton" type="button">Tilbakestill visning</button>
+
+        <label>Variabler</label>
+        <div class="variable-panel" id="variablePanel">Skriv variabler som a, b eller c i et funksjonsuttrykk.</div>
+
+                </div>
+
+        <div class="tab-content" id="analysisTab">
+        <label>Analyse</label>
+        <div id="analysisChoices" class="analysis-popup"></div>
+        <div class="analysis-grid">
+          <button class="analysis-button" id="allExtremaButton" type="button">Ekstremalpunkter</button>
+          <button class="analysis-button" id="maximaButton" type="button">Toppunkter</button>
+          <button class="analysis-button" id="minimaButton" type="button">Bunnpunkter</button>
+          <button class="analysis-button" id="intersectionsButton" type="button">Skjæringspunkter</button>
+        </div>
+
+
+        <div class="result-box" id="resultBox">Punkter vises her etter analyse.</div>
+        </div>
+
+        <div class="error" id="errorBox"></div>
+      </section>
+
+      <section class="canvas-card">
+        <canvas id="graphCanvas"></canvas>
+        <div class="status" id="statusBox">Klar</div>
+      </section>
+    </main>
+  </div>
+
+  <div class="floating-keypad" id="floatingKeypad" aria-label="Knapper for uttrykk">
+    <button type="button" data-insert="x">x</button>
+    <button type="button" data-insert="^2">x²</button>
+    <button type="button" data-insert="^3">x³</button>
+    <button type="button" data-insert="/">÷</button>
+    <button type="button" data-insert="+">+</button>
+    <button type="button" data-insert="-">−</button>
+    <button type="button" data-insert="*">×</button>
+    <button type="button" data-insert="(">(</button>
+    <button type="button" data-insert=")">)</button>
+    <button type="button" data-insert=".">.</button>
+    <button type="button" data-insert="0">0</button>
+    <button type="button" id="backspaceButton">⌫</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("graphCanvas");
+    const ctx = canvas.getContext("2d");
+    const functionList = document.getElementById("functionList");
+    const variablePanel = document.getElementById("variablePanel");
+    const functionsTabButton = document.getElementById("functionsTabButton");
+    const analysisTabButton = document.getElementById("analysisTabButton");
+    const functionsTab = document.getElementById("functionsTab");
+    const analysisTab = document.getElementById("analysisTab");
+    const analysisChoices = document.getElementById("analysisChoices");
+    const xMinInput = document.getElementById("xMinInput");
+    const xMaxInput = document.getElementById("xMaxInput");
+    const drawButton = document.getElementById("drawButton");
+    const resetButton = document.getElementById("resetButton");
+    const addFunctionButton = document.getElementById("addFunctionButton");
+    const errorBox = document.getElementById("errorBox");
+    const resultBox = document.getElementById("resultBox");
+    const statusBox = document.getElementById("statusBox");
+    const floatingKeypad = document.getElementById("floatingKeypad");
+    const backspaceButton = document.getElementById("backspaceButton");
+    const allExtremaButton = document.getElementById("allExtremaButton");
+    const maximaButton = document.getElementById("maximaButton");
+    const minimaButton = document.getElementById("minimaButton");
+    const intersectionsButton = document.getElementById("intersectionsButton");
+
+    const colors = ["#2563eb", "#dc2626", "#16a34a", "#9333ea", "#f97316", "#0891b2", "#be123c", "#4f46e5"];
+
+    function activateTab(tabName) {
+      const showAnalysis = tabName === "analysis";
+      functionsTabButton.classList.toggle("active", !showAnalysis);
+      analysisTabButton.classList.toggle("active", showAnalysis);
+      functionsTab.classList.toggle("active", !showAnalysis);
+      analysisTab.classList.toggle("active", showAnalysis);
+    }
+
+    functionsTabButton.addEventListener("click", () => activateTab("functions"));
+    analysisTabButton.addEventListener("click", () => activateTab("analysis"));
+
+    let functions = [
+      { id: 1, name: "", expression: "x^2", color: colors[0], visible: true, analyze: true },
+      { id: 2, name: "", expression: "2x+1", color: colors[1], visible: true, analyze: false }
+    ];
+
+    let nextFunctionId = 3;
+    let focusedInput = null;
+    let compiledFunctions = [];
+    let markers = [];
+    let nextPointIndex = 0;
+    let pendingAnalysisKind = null;
+    let variableValues = {};
+    let isDragging = false;
+    let axisDrag = null;
+    let lastPointer = null;
+
+    let view = {
+      xMin: -10,
+      xMax: 10,
+      yMin: -10,
+      yMax: 10
+    };
+
+    let domain = {
+      xMin: -Infinity,
+      xMax: Infinity
+    };
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(rect.width * dpr);
+      canvas.height = Math.round(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw();
+    }
+
+    function getCanvasSize() {
+      const rect = canvas.getBoundingClientRect();
+      return { width: rect.width, height: rect.height };
+    }
+
+    function xToScreen(x) {
+      const width = getCanvasSize().width;
+      return ((x - view.xMin) / (view.xMax - view.xMin)) * width;
+    }
+
+    function yToScreen(y) {
+      const height = getCanvasSize().height;
+      return height - ((y - view.yMin) / (view.yMax - view.yMin)) * height;
+    }
+
+    function screenToX(px) {
+      const width = getCanvasSize().width;
+      return view.xMin + (px / width) * (view.xMax - view.xMin);
+    }
+
+    function screenToY(py) {
+      const height = getCanvasSize().height;
+      return view.yMax - (py / height) * (view.yMax - view.yMin);
+    }
+
+    function panViewByPixels(dx, dy, mode = "both") {
+      const size = getCanvasSize();
+      const xUnitsPerPixel = (view.xMax - view.xMin) / size.width;
+      const yUnitsPerPixel = (view.yMax - view.yMin) / size.height;
+
+      if (mode === "both" || mode === "x") {
+        view.xMin -= dx * xUnitsPerPixel;
+        view.xMax -= dx * xUnitsPerPixel;
+      }
+
+      if (mode === "both" || mode === "y") {
+        view.yMin += dy * yUnitsPerPixel;
+        view.yMax += dy * yUnitsPerPixel;
+      }
+
+      draw();
+    }
+
+    function zoomViewAt(screenX, screenY, factor) {
+      const x = screenToX(screenX);
+      const y = screenToY(screenY);
+
+      view.xMin = x + (view.xMin - x) * factor;
+      view.xMax = x + (view.xMax - x) * factor;
+      view.yMin = y + (view.yMin - y) * factor;
+      view.yMax = y + (view.yMax - y) * factor;
+
+      draw();
+    }
+
+    function zoomAxisByDrag(dx, dy, axis) {
+      if (axis === "x") {
+        const center = (view.xMin + view.xMax) / 2;
+        const factor = Math.exp(dx * 0.006);
+        view.xMin = center + (view.xMin - center) * factor;
+        view.xMax = center + (view.xMax - center) * factor;
+      }
+
+      if (axis === "y") {
+        const center = (view.yMin + view.yMax) / 2;
+        const factor = Math.exp(-dy * 0.006);
+        view.yMin = center + (view.yMin - center) * factor;
+        view.yMax = center + (view.yMax - center) * factor;
+      }
+
+      draw();
+    }
+
+    function getAxisArrowPositions() {
+      const size = getCanvasSize();
+      const positions = {};
+
+      if (view.yMin <= 0 && view.yMax >= 0) {
+        positions.x = { x: size.width - 16, y: yToScreen(0) };
+      }
+
+      if (view.xMin <= 0 && view.xMax >= 0) {
+        positions.y = { x: xToScreen(0), y: 16 };
+      }
+
+      return positions;
+    }
+
+    function getAxisArrowHit(clientX, clientY) {
+      const rect = canvas.getBoundingClientRect();
+      const px = clientX - rect.left;
+      const py = clientY - rect.top;
+      const positions = getAxisArrowPositions();
+      const radius = 24;
+
+      if (positions.x && Math.hypot(px - positions.x.x, py - positions.x.y) <= radius) return "x";
+      if (positions.y && Math.hypot(px - positions.y.x, py - positions.y.y) <= radius) return "y";
+      return null;
+    }
+
+    function renderFunctionInputs() {
+      functionList.innerHTML = "";
+      analysisChoices.innerHTML = "";
+
+      functions.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "function-row";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = item.visible;
+        checkbox.title = "Vis eller skjul funksjonen";
+        checkbox.addEventListener("change", () => {
+          item.visible = checkbox.checked;
+          drawFromInputs(false);
+        });
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.value = item.name || "";
+        nameInput.placeholder = defaultFunctionName(index);
+        nameInput.title = "Navn, for eksempel f eller A. Du kan også skrive A(x).";
+        nameInput.addEventListener("input", () => {
+          item.name = nameInput.value;
+          updateAnalysisChoices();
+        });
+
+        const input = document.createElement("input");
+        input.type = "text";
+        input.value = item.expression;
+        input.placeholder = "For eksempel: 2x^2 - 3x + 1";
+        input.dataset.id = item.id;
+        input.className = "expression-input";
+        input.addEventListener("input", () => {
+          item.expression = input.value;
+          updateSelectLabels();
+        });
+        input.addEventListener("focus", () => {
+          focusedInput = input;
+          item.analyze = true;
+          updateAnalysisChoices();
+          showFloatingKeypad(input);
+        });
+        input.addEventListener("keydown", event => {
+          if (event.key === "Enter") drawFromInputs();
+        });
+        input.addEventListener("blur", hideFloatingKeypadSoon);
+
+        const dot = document.createElement("div");
+        dot.className = "color-dot";
+        dot.style.background = item.color;
+        dot.title = "Fargen på grafen";
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "delete-button";
+        deleteButton.textContent = "×";
+        deleteButton.title = "Slett funksjon";
+        deleteButton.addEventListener("click", () => {
+          if (functions.length === 1) {
+            showError("Du må ha minst én funksjon.");
+            return;
+          }
+          functions = functions.filter(fn => fn.id !== item.id);
+          renderFunctionInputs();
+          drawFromInputs(false);
+        });
+
+        row.appendChild(checkbox);
+        row.appendChild(nameInput);
+        row.appendChild(input);
+        row.appendChild(dot);
+        row.appendChild(deleteButton);
+        functionList.appendChild(row);
+
+        
+      });
+
+      if (!focusedInput) {
+        const firstInput = functionList.querySelector(".expression-input");
+        focusedInput = firstInput;
+      }
+
+      updateAnalysisChoices();
+    }
+
+    function updateSelectLabels() {
+      updateAnalysisChoices();
+    }
+
+    function defaultFunctionName(index) {
+      const names = "fghijklmnopqrstuvwxyz";
+      return names[index] || `f${index + 1}`;
+    }
+
+    function normalizeFunctionName(rawName, index) {
+      const fallback = defaultFunctionName(index);
+      const cleaned = (rawName || "").trim();
+      if (!cleaned) return fallback;
+      if (cleaned.toLowerCase().endsWith("(x)")) return cleaned.slice(0, -3).trim() || fallback;
+      return cleaned;
+    }
+
+    function getFunctionName(item, index) {
+      return normalizeFunctionName(item.name, index);
+    }
+
+    function getFunctionLabel(item, index) {
+      return `${getFunctionName(item, index)}(x)`;
+    }
+
+    function getPendingAnalysisLabel() {
+      if (pendingAnalysisKind === "allExtrema") return "ekstremalpunkter";
+      if (pendingAnalysisKind === "maxima") return "toppunkter";
+      if (pendingAnalysisKind === "minima") return "bunnpunkter";
+      if (pendingAnalysisKind === "intersections") return "skjæringspunkter";
+      return "punkter";
+    }
+
+    function updateAnalysisChoices(anchorButton = null) {
+      analysisChoices.innerHTML = "";
+
+      if (!pendingAnalysisKind) {
+        analysisChoices.classList.remove("open");
+        return;
+      }
+
+      const heading = document.createElement("div");
+      heading.className = "analysis-popup-title";
+      heading.textContent = `Velg grafer for ${getPendingAnalysisLabel()}:`;
+      analysisChoices.appendChild(heading);
+
+      functions.forEach((item, index) => {
+        const label = document.createElement("label");
+        label.className = "analysis-choice";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = item.analyze !== false;
+        checkbox.addEventListener("change", () => {
+          item.analyze = checkbox.checked;
+        });
+
+        const text = document.createElement("span");
+        text.textContent = getFunctionLabel(item, index);
+
+        label.appendChild(checkbox);
+        label.appendChild(text);
+        analysisChoices.appendChild(label);
+      });
+
+      const createButton = document.createElement("button");
+      createButton.type = "button";
+      createButton.className = "primary";
+      createButton.textContent = "Lag punkter";
+      createButton.addEventListener("click", () => createAnalysisPoints(pendingAnalysisKind));
+      analysisChoices.appendChild(createButton);
+
+      positionAnalysisPopup(anchorButton);
+      analysisChoices.classList.add("open");
+    }
+
+    function positionAnalysisPopup(anchorButton) {
+      const anchor = anchorButton || document.querySelector(".analysis-button");
+      if (!anchor) return;
+      const rect = anchor.getBoundingClientRect();
+      const popupWidth = Math.min(300, window.innerWidth - 20);
+      let left = rect.left;
+      if (left + popupWidth > window.innerWidth - 10) left = window.innerWidth - popupWidth - 10;
+      if (left < 10) left = 10;
+
+      let top = rect.bottom + 8;
+      const estimatedHeight = 230;
+      if (top + estimatedHeight > window.innerHeight - 10) {
+        top = Math.max(10, rect.top - estimatedHeight - 8);
+      }
+
+      analysisChoices.style.left = `${left}px`;
+      analysisChoices.style.top = `${top}px`;
+    }
+
+    function showError(message) {
+      errorBox.textContent = message;
+      statusBox.textContent = "Feil";
+    }
+
+    function niceStep(range) {
+      const roughStep = range / 10;
+      const power = Math.pow(10, Math.floor(Math.log10(roughStep)));
+      const fraction = roughStep / power;
+      if (fraction < 1.5) return power;
+      if (fraction < 3) return 2 * power;
+      if (fraction < 7) return 5 * power;
+      return 10 * power;
+    }
+
+    function formatNumber(value) {
+      if (!Number.isFinite(value)) return "ikke definert";
+      if (Math.abs(value) < 1e-10) return "0";
+      if (Math.abs(value) >= 10000 || Math.abs(value) < 0.001) return value.toExponential(3);
+      return Number(value.toFixed(5)).toString();
+    }
+
+    function drawGridAndAxes() {
+      const size = getCanvasSize();
+      const width = size.width;
+      const height = size.height;
+      ctx.clearRect(0, 0, width, height);
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--grid").trim();
+      ctx.fillStyle = "#64748b";
+      ctx.font = "12px system-ui";
+
+      const xStep = niceStep(view.xMax - view.xMin);
+      const yStep = niceStep(view.yMax - view.yMin);
+
+      const firstX = Math.ceil(view.xMin / xStep) * xStep;
+      for (let x = firstX; x <= view.xMax; x += xStep) {
+        const px = xToScreen(x);
+        ctx.beginPath();
+        ctx.moveTo(px, 0);
+        ctx.lineTo(px, height);
+        ctx.stroke();
+        ctx.fillText(formatNumber(x), px + 4, Math.min(height - 6, Math.max(14, yToScreen(0) + 14)));
+      }
+
+      const firstY = Math.ceil(view.yMin / yStep) * yStep;
+      for (let y = firstY; y <= view.yMax; y += yStep) {
+        const py = yToScreen(y);
+        ctx.beginPath();
+        ctx.moveTo(0, py);
+        ctx.lineTo(width, py);
+        ctx.stroke();
+        if (Math.abs(y) > yStep / 1000) {
+          ctx.fillText(formatNumber(y), Math.min(width - 54, Math.max(4, xToScreen(0) + 6)), py - 4);
+        }
+      }
+
+      ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--axis").trim();
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--axis").trim();
+      ctx.lineWidth = 1.6;
+
+      if (view.yMin <= 0 && view.yMax >= 0) {
+        const y0 = yToScreen(0);
+        ctx.beginPath();
+        ctx.moveTo(0, y0);
+        ctx.lineTo(width - 10, y0);
+        ctx.stroke();
+        drawArrowHead(width - 10, y0, "right");
+      }
+
+      if (view.xMin <= 0 && view.xMax >= 0) {
+        const x0 = xToScreen(0);
+        ctx.beginPath();
+        ctx.moveTo(x0, height);
+        ctx.lineTo(x0, 10);
+        ctx.stroke();
+        drawArrowHead(x0, 10, "up");
+      }
+    }
+
+    function drawArrowHead(x, y, direction) {
+      ctx.beginPath();
+      if (direction === "right") {
+        ctx.moveTo(x + 10, y);
+        ctx.lineTo(x, y - 6);
+        ctx.lineTo(x, y + 6);
+      } else {
+        ctx.moveTo(x, y - 10);
+        ctx.lineTo(x - 6, y);
+        ctx.lineTo(x + 6, y);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function isDigit(ch) {
+      return ch >= "0" && ch <= "9";
+    }
+
+    function isLetter(ch) {
+      const low = ch.toLowerCase();
+      return low >= "a" && low <= "z";
+    }
+
+    function tokenize(expression) {
+      const tokens = [];
+      let i = 0;
+
+      while (i < expression.length) {
+        const ch = expression[i];
+
+        if (ch.trim() === "") {
+          i++;
+          continue;
+        }
+
+        if (isDigit(ch) || ch === ".") {
+          let number = ch;
+          i++;
+          while (i < expression.length && (isDigit(expression[i]) || expression[i] === ".")) {
+            number += expression[i];
+            i++;
+          }
+          if (number === "." || Number.isNaN(Number(number))) throw new Error(`Ugyldig tall: ${number}`);
+          tokens.push({ type: "number", value: number });
+          continue;
+        }
+
+        if (isLetter(ch)) {
+          tokens.push({ type: ch.toLowerCase() === "x" ? "variable" : "parameter", value: ch });
+          i++;
+          continue;
+        }
+
+        if ("+-*/^()".includes(ch)) {
+          tokens.push({ type: "operator", value: ch });
+          i++;
+          continue;
+        }
+
+        throw new Error(`Ugyldig tegn: ${ch}`);
+      }
+
+      return insertImplicitMultiplication(tokens);
+    }
+
+    function insertImplicitMultiplication(tokens) {
+      const result = [];
+      for (let i = 0; i < tokens.length; i++) {
+        const current = tokens[i];
+        const previous = result[result.length - 1];
+        if (previous && needsImplicitMultiplication(previous, current)) {
+          result.push({ type: "operator", value: "*" });
+        }
+        result.push(current);
+      }
+      return result;
+    }
+
+    function needsImplicitMultiplication(left, right) {
+      const leftCanEndFactor = left.type === "number" || left.type === "variable" || left.type === "parameter" || left.value === ")";
+      const rightCanStartFactor = right.type === "number" || right.type === "variable" || right.type === "parameter" || right.value === "(";
+      return leftCanEndFactor && rightCanStartFactor;
+    }
+
+    function tokensToJs(tokens) {
+      return tokens.map(token => {
+        if (token.type === "number") return token.value;
+        if (token.type === "variable") return "x";
+        if (token.type === "parameter") return `vars["${token.value}"]`;
+        if (token.value === "^") return "**";
+        return token.value;
+      }).join(" ");
+    }
+
+    function compileExpression(expression) {
+      const cleaned = expression
+        .trim()
+        .split(",").join(".")
+        .split("−").join("-")
+        .split("×").join("*")
+        .split("÷").join("/");
+
+      if (!cleaned) throw new Error("Skriv inn et funksjonsuttrykk.");
+
+      const tokens = tokenize(cleaned);
+      const jsExpression = tokensToJs(tokens);
+      const variables = [...new Set(tokens.filter(token => token.type === "parameter").map(token => token.value))].sort();
+
+      try {
+        const fn = new Function("x", "vars", `"use strict"; return (${jsExpression});`);
+        const testVars = Object.fromEntries(variables.map(name => [name, variableValues[name] ?? 1]));
+        const testValue = fn(1, testVars);
+        if (typeof testValue !== "number" || Number.isNaN(testValue)) throw new Error();
+        return { fn, variables };
+      } catch {
+        throw new Error("Uttrykket kunne ikke tolkes. Sjekk parenteser og operatorer.");
+      }
+    }
+
+    function safeEval(fn, x) {
+      try {
+        const y = fn(x, variableValues);
+        return typeof y === "number" ? y : NaN;
+      } catch {
+        return NaN;
+      }
+    }
+
+    function compileAllFunctions() {
+      const result = [];
+      for (let i = 0; i < functions.length; i++) {
+        const item = functions[i];
+        if (!item.visible) continue;
+        if (!item.expression.trim()) continue;
+        const compiled = compileExpression(item.expression);
+        result.push({ ...item, index: i, displayName: getFunctionName(item, i), fn: compiled.fn, variables: compiled.variables });
+      }
+      if (result.length === 0) throw new Error("Minst én synlig funksjon må ha et uttrykk.");
+      ensureVariableDefaults(result);
+      renderVariableControls(result);
+      return result;
+    }
+
+    function ensureVariableDefaults(compiled) {
+      const names = getVariableNames(compiled);
+      names.forEach(name => {
+        if (!Number.isFinite(variableValues[name])) variableValues[name] = 1;
+      });
+    }
+
+    function getVariableNames(compiled = compiledFunctions) {
+      return [...new Set(compiled.flatMap(item => item.variables || []))].sort();
+    }
+
+    function renderVariableControls(compiled = compiledFunctions) {
+      const names = getVariableNames(compiled);
+
+      if (names.length === 0) {
+        variablePanel.textContent = "Ingen variabler funnet. Skriv for eksempel ax+b eller ax^2+bx+c.";
+        return;
+      }
+
+      variablePanel.innerHTML = "";
+      names.forEach(name => {
+        const row = document.createElement("div");
+        row.className = "variable-row";
+
+        const label = document.createElement("strong");
+        label.textContent = name;
+
+        const slider = document.createElement("input");
+        slider.type = "range";
+        slider.min = "-10";
+        slider.max = "10";
+        slider.step = "0.1";
+        slider.value = String(variableValues[name]);
+        slider.dataset.variable = name;
+
+        const number = document.createElement("input");
+        number.type = "number";
+        number.step = "0.1";
+        number.value = String(variableValues[name]);
+        number.dataset.variable = name;
+
+        row.appendChild(label);
+        row.appendChild(slider);
+        row.appendChild(number);
+        variablePanel.appendChild(row);
+      });
+    }
+
+    function updateVariable(name, value) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return;
+      variableValues[name] = number;
+
+      variablePanel.querySelectorAll(`[data-variable="${name}"]`).forEach(input => {
+        if (input.value !== String(value)) input.value = String(value);
+      });
+
+      recomputeMarkerPositions();
+      draw();
+      renderPointList();
+    }
+
+    function recomputeMarkerPositions() {
+      if (markers.length === 0) return;
+
+      markers.forEach(marker => {
+        const updated = recomputeSingleMarker(marker);
+        if (!updated) return;
+        marker.x = updated.x;
+        marker.y = updated.y;
+        marker.type = updated.type || marker.type;
+        marker.color = updated.color || marker.color;
+      });
+    }
+
+    function recomputeSingleMarker(marker) {
+      if (!marker.sourceKey) return null;
+      const parts = marker.sourceKey.split(":");
+      const kind = parts[0];
+
+      if (kind === "allExtrema" || kind === "maxima" || kind === "minima") {
+        const functionId = Number(parts[1]);
+        const item = compiledFunctions.find(fn => fn.id === functionId);
+        if (!item) return null;
+
+        let points = findExtrema(item);
+        if (kind === "maxima") points = points.filter(p => p.type === "toppunkt");
+        if (kind === "minima") points = points.filter(p => p.type === "bunnpunkt");
+        const point = points[marker.sourceIndex];
+        if (!point) return null;
+        return { ...point, type: marker.type, color: marker.color };
+      }
+
+      if (kind === "intersections") {
+        const firstId = Number(parts[1]);
+        const secondId = Number(parts[2]);
+        const first = compiledFunctions.find(fn => fn.id === firstId);
+        const second = compiledFunctions.find(fn => fn.id === secondId);
+        if (!first || !second) return null;
+        const points = findFunctionIntersections([first, second]).filter(point => point.sourceKey === marker.sourceKey);
+        const point = points[marker.sourceIndex];
+        if (!point) return null;
+        return { ...point, type: marker.type, color: marker.color };
+      }
+
+      return null;
+    }
+
+    variablePanel.addEventListener("input", event => {
+      const name = event.target.dataset.variable;
+      if (!name) return;
+      updateVariable(name, event.target.value);
+    });
+
+    function calculateYRange(compiled, xMin, xMax) {
+      const values = [];
+      const samples = 800;
+      const range = clampRangeToDomain(xMin, xMax);
+
+      if (!range) return { yMin: -10, yMax: 10 };
+
+      compiled.forEach(item => {
+        for (let i = 0; i <= samples; i++) {
+          const x = range.xMin + (i / samples) * (range.xMax - range.xMin);
+          const y = safeEval(item.fn, x);
+          if (Number.isFinite(y)) values.push(y);
+        }
+      });
+
+      if (values.length === 0) return { yMin: -10, yMax: 10 };
+      values.sort((a, b) => a - b);
+      const low = values[Math.floor(values.length * 0.03)];
+      const high = values[Math.floor(values.length * 0.97)];
+
+      if (Math.abs(high - low) < 1e-9) return { yMin: low - 5, yMax: high + 5 };
+      const padding = (high - low) * 0.15;
+      return { yMin: low - padding, yMax: high + padding };
+    }
+
+    function updateViewFromInputs(compiled, preserveCurrentView = false) {
+      const minRaw = xMinInput.value.trim();
+      const maxRaw = xMaxInput.value.trim();
+      const hasMin = minRaw !== "";
+      const hasMax = maxRaw !== "";
+      const inputMin = hasMin ? Number(minRaw) : -Infinity;
+      const inputMax = hasMax ? Number(maxRaw) : Infinity;
+
+      if ((hasMin && !Number.isFinite(inputMin)) || (hasMax && !Number.isFinite(inputMax))) {
+        throw new Error("x-min og x-maks må være tall eller stå tomme.");
+      }
+      if (hasMin && hasMax && inputMin >= inputMax) throw new Error("x-min må være mindre enn x-maks.");
+
+      domain = { xMin: inputMin, xMax: inputMax };
+
+      if (preserveCurrentView) return;
+
+      const viewXMin = hasMin ? inputMin : -10;
+      const viewXMax = hasMax ? inputMax : 10;
+      const yRange = calculateYRange(compiled, viewXMin, viewXMax);
+      view = { xMin: viewXMin, xMax: viewXMax, yMin: yRange.yMin, yMax: yRange.yMax };
+    }
+
+    function clampRangeToDomain(xMin, xMax) {
+      const clampedMin = Math.max(xMin, domain.xMin);
+      const clampedMax = Math.min(xMax, domain.xMax);
+      if (!Number.isFinite(clampedMin) || !Number.isFinite(clampedMax) || clampedMin >= clampedMax) return null;
+      return { xMin: clampedMin, xMax: clampedMax };
+    }
+
+    function getAnalysisRange() {
+      return clampRangeToDomain(view.xMin, view.xMax);
+    }
+
+    function isInDomain(x) {
+      return x >= domain.xMin && x <= domain.xMax;
+    }
+
+    function drawFunction(item) {
+      const width = getCanvasSize().width;
+      ctx.strokeStyle = item.color;
+      ctx.lineWidth = 2.4;
+      let drawing = false;
+      ctx.beginPath();
+
+      for (let px = 0; px <= width; px++) {
+        const x = screenToX(px);
+
+        if (!isInDomain(x)) {
+          drawing = false;
+          continue;
+        }
+
+        const y = safeEval(item.fn, x);
+        const py = yToScreen(y);
+        const isVisibleEnough = Number.isFinite(y) && py > -10000 && py < 10000;
+
+        if (!isVisibleEnough) {
+          drawing = false;
+          continue;
+        }
+
+        if (!drawing) {
+          ctx.moveTo(px, py);
+          drawing = true;
+        } else {
+          ctx.lineTo(px, py);
+        }
+      }
+      ctx.stroke();
+    }
+
+    function drawMarkers() {
+      markers.forEach(marker => {
+        if (marker.visible === false) return;
+        const px = xToScreen(marker.x);
+        const py = yToScreen(marker.y);
+        if (!Number.isFinite(px) || !Number.isFinite(py)) return;
+
+        ctx.beginPath();
+        ctx.arc(px, py, 5, 0, Math.PI * 2);
+        ctx.fillStyle = marker.color || getComputedStyle(document.documentElement).getPropertyValue("--point").trim();
+        ctx.fill();
+        ctx.font = "12px system-ui";
+        ctx.fillStyle = "#111827";
+        ctx.fillText(marker.label, px + 8, py - 8);
+      });
+    }
+
+    function drawLegend() {
+      const visible = compiledFunctions.filter(item => item.visible);
+      let y = 18;
+      ctx.font = "13px system-ui";
+      visible.forEach(item => {
+        ctx.fillStyle = item.color;
+        ctx.fillRect(14, y - 9, 18, 4);
+        ctx.fillStyle = "#111827";
+        ctx.fillText(`${item.displayName}(x) = ${item.expression}`, 40, y - 4);
+        y += 20;
+      });
+    }
+
+    function draw() {
+      drawGridAndAxes();
+      compiledFunctions.forEach(drawFunction);
+      drawMarkers();
+      drawLegend();
+    }
+
+    function drawFromInputs(clearResults = true) {
+      try {
+        errorBox.textContent = "";
+        const hadExistingView = compiledFunctions.length > 0;
+        compiledFunctions = compileAllFunctions();
+        updateViewFromInputs(compiledFunctions, hadExistingView);
+        recomputeMarkerPositions();
+        draw();
+        if (clearResults && markers.length === 0) {
+          resultBox.textContent = "Punkter vises her etter analyse.";
+        } else if (clearResults) {
+          renderPointList();
+        }
+        statusBox.textContent = `x: ${formatNumber(view.xMin)} til ${formatNumber(view.xMax)}`;
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function resetView() {
+      xMinInput.value = "";
+      xMaxInput.value = "";
+      try {
+        compiledFunctions = compileAllFunctions();
+        updateViewFromInputs(compiledFunctions, false);
+        recomputeMarkerPositions();
+        draw();
+        renderPointList();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function getSelectedCompiledFunctions() {
+      const selected = compiledFunctions.filter(item => item.analyze !== false);
+      if (selected.length === 0) throw new Error("Velg minst én graf som skal analyseres.");
+      return selected;
+    }
+
+    function derivative(fn, x) {
+      const h = Math.max(1e-5, Math.abs(x) * 1e-5);
+      const y1 = safeEval(fn, x + h);
+      const y0 = safeEval(fn, x - h);
+      if (!Number.isFinite(y1) || !Number.isFinite(y0)) return NaN;
+      return (y1 - y0) / (2 * h);
+    }
+
+    function secondDerivative(fn, x) {
+      const h = Math.max(1e-4, Math.abs(x) * 1e-4);
+      const y1 = safeEval(fn, x + h);
+      const y0 = safeEval(fn, x);
+      const yMinus = safeEval(fn, x - h);
+      if (!Number.isFinite(y1) || !Number.isFinite(y0) || !Number.isFinite(yMinus)) return NaN;
+      return (y1 - 2 * y0 + yMinus) / (h * h);
+    }
+
+    function bisectRoot(callback, a, b, iterations = 70) {
+      let fa = callback(a);
+      let fb = callback(b);
+      if (!Number.isFinite(fa) || !Number.isFinite(fb)) return NaN;
+      if (Math.abs(fa) < 1e-10) return a;
+      if (Math.abs(fb) < 1e-10) return b;
+      if (fa * fb > 0) return NaN;
+
+      for (let i = 0; i < iterations; i++) {
+        const mid = (a + b) / 2;
+        const fm = callback(mid);
+        if (!Number.isFinite(fm)) return NaN;
+        if (Math.abs(fm) < 1e-12) return mid;
+        if (fa * fm <= 0) {
+          b = mid;
+          fb = fm;
+        } else {
+          a = mid;
+          fa = fm;
+        }
+      }
+      return (a + b) / 2;
+    }
+
+    function uniquePoints(points, tolerance = 1e-4) {
+      const unique = [];
+      points.forEach(point => {
+        const exists = unique.some(p => Math.abs(p.x - point.x) < tolerance && Math.abs(p.y - point.y) < tolerance);
+        if (!exists) unique.push(point);
+      });
+      return unique;
+    }
+
+    function pointAlreadyExists(point, tolerance = 1e-4) {
+      return markers.some(existing => {
+        const sameSource = existing.sourceKey && point.sourceKey && existing.sourceKey === point.sourceKey && existing.sourceIndex === point.sourceIndex;
+        const sameCoordinates = Math.abs(existing.x - point.x) < tolerance && Math.abs(existing.y - point.y) < tolerance;
+        return sameSource || sameCoordinates;
+      });
+    }
+
+    function findExtrema(item) {
+      const candidates = [];
+      const steps = 1400;
+      const range = getAnalysisRange();
+      if (!range) return candidates;
+      let previousX = range.xMin;
+      let previousD = derivative(item.fn, previousX);
+
+      for (let i = 1; i <= steps; i++) {
+        const x = range.xMin + (i / steps) * (range.xMax - range.xMin);
+        const d = derivative(item.fn, x);
+        if (Number.isFinite(previousD) && Number.isFinite(d) && (previousD === 0 || previousD * d < 0)) {
+          const rootX = bisectRoot(v => derivative(item.fn, v), previousX, x);
+          const y = safeEval(item.fn, rootX);
+          const sd = secondDerivative(item.fn, rootX);
+          if (Number.isFinite(rootX) && Number.isFinite(y) && Number.isFinite(sd)) {
+            let type = "ekstremalpunkt";
+            if (sd < -1e-4) type = "toppunkt";
+            if (sd > 1e-4) type = "bunnpunkt";
+            candidates.push({ x: rootX, y, type, color: item.color });
+          }
+        }
+        previousX = x;
+        previousD = d;
+      }
+      return uniquePoints(candidates);
+    }
+
+    // Brukes ikke av Skjæringspunkter-knappen nå. Skjæringspunkter betyr bare skjæring mellom grafer.
+    function findAxisIntersections(item) {
+      const points = [];
+      const steps = 1800;
+      const range = getAnalysisRange();
+      if (!range) return points;
+      let previousX = range.xMin;
+      let previousY = safeEval(item.fn, previousX);
+
+      for (let i = 1; i <= steps; i++) {
+        const x = range.xMin + (i / steps) * (range.xMax - range.xMin);
+        const y = safeEval(item.fn, x);
+        if (Number.isFinite(previousY) && Number.isFinite(y)) {
+          if (Math.abs(previousY) < 1e-9) {
+            points.push({ x: previousX, y: 0, type: "skjæring med x-aksen", color: item.color });
+          } else if (previousY * y < 0) {
+            const rootX = bisectRoot(v => safeEval(item.fn, v), previousX, x);
+            if (Number.isFinite(rootX)) points.push({ x: rootX, y: 0, type: "skjæring med x-aksen", color: item.color });
+          }
+        }
+        previousX = x;
+        previousY = y;
+      }
+
+      if (range.xMin <= 0 && range.xMax >= 0 && isInDomain(0)) {
+        const yAtZero = safeEval(item.fn, 0);
+        if (Number.isFinite(yAtZero)) points.push({ x: 0, y: yAtZero, type: "skjæring med y-aksen", color: item.color });
+      }
+      return uniquePoints(points);
+    }
+
+    function findFunctionIntersections(items = compiledFunctions) {
+      const points = [];
+      const steps = 1800;
+      const range = getAnalysisRange();
+      if (!range) return points;
+      for (let a = 0; a < items.length; a++) {
+        for (let b = a + 1; b < items.length; b++) {
+          const f = items[a];
+          const g = items[b];
+          let previousX = range.xMin;
+          let previousDiff = safeEval(f.fn, previousX) - safeEval(g.fn, previousX);
+          for (let i = 1; i <= steps; i++) {
+            const x = range.xMin + (i / steps) * (range.xMax - range.xMin);
+            const diff = safeEval(f.fn, x) - safeEval(g.fn, x);
+            if (Number.isFinite(previousDiff) && Number.isFinite(diff)) {
+              if (previousDiff * diff < 0) {
+                const rootX = bisectRoot(v => safeEval(f.fn, v) - safeEval(g.fn, v), previousX, x);
+                const y = safeEval(f.fn, rootX);
+                if (Number.isFinite(rootX) && Number.isFinite(y)) {
+                  points.push({ x: rootX, y, type: `skjæring mellom ${f.displayName} og ${g.displayName}`, color: "#111827", sourceKey: `intersections:${f.id}:${g.id}`, pairKey: `${f.id}:${g.id}` });
+                }
+              }
+            }
+            previousX = x;
+            previousDiff = diff;
+          }
+        }
+      }
+      return uniquePoints(points);
+    }
+
+    function selectAnalysisKind(kind, anchorButton) {
+      pendingAnalysisKind = kind;
+      activateTab("analysis");
+      updateAnalysisChoices(anchorButton);
+    }
+
+    function createAnalysisPoints(kind) {
+      try {
+        activateTab("analysis");
+        errorBox.textContent = "";
+        compiledFunctions = compileAllFunctions();
+        updateViewFromInputs(compiledFunctions, true);
+        const selected = getSelectedCompiledFunctions();
+        let newPoints = [];
+
+        if (kind === "allExtrema") {
+          selected.forEach(item => {
+            newPoints = newPoints.concat(findExtrema(item).map((p, pointIndex) => ({ ...p, type: `${p.type} for ${item.displayName}`, sourceKey: `allExtrema:${item.id}`, sourceIndex: pointIndex, analysisKind: kind })));
+          });
+        }
+
+        if (kind === "maxima") {
+          selected.forEach(item => {
+            newPoints = newPoints.concat(findExtrema(item).filter(p => p.type === "toppunkt").map((p, pointIndex) => ({ ...p, type: `toppunkt for ${item.displayName}`, sourceKey: `maxima:${item.id}`, sourceIndex: pointIndex, analysisKind: kind })));
+          });
+        }
+
+        if (kind === "minima") {
+          selected.forEach(item => {
+            newPoints = newPoints.concat(findExtrema(item).filter(p => p.type === "bunnpunkt").map((p, pointIndex) => ({ ...p, type: `bunnpunkt for ${item.displayName}`, sourceKey: `minima:${item.id}`, sourceIndex: pointIndex, analysisKind: kind })));
+          });
+        }
+
+        if (kind === "intersections") {
+          const counters = {};
+          newPoints = newPoints.concat(findFunctionIntersections(selected).map(point => {
+            const sourceKey = point.sourceKey || `intersections:${point.pairKey || "unknown"}`;
+            const sourceIndex = counters[sourceKey] || 0;
+            counters[sourceKey] = sourceIndex + 1;
+            return { ...point, sourceKey, sourceIndex, analysisKind: kind };
+          }));
+        }
+
+        newPoints = uniquePoints(newPoints);
+        let addedCount = 0;
+        newPoints.forEach(point => {
+          if (pointAlreadyExists(point)) return;
+          const name = pointName(nextPointIndex++);
+          markers.push({
+            ...point,
+            id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+            name,
+            label: name,
+            visible: true
+          });
+          addedCount++;
+        });
+
+        draw();
+        renderPointList();
+        pendingAnalysisKind = null;
+        analysisChoices.classList.remove("open");
+        if (addedCount === 0 && newPoints.length > 0) {
+          statusBox.textContent = "Ingen nye punkter: punktene finnes allerede.";
+        }
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function pointName(index) {
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      if (index < letters.length) return letters[index];
+      return `A${index - letters.length + 1}`;
+    }
+
+    function renderPointList() {
+      if (markers.length === 0) {
+        resultBox.textContent = "Ingen punkter er laget ennå.";
+        return;
+      }
+
+      resultBox.innerHTML = "";
+      markers.forEach(point => {
+        const row = document.createElement("div");
+        row.className = "point-choice";
+        row.title = point.type || "";
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = point.visible !== false;
+        checkbox.dataset.pointId = point.id;
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.className = "point-name-input";
+        nameInput.value = point.name;
+        nameInput.dataset.pointId = point.id;
+        nameInput.title = "Endre punktnavn";
+
+        const coordinates = document.createElement("span");
+        coordinates.textContent = `= (${formatNumber(point.x)} , ${formatNumber(point.y)})`;
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "point-delete-button";
+        deleteButton.textContent = "×";
+        deleteButton.dataset.pointId = point.id;
+        deleteButton.title = "Slett punkt";
+
+        row.appendChild(checkbox);
+        row.appendChild(nameInput);
+        row.appendChild(coordinates);
+        row.appendChild(deleteButton);
+        resultBox.appendChild(row);
+      });
+    }
+
+    function showFloatingKeypad(input) {
+      if (!input) return;
+      const rect = input.getBoundingClientRect();
+      const keypadWidth = Math.min(330, window.innerWidth - 20);
+      let left = rect.left;
+      if (left + keypadWidth > window.innerWidth - 10) left = window.innerWidth - keypadWidth - 10;
+      if (left < 10) left = 10;
+
+      let top = rect.bottom + 8;
+      const estimatedHeight = 190;
+      if (top + estimatedHeight > window.innerHeight - 10) {
+        top = Math.max(10, rect.top - estimatedHeight - 8);
+      }
+
+      floatingKeypad.style.left = `${left}px`;
+      floatingKeypad.style.top = `${top}px`;
+      floatingKeypad.classList.add("open");
+    }
+
+    function hideFloatingKeypadSoon() {
+      setTimeout(() => {
+        const active = document.activeElement;
+        if (!floatingKeypad.contains(active) && active !== focusedInput) {
+          floatingKeypad.classList.remove("open");
+        }
+      }, 120);
+    }
+
+    function insertAtCursor(text) {
+      if (!focusedInput) focusedInput = functionList.querySelector("input[type='text']");
+      if (!focusedInput) return;
+      const start = focusedInput.selectionStart;
+      const end = focusedInput.selectionEnd;
+      const current = focusedInput.value;
+      focusedInput.value = current.slice(0, start) + text + current.slice(end);
+      const nextPosition = start + text.length;
+      focusedInput.focus();
+      focusedInput.setSelectionRange(nextPosition, nextPosition);
+      const id = Number(focusedInput.dataset.id);
+      const item = functions.find(fn => fn.id === id);
+      if (item) item.expression = focusedInput.value;
+      updateSelectLabels();
+    }
+
+    document.querySelectorAll("[data-insert]").forEach(button => {
+      button.addEventListener("pointerdown", event => event.preventDefault());
+      button.addEventListener("click", () => insertAtCursor(button.dataset.insert));
+    });
+
+    backspaceButton.addEventListener("click", () => {
+      if (!focusedInput) focusedInput = functionList.querySelector("input[type='text']");
+      if (!focusedInput) return;
+      const start = focusedInput.selectionStart;
+      const end = focusedInput.selectionEnd;
+      const current = focusedInput.value;
+
+      if (start !== end) {
+        focusedInput.value = current.slice(0, start) + current.slice(end);
+        focusedInput.setSelectionRange(start, start);
+      } else if (start > 0) {
+        focusedInput.value = current.slice(0, start - 1) + current.slice(start);
+        focusedInput.setSelectionRange(start - 1, start - 1);
+      }
+
+      const id = Number(focusedInput.dataset.id);
+      const item = functions.find(fn => fn.id === id);
+      if (item) item.expression = focusedInput.value;
+      focusedInput.focus();
+      updateSelectLabels();
+    });
+
+    addFunctionButton.addEventListener("click", () => {
+      const color = colors[(nextFunctionId - 1) % colors.length];
+      functions.push({ id: nextFunctionId, name: "", expression: "", color, visible: true, analyze: true });
+      nextFunctionId++;
+      renderFunctionInputs();
+      const inputs = functionList.querySelectorAll(".expression-input");
+      focusedInput = inputs[inputs.length - 1];
+      focusedInput.focus();
+    });
+
+    drawButton.addEventListener("click", () => drawFromInputs());
+    resetButton.addEventListener("click", resetView);
+    allExtremaButton.addEventListener("click", () => selectAnalysisKind("allExtrema", allExtremaButton));
+    maximaButton.addEventListener("click", () => selectAnalysisKind("maxima", maximaButton));
+    minimaButton.addEventListener("click", () => selectAnalysisKind("minima", minimaButton));
+    intersectionsButton.addEventListener("click", () => selectAnalysisKind("intersections", intersectionsButton));
+
+    canvas.addEventListener("pointerdown", event => {
+      axisDrag = getAxisArrowHit(event.clientX, event.clientY);
+      canvas.style.cursor = axisDrag ? "grabbing" : "move";
+      isDragging = true;
+      lastPointer = { x: event.clientX, y: event.clientY };
+      canvas.classList.add("dragging");
+      canvas.setPointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener("wheel", event => {
+      event.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const px = event.clientX - rect.left;
+      const py = event.clientY - rect.top;
+      const factor = event.deltaY < 0 ? 0.88 : 1.14;
+      zoomViewAt(px, py, factor);
+      statusBox.textContent = event.deltaY < 0 ? "Zoomer inn" : "Zoomer ut";
+    }, { passive: false });
+
+    canvas.addEventListener("pointermove", event => {
+      const rect = canvas.getBoundingClientRect();
+      const x = screenToX(event.clientX - rect.left);
+      const y = screenToY(event.clientY - rect.top);
+
+      const hit = getAxisArrowHit(event.clientX, event.clientY);
+      if (!isDragging) canvas.style.cursor = hit ? "grab" : "move";
+
+      if (isDragging && lastPointer) {
+        const dx = event.clientX - lastPointer.x;
+        const dy = event.clientY - lastPointer.y;
+
+        if (axisDrag) {
+          zoomAxisByDrag(dx, dy, axisDrag);
+        } else {
+          panViewByPixels(dx, dy, "both");
+        }
+
+        lastPointer = { x: event.clientX, y: event.clientY };
+        const modeText = axisDrag === "x" ? "zoomer x-akse" : axisDrag === "y" ? "zoomer y-akse" : "flytter koordinatsystem";
+        statusBox.textContent = `${modeText}: x=${formatNumber(x)}, y=${formatNumber(y)}`;
+      } else {
+        statusBox.textContent = `x=${formatNumber(x)}, y=${formatNumber(y)}`;
+      }
+    });
+
+    canvas.addEventListener("pointerup", event => {
+      isDragging = false;
+      axisDrag = null;
+      lastPointer = null;
+      canvas.style.cursor = "move";
+      canvas.classList.remove("dragging");
+      try { canvas.releasePointerCapture(event.pointerId); } catch {}
+      statusBox.textContent = compiledFunctions.length ? `x: ${formatNumber(view.xMin)} til ${formatNumber(view.xMax)}` : "Klar";
+    });
+
+    canvas.addEventListener("pointercancel", () => {
+      isDragging = false;
+      axisDrag = null;
+      lastPointer = null;
+      canvas.style.cursor = "move";
+      canvas.classList.remove("dragging");
+    });
+
+    canvas.addEventListener("mouseleave", () => {
+      if (!isDragging) {
+        statusBox.textContent = compiledFunctions.length ? `x: ${formatNumber(view.xMin)} til ${formatNumber(view.xMax)}` : "Klar";
+      }
+    });
+
+    resultBox.addEventListener("change", event => {
+      if (!event.target.matches("input[data-point-id]")) return;
+      const point = markers.find(item => item.id === event.target.dataset.pointId);
+      if (!point) return;
+
+      if (event.target.type === "checkbox") {
+        point.visible = event.target.checked;
+        draw();
+      }
+    });
+
+    resultBox.addEventListener("input", event => {
+      if (!event.target.matches(".point-name-input")) return;
+      const point = markers.find(item => item.id === event.target.dataset.pointId);
+      if (!point) return;
+      point.name = event.target.value.trim() || point.name;
+      point.label = point.name;
+      draw();
+    });
+
+    resultBox.addEventListener("click", event => {
+      if (!event.target.matches(".point-delete-button")) return;
+      markers = markers.filter(item => item.id !== event.target.dataset.pointId);
+      draw();
+      renderPointList();
+    });
+
+    document.addEventListener("pointerdown", event => {
+      const clickedExpression = event.target.classList && event.target.classList.contains("expression-input");
+      if (!floatingKeypad.contains(event.target) && !clickedExpression) {
+        floatingKeypad.classList.remove("open");
+      }
+
+      if (!analysisChoices.contains(event.target) && !event.target.classList.contains("analysis-button")) {
+        analysisChoices.classList.remove("open");
+        pendingAnalysisKind = null;
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      resizeCanvas();
+      if (focusedInput && floatingKeypad.classList.contains("open")) showFloatingKeypad(focusedInput);
+      if (analysisChoices.classList.contains("open")) positionAnalysisPopup();
+    });
+
+    renderFunctionInputs();
+    resizeCanvas();
+    drawFromInputs();
+  </script>
+</body>
+</html>
