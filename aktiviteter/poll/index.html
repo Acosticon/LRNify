@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Klasserom Poll</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface2: #22223a;
+    --accent: #7c3aed;
+    --accent-light: #a78bfa;
+    --text: #f0f0ff;
+    --muted: #8888aa;
+    --green: #10b981;
+    --c1: #f59e0b;
+    --c2: #3b82f6;
+    --c3: #ec4899;
+    --c4: #10b981;
+    --radius: 14px;
+    --font: 'Segoe UI', system-ui, sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; width: 100%; max-width: 700px; animation: fadeIn .3s ease; }
+  .screen.active { display: flex; flex-direction: column; gap: 20px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── LOGO / HEADER ── */
+  .logo {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--accent-light);
+  }
+  .logo span { color: var(--text); }
+  .subtitle { text-align: center; color: var(--muted); font-size: .95rem; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 28px;
+    border: 1px solid #2a2a45;
+  }
+  .card h2 { font-size: 1.1rem; color: var(--muted); font-weight: 600; margin-bottom: 16px; text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; }
+
+  /* ── INPUTS ── */
+  input[type="text"], textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid #2a2a45;
+    border-radius: 10px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-size: 1rem;
+    font-family: var(--font);
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type="text"]:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  .input-row { display: flex; gap: 10px; }
+  .input-row input { flex: 1; }
+  .option-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .option-label .badge {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .85rem; flex-shrink: 0;
+    color: #000;
+  }
+  .badge-1 { background: var(--c1); }
+  .badge-2 { background: var(--c2); }
+  .badge-3 { background: var(--c3); }
+  .badge-4 { background: var(--c4); }
+
+  /* ── BUTTONS ── */
+  button {
+    font-family: var(--font);
+    cursor: pointer;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 24px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all .15s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    width: 100%;
+  }
+  .btn-primary:hover { background: #6d28d9; transform: translateY(-1px); }
+  .btn-primary:disabled { background: #44446a; color: var(--muted); cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid #2a2a45;
+  }
+  .btn-secondary:hover { background: #2a2a45; }
+
+  .btn-danger { background: #dc2626; color: #fff; }
+  .btn-danger:hover { background: #b91c1c; }
+
+  .btn-sm { padding: 8px 16px; font-size: .85rem; }
+
+  /* ── ROOM CODE ── */
+  .room-code-display {
+    text-align: center;
+    padding: 20px;
+  }
+  .room-code-display .label { color: var(--muted); font-size: .85rem; margin-bottom: 8px; }
+  .room-code-display .code {
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: 8px;
+    color: var(--accent-light);
+    font-variant-numeric: tabular-nums;
+  }
+  .room-code-display .hint { color: var(--muted); font-size: .8rem; margin-top: 8px; }
+
+  /* ── JOIN CODE INPUT ── */
+  #joinCodeInput {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ── PARTICIPANT COUNT ── */
+  .participants {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--muted);
+    font-size: .9rem;
+  }
+  .participants .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .participants strong { color: var(--text); }
+
+  /* ── QUESTION DISPLAY (lærer) ── */
+  .question-display {
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 20px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.4;
+    border-left: 4px solid var(--accent);
+  }
+
+  /* ── CHART ── */
+  .chart-container { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .bar-label {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .9rem; flex-shrink: 0;
+    color: #000;
+  }
+  .bar-text { min-width: 140px; font-size: .85rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-track {
+    flex: 1;
+    background: var(--surface2);
+    border-radius: 6px;
+    height: 32px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    transition: width .5s cubic-bezier(.4,0,.2,1);
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 10px;
+    font-weight: 700; font-size: .9rem; color: #000;
+    min-width: 0;
+    width: 0%;
+  }
+  .bar-count { min-width: 28px; text-align: right; color: var(--text); font-weight: 600; font-size: .9rem; }
+
+  /* ── ANSWER GRID (elev) ── */
+  .answer-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .answer-btn {
+    padding: 0;
+    border-radius: 14px;
+    min-height: 90px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-align: center;
+    line-height: 1.3;
+    cursor: pointer;
+    transition: transform .15s, opacity .15s;
+    border: none;
+    position: relative;
+    overflow: hidden;
+    padding: 16px;
+  }
+  .answer-btn:hover:not(:disabled) { transform: scale(1.03); }
+  .answer-btn:disabled { cursor: not-allowed; }
+  .answer-btn.voted { opacity: 1; }
+  .answer-btn.not-voted { opacity: .35; }
+  .answer-btn .shape { font-size: 1.5rem; }
+  .answer-btn-1 { background: var(--c1); }
+  .answer-btn-2 { background: var(--c2); color: #fff; }
+  .answer-btn-3 { background: var(--c3); color: #fff; }
+  .answer-btn-4 { background: var(--c4); }
+
+  /* ── STATUS MESSAGES ── */
+  .status {
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: .9rem;
+  }
+  .status.waiting { background: #1a2a1a; color: var(--green); }
+  .status.voted { background: #1a1a2a; color: var(--accent-light); }
+  .status.error { background: #2a1a1a; color: #f87171; }
+
+  /* ── DIVIDERS ── */
+  .row { display: flex; gap: 10px; align-items: center; }
+  .row .spacer { flex: 1; }
+
+  /* ── TEACHER STATUS BAR ── */
+  .teacher-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* ── WAITING ANIMATION (elev) ── */
+  .waiting-anim {
+    text-align: center;
+    padding: 30px;
+    color: var(--muted);
+  }
+  .waiting-anim .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--surface2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RESULT REVEAL (elev) ── */
+  .result-banner {
+    text-align: center;
+    padding: 24px;
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+  .result-banner.winner { background: #14532d; color: #86efac; }
+  .result-banner.loser  { background: #1a1a2e; color: var(--muted); }
+
+  @media (max-width: 500px) {
+    .answer-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .answer-btn { min-height: 80px; font-size: .9rem; }
+    .bar-text { min-width: 90px; }
+    .room-code-display .code { font-size: 2.5rem; letter-spacing: 5px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ SCREEN: VELG ROLLE ══════════════ -->
+<div class="screen active" id="screen-role">
+  <div class="logo">Klasse<span>Poll</span></div>
+  <div class="subtitle">Sanntidsavstemning for klasserommet</div>
+  <div class="card" style="display:flex; gap:12px;">
+    <button class="btn-secondary" style="flex:1; padding:28px 0; font-size:1.1rem;" onclick="goTeacher()">🎓<br><span style="font-size:.8rem;color:var(--muted);font-weight:500;">Lærer</span></button>
+    <button class="btn-secondary" style="flex:1; padding:28px 0; font-size:1.1rem;" onclick="goStudent()">🙋<br><span style="font-size:.8rem;color:var(--muted);font-weight:500;">Elev</span></button>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: LÆRER – OPPRETT ROM ══════════════ -->
+<div class="screen" id="screen-teacher-setup">
+  <div class="logo">Klasse<span>Poll</span> <span style="font-size:1rem;color:var(--muted);">/ Lærer</span></div>
+  <div class="card">
+    <h2>Spørsmål</h2>
+    <textarea id="questionInput" placeholder="Skriv spørsmålet ditt her…" rows="2"></textarea>
+  </div>
+  <div class="card">
+    <h2>Svaralternativer</h2>
+    <div class="option-label"><div class="badge badge-1">A</div><input type="text" id="opt1" placeholder="Alternativ A" /></div>
+    <div class="option-label"><div class="badge badge-2">B</div><input type="text" id="opt2" placeholder="Alternativ B" /></div>
+    <div class="option-label"><div class="badge badge-3">C</div><input type="text" id="opt3" placeholder="Alternativ C" /></div>
+    <div class="option-label"><div class="badge badge-4">D</div><input type="text" id="opt4" placeholder="Alternativ D" /></div>
+  </div>
+  <button class="btn-primary" onclick="createRoom()">Opprett rom og start avstemning</button>
+  <button class="btn-secondary btn-sm" onclick="showScreen('screen-role')" style="width:auto;align-self:center;">← Tilbake</button>
+</div>
+
+<!-- ══════════════ SCREEN: LÆRER – LIVE VISNING ══════════════ -->
+<div class="screen" id="screen-teacher-live">
+  <div class="teacher-bar">
+    <div class="logo" style="font-size:1.4rem;">Klasse<span>Poll</span></div>
+    <div class="participants"><div class="dot"></div><strong id="participantCount">0</strong>&nbsp;svar</div>
+  </div>
+
+  <div class="card">
+    <div class="room-code-display">
+      <div class="label">Romkode – del med elevene</div>
+      <div class="code" id="roomCodeDisplay">——</div>
+      <div class="hint">Gå til denne siden og velg "Elev"</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Spørsmål</h2>
+    <div class="question-display" id="liveQuestion">—</div>
+  </div>
+
+  <div class="card">
+    <h2>Resultater – live</h2>
+    <div class="chart-container" id="chartContainer"></div>
+  </div>
+
+  <div class="row">
+    <button class="btn-secondary btn-sm" onclick="newQuestion()">Nytt spørsmål</button>
+    <div class="spacer"></div>
+    <button class="btn-danger btn-sm" onclick="closeRoom()">Avslutt rom</button>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: ELEV – KODE ══════════════ -->
+<div class="screen" id="screen-student-join">
+  <div class="logo">Klasse<span>Poll</span> <span style="font-size:1rem;color:var(--muted);">/ Elev</span></div>
+  <div class="card">
+    <h2>Romkode</h2>
+    <input type="text" id="joinCodeInput" maxlength="6" placeholder="ABC123" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.toUpperCase()" />
+  </div>
+  <div class="card">
+    <h2>Ditt navn (valgfritt)</h2>
+    <input type="text" id="studentName" placeholder="Kallenavn eller la stå tomt" maxlength="20" />
+  </div>
+  <div id="joinError" class="status error" style="display:none;"></div>
+  <button class="btn-primary" onclick="joinRoom()">Bli med</button>
+  <button class="btn-secondary btn-sm" onclick="showScreen('screen-role')" style="width:auto;align-self:center;">← Tilbake</button>
+</div>
+
+<!-- ══════════════ SCREEN: ELEV – VENTER ══════════════ -->
+<div class="screen" id="screen-student-waiting">
+  <div class="waiting-anim">
+    <div class="spinner"></div>
+    <div style="font-weight:700;font-size:1.1rem;margin-bottom:6px;">Venter på læreren…</div>
+    <div style="color:var(--muted);font-size:.9rem;">Spørsmålet dukker opp her når læreren starter</div>
+  </div>
+</div>
+
+<!-- ══════════════ SCREEN: ELEV – SVAR ══════════════ -->
+<div class="screen" id="screen-student-answer">
+  <div class="card">
+    <h2>Spørsmål</h2>
+    <div class="question-display" id="studentQuestion">—</div>
+  </div>
+  <div class="answer-grid" id="answerGrid"></div>
+  <div id="voteStatus" class="status" style="display:none;"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, set, get, onValue, off, update, remove, push, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* ── FIREBASE INIT ── */
+const firebaseConfig = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ── STATE ── */
+let currentRoom = null;
+let currentListener = null;
+let hasVoted = false;
+let studentId = null;
+
+const COLORS = ['#f59e0b','#3b82f6','#ec4899','#10b981'];
+const LABELS = ['A','B','C','D'];
+const SHAPES = ['▲','◆','●','★'];
+
+/* ── UTIL ── */
+function makeCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let c = '';
+  for (let i = 0; i < 6; i++) c += chars[Math.floor(Math.random() * chars.length)];
+  return c;
+}
+
+function makeStudentId() {
+  return 'S' + Math.random().toString(36).slice(2, 10);
+}
+
+/* expose to global so onclick works */
+window.goTeacher = () => showScreen('screen-teacher-setup');
+window.goStudent = () => showScreen('screen-student-join');
+
+window.showScreen = (id) => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+};
+
+/* ══════════════════════════════════════
+   LÆRER
+══════════════════════════════════════ */
+
+window.createRoom = async () => {
+  const question = document.getElementById('questionInput').value.trim();
+  const opts = [
+    document.getElementById('opt1').value.trim(),
+    document.getElementById('opt2').value.trim(),
+    document.getElementById('opt3').value.trim(),
+    document.getElementById('opt4').value.trim(),
+  ];
+  if (!question) { alert('Skriv et spørsmål først.'); return; }
+  const filled = opts.filter(o => o);
+  if (filled.length < 2) { alert('Du trenger minst 2 svaralternativer.'); return; }
+
+  const code = makeCode();
+  currentRoom = code;
+
+  const roomData = {
+    question,
+    options: opts,
+    votes: { 0: 0, 1: 0, 2: 0, 3: 0 },
+    open: true,
+    createdAt: Date.now()
+  };
+
+  await set(ref(db, `rooms/${code}`), roomData);
+
+  document.getElementById('roomCodeDisplay').textContent = code;
+  document.getElementById('liveQuestion').textContent = question;
+  renderChart(opts, { 0: 0, 1: 0, 2: 0, 3: 0 });
+  showScreen('screen-teacher-live');
+  startTeacherListener(code);
+};
+
+function startTeacherListener(code) {
+  if (currentListener) off(ref(db, `rooms/${currentRoom}`), 'value', currentListener);
+  const roomRef = ref(db, `rooms/${code}`);
+  currentListener = onValue(roomRef, snap => {
+    if (!snap.exists()) return;
+    const data = snap.val();
+    const votes = data.votes || { 0: 0, 1: 0, 2: 0, 3: 0 };
+    const total = Object.values(votes).reduce((a, b) => a + b, 0);
+    document.getElementById('participantCount').textContent = total;
+    renderChart(data.options, votes);
+  });
+}
+
+function renderChart(options, votes) {
+  const total = Object.values(votes).reduce((a, b) => a + b, 0);
+  const container = document.getElementById('chartContainer');
+  container.innerHTML = '';
+  options.forEach((opt, i) => {
+    if (!opt) return;
+    const count = votes[i] || 0;
+    const pct = total > 0 ? Math.round(count / total * 100) : 0;
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="bar-label badge-${i+1}" style="background:${COLORS[i]};color:${i===1||i===2?'#fff':'#000'}">${LABELS[i]}</div>
+      <div class="bar-text">${opt}</div>
+      <div class="bar-track">
+        <div class="bar-fill" style="background:${COLORS[i]};width:${pct}%;color:${i===1||i===2?'#fff':'#000'}">${pct > 8 ? pct+'%' : ''}</div>
+      </div>
+      <div class="bar-count">${count}</div>`;
+    container.appendChild(row);
+    // trigger reflow for animation
+    requestAnimationFrame(() => {
+      const fill = row.querySelector('.bar-fill');
+      fill.style.width = pct + '%';
+    });
+  });
+}
+
+window.newQuestion = async () => {
+  if (!currentRoom) return;
+  if (!confirm('Start ny runde? Alle svar nullstilles.')) return;
+  showScreen('screen-teacher-setup');
+  document.getElementById('questionInput').value = '';
+  ['opt1','opt2','opt3','opt4'].forEach(id => document.getElementById(id).value = '');
+  if (currentListener) {
+    off(ref(db, `rooms/${currentRoom}`), 'value', currentListener);
+    currentListener = null;
+  }
+  await remove(ref(db, `rooms/${currentRoom}`));
+  currentRoom = null;
+};
+
+window.closeRoom = async () => {
+  if (!currentRoom) return;
+  if (!confirm('Avslutt rommet? Spillet avsluttes for alle.')) return;
+  if (currentListener) {
+    off(ref(db, `rooms/${currentRoom}`), 'value', currentListener);
+    currentListener = null;
+  }
+  await remove(ref(db, `rooms/${currentRoom}`));
+  currentRoom = null;
+  showScreen('screen-role');
+};
+
+/* ══════════════════════════════════════
+   ELEV
+══════════════════════════════════════ */
+
+window.joinRoom = async () => {
+  const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  const name = document.getElementById('studentName').value.trim() || 'Elev';
+  const errEl = document.getElementById('joinError');
+  errEl.style.display = 'none';
+
+  if (code.length < 4) { showError('Skriv inn romkoden du fikk av læreren.'); return; }
+
+  const snap = await get(ref(db, `rooms/${code}`));
+  if (!snap.exists()) { showError('Fant ikke et rom med den koden. Sjekk at du skrev riktig.'); return; }
+  const data = snap.val();
+  if (!data.open) { showError('Dette rommet er stengt.'); return; }
+
+  currentRoom = code;
+  studentId = makeStudentId();
+  hasVoted = false;
+
+  document.getElementById('studentQuestion').textContent = data.question;
+  renderAnswerButtons(data.options);
+  showScreen('screen-student-answer');
+
+  // listen for room changes (e.g. room deleted / new question)
+  startStudentListener(code);
+
+  function showError(msg) {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+  }
+};
+
+function startStudentListener(code) {
+  if (currentListener) off(ref(db, `rooms/${currentRoom}`), 'value', currentListener);
+  const roomRef = ref(db, `rooms/${code}`);
+  currentListener = onValue(roomRef, snap => {
+    if (!snap.exists()) {
+      // Room closed
+      showScreen('screen-student-waiting');
+      document.querySelector('#screen-student-waiting .waiting-anim div:nth-child(2)').textContent = 'Rommet er avsluttet.';
+      return;
+    }
+  });
+}
+
+function renderAnswerButtons(options) {
+  const grid = document.getElementById('answerGrid');
+  const status = document.getElementById('voteStatus');
+  grid.innerHTML = '';
+  status.style.display = 'none';
+  hasVoted = false;
+
+  options.forEach((opt, i) => {
+    if (!opt) return;
+    const btn = document.createElement('button');
+    btn.className = `answer-btn answer-btn-${i+1}`;
+    btn.innerHTML = `<span class="shape">${SHAPES[i]}</span>${opt}`;
+    btn.onclick = () => castVote(i, options);
+    grid.appendChild(btn);
+  });
+}
+
+async function castVote(index, options) {
+  if (hasVoted) return;
+  hasVoted = true;
+
+  // Disable all buttons, highlight chosen
+  const btns = document.querySelectorAll('.answer-btn');
+  btns.forEach((btn, i) => {
+    btn.disabled = true;
+    btn.classList.add(i === index ? 'voted' : 'not-voted');
+  });
+
+  const status = document.getElementById('voteStatus');
+  status.style.display = 'block';
+  status.className = 'status voted';
+  status.textContent = `Du stemte: ${LABELS[index]} – ${options[index]} ✓`;
+
+  // Atomic increment
+  const voteRef = ref(db, `rooms/${currentRoom}/votes/${index}`);
+  const snap = await get(voteRef);
+  const current = snap.exists() ? snap.val() : 0;
+  await set(voteRef, current + 1);
+}
+</script>
+</body>
+</html>
