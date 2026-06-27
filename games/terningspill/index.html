@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KRLE TerningSpill — LRNify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #fff9f0;
+      --ink:   #2b2118;
+      --yellow:#facc15;
+      --card:  #ffffff;
+      --muted: #7a6f63;
+      --green: #6fcf97;
+      --orange:#ff9d78;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+    }
+
+    .logo {
+      font-family: 'Chewy', cursive;
+      font-size: clamp(2rem, 6vw, 3rem);
+      transform: rotate(-2deg);
+      line-height: 1;
+      user-select: none;
+      text-decoration: none;
+      color: var(--ink);
+    }
+    .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+
+    .back-btn {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 900;
+      font-size: .9rem;
+      color: var(--ink);
+      text-decoration: none;
+      background: var(--card);
+      border: 3px solid var(--ink);
+      box-shadow: 0 5px 0 var(--ink);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transform: rotate(1deg);
+      transition: transform .1s, box-shadow .1s;
+    }
+    .back-btn:active {
+      transform: rotate(1deg) translateY(3px);
+      box-shadow: 0 2px 0 var(--ink);
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      text-align: center;
+      padding: 4px 24px 20px;
+    }
+    .hero h1 {
+      font-family: 'Chewy', cursive;
+      font-size: clamp(2.2rem, 7vw, 4rem);
+      line-height: 1.05;
+      letter-spacing: .5px;
+    }
+    .hero .subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 600;
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ===== LEGEND ===== */
+    .legend {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 0 20px 20px;
+    }
+    .legend-tag {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: .8rem;
+      padding: 6px 14px;
+      border: 3px solid var(--ink);
+      box-shadow: 0 4px 0 var(--ink);
+      background: var(--card);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+    .legend-tag.move  { background: var(--green); }
+    .legend-tag.concept { background: var(--orange); }
+
+    /* ===== MAIN LAYOUT ===== */
+    main {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 20px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    /* ===== TERNING-KORT ===== */
+    .dice-card {
+      width: 100%;
+      background: var(--card);
+      border: 4px solid var(--ink);
+      box-shadow: 0 8px 0 var(--ink);
+      padding: 32px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      transform: rotate(-1deg);
+    }
+
+    #dice {
+      width: 160px;
+      height: 160px;
+      background: var(--yellow);
+      border: 4px solid var(--ink);
+      box-shadow: 0 8px 0 var(--ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 88px;
+      cursor: pointer;
+      user-select: none;
+      transition: transform .1s ease, box-shadow .1s ease;
+      transform: rotate(2deg);
+    }
+
+    #dice:hover {
+      transform: rotate(2deg) translateY(-4px);
+      box-shadow: 0 12px 0 var(--ink);
+    }
+
+    #dice:active {
+      transform: rotate(2deg) translateY(4px);
+      box-shadow: 0 2px 0 var(--ink);
+    }
+
+    #dice.rolling {
+      animation: shake 0.4s linear infinite;
+    }
+
+    @keyframes shake {
+      0%   { transform: rotate(2deg) translate(0, 0); }
+      25%  { transform: rotate(-6deg) translate(-4px, 3px); }
+      50%  { transform: rotate(6deg) translate(4px, -3px); }
+      75%  { transform: rotate(-4deg) translate(-3px, -2px); }
+      100% { transform: rotate(2deg) translate(0, 0); }
+    }
+
+    .roll-hint {
+      font-weight: 700;
+      font-size: .85rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    /* ===== RESULTAT-BOKS ===== */
+    .result-card {
+      width: 100%;
+      background: var(--card);
+      border: 4px solid var(--ink);
+      box-shadow: 0 8px 0 var(--ink);
+      padding: 20px 24px;
+      transform: rotate(1deg);
+      opacity: 0;
+      transform: rotate(1deg) translateY(12px);
+      transition: opacity .25s ease, transform .25s ease;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .result-card.show {
+      opacity: 1;
+      transform: rotate(1deg) translateY(0);
+    }
+
+    .result-inner {
+      text-align: center;
+    }
+
+    .result-eyebrow {
+      font-weight: 900;
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .result-text {
+      font-family: 'Chewy', cursive;
+      font-size: clamp(1.4rem, 4vw, 2rem);
+      line-height: 1.2;
+    }
+
+    /* ===== BEGREPSBOKS ===== */
+    .concept-card {
+      width: 100%;
+      background: var(--orange);
+      border: 4px solid var(--ink);
+      box-shadow: 0 8px 0 var(--ink);
+      padding: 24px;
+      transform: rotate(-1.5deg);
+      display: none;
+      opacity: 0;
+      transition: opacity .3s ease, transform .3s ease;
+    }
+    .concept-card.show {
+      display: block;
+      opacity: 1;
+    }
+
+    .concept-label {
+      font-weight: 900;
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--ink);
+      opacity: .65;
+      margin-bottom: 8px;
+    }
+
+    .concept-word {
+      font-family: 'Chewy', cursive;
+      font-size: clamp(2rem, 6vw, 3rem);
+      line-height: 1.1;
+      color: var(--ink);
+    }
+
+    .concept-instruction {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 600;
+      font-size: 1.15rem;
+      margin-top: 10px;
+      color: var(--ink);
+      opacity: .8;
+    }
+
+    /* ===== FREMDRIFT ===== */
+    .progress-card {
+      width: 100%;
+      background: var(--card);
+      border: 4px solid var(--ink);
+      box-shadow: 0 8px 0 var(--ink);
+      padding: 16px 20px;
+      transform: rotate(.5deg);
+    }
+
+    .progress-label {
+      font-weight: 900;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 16px;
+      background: var(--cream);
+      border: 3px solid var(--ink);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--yellow);
+      border-right: 2px solid var(--ink);
+      transition: width .3s ease;
+    }
+
+    .progress-count {
+      font-weight: 800;
+      font-size: .85rem;
+      margin-top: 6px;
+      color: var(--ink);
+    }
+
+    /* ===== TIPS ===== */
+    .tips-card {
+      width: 100%;
+      background: var(--cream);
+      border: 3px solid rgba(43,33,24,.2);
+      padding: 14px 18px;
+      transform: rotate(-0.5deg);
+    }
+
+    .tips-card p {
+      font-size: .88rem;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .tips-card strong {
+      color: var(--ink);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--muted);
+      font-weight: 700;
+      font-size: .85rem;
+      border-top: 3px solid rgba(43,33,24,.12);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      #dice { width: 120px; height: 120px; font-size: 66px; }
+      .dice-card { padding: 24px 16px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      #dice.rolling { animation: none; }
+      .result-card, .concept-card { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="../index.html">LRN<b>ify</b></a>
+    <a class="back-btn" href="../index.html">
+      ← Tilbake
+    </a>
+  </header>
+
+  <section class="hero">
+    <h1>KRLE TerningSpill</h1>
+    <p class="subtitle">Kast terningen — beveg deg eller forklar et begrep</p>
+  </section>
+
+  <div class="legend">
+    <span class="legend-tag move">1–4 · fysisk aktivitet</span>
+    <span class="legend-tag concept">5–6 · KRLE-begrep</span>
+  </div>
+
+  <main>
+
+    <!-- Terning -->
+    <div class="dice-card">
+      <div id="dice" title="Klikk for å kaste terningen" role="button" tabindex="0" aria-label="Kast terningen">🎲</div>
+      <p class="roll-hint">Klikk eller trykk mellomrom / enter</p>
+    </div>
+
+    <!-- Resultat: aktivitet -->
+    <div class="result-card" id="resultCard" aria-live="polite">
+      <div class="result-inner">
+        <div class="result-eyebrow" id="resultEyebrow"></div>
+        <div class="result-text" id="resultText"></div>
+      </div>
+    </div>
+
+    <!-- Resultat: begrep -->
+    <div class="concept-card" id="conceptCard" aria-live="polite">
+      <div class="concept-label">KRLE-begrep</div>
+      <div class="concept-word" id="conceptText"></div>
+      <div class="concept-instruction">Skriv en forklaring på en lapp.</div>
+    </div>
+
+    <!-- Fremdrift -->
+    <div class="progress-card">
+      <div class="progress-label">Fremdrift — begreper</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-count" id="progressCount">0 / 0 brukt</div>
+    </div>
+
+    <!-- Tips -->
+    <div class="tips-card">
+      <p><strong>Tips:</strong> Hver gang det blir 5 eller 6, skriver elevene forklaringer på lapper. Målet er å samle flest mulig forklaringer i løpet av timen.</p>
+    </div>
+
+  </main>
+
+  <footer>LRNify · lær gjennom lek · © 2026</footer>
+
+  <script>
+    /* ---- Lydmotor ---- */
+    let audioCtx = null;
+    function initAudio() {
+      if (!audioCtx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      }
+    }
+    function playBeep(freq, durationMs, type = "sine") {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = type;
+      osc.frequency.value = freq;
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      const now = audioCtx.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.25, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + durationMs / 1000);
+      osc.start(now);
+      osc.stop(now + durationMs / 1000 + 0.05);
+    }
+    function playRollSound() {
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => playBeep(200 + Math.random() * 200, 60, "square"), i * 70);
+      }
+    }
+    function playConceptSound() {
+      playBeep(520, 130, "sine");
+      setTimeout(() => playBeep(720, 130, "sine"), 160);
+    }
+
+    /* ---- Aktiviteter 1–4 ---- */
+    const activities = {
+      1: ["5 push-ups mot pulten","10 knebøy ved pulten","8 utfall (4 per bein)","10 «stolheis» – 2 cm over stolen, opp og ned","10 tåhev bak stolen"],
+      2: ["5 burpees","15 jumping jacks","20 høye kneløft på stedet","10 boksehopp – små hopp og boksebevegelser","10 skistafett-løp på stedet"],
+      3: ["Stå på én fot i 15 sekunder, bytt fot","Treposisjon i 10 sekunder","10 skulderrull bakover og 10 fremover","5 dype pust med armene opp og ned","Vegg-sitt i 10 sekunder (eller «usynlig stol»)"],
+      4: ["High five og low five med en partner","Speillek i 10 sekunder – hermer bevegelsene til partneren","Lag en frosset statue som viser en følelse (3–4 per gruppe)","To og to: si én ting som gjør deg trygg i klasserommet","Lag et «tog» på fire elever og gå én rolig runde rundt pultene"],
+    };
+
+    /* ---- KRLE-begreper ---- */
+    const allConcepts = [
+      "Religion","Livssyn","Myte","Skapelsesmyte","Ritual","Tradisjon","Symbol","Hellig","Monoteisme","Polyteisme","Etikk","Moral",
+      "Ginnungagap","Yme","Audhumbla","Buri","Odin","Tor","Loke","Frigg","Midgardsormen","Fenrisulven","Yggdrasil","Åsgard","Midgard","Jotunheim / jotner","Valhall","Ragnarok",
+      "Skapelsesberetningen","Gud skaper verden på sju dager","Adam","Eva","Edens hage","Slangen","Syndefallet",
+      "Samisk skapelsesfortelling","Naturreligion","Noaidi (samisk sjaman)","Tromme (runebomme)","Åndeverden","Hellig natur / hellige fjell",
+      "Bibelen","Det gamle testamentet","Det nye testamentet","Jesus","Disipler","Kirke","Preken","Sakrament","Dåp","Nattverd","Treenigheten","Frelse",
+      "Tora","Tanakh","Talmud","Synagoge","Rabbiner","Sabbat","Kosher","Kippa","Menorah","Bar mitzva","Bat mitzva",
+      "Koranen","Hadith","Moské","Imam","Ramadan","Sawm","Salah","Zakah","Hajj","Halal","Haram",
+      "Karma","Dharma","Samsara","Moksha","Puja","Tempel","Ganesha","Vishnu","Shiva","Diwali","Rama","Sita","Ravana","Lakshmi","Lysfest","Diya (oljelampe)","Rangoli",
+      "Buddha","De fire edle sannheter","Den åttedelte veien","Nirvana","Karma (buddhistisk)","Meditasjon","Sangha",
+      "Guru Granth Sahib","Gurdwara","Turban","Kesh","Kirpan","Kara",
+      "Humanisme","Human-Etisk Forbund","Kritisk tenkning"
+    ];
+
+    let availableConcepts = allConcepts.slice();
+    const totalConcepts = allConcepts.length;
+
+    const diceEl       = document.getElementById("dice");
+    const resultCard   = document.getElementById("resultCard");
+    const resultEyebrow= document.getElementById("resultEyebrow");
+    const resultText   = document.getElementById("resultText");
+    const conceptCard  = document.getElementById("conceptCard");
+    const conceptText  = document.getElementById("conceptText");
+    const progressFill = document.getElementById("progressFill");
+    const progressCount= document.getElementById("progressCount");
+
+    updateProgress();
+
+    function rollDice() {
+      initAudio();
+
+      // Reset
+      resultCard.classList.remove("show");
+      conceptCard.classList.remove("show");
+      conceptCard.style.display = "none";
+
+      diceEl.classList.add("rolling");
+      playRollSound();
+
+      setTimeout(() => {
+        diceEl.classList.remove("rolling");
+        const roll = Math.floor(Math.random() * 6) + 1;
+        diceEl.textContent = roll;
+
+        if (roll === 5 || roll === 6) {
+          showConcept(roll);
+          showResult("KRLE-begrep!", "Kast " + roll + " — skriv en forklaring på en lapp.");
+          playConceptSound();
+        } else {
+          showActivity(roll);
+        }
+      }, 450);
+    }
+
+    function showResult(eyebrow, text) {
+      resultEyebrow.textContent = eyebrow;
+      resultText.textContent = text;
+      void resultCard.offsetWidth;
+      resultCard.classList.add("show");
+    }
+
+    function showActivity(roll) {
+      const list = activities[roll];
+      if (!list || list.length === 0) { showResult("", "Ingen aktivitet definert."); return; }
+      const activity = list[Math.floor(Math.random() * list.length)];
+      showResult("Kast " + roll + " — beveg deg!", activity);
+    }
+
+    function showConcept(roll) {
+      if (availableConcepts.length === 0) {
+        conceptText.textContent = "Alle begrepene er brukt! Sterkt jobbet! 🎉";
+      } else {
+        const idx = Math.floor(Math.random() * availableConcepts.length);
+        conceptText.textContent = availableConcepts.splice(idx, 1)[0];
+        updateProgress();
+      }
+      conceptCard.style.display = "block";
+      void conceptCard.offsetWidth;
+      conceptCard.classList.add("show");
+    }
+
+    function updateProgress() {
+      const used = totalConcepts - availableConcepts.length;
+      const pct  = (used / totalConcepts) * 100;
+      progressFill.style.width = pct + "%";
+      progressCount.textContent = used + " / " + totalConcepts + " begreper brukt";
+    }
+
+    diceEl.addEventListener("click", rollDice);
+    diceEl.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); rollDice(); } });
+
+    document.addEventListener("keydown", e => {
+      if (e.target === diceEl) return;
+      if (e.code === "Space" || e.code === "Enter") { e.preventDefault(); rollDice(); }
+    });
+  </script>
+</body>
+</html>
