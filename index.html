@@ -145,7 +145,7 @@
     border-right:4px solid var(--ink);
     border-left:4px solid var(--ink);
   }
-  .mode-switch[data-mode="activities"] .mode-pill{
+  .mode-switch[data-mode="aktiviteter"] .mode-pill{
     transform:translateX(200%);
     border-right:0;
     border-left:4px solid var(--ink);
@@ -348,12 +348,11 @@ const TEACHER_RESOURCES = [
 
 /* =========================================================
    AKTIVITETER
-   Disse ligger i activities/-mappen.
+   Disse ligger i aktiviteter/-mappen.
    Legg til flere ved å kopiere objektet under og endre title/file/category.
    ========================================================= */
 const ACTIVITIES = [
   { title:"Think pair share", file:"tps/index.html", category:"Aktivitet", icon:"activity", color:"#d97706", size:"", locked:false },
-  { title:"Poll", file:"poll/index.html", category:"Aktivitet", icon:"activity", color:"#d97706", size:"", locked:false },
 ];
 
 /* Ekstra ikoner til lærerressurser */
@@ -377,13 +376,13 @@ let currentMode = 'games';
 function getCardBasePath(){
   if(currentMode === 'games') return 'games/';
   if(currentMode === 'tools') return 'tools/';
-  return 'activities/';
+  return 'aktiviteter/';
 }
 
 function getImageBasePath(){
   if(currentMode === 'games') return 'media/cards/';
   if(currentMode === 'tools') return 'media/tools/';
-  return 'media/activities/';
+  return 'media/aktiviteter/';
 }
 
 function renderCards(items){
@@ -426,7 +425,7 @@ function setMode(mode){
   currentMode = mode;
   const isGames = mode === 'games';
   const isTools = mode === 'tools';
-  const isActivities = mode === 'activities';
+  const isActivities = mode === 'aktiviteter';
 
   modeSwitch.dataset.mode = mode;
 
@@ -451,7 +450,7 @@ function setMode(mode){
 
 gamesMode.addEventListener('click', () => setMode('games'));
 toolsMode.addEventListener('click', () => setMode('tools'));
-activitiesMode.addEventListener('click', () => setMode('activities'));
+activitiesMode.addEventListener('click', () => setMode('aktiviteter'));
 
 setMode('games');
 
