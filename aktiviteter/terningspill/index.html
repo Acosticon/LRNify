@@ -16,6 +16,7 @@
       --muted: #7a6f63;
       --green: #6fcf97;
       --orange:#ff9d78;
+      --trans: all .4s cubic-bezier(.4,0,.2,1);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; }
@@ -26,58 +27,47 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* ── HEADER ── */
+    /* ══ HEADER ══ */
     header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 24px;
+      padding: 16px 24px;
     }
     .logo {
-      font-family: 'Chewy', cursive; font-size: clamp(2rem,6vw,3rem);
+      font-family: 'Chewy', cursive; font-size: clamp(1.8rem,5vw,2.6rem);
       transform: rotate(-2deg); line-height: 1; user-select: none;
       text-decoration: none; color: var(--ink);
     }
     .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
     .back-btn {
-      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .9rem;
+      font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
       color: var(--ink); text-decoration: none; background: var(--card);
-      border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
-      padding: 8px 16px; display: flex; align-items: center; gap: 6px;
-      transform: rotate(1deg); transition: transform .1s, box-shadow .1s;
-    }
-    .back-btn:active { transform: rotate(1deg) translateY(3px); box-shadow: 0 2px 0 var(--ink); }
-
-    /* ── HERO ── */
-    .hero { text-align: center; padding: 4px 24px 16px; }
-    .hero h1 { font-family: 'Chewy', cursive; font-size: clamp(2rem,7vw,3.5rem); line-height: 1.05; }
-    .hero .subtitle {
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
-      font-weight: 600; font-size: clamp(1rem,3vw,1.3rem); color: var(--muted); margin-top: 6px;
-    }
-
-    .legend {
-      display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 0 20px 16px;
-    }
-    .legend-tag {
-      font-weight: 800; font-size: .8rem; padding: 6px 14px;
       border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
-      background: var(--card); text-transform: uppercase; letter-spacing: .04em;
+      padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+      transition: transform .1s, box-shadow .1s;
     }
-    .legend-tag.move    { background: var(--green); }
-    .legend-tag.concept { background: var(--orange); }
+    .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
 
-    /* ── SCREENS ── */
+    /* ══ SCREENS ══ */
     .screen { display: none; }
     .screen.active { display: block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
 
-    /* ── CENTERED WRAP (rolle, join, elev-skjermer) ── */
+    /* ══ ROLE / SETUP / STUDENT: centered column ══ */
     .center-wrap {
       max-width: 500px; margin: 0 auto; padding: 0 20px 60px;
       display: flex; flex-direction: column; gap: 16px;
       animation: fadeIn .25s ease;
     }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1} }
 
-    /* ── ROLLE-GRID ── */
+    /* Hero (role + setup screens) */
+    .screen-hero { text-align: center; padding: 4px 0 12px; }
+    .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.8rem,6vw,3rem); }
+    .screen-hero p  {
+      font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600;
+      font-size: clamp(.95rem,2.5vw,1.2rem); color: var(--muted); margin-top: 4px;
+    }
+
+    /* Role grid */
     .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .role-btn {
       background: var(--card); border: 4px solid var(--ink);
@@ -90,15 +80,27 @@
     .role-btn:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
     .role-btn .emoji { font-size: 2.2rem; }
 
-    /* ── CARDS ── */
-    .card {
-      background: var(--card); border: 4px solid var(--ink);
-      box-shadow: 0 7px 0 var(--ink); padding: 20px 22px;
+    /* Legend tags */
+    .legend {
+      display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 0 0 4px;
     }
-    .card h2 { font-family: 'Chewy', cursive; font-size: 1.25rem; margin-bottom: 12px; }
+    .legend-tag {
+      font-weight: 800; font-size: .75rem; padding: 5px 12px;
+      border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink);
+      text-transform: uppercase; letter-spacing: .04em;
+    }
+    .legend-tag.move    { background: var(--green); }
+    .legend-tag.concept { background: var(--orange); }
+
+    /* Cards */
+    .card {
+      background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+      padding: 20px 22px;
+    }
+    .card h2 { font-family: 'Chewy', cursive; font-size: 1.2rem; margin-bottom: 12px; }
     .card p  { font-size: .9rem; color: var(--muted); font-weight: 700; margin-bottom: 12px; }
 
-    /* ── INPUTS ── */
+    /* Inputs */
     input[type="text"], textarea {
       width: 100%; border: 3px solid var(--ink); background: var(--cream);
       padding: 12px 14px; font-family: 'Nunito', sans-serif;
@@ -112,7 +114,7 @@
       font-size: 2rem; letter-spacing: 6px; text-transform: uppercase;
     }
 
-    /* ── BUTTONS ── */
+    /* Buttons */
     button {
       font-family: 'Nunito', sans-serif; font-weight: 900;
       cursor: pointer; border: 4px solid var(--ink);
@@ -125,15 +127,9 @@
     .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
     .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
     .btn-primary:disabled { background: #e5e5e5; color: var(--muted); cursor:not-allowed; transform:none; box-shadow:0 4px 0 var(--muted); }
-    .btn-secondary {
-      background: var(--cream); color: var(--ink);
-      padding: 10px 18px; font-size: .9rem; box-shadow: 0 4px 0 var(--ink);
-    }
-    .btn-secondary:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); }
-    .btn-secondary:active { transform: translateY(3px);  box-shadow: 0 1px 0 var(--ink); }
     .btn-danger {
       background: #dc2626; color: #fff;
-      padding: 10px 18px; font-size: .9rem; box-shadow: 0 4px 0 var(--ink);
+      padding: 9px 16px; font-size: .88rem; box-shadow: 0 4px 0 var(--ink);
     }
     .btn-danger:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); }
     .btn-danger:active { transform: translateY(3px);  box-shadow: 0 1px 0 var(--ink); }
@@ -143,7 +139,7 @@
     }
     .btn-back:hover { color: var(--ink); }
 
-    /* ── STATUS ── */
+    /* Status */
     .status {
       padding: 12px 16px; font-weight: 800; font-size: .9rem;
       border: 3px solid var(--ink); text-align: center;
@@ -151,148 +147,212 @@
     .status.error   { background: #fee2e2; color: #991b1b; }
     .status.success { background: var(--yellow); }
 
-    /* ── ROMKODE ── */
-    .room-code-block { text-align: center; padding: 10px 0; }
-    .room-code-block .label {
-      font-weight: 800; font-size: .75rem; text-transform: uppercase;
-      letter-spacing: .08em; color: var(--muted); margin-bottom: 8px;
-    }
-    .room-code-block .code {
-      font-family: 'Chewy', cursive; font-size: clamp(3rem,10vw,4.5rem);
-      letter-spacing: 8px; color: var(--ink);
-      background: var(--yellow); border: 4px solid var(--ink);
-      display: inline-block; padding: 6px 24px; box-shadow: 0 5px 0 var(--ink);
-    }
-    .room-code-block .hint { font-size: .82rem; font-weight: 700; color: var(--muted); margin-top: 10px; }
+    /* ══════════════════════════════════════════
+       LÆRER – GAME SCREEN (faseinndelt)
+    ══════════════════════════════════════════ */
 
-    /* ── GAME LAYOUT (lærer) ── */
-    .game-wrap {
-      max-width: 800px; margin: 0 auto; padding: 0 20px 60px;
-      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;
-      animation: fadeIn .25s ease;
+    /* Kompakt topplinje: kode-badge + terning + kast-igjen */
+    .teacher-topbar {
+      display: flex; align-items: center; gap: 14px;
+      max-width: 1100px; margin: 0 auto; padding: 0 20px 14px;
+      flex-wrap: wrap;
     }
-    @media (max-width: 620px) { .game-wrap { grid-template-columns: 1fr; } }
-    .col { display: flex; flex-direction: column; gap: 16px; }
+    .code-badge {
+      font-family: 'Chewy', cursive; font-size: 1.5rem; letter-spacing: 4px;
+      background: var(--yellow); border: 3px solid var(--ink);
+      box-shadow: 0 4px 0 var(--ink); padding: 4px 16px;
+      white-space: nowrap;
+    }
+    .code-badge-label { font-family:'Nunito',sans-serif; font-size:.7rem; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-right:6px; }
+    .participants { display:flex; align-items:center; gap:6px; font-weight:800; font-size:.85rem; color:var(--muted); }
+    .dot { width:8px;height:8px;border-radius:50%;background:#16a34a;border:2px solid var(--ink);animation:pulse 2s infinite; }
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .topbar-spacer { flex:1; }
 
-    /* ── TERNING ── */
-    .dice-card {
-      background: var(--card); border: 4px solid var(--ink);
-      box-shadow: 0 8px 0 var(--ink); padding: 28px 20px;
-      display: flex; flex-direction: column; align-items: center; gap: 16px;
-      transform: rotate(-1deg);
+    /* FASE 1 – klar til kast */
+    .phase-ready {
+      max-width: 500px; margin: 0 auto; padding: 0 20px 40px;
+      display: flex; flex-direction: column; align-items: center; gap: 20px;
+      animation: fadeIn .3s ease;
     }
-    #dice {
-      width: 140px; height: 140px; background: var(--yellow);
-      border: 4px solid var(--ink); box-shadow: 0 8px 0 var(--ink);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 78px; cursor: pointer; user-select: none;
-      transition: transform .1s, box-shadow .1s; transform: rotate(2deg);
+
+    /* Romkode stor (fase 1) */
+    .big-code-block { text-align:center; }
+    .big-code-block .label {
+      font-weight:800; font-size:.75rem; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--muted); margin-bottom:8px;
     }
-    #dice:hover  { transform: rotate(2deg) translateY(-4px); box-shadow: 0 12px 0 var(--ink); }
-    #dice:active { transform: rotate(2deg) translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
-    #dice.rolling { animation: shake 0.4s linear infinite; }
+    .big-code-block .code {
+      font-family:'Chewy',cursive; font-size:clamp(3rem,10vw,5rem);
+      letter-spacing:10px; background:var(--yellow); border:4px solid var(--ink);
+      display:inline-block; padding:8px 28px; box-shadow:0 6px 0 var(--ink);
+    }
+    .big-code-block .hint { font-size:.82rem; font-weight:700; color:var(--muted); margin-top:10px; }
+
+    /* Stor terning (fase 1) */
+    #dice-ready {
+      width:200px; height:200px; background:var(--yellow);
+      border:4px solid var(--ink); box-shadow:0 10px 0 var(--ink);
+      display:flex; align-items:center; justify-content:center;
+      font-size:110px; cursor:pointer; user-select:none; transform:rotate(2deg);
+      transition:transform .12s, box-shadow .12s;
+    }
+    #dice-ready:hover  { transform:rotate(2deg) translateY(-5px); box-shadow:0 15px 0 var(--ink); }
+    #dice-ready:active { transform:rotate(2deg) translateY(5px);  box-shadow:0 4px 0 var(--ink); }
+    #dice-ready.rolling { animation:shake .4s linear infinite; }
     @keyframes shake {
-      0%   { transform: rotate(2deg) translate(0,0); }
-      25%  { transform: rotate(-6deg) translate(-4px,3px); }
-      50%  { transform: rotate(6deg) translate(4px,-3px); }
-      75%  { transform: rotate(-4deg) translate(-3px,-2px); }
-      100% { transform: rotate(2deg) translate(0,0); }
+      0%  { transform:rotate(2deg) translate(0,0); }
+      25% { transform:rotate(-6deg) translate(-4px,3px); }
+      50% { transform:rotate(6deg) translate(4px,-3px); }
+      75% { transform:rotate(-4deg) translate(-3px,-2px); }
+      100%{ transform:rotate(2deg) translate(0,0); }
     }
-    .roll-hint { font-weight: 700; font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    .roll-hint { font-weight:700; font-size:.85rem; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
 
-    /* ── RESULTAT ── */
-    .result-card {
-      background: var(--card); border: 4px solid var(--ink); box-shadow: 0 8px 0 var(--ink);
-      padding: 18px 20px; opacity: 0;
-      transform: rotate(1deg) translateY(12px); transition: opacity .25s, transform .25s;
+    /* FASE 2 – etter kast */
+    .phase-result {
+      max-width: 1100px; margin: 0 auto; padding: 0 20px 40px;
+      display: none;
+      grid-template-columns: auto 1fr 1fr;
+      gap: 20px; align-items: start;
+      animation: fadeIn .35s ease;
     }
-    .result-card.show { opacity: 1; transform: rotate(1deg) translateY(0); }
-    .result-eyebrow { font-weight: 900; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 5px; }
-    .result-text { font-family: 'Chewy', cursive; font-size: clamp(1.3rem,4vw,1.8rem); line-height: 1.2; }
-
-    .concept-card {
-      background: var(--orange); border: 4px solid var(--ink); box-shadow: 0 8px 0 var(--ink);
-      padding: 20px; transform: rotate(-1.5deg); display: none; opacity: 0; transition: opacity .3s;
-    }
-    .concept-card.show { display: block; opacity: 1; }
-    .concept-label { font-weight: 900; font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; opacity: .65; margin-bottom: 6px; }
-    .concept-word { font-family: 'Chewy', cursive; font-size: clamp(1.8rem,5vw,2.6rem); line-height: 1.1; }
-    .concept-instruction {
-      font-family: 'Cormorant Garamond', serif; font-style: italic;
-      font-weight: 600; font-size: 1.05rem; margin-top: 8px; opacity: .8;
+    .phase-result.show { display: grid; }
+    @media (max-width:800px) {
+      .phase-result { grid-template-columns: 1fr; }
     }
 
-    /* ── PROGRESS ── */
-    .progress-card {
-      background: var(--card); border: 4px solid var(--ink);
-      box-shadow: 0 8px 0 var(--ink); padding: 14px 18px; transform: rotate(.5deg);
+    /* Mini-terning (fase 2) */
+    .mini-dice-wrap {
+      display:flex; flex-direction:column; align-items:center; gap:10px; padding-top:4px;
     }
-    .progress-label { font-weight: 900; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin-bottom: 8px; }
-    .progress-bar { width: 100%; height: 14px; background: var(--cream); border: 3px solid var(--ink); overflow: hidden; }
-    .progress-fill { height: 100%; width: 0%; background: var(--yellow); border-right: 2px solid var(--ink); transition: width .3s; }
-    .progress-count { font-weight: 800; font-size: .82rem; margin-top: 5px; }
+    #dice-mini {
+      width:80px; height:80px; background:var(--yellow);
+      border:4px solid var(--ink); box-shadow:0 6px 0 var(--ink);
+      display:flex; align-items:center; justify-content:center;
+      font-size:44px; cursor:pointer; user-select:none; transform:rotate(2deg);
+      transition:transform .12s, box-shadow .12s;
+    }
+    #dice-mini:hover  { transform:rotate(2deg) translateY(-3px); box-shadow:0 9px 0 var(--ink); }
+    #dice-mini:active { transform:rotate(2deg) translateY(3px);  box-shadow:0 3px 0 var(--ink); }
+    #dice-mini.rolling { animation:shake .4s linear infinite; }
+    .mini-roll-hint { font-weight:800; font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; text-align:center; }
 
-    /* ── SVAR-FEED ── */
-    .answers-card {
-      background: var(--card); border: 4px solid var(--ink);
-      box-shadow: 0 8px 0 var(--ink); padding: 20px; transform: rotate(-0.5deg);
+    /* Resultat-kort (fase 2 – midtre kolonne) */
+    .result-col { display:flex; flex-direction:column; gap:14px; }
+
+    .result-main {
+      background:var(--card); border:4px solid var(--ink); box-shadow:0 8px 0 var(--ink);
+      padding:24px; transform:rotate(-1deg);
     }
-    .answers-card h2 { font-family: 'Chewy', cursive; font-size: 1.3rem; margin-bottom: 14px; }
-    .answers-list { display: flex; flex-direction: column; gap: 10px; min-height: 60px; }
+    .result-eyebrow {
+      font-weight:900; font-size:.75rem; text-transform:uppercase;
+      letter-spacing:.08em; color:var(--muted); margin-bottom:8px;
+    }
+    .result-text {
+      font-family:'Chewy',cursive; font-size:clamp(1.6rem,4vw,2.4rem); line-height:1.2;
+    }
+
+    .concept-big {
+      background:var(--orange); border:4px solid var(--ink); box-shadow:0 8px 0 var(--ink);
+      padding:24px; transform:rotate(1deg);
+      display:none; opacity:0; transition:opacity .3s;
+    }
+    .concept-big.show { display:block; opacity:1; }
+    .concept-big-label {
+      font-weight:900; font-size:.75rem; text-transform:uppercase;
+      letter-spacing:.08em; opacity:.65; margin-bottom:8px;
+    }
+    .concept-big-word {
+      font-family:'Chewy',cursive; font-size:clamp(2.4rem,6vw,3.6rem); line-height:1.1;
+    }
+    .concept-big-inst {
+      font-family:'Cormorant Garamond',serif; font-style:italic;
+      font-weight:600; font-size:1.1rem; margin-top:10px; opacity:.8;
+    }
+
+    /* Progress */
+    .progress-mini {
+      background:var(--card); border:3px solid var(--ink); box-shadow:0 4px 0 var(--ink);
+      padding:12px 16px;
+    }
+    .progress-label { font-weight:900; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:6px; }
+    .progress-bar   { width:100%; height:12px; background:var(--cream); border:2px solid var(--ink); overflow:hidden; }
+    .progress-fill  { height:100%; width:0%; background:var(--yellow); border-right:2px solid var(--ink); transition:width .3s; }
+    .progress-count { font-weight:800; font-size:.78rem; margin-top:4px; }
+
+    /* Svar-feed (fase 2 – høyre kolonne) */
+    .answers-col {
+      background:var(--card); border:4px solid var(--ink); box-shadow:0 8px 0 var(--ink);
+      padding:20px; transform:rotate(.5deg);
+      display:flex; flex-direction:column; gap:0;
+      max-height: calc(100vh - 180px); /* fyller skjermen */
+    }
+    .answers-col h2 { font-family:'Chewy',cursive; font-size:1.4rem; margin-bottom:12px; flex-shrink:0; }
+    .answers-list {
+      overflow-y:auto; display:flex; flex-direction:column; gap:8px;
+      flex:1;
+      /* nice scrollbar */
+      scrollbar-width:thin; scrollbar-color:var(--ink) var(--cream);
+    }
+    .answers-list::-webkit-scrollbar { width:6px; }
+    .answers-list::-webkit-scrollbar-track { background:var(--cream); }
+    .answers-list::-webkit-scrollbar-thumb { background:var(--ink); border-radius:3px; }
     .answer-item {
-      background: var(--cream); border: 3px solid var(--ink);
-      padding: 10px 14px; font-size: .95rem; font-weight: 700;
-      animation: popIn .2s ease;
+      background:var(--cream); border:3px solid var(--ink);
+      padding:10px 14px; font-size:.95rem; font-weight:700; line-height:1.35;
+      animation:popIn .2s ease; flex-shrink:0;
     }
-    @keyframes popIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-    .no-answers { color: var(--muted); font-weight: 700; font-size: .9rem; font-style: italic; }
+    @keyframes popIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .no-answers { color:var(--muted); font-weight:700; font-size:.9rem; font-style:italic; }
 
-    /* ── PARTICIPANTS ── */
-    .participants { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: .85rem; color: var(--muted); }
-    .dot { width: 9px; height: 9px; border-radius: 50%; background: #16a34a; border: 2px solid var(--ink); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
-    .toolbar { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    /* Bottom bar */
+    .teacher-bottombar {
+      max-width:1100px; margin:0 auto; padding:12px 20px 40px;
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    }
 
-    /* ── ELEV: ACTIVITY / CONCEPT ── */
+    /* ══ ELEV ══ */
+    .waiting-block { text-align:center; padding:30px 20px; }
+    .spinner {
+      width:44px;height:44px;border:5px solid #e5e5e5;
+      border-top-color:var(--ink);border-radius:50%;
+      animation:spin 1s linear infinite;margin:0 auto 16px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .waiting-block p { font-weight:800; color:var(--muted); font-size:1rem; }
+
     .activity-display {
-      background: var(--green); border: 4px solid var(--ink);
-      box-shadow: 0 7px 0 var(--ink); padding: 22px; transform: rotate(-1deg);
+      background:var(--green); border:4px solid var(--ink);
+      box-shadow:0 7px 0 var(--ink); padding:22px; transform:rotate(-1deg);
     }
     .activity-display .eyebrow, .concept-display .eyebrow {
-      font-weight: 900; font-size: .75rem; text-transform: uppercase;
-      letter-spacing: .08em; opacity: .7; margin-bottom: 8px;
+      font-weight:900;font-size:.75rem;text-transform:uppercase;
+      letter-spacing:.08em;opacity:.7;margin-bottom:8px;
     }
-    .activity-display .activity-text { font-family: 'Chewy', cursive; font-size: clamp(1.5rem,5vw,2.2rem); line-height: 1.2; }
-
+    .activity-display .activity-text {
+      font-family:'Chewy',cursive; font-size:clamp(1.5rem,5vw,2.4rem); line-height:1.2;
+    }
     .concept-display {
-      background: var(--orange); border: 4px solid var(--ink);
-      box-shadow: 0 7px 0 var(--ink); padding: 22px; transform: rotate(1deg);
+      background:var(--orange); border:4px solid var(--ink);
+      box-shadow:0 7px 0 var(--ink); padding:22px; transform:rotate(1deg);
     }
-    .concept-display .concept-word { font-family: 'Chewy', cursive; font-size: clamp(2rem,7vw,3rem); line-height: 1.1; margin-bottom: 8px; }
+    .concept-display .concept-word {
+      font-family:'Chewy',cursive; font-size:clamp(2rem,7vw,3rem); line-height:1.1; margin-bottom:8px;
+    }
     .concept-display .concept-hint {
-      font-family: 'Cormorant Garamond', serif; font-style: italic; font-weight: 600; font-size: 1.05rem; opacity: .8;
+      font-family:'Cormorant Garamond',serif; font-style:italic; font-weight:600; font-size:1.05rem; opacity:.8;
     }
-
-    /* ── WAITING ── */
-    .waiting-block { text-align: center; padding: 30px 20px; }
-    .spinner {
-      width: 44px; height: 44px; border: 5px solid #e5e5e5;
-      border-top-color: var(--ink); border-radius: 50%;
-      animation: spin 1s linear infinite; margin: 0 auto 16px;
-    }
-    @keyframes spin { to{transform:rotate(360deg)} }
-    .waiting-block p { font-weight: 800; color: var(--muted); font-size: 1rem; }
-
-    .team-badge { text-align: center; font-family: 'Chewy', cursive; font-size: 1.1rem; color: var(--muted); padding: 4px 0; }
+    .team-badge { text-align:center; font-family:'Chewy',cursive; font-size:1.1rem; color:var(--muted); padding:4px 0; }
 
     footer {
-      text-align: center; padding: 24px; color: var(--muted);
-      font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(43,33,24,.12);
+      text-align:center; padding:24px; color:var(--muted);
+      font-weight:700; font-size:.85rem; border-top:3px solid rgba(43,33,24,.12);
     }
 
-    @media (prefers-reduced-motion: reduce) {
-      #dice.rolling { animation: none; }
-      .result-card, .concept-card { transition: none; }
+    @media(prefers-reduced-motion:reduce){
+      #dice-ready.rolling,#dice-mini.rolling{animation:none;}
+      .concept-big{transition:none;}
     }
   </style>
 </head>
@@ -303,102 +363,112 @@
   <a class="back-btn" href="../index.html">← Tilbake</a>
 </header>
 
-<section class="hero">
-  <h1>KRLE TerningSpill</h1>
-  <p class="subtitle" id="heroSubtitle">Kast terningen — beveg deg eller forklar et begrep</p>
-</section>
-
-<div class="legend" id="legendBar">
-  <span class="legend-tag move">1–4 · fysisk aktivitet</span>
-  <span class="legend-tag concept">5–6 · KRLE-begrep</span>
-</div>
-
-<!-- ════════════════════════════════════
-     SCREEN: ROLLE
-════════════════════════════════════ -->
+<!-- ════════ ROLLE ════════ -->
 <div class="screen active" id="screen-role">
   <div class="center-wrap">
+    <div class="screen-hero">
+      <h1>KRLE TerningSpill</h1>
+      <p>Kast terningen — beveg deg eller forklar et begrep</p>
+    </div>
+    <div class="legend">
+      <span class="legend-tag move">1–4 · fysisk aktivitet</span>
+      <span class="legend-tag concept">5–6 · KRLE-begrep</span>
+    </div>
     <div class="role-grid">
-      <button class="role-btn" onclick="goTeacher()">
-        <span class="emoji">🎓</span>Lærer
-      </button>
-      <button class="role-btn" onclick="goStudent()">
-        <span class="emoji">🙋</span>Elev
-      </button>
+      <button class="role-btn" onclick="goTeacher()"><span class="emoji">🎓</span>Lærer</button>
+      <button class="role-btn" onclick="goStudent()"><span class="emoji">🙋</span>Elev</button>
     </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCREEN: LÆRER – OPPSETT
-════════════════════════════════════ -->
+<!-- ════════ LÆRER: OPPSETT ════════ -->
 <div class="screen" id="screen-teacher-setup">
   <div class="center-wrap">
+    <div class="screen-hero">
+      <h1>KRLE TerningSpill</h1>
+      <p>Lærervisning</p>
+    </div>
     <div class="card">
       <h2>Opprett rom</h2>
-      <p>Klikk nedenfor for å generere en romkode. Del den med elevene så de kan koble seg på.</p>
-      <button class="btn-primary" onclick="createRoom()">Start spillet — generer romkode</button>
+      <p>Klikk nedenfor for å generere en romkode og starte spillet.</p>
+      <button class="btn-primary" onclick="createRoom()">Start — generer romkode</button>
     </div>
     <button class="btn-back" onclick="showScreen('screen-role')">← Tilbake</button>
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCREEN: LÆRER – SPILL
-════════════════════════════════════ -->
+<!-- ════════ LÆRER: SPILL ════════ -->
 <div class="screen" id="screen-teacher-game">
-  <div style="max-width:800px;margin:0 auto;padding:0 20px 12px;">
-    <div class="card" style="transform:rotate(-0.5deg)">
-      <div class="room-code-block">
-        <div class="label">Del denne koden med elevene</div>
-        <div class="code" id="roomCodeDisplay">——</div>
-        <div class="hint">Gå til denne siden → velg Elev → skriv inn koden</div>
-      </div>
-    </div>
+
+  <!-- Kompakt topplinje (alltid synlig) -->
+  <div class="teacher-topbar">
+    <span class="code-badge"><span class="code-badge-label">Kode</span><span id="topbarCode">——</span></span>
+    <div class="participants"><div class="dot"></div><strong id="participantCount">0</strong>&nbsp;lag</div>
+    <div class="topbar-spacer"></div>
+    <button class="btn-danger" onclick="closeRoom()">Avslutt rom</button>
   </div>
 
-  <div class="game-wrap">
-    <div class="col">
-      <div class="dice-card">
-        <div id="dice" role="button" tabindex="0" aria-label="Kast terningen">🎲</div>
-        <p class="roll-hint">Klikk eller trykk mellomrom</p>
-      </div>
-      <div class="result-card" id="resultCard" aria-live="polite">
+  <!-- FASE 1: klar til kast -->
+  <div class="phase-ready" id="phase-ready">
+    <div class="big-code-block">
+      <div class="label">Del denne koden med elevene</div>
+      <div class="code" id="bigCode">——</div>
+      <div class="hint">Gå til samme side → velg Elev → skriv inn koden</div>
+    </div>
+    <div class="legend">
+      <span class="legend-tag move">1–4 · fysisk aktivitet</span>
+      <span class="legend-tag concept">5–6 · KRLE-begrep</span>
+    </div>
+    <div id="dice-ready" role="button" tabindex="0" aria-label="Kast terningen">🎲</div>
+    <p class="roll-hint">Klikk eller trykk mellomrom for å kaste</p>
+  </div>
+
+  <!-- FASE 2: etter kast -->
+  <div class="phase-result" id="phase-result">
+
+    <!-- Mini-terning (venstre) -->
+    <div class="mini-dice-wrap">
+      <div id="dice-mini" role="button" tabindex="0" aria-label="Kast igjen">🎲</div>
+      <div class="mini-roll-hint">Kast igjen</div>
+    </div>
+
+    <!-- Resultat (midtre) -->
+    <div class="result-col">
+      <div class="result-main" id="resultMain">
         <div class="result-eyebrow" id="resultEyebrow"></div>
         <div class="result-text"    id="resultText"></div>
       </div>
-      <div class="concept-card" id="conceptCard" aria-live="polite">
-        <div class="concept-label">KRLE-begrep</div>
-        <div class="concept-word"  id="conceptText"></div>
-        <div class="concept-instruction">Elevene skriver forklaring på sin enhet.</div>
+      <div class="concept-big" id="conceptBig">
+        <div class="concept-big-label">KRLE-begrep</div>
+        <div class="concept-big-word" id="conceptWord"></div>
+        <div class="concept-big-inst">Elevene skriver forklaring på sin enhet</div>
       </div>
-      <div class="progress-card">
+      <div class="progress-mini">
         <div class="progress-label">Fremdrift — begreper</div>
         <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
         <div class="progress-count" id="progressCount">0 / 0 brukt</div>
       </div>
-      <div class="toolbar">
-        <div class="participants"><div class="dot"></div><strong id="participantCount">0</strong>&nbsp;lag tilkoblet</div>
-        <button class="btn-danger" onclick="closeRoom()">Avslutt rom</button>
+    </div>
+
+    <!-- Svar-feed (høyre) -->
+    <div class="answers-col">
+      <h2>Svar fra elevene</h2>
+      <div class="answers-list" id="answersList">
+        <div class="no-answers">Venter på begrepsrunde…</div>
       </div>
     </div>
 
-    <div class="col">
-      <div class="answers-card">
-        <h2>Svar fra elevene</h2>
-        <div class="answers-list" id="answersList">
-          <div class="no-answers">Venter på begrepsrunde…</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+  </div><!-- /phase-result -->
 
-<!-- ════════════════════════════════════
-     SCREEN: ELEV – JOIN
-════════════════════════════════════ -->
+</div><!-- /screen-teacher-game -->
+
+<!-- ════════ ELEV: JOIN ════════ -->
 <div class="screen" id="screen-student-join">
   <div class="center-wrap">
+    <div class="screen-hero">
+      <h1>KRLE TerningSpill</h1>
+      <p>Elevvisning</p>
+    </div>
     <div class="card">
       <h2>Romkode</h2>
       <input type="text" id="joinCodeInput" maxlength="6" placeholder="ABC123"
@@ -415,9 +485,7 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCREEN: ELEV – VENTER
-════════════════════════════════════ -->
+<!-- ════════ ELEV: VENTER ════════ -->
 <div class="screen" id="screen-student-waiting">
   <div class="center-wrap">
     <div class="card">
@@ -430,9 +498,7 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCREEN: ELEV – AKTIVITET
-════════════════════════════════════ -->
+<!-- ════════ ELEV: AKTIVITET ════════ -->
 <div class="screen" id="screen-student-activity">
   <div class="center-wrap">
     <div class="activity-display">
@@ -443,9 +509,7 @@
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     SCREEN: ELEV – BEGREP + SVAR
-════════════════════════════════════ -->
+<!-- ════════ ELEV: BEGREP + SVAR ════════ -->
 <div class="screen" id="screen-student-concept">
   <div class="center-wrap">
     <div class="concept-display">
@@ -503,13 +567,12 @@ const allConcepts = [
   "Guru Granth Sahib","Gurdwara","Turban","Kesh","Kirpan","Kara",
   "Humanisme","Human-Etisk Forbund","Kritisk tenkning"
 ];
-
 let availableConcepts = allConcepts.slice();
 const totalConcepts   = allConcepts.length;
 
 /* ── STATE ── */
-let currentRoom    = null;
-let teamName       = null;
+let currentRoom     = null;
+let teamName        = null;
 let answersListener = null;
 let teamsListener   = null;
 let stateListener   = null;
@@ -517,37 +580,44 @@ let hasAnswered     = false;
 
 /* ── LYD ── */
 let audioCtx = null;
-function initAudio() { if (!audioCtx) { const AC = window.AudioContext||window.webkitAudioContext; if(AC) audioCtx=new AC(); } }
-function playBeep(freq,ms,type="sine") {
-  if(!audioCtx) return;
-  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
-  o.type=type; o.frequency.value=freq; o.connect(g); g.connect(audioCtx.destination);
+function initAudio() { if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC();} }
+function playBeep(freq,ms,type='sine'){
+  if(!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.value=freq;o.connect(g);g.connect(audioCtx.destination);
   const n=audioCtx.currentTime;
-  g.gain.setValueAtTime(0.0001,n); g.gain.exponentialRampToValueAtTime(0.25,n+0.01);
+  g.gain.setValueAtTime(0.0001,n);g.gain.exponentialRampToValueAtTime(0.25,n+0.01);
   g.gain.exponentialRampToValueAtTime(0.0001,n+ms/1000);
-  o.start(n); o.stop(n+ms/1000+0.05);
+  o.start(n);o.stop(n+ms/1000+0.05);
 }
-function playRollSound()    { for(let i=0;i<5;i++) setTimeout(()=>playBeep(200+Math.random()*200,60,"square"),i*70); }
-function playConceptSound() { playBeep(520,130,"sine"); setTimeout(()=>playBeep(720,130,"sine"),160); }
+function playRollSound(){for(let i=0;i<5;i++)setTimeout(()=>playBeep(200+Math.random()*200,60,'square'),i*70);}
+function playConceptSound(){playBeep(520,130,'sine');setTimeout(()=>playBeep(720,130,'sine'),160);}
 
 /* ── UTILS ── */
-function makeCode() {
-  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let s='';
-  for(let i=0;i<6;i++) s+=c[Math.floor(Math.random()*c.length)]; return s;
+function makeCode(){
+  const c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let s='';
+  for(let i=0;i<6;i++)s+=c[Math.floor(Math.random()*c.length)];return s;
 }
 
 window.showScreen = id => {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 };
-
 window.goTeacher = () => showScreen('screen-teacher-setup');
 window.goStudent = () => showScreen('screen-student-join');
 
-function updateProgress() {
-  const used = totalConcepts - availableConcepts.length;
-  document.getElementById('progressFill').style.width = (used/totalConcepts*100) + '%';
-  document.getElementById('progressCount').textContent = used + ' / ' + totalConcepts + ' begreper brukt';
+function updateProgress(){
+  const used=totalConcepts-availableConcepts.length;
+  document.getElementById('progressFill').style.width=(used/totalConcepts*100)+'%';
+  document.getElementById('progressCount').textContent=used+' / '+totalConcepts+' begreper brukt';
+}
+
+/* ── FASER (lærer) ── */
+function setPhase(phase) {
+  document.getElementById('phase-ready').style.display  = phase==='ready'  ? '' : 'none';
+  const pr = document.getElementById('phase-result');
+  if(phase==='result'){ pr.classList.add('show'); }
+  else                { pr.classList.remove('show'); }
 }
 
 /* ════════════════════════════════════
@@ -556,101 +626,111 @@ function updateProgress() {
 window.createRoom = async () => {
   const code = makeCode();
   currentRoom = code;
-  await set(ref(db, `krle/${code}`), { state: { type: null }, createdAt: Date.now() });
-  document.getElementById('roomCodeDisplay').textContent = code;
+  await set(ref(db,`krle/${code}`),{state:{type:null},createdAt:Date.now()});
+  document.getElementById('topbarCode').textContent = code;
+  document.getElementById('bigCode').textContent    = code;
   updateProgress();
   showScreen('screen-teacher-game');
+  setPhase('ready');
 
-  // Lytter på svar
-  answersListener = onValue(ref(db, `krle/${code}/answers`), snap => {
+  answersListener = onValue(ref(db,`krle/${code}/answers`), snap => {
     const list = document.getElementById('answersList');
-    if (!snap.exists()) { list.innerHTML = '<div class="no-answers">Ingen svar ennå…</div>'; return; }
-    list.innerHTML = '';
-    Object.values(snap.val()).forEach(a => {
-      const el = document.createElement('div');
-      el.className = 'answer-item';
-      el.textContent = a.text;
+    if(!snap.exists()){list.innerHTML='<div class="no-answers">Ingen svar ennå…</div>';return;}
+    list.innerHTML='';
+    Object.values(snap.val()).forEach(a=>{
+      const el=document.createElement('div');
+      el.className='answer-item';
+      el.textContent=a.text;
       list.appendChild(el);
     });
+    // Scroll til bunnen så nye svar er synlige
+    list.scrollTop = list.scrollHeight;
   });
 
-  // Lytter på lag
-  teamsListener = onValue(ref(db, `krle/${code}/teams`), snap => {
+  teamsListener = onValue(ref(db,`krle/${code}/teams`), snap=>{
     document.getElementById('participantCount').textContent =
       snap.exists() ? Object.keys(snap.val()).length : 0;
   });
 };
 
 window.closeRoom = async () => {
-  if (!currentRoom) return;
-  if (!confirm('Avslutt rommet for alle?')) return;
-  if (answersListener) { off(ref(db,`krle/${currentRoom}/answers`),'value',answersListener); answersListener=null; }
-  if (teamsListener)   { off(ref(db,`krle/${currentRoom}/teams`),  'value',teamsListener);   teamsListener=null; }
-  await remove(ref(db, `krle/${currentRoom}`));
-  currentRoom = null;
-  availableConcepts = allConcepts.slice();
+  if(!currentRoom)return;
+  if(!confirm('Avslutt rommet for alle?'))return;
+  if(answersListener){off(ref(db,`krle/${currentRoom}/answers`),'value',answersListener);answersListener=null;}
+  if(teamsListener)  {off(ref(db,`krle/${currentRoom}/teams`),  'value',teamsListener);  teamsListener=null;}
+  await remove(ref(db,`krle/${currentRoom}`));
+  currentRoom=null;
+  availableConcepts=allConcepts.slice();
   showScreen('screen-role');
 };
 
-/* ── TERNING ── */
-const diceEl       = document.getElementById('dice');
-const resultCard   = document.getElementById('resultCard');
-const resultEyebrow= document.getElementById('resultEyebrow');
-const resultText   = document.getElementById('resultText');
-const conceptCard  = document.getElementById('conceptCard');
-const conceptText  = document.getElementById('conceptText');
-
-async function rollDice() {
-  if (!currentRoom) return;
+/* ── TERNING (begge knapper kaller samme funksjon) ── */
+async function rollDice(){
+  if(!currentRoom)return;
   initAudio();
-  resultCard.classList.remove('show');
-  conceptCard.classList.remove('show');
-  conceptCard.style.display = 'none';
-  await remove(ref(db, `krle/${currentRoom}/answers`));
-  document.getElementById('answersList').innerHTML = '<div class="no-answers">Ingen svar ennå…</div>';
 
-  diceEl.classList.add('rolling');
+  // Nullstill resultat-UI
+  document.getElementById('conceptBig').classList.remove('show');
+  document.getElementById('answersList').innerHTML='<div class="no-answers">Ingen svar ennå…</div>';
+  await remove(ref(db,`krle/${currentRoom}/answers`));
+
+  // Risting på begge terningene
+  const dReady = document.getElementById('dice-ready');
+  const dMini  = document.getElementById('dice-mini');
+  dReady.classList.add('rolling'); dMini.classList.add('rolling');
   playRollSound();
 
-  setTimeout(async () => {
-    diceEl.classList.remove('rolling');
+  setTimeout(async ()=>{
+    dReady.classList.remove('rolling'); dMini.classList.remove('rolling');
     const roll = Math.floor(Math.random()*6)+1;
-    diceEl.textContent = roll;
+    dReady.textContent = roll;
+    dMini.textContent  = roll;
 
-    if (roll >= 5) {
+    if(roll>=5){
       const concept = pickConcept();
-      showResultCard('KRLE-begrep!', 'Kast '+roll+' — elevene skriver forklaring digitalt.');
-      showConceptCard(concept);
+      showResult('KRLE-begrep! (kast '+roll+')', 'Elevene skriver forklaring på sin enhet.');
+      showConceptBig(concept);
       playConceptSound();
-      await set(ref(db,`krle/${currentRoom}/state`), { type:'concept', content:concept, roll });
+      await set(ref(db,`krle/${currentRoom}/state`),{type:'concept',content:concept,roll});
     } else {
-      const list = activities[roll];
-      const activity = list[Math.floor(Math.random()*list.length)];
-      showResultCard('Kast '+roll+' — beveg deg!', activity);
-      await set(ref(db,`krle/${currentRoom}/state`), { type:'activity', content:activity, roll });
+      const list=activities[roll];
+      const activity=list[Math.floor(Math.random()*list.length)];
+      showResult('Kast '+roll+' — beveg deg!', activity);
+      await set(ref(db,`krle/${currentRoom}/state`),{type:'activity',content:activity,roll});
     }
+
+    setPhase('result');
   }, 450);
 }
 
-function pickConcept() {
-  if (!availableConcepts.length) { updateProgress(); return '🎉 Alle begreper er brukt!'; }
-  const idx = Math.floor(Math.random()*availableConcepts.length);
-  const c = availableConcepts.splice(idx,1)[0];
-  updateProgress(); return c;
+function pickConcept(){
+  if(!availableConcepts.length){updateProgress();return '🎉 Alle begreper er brukt!';}
+  const idx=Math.floor(Math.random()*availableConcepts.length);
+  const c=availableConcepts.splice(idx,1)[0];
+  updateProgress();return c;
 }
-function showResultCard(eyebrow, text) {
-  resultEyebrow.textContent = eyebrow; resultText.textContent = text;
-  void resultCard.offsetWidth; resultCard.classList.add('show');
+function showResult(eyebrow,text){
+  document.getElementById('resultEyebrow').textContent=eyebrow;
+  document.getElementById('resultText').textContent=text;
 }
-function showConceptCard(concept) {
-  conceptText.textContent = concept; conceptCard.style.display = 'block';
-  void conceptCard.offsetWidth; conceptCard.classList.add('show');
+function showConceptBig(concept){
+  document.getElementById('conceptWord').textContent=concept;
+  const el=document.getElementById('conceptBig');
+  el.style.display='block';
+  void el.offsetWidth;
+  el.classList.add('show');
 }
 
-diceEl.addEventListener('click', rollDice);
-diceEl.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){e.preventDefault();rollDice();} });
-document.addEventListener('keydown', e => {
-  if(e.target===diceEl) return;
+const diceReady = document.getElementById('dice-ready');
+const diceMini  = document.getElementById('dice-mini');
+diceReady.addEventListener('click', rollDice);
+diceReady.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();rollDice();}});
+diceMini.addEventListener('click', rollDice);
+diceMini.addEventListener('keydown', e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();rollDice();}});
+document.addEventListener('keydown',e=>{
+  const active=document.querySelector('.screen.active');
+  if(!active||active.id!=='screen-teacher-game')return;
+  if(e.target===diceReady||e.target===diceMini)return;
   if(e.code==='Space'||e.code==='Enter'){e.preventDefault();rollDice();}
 });
 
@@ -658,64 +738,59 @@ document.addEventListener('keydown', e => {
    ELEV
 ════════════════════════════════════ */
 window.joinRoom = async () => {
-  const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
-  const name = document.getElementById('teamNameInput').value.trim();
+  const code  = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  const name  = document.getElementById('teamNameInput').value.trim();
   const errEl = document.getElementById('joinError');
-  errEl.style.display = 'none';
+  errEl.style.display='none';
 
-  if (code.length < 4) { errEl.textContent='Skriv inn romkoden du fikk av læreren.'; errEl.style.display='block'; return; }
-  if (!name)           { errEl.textContent='Skriv inn et lagnavn.'; errEl.style.display='block'; return; }
+  if(code.length<4){errEl.textContent='Skriv inn romkoden du fikk av læreren.';errEl.style.display='block';return;}
+  if(!name)        {errEl.textContent='Skriv inn et lagnavn.';errEl.style.display='block';return;}
 
-  const snap = await get(ref(db, `krle/${code}`));
-  if (!snap.exists()) { errEl.textContent='Fant ikke et rom med den koden.'; errEl.style.display='block'; return; }
+  const snap=await get(ref(db,`krle/${code}`));
+  if(!snap.exists()){errEl.textContent='Fant ikke et rom med den koden.';errEl.style.display='block';return;}
 
-  currentRoom = code;
-  teamName    = name;
+  currentRoom=code; teamName=name;
+  await push(ref(db,`krle/${code}/teams`),{name,joinedAt:Date.now()});
 
-  await push(ref(db, `krle/${code}/teams`), { name, joinedAt: Date.now() });
-
-  ['teamBadge','teamBadgeActivity','teamBadgeConcept'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '🏷 ' + name;
+  ['teamBadge','teamBadgeActivity','teamBadgeConcept'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.textContent='🏷 '+name;
   });
 
   showScreen('screen-student-waiting');
 
-  // Lytt på state-endringer
-  stateListener = onValue(ref(db, `krle/${code}/state`), snap => {
-    if (!snap.exists()) {
-      document.getElementById('waitingMsg').textContent = 'Rommet er avsluttet av læreren.';
-      showScreen('screen-student-waiting'); return;
+  stateListener=onValue(ref(db,`krle/${code}/state`),snap=>{
+    if(!snap.exists()){
+      document.getElementById('waitingMsg').textContent='Rommet er avsluttet av læreren.';
+      showScreen('screen-student-waiting');return;
     }
-    const state = snap.val();
-    if (!state || !state.type) { showScreen('screen-student-waiting'); return; }
+    const state=snap.val();
+    if(!state||!state.type){showScreen('screen-student-waiting');return;}
 
-    if (state.type === 'activity') {
-      document.getElementById('activityEyebrow').textContent = 'Kast '+state.roll+' — beveg deg!';
-      document.getElementById('activityText').textContent    = state.content;
+    if(state.type==='activity'){
+      document.getElementById('activityEyebrow').textContent='Kast '+state.roll+' — beveg deg!';
+      document.getElementById('activityText').textContent=state.content;
       showScreen('screen-student-activity');
-    } else if (state.type === 'concept') {
-      document.getElementById('studentConceptWord').textContent = state.content;
-      document.getElementById('answerInput').value = '';
-      document.getElementById('answerStatus').style.display = 'none';
-      document.getElementById('submitBtn').disabled = false;
-      hasAnswered = false;
+    } else if(state.type==='concept'){
+      document.getElementById('studentConceptWord').textContent=state.content;
+      document.getElementById('answerInput').value='';
+      document.getElementById('answerStatus').style.display='none';
+      document.getElementById('submitBtn').disabled=false;
+      hasAnswered=false;
       showScreen('screen-student-concept');
     }
   });
 };
 
 window.submitAnswer = async () => {
-  if (hasAnswered) return;
-  const text = document.getElementById('answerInput').value.trim();
-  const s = document.getElementById('answerStatus');
-  if (!text) {
-    s.className='status error'; s.textContent='Skriv noe før du sender!'; s.style.display='block'; return;
-  }
-  hasAnswered = true;
-  document.getElementById('submitBtn').disabled = true;
-  await push(ref(db, `krle/${currentRoom}/answers`), { text, team: teamName, sentAt: Date.now() });
-  s.className='status success'; s.textContent='Svaret er sendt! ✓ Venter på neste runde…'; s.style.display='block';
+  if(hasAnswered)return;
+  const text=document.getElementById('answerInput').value.trim();
+  const s=document.getElementById('answerStatus');
+  if(!text){s.className='status error';s.textContent='Skriv noe før du sender!';s.style.display='block';return;}
+  hasAnswered=true;
+  document.getElementById('submitBtn').disabled=true;
+  await push(ref(db,`krle/${currentRoom}/answers`),{text,team:teamName,sentAt:Date.now()});
+  s.className='status success';s.textContent='Svaret er sendt! ✓ Venter på neste runde…';s.style.display='block';
 };
 </script>
 </body>
