@@ -390,17 +390,17 @@ const ART = {
     finale:'media/soria-moria.jpg'
   },
   fragments: {
-    gutten: { src:'media/kragero-skuter.jpg', alt:{nb:'Seilskuter ved Kragerø.', en:'Sailing ships by Kragerø.'}},
+    gutten: { src:'media/kragero-skuter.jpg', alt:{nb:'Seilskuter ved Kragerø.', nn:'Seglskuter ved Kragerø.', en:'Sailing ships by Kragerø.', de:'Segelschiffe bei Kragerø.'}},
     beskjeden: { src:'media/nokken-eyes.jpg', decorative:true },
-    oyet: { src:'media/kittelsen-selvportrett.jpg', alt:{nb:'Portrett av Theodor Kittelsen.', en:'Portrait of Theodor Kittelsen.'}},
-    oya: { src:'media/nokken-eyes.jpg', alt:{nb:'Mørkt tjern med to lysende øyne i vannflaten.', en:'A dark tarn with two glowing eyes in the water.'}},
+    oyet: { src:'media/kittelsen-selvportrett.jpg', alt:{nb:'Portrett av Theodor Kittelsen.', nn:'Portrett av Theodor Kittelsen.', en:'Portrait of Theodor Kittelsen.', de:'Porträt von Theodor Kittelsen.'}},
+    oya: { src:'media/nokken-eyes.jpg', alt:{nb:'Mørkt tjern med to lysende øyne i vannflaten.', nn:'Mørkt tjern med to lysande auge i vassflata.', en:'A dark tarn with two glowing eyes in the water.', de:'Ein dunkler Weiher mit zwei leuchtenden Augen im Wasser.'}},
     inga: { src:'media/nokken-1887.jpg', decorative:true },
-    pesta: { src:'media/pesta-detail.jpg', alt:{nb:'Detalj av Pesta-skikkelsen.', en:'Detail of the figure Pesta.'}},
-    finale: { src:'media/soria-moria.jpg', alt:{nb:'Et lysende slott langt borte.', en:'A shining castle far away.'}}
+    pesta: { src:'media/pesta-detail.jpg', alt:{nb:'Detalj av Pesta-skikkelsen.', nn:'Detalj av Pesta-skikkelsen.', en:'Detail of the figure Pesta.', de:'Detail der Figur Pesta.'}},
+    finale: { src:'media/soria-moria.jpg', alt:{nb:'Et lysende slott langt borte.', nn:'Eit lysande slott langt borte.', en:'A shining castle far away.', de:'Ein leuchtendes Schloss in der Ferne.'}}
   },
   steps: {
-    oya: { src:'media/nokken-1887.jpg', cls:'quest eyes', alt:{nb:'Mørkt tjern med to lysende øyne i vannflaten.', en:'A dark tarn with two glowing eyes in the water.'}},
-    pesta: { src:'media/pesta-kommer.jpg', cls:'quest pesta', alt:{nb:'Pesta-skikkelsen i et mørkt landskap.', en:'The figure Pesta in a dark landscape.'}}
+    oya: { src:'media/nokken-1887.jpg', cls:'quest eyes', alt:{nb:'Mørkt tjern med to lysende øyne i vannflaten.', nn:'Mørkt tjern med to lysande auge i vassflata.', en:'A dark tarn with two glowing eyes in the water.', de:'Ein dunkler Weiher mit zwei leuchtenden Augen im Wasser.'}},
+    pesta: { src:'media/pesta-kommer.jpg', cls:'quest pesta', alt:{nb:'Pesta-skikkelsen i et mørkt landskap.', nn:'Pesta-skikkelsen i eit mørkt landskap.', en:'The figure Pesta in a dark landscape.', de:'Die Figur Pesta in einer dunklen Landschaft.'}}
   }
 };
 
@@ -1105,7 +1105,1065 @@ const QUEST_EN = {
   ]
 };
 
-const QUESTS = { nb: QUEST_NB, en: QUEST_EN };
+const QUEST_NN = {
+  "stations": [
+    {
+      "id": "gutten",
+      "code": "BLY",
+      "roman": "I",
+      "title": "Guten",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Kragerø, 1860-årene. En by som lukter tjære og saltvatn.",
+            "I et lite hus bur en familie med åtte burn. Ett av dem sitter alltid for seg selv. Han teiknar. På papirlapper, på treplanker, i sanden.",
+            "Men minnet om ham... det rakner akkurat her. Hent det tilbake for meg."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "I museet: let på veggene i dette rommet etter motivet som viser kva byen levde av.",
+          "q": "Sjå deg rundt i rommet. Kragerø levde av havet. Finn tingen som viser hvordan familier her tjente til livets opphold. Kva fant du?",
+          "options": [
+            "Eit bilete av ei seglskute",
+            "Ein traktor",
+            "Eit flygel"
+          ],
+          "correct": 0,
+          "hints": [
+            "Tenk: kva lukter byen av? Tjære og saltvatn...",
+            "Det du leter etter har master og seil."
+          ],
+          "explain": "Kragerø var en seilskuteby. Nesten alt — arbeid, mat, pengar — kom fra havet og skutene."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Guten",
+              "Theodor Severin Kittelsen vart født her i Kragerø 27. april 1857 — som ett av åtte burn."
+            ],
+            [
+              "Byen",
+              "Faren Johannes var kjøpmann. Byen levde av seilskuter og trelast. Havet var alt."
+            ],
+            [
+              "Streken",
+              "Theodor teikna på alt han kom over. Dei vaksne ristet på hodet. Papir var nemlig ikkje gratis."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "Så svar meg: Hvorfor vart dei vaksne urolige når lille Theodor brukte opp papir og blyanter?",
+          "options": [
+            "Teikning var forbudt for burn",
+            "Papir og blyanter kosta pengar familien trengte til mat",
+            "Dei var redde han skulle grise seg til"
+          ],
+          "correct": 1,
+          "hints": [
+            "Tenk på kva åtte burn trenger. Kvar eneste dag.",
+            "Det handler om pengar. Og om brød."
+          ],
+          "explain": "Med åtte burn var kvar skilling regnet. Papir til teikning var pengar som kunne blitt mat."
+        },
+        {
+          "type": "fragment",
+          "h": "Guten som teikna på alt",
+          "p": "Theodor, født 1857 i Kragerø. Gutten som ikkje kunne la være å teikne — selv når det kosta."
+        }
+      ]
+    },
+    {
+      "id": "beskjeden",
+      "code": "KLO",
+      "roman": "II",
+      "title": "Meldinga",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "1868. Theodor er elleve år.",
+            "En dag kjem det en beskjed til huset. Etter den dagen er ingenting som før.",
+            "Men kva var beskjeden...? Det minnet holder eg hardt i."
+          ]
+        },
+        {
+          "type": "input",
+          "jakt": true,
+          "answer": "1868",
+          "maxlen": 4,
+          "inputmode": "numeric",
+          "demo": "I museet: finn klokken i rommet — årstallet står på minneskiltet ved den. Demo-svar: 1868.",
+          "q": "Finn klokken i rommet. Tiden stoppet for denne familien ett bestemt år. Tast årstallet da alt endret seg.",
+          "hints": [
+            "Det står på skiltet ved klokken. Fire sifre.",
+            "Theodor var elleve år gavmmel. Han var født i 1857..."
+          ],
+          "explain": "Året var 1868. Det året kom beskjeden ingen i huset ville ha."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Meldinga",
+              "Faren Johannes døyydde i 1868. Familien satt igjen uten inntekt. Ingen trygd fantes — åtte burn og en mor, helt åleine."
+            ],
+            [
+              "Løsningen",
+              "Løsningen var brutal og helt vanlig den gavngen: burna måtte ut i arbeid. Theodor, elleve år gavmmel, vart sendt av gårde som urmakerlærling."
+            ],
+            [
+              "Barnet",
+              "Et burn på elleve, åleine i en framand by, i arbeid fra morgen til kveld. Slik var Norge på 1800-tallet."
+            ]
+          ]
+        },
+        {
+          "type": "choice",
+          "q": "Du er Theodor. Elleve år. Faren er døyd, og mora seier du må reise burt for å arbeide. Kva gjør du?",
+          "options": [
+            "Nekter og gjemmer meg",
+            "Reiser — men gråter heile veien",
+            "Reiser og later som eg er voksen"
+          ],
+          "consequence": "Theodor reiste. Han hadde ikkje noe valg — og det hadde heller ingen av dei tusenvis av andre burna som vart sendt burt i dei årene. Men i lommen hadde han en blyantstump."
+        },
+        {
+          "type": "mc",
+          "q": "Én av disse tingene kunne Theodor umulig gjøre i 1868, samme hvor mye han lengtet heim. Kva for ein?",
+          "options": [
+            "Sende brev heim til mora",
+            "Gå i dagevis til fots for å komme heim",
+            "Ringe heim til mora"
+          ],
+          "correct": 2,
+          "hints": [
+            "To av tingene fantes. Én av dem var ikkje oppfunnet ennå — ikkje i noe heim i Norge.",
+            "Tenk: kva bruker DU når du savner noen?"
+          ],
+          "explain": "Telefonen fantes ikkje i norske heim i 1868. Ville du høre en stemme heimmefra, måtte du reise dit. Brev tok dager — noen gavnger uker."
+        },
+        {
+          "type": "fragment",
+          "h": "Guten som måtte reise",
+          "p": "Elleve år, åleine, sendt burt i arbeid. Men blyanten vart med."
+        }
+      ]
+    },
+    {
+      "id": "oyet",
+      "code": "AAL",
+      "roman": "III",
+      "title": "Auget som såg han",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Årene går. Theodor teiknar fortsatt — i smug, på baksiden av regninger.",
+            "Så en dag får én mann se teikningene hans.",
+            "Og han ser noe ingen andre har sett."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "sil": true,
+          "demo": "I museet: sammenlign med dei tidlige skissene som henger i dette rommet.",
+          "q": "Blant skissene i rommet finnes Theodors tidlige arbeider. Én strek går igjen — levende og urolig, som om alt i naturen puster. Kva for ein silhuett er hans?",
+          "options": [
+            "hus",
+            "troll",
+            "skip"
+          ],
+          "correct": 1,
+          "hints": [
+            "Theodor teikna sjelden rette streker. Naturen hans er aldri helt stille.",
+            "Se etter den silhuetten som ser ut som den kan våkne."
+          ],
+          "explain": "Den urolige, levende streken — der stein og skog nesten blir til vesener — det er Kittelsen."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Mannen",
+              "Mannen het Diderich Maria Aall. Han var velstående — og han bestemte seg for å betale for at Theodor skulle få utdanning som kunstner."
+            ],
+            [
+              "Slik fungerte det",
+              "Uten en rik velgjører: ingen kunstskole. Talent åleine var ikkje nok når man var fattig. Slik var reglene på 1800-tallet."
+            ],
+            [
+              "Reisen",
+              "Theodor fikk reise til Christiania — og siden helt til München i Tyskland, et av Europas store kunstsentre."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "Tenk deg om. Kva var det Aall eigatlig gav Theodor?",
+          "options": [
+            "Berømmelse over natten",
+            "En trygg jobb som urmaker",
+            "En sjanse fattigdommen ellers hadde tatt fra ham"
+          ],
+          "correct": 2,
+          "hints": [
+            "Vart Theodor berømt med en gavng? Nei. Kva fikk han da?",
+            "Kva var det fattigdommen hadde stengt for ham?"
+          ],
+          "explain": "Aall gav ham døyren fattigdommen hadde stengt: moglegheita til å lære, å reise, å bli kunstner. Resten gjorde Theodor selv."
+        },
+        {
+          "type": "fragment",
+          "h": "Guten som vart sett",
+          "p": "Én mann så teikningene og forstod. Uten Diderich Maria Aall — ingen Kittelsen."
+        }
+      ]
+    },
+    {
+      "id": "oya",
+      "code": "TJE",
+      "roman": "IV",
+      "title": "Øya og mørkret",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Hør. Bølger. Tåke over vatnet.",
+            "Theodor bur nå på en øy — Jomfruland, hos søsteren sin ved fyret. Dag etter dag: bare hav, himmel og skog.",
+            "Og det er her... det er her han begynner å se meg."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "I museet: sjå på naturmotivene i dette rommet og finn det der noe ser tilbake.",
+          "q": "Sjå på naturmotivene rundt deg. I ett av dem er naturen ikkje bare natur — noe ser tilbake på deg. Kva for nokret?",
+          "options": [
+            "Eit solfylt jorde med beitande kyr",
+            "Ein fiskebåt i solnedgang",
+            "Eit mørkt tjern der to lyse punkt bryt vassflata"
+          ],
+          "correct": 2,
+          "hints": [
+            "Lyse, vakre bilete? Nei. Let etter det som gjør deg litt urolig.",
+            "To lyse punkter. I mørkt vatn. Kva stirrer på deg?"
+          ],
+          "explain": "Tjernet med augav. Der. Det er meg."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Forvandlingen",
+              "På Jomfruland skjedde det noe med Theodor. Naturen sluttet å være bakgrunn. Skogen fikk ansikter. Steinene vart til troll. Tjernet fikk auge."
+            ],
+            [
+              "Det nye",
+              "Han måla det ingen hadde malt før: norsk natur slik den FØLES — vakker og skummel på samme tid. Det er derfor han er noe helt eige."
+            ],
+            [
+              "Nøkken",
+              "Nøkken — vesenet i tjernet som lokker folk ut i det dype — hadde levd i folks fortellinger i hundrevis av år. Theodor gav ham et ansikt. Eller... nesten et ansikt."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "nokkenq": true,
+          "q": "Så svar meg på gåta min: Eg har auge, men ikkje noe ansikt. Eg bur i tjernet, men er ingen fisk. Kva er eg eigatlig laget av?",
+          "options": [
+            "Gjørme og tang",
+            "Menneska si eiga frykt",
+            "Ein drukna hest"
+          ],
+          "correct": 1,
+          "hints": [
+            "Tenk deg om: fantes eg i det heile tatt, før noen var redde for det mørke vatnet?",
+            "Theodor måla ikkje et dyr. Han måla en følelse."
+          ],
+          "explain": "Nøkken er frykta for det dype — gitt en skikkjelse. Det var det Theodor forstod. Og måla.",
+          "aftercorrect": "...rett. Ingen har svart rett på den før. Gå vide. Nå."
+        },
+        {
+          "type": "fragment",
+          "h": "Mannen som gav mørkret auge",
+          "p": "På Jomfruland vart naturen levende. Troll i skogen. Auge i tjernet. Norge fikk sitt eventyrunivers."
+        }
+      ]
+    },
+    {
+      "id": "ingav",
+      "code": "ING",
+      "roman": "V",
+      "title": "Ingav",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "inga": true,
+          "lines": [
+            "Dette minnet er ikkje hans. Det er mitt.",
+            "Eg heter Ingav. Og hvis du vil forstå Theodor, må du først forstå huset vårt."
+          ]
+        },
+        {
+          "type": "cloze",
+          "jakt": true,
+          "demo": "I museet: familieportrettet i rommet viser hvor mange burn dei fikk.",
+          "intro": "Et brev fra Ingav har raknet. Fyll inn ordene som mangler — sjå deg rundt i rommet, alt du trenger finnes her.",
+          "text": [
+            "Kjære søster. Vi har det ",
+            0,
+            ", men vi klarer oss. Theodor målar fra morgen til kveld, og eg steller ",
+            1,
+            " — vi har ",
+            2,
+            " nå, kan du tro det! Pengene fra bileta kjem sent, så eg ",
+            3,
+            " og lapper det eg kan. Men når han viser meg det han målar, glemmer eg alt strevet. Din Ingav."
+          ],
+          "answers": [
+            "trangt",
+            "burna",
+            "ni",
+            "syr"
+          ],
+          "bank": [
+            "ni",
+            "syr",
+            "trangt",
+            "burna",
+            "slottet",
+            "tjenere"
+          ],
+          "hints": [
+            "Les setningen rundt hullet — bare ett ord gir mening der.",
+            "Ni burn. Trange kår. Hun sydde selv. Nå har du nesten alt."
+          ]
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Ingav",
+              "Ingav Christine Dahl giftet seg med Theodor i 1889. Hun var tjue år. Han var trettito."
+            ],
+            [
+              "Huset",
+              "Dei fikk ni burn. Ni! Og en kunstnerinntekt som kom og gikk. Det var Ingav som fikk kvardagen til å gå rundt."
+            ],
+            [
+              "Historien",
+              "Uten Ingav hadde det ikkje blitt noen Kittelsen slik vi kjenner ham. Historien glemmer ofte slike som henne. Ikkje du."
+            ]
+          ]
+        },
+        {
+          "type": "multiselect",
+          "pick": 3,
+          "q": "Se rommet med Ingavs auge. Kva for nokre TRE av disse var hennes ansvar — kvar eneste dag?",
+          "options": [
+            "Maten til elleve mennesker",
+            "Å måle bileta ferdig",
+            "Klærne — sy, lappe, stelle",
+            "Regnskap og brev til forlagene",
+            "Å hugge troll i stein"
+          ],
+          "correct": [
+            0,
+            2,
+            3
+          ],
+          "hints": [
+            "Theodor måla. Alt annet...",
+            "Mat. Klær. Pengar. Det er dei tre."
+          ],
+          "explain": "Mat, klær og økonomi — heile kvardagen for elleve mennesker hvilte på Ingav, mens Theodor måla."
+        },
+        {
+          "type": "fragment",
+          "h": "Kvinna som bar huset",
+          "p": "Ingav Kittelsen. Ni burn, trange kår, en genial og rastløs mann. Hun holdt alt oppe."
+        }
+      ]
+    },
+    {
+      "id": "pesta",
+      "code": "PES",
+      "roman": "VI",
+      "title": "Pesta",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Nå må du være modig.",
+            "For nå kjem hun. Den gavmle kona som vandrer fra gård til gård. Pesta.",
+            "Svartedauen. Pesten som tok halve Norge. Og Theodor... han bestemte seg for å måle den. Hvorfor i all verden gjorde han det?"
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "I museet: studer Pesta-motivene i dette rommet. Hun bærer alltid dei samme to tingene.",
+          "q": "Se nøye på Pesta-motivene. Hun bærer alltid to redskaper med seg — og dei betyr liv eller døyd. Kva for nokre?",
+          "options": [
+            "Ljå og sverd",
+            "Rive og sopelime",
+            "Lykt og klokke"
+          ],
+          "correct": 1,
+          "hints": [
+            "Ikkje våpen. Redskaper fra gården.",
+            "Det ene raker. Det andre soper."
+          ],
+          "explain": "Riva og sopelimen. Nå skal du få vite hvorfor dei betyr liv eller døyd."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Pesten",
+              "Svartedauen kom til Norge i 1349 og tok livet av omtrent halvparten av alle som bodde her. Heile bygder vart stående tomme."
+            ],
+            [
+              "Pesta",
+              "Folk trengte en måte å forstå det ufattelige på. Så pesten vart til Pesta — en gavmmel kone som vandret fra gård til gård med rive og sopelime."
+            ],
+            [
+              "Tegnene",
+              "Bar hun riva, ville noen på gården overleve — riva raker, men lar noe ligge igjen. Bar hun sopelimen, sopte hun alle med seg."
+            ],
+            [
+              "Theodor",
+              "På 1890-tallet teikna Theodor heile Svartedauen. Han gav nasjonens verste minne et ansikt folk kunne sjå på — og tåle å sjå på."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "Pesta står ved grinda til en gård. Hun løfter riva. Kva betyr det for dem som bur der?",
+          "options": [
+            "Alle kjem til å døy",
+            "Dei må rake tunet før kvelden",
+            "Nokre kjem til å overleve"
+          ],
+          "correct": 2,
+          "hints": [
+            "Husk: riva raker — men den tar ikkje alt med seg.",
+            "Sopelimen soper alt. Riva lar noe ligge igjen..."
+          ],
+          "explain": "Riva lar noe ligge igjen. Noen på gården ville overleve. Slik gjorde folketruen det ufattelige mulig å snakke om — og det forstod Theodor."
+        },
+        {
+          "type": "fragment",
+          "h": "Mannen som måla det ingen våga å sjå på",
+          "p": "Theodor gav selv pesten et ansikt. Eventyr og folketru var ikkje pynt — det var måten folk bar det tunge på."
+        }
+      ]
+    },
+    {
+      "id": "finale",
+      "code": null,
+      "roman": "VII",
+      "title": "Det sjuande minnet",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Seks minne. Du har vært... flinkere enn eg trodde.",
+            "Men det sjuande får du ikkje. Det sjuande er MITT.",
+            "For hvis du forstår det... da finnes eg kanskje ikkje lenger.",
+            "Så bevis det, da. Vis meg at du husker heile historien hans."
+          ]
+        },
+        {
+          "type": "order",
+          "q": "Legg Theodors liv i rett rekkefølge. Trykk på minnene i den rekkefølgen dei skjedde.",
+          "items": [
+            "Guten som teikna på alt",
+            "Guten som måtte reise",
+            "Guten som vart sett",
+            "Mannen som gav mørkret auge",
+            "Kvinna som bar huset",
+            "Mannen som måla det ingen våga å sjå på"
+          ],
+          "hints": [
+            "Start med burndommen i Kragerø. Slutt med Pesta.",
+            "Kragerø → farens døyd → Aall → Jomfruland → Ingav → Svartedauen."
+          ]
+        },
+        {
+          "type": "mc",
+          "nokkenq": true,
+          "q": "Og nå... det siste spørsmålet. Gutten som teikna. Sorgen. Ensomheten på øya. Frykta som fikk ansikt. Sjå på alt du har samlet — og svar meg: HVEM ER JEG?",
+          "options": [
+            "Eit monster som bur i tjernet ved huset",
+            "Gjenferdet av Diderich Maria Aall",
+            "Du er Theodor — fantasien og mørkret hans, som vart til kunst"
+          ],
+          "correct": 2,
+          "hints": [
+            "Hvem så meg først? Hvor kom eg eigatlig fra?",
+            "Eg fantes ikkje... før han teikna meg."
+          ],
+          "explain": "Nøkken, trollene, Pesta — alt kom fra samme sted: Theodors eige indre. Sorgen, ensomheten og frykta han bar på — som han gjorde om til bilete heile Norge kjenner.",
+          "aftercorrect": "...ja. Eg er ham. Sorgen etter faren. Ensomheten på øya. Alt det mørke — som han gjorde om til noe vakkert. Det er derfor han er viktig, skjønner du: han viste at man kan ta det man er redd for... og gi det form."
+        },
+        {
+          "type": "fragment",
+          "h": "Mannen som aldri slutta å teikne på alt",
+          "p": "Theodor Kittelsen, 1857–1914. Han gav Norge sitt eventyrunivers — og viste at mørkret kan bli til kunst."
+        },
+        {
+          "type": "chest"
+        }
+      ]
+    }
+  ]
+};
+
+const QUEST_DE = {
+  "stations": [
+    {
+      "id": "gutten",
+      "code": "BLY",
+      "roman": "I",
+      "title": "Der Junge",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Kragerø in den 1860er-Jahren. Eine Stadt, die nach Teer und Salzwasser riecht.",
+            "In einem kleinen Haus lebt eine Familie mit acht Kindern. Eines sitzt oft für sich allein. Er zeichnet. Auf Papierfetzen, auf Holzplanken, im Sand.",
+            "Aber die Erinnerung an ihn... genau hier zerfällt sie. Bring sie mir zurück."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "Im Museum: Suche an den Wänden dieses Raums nach dem Motiv, das zeigt, wovon die Stadt lebte.",
+          "q": "Sieh dich im Raum um. Kragerø lebte vom Meer. Finde das Objekt, das zeigt, wie Familien hier ihren Lebensunterhalt verdienten. Was hast du gefunden?",
+          "options": [
+            "Ein Bild eines Segelschiffs",
+            "Ein Traktor",
+            "Ein Flügel"
+          ],
+          "correct": 0,
+          "hints": [
+            "Denk nach: Wonach riecht die Stadt? Nach Teer und Salzwasser...",
+            "Was du suchst, hat Masten und Segel."
+          ],
+          "explain": "Kragerø war eine Segelschiffstadt. Fast alles — Arbeit, Essen, Geld — kam vom Meer und von den Schiffen."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Der Junge",
+              "Theodor Severin Kittelsen wurde hier in Kragerø am 27. April 1857 geboren — als eines von acht Kindern."
+            ],
+            [
+              "Die Stadt",
+              "Sein Vater Johannes war Kaufmann. Die Stadt lebte von Segelschiffen und Holzhandel. Das Meer war alles."
+            ],
+            [
+              "Der Strich",
+              "Theodor zeichnete auf alles, was er finden konnte. Die Erwachsenen schüttelten den Kopf. Papier war nicht kostenlos."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "Also antworte mir: Warum wurden die Erwachsenen unruhig, wenn der kleine Theodor Papier und Bleistifte verbrauchte?",
+          "options": [
+            "Zeichnen war für Kinder verboten",
+            "Papier und Bleistifte kosteten Geld, das die Familie für Essen brauchte",
+            "Sie hatten Angst, er würde sich schmutzig machen"
+          ],
+          "correct": 1,
+          "hints": [
+            "Denk daran, was acht Kinder brauchen. Jeden einzelnen Tag.",
+            "Es geht um Geld. Und um Brot."
+          ],
+          "explain": "Bei acht Kindern zählte jede Münze. Papier zum Zeichnen war Geld, das Essen hätte werden können."
+        },
+        {
+          "type": "fragment",
+          "h": "Der Junge, der auf alles zeichnete",
+          "p": "Theodor, 1857 in Kragerø geboren. Der Junge, der nicht aufhören konnte zu zeichnen — selbst wenn es etwas kostete."
+        }
+      ]
+    },
+    {
+      "id": "beskjeden",
+      "code": "KLO",
+      "roman": "II",
+      "title": "Die Nachricht",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "1868. Theodor ist elf Jahre alt.",
+            "One day a message comes to the house. After that day, nothing is the same.",
+            "But what was the message...? I am holding that memory tightly."
+          ]
+        },
+        {
+          "type": "input",
+          "jakt": true,
+          "answer": "1868",
+          "maxlen": 4,
+          "inputmode": "numeric",
+          "demo": "In the museum: find the clock in the room — the year is on the sign beside it. Demo answer: 1868.",
+          "q": "Find the clock in the room. Time stopped for this family in one particular year. Enter the year when everything changed.",
+          "hints": [
+            "Es steht auf dem Schild neben der Uhr. Vier Ziffern.",
+            "Theodor war elf Jahre alt. Er wurde 1857 geboren..."
+          ],
+          "explain": "Das Jahr war 1868. In diesem Jahr kam die Nachricht, die niemand im Haus haben wollte."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Die Nachricht",
+              "His father Johannes died in 1868. The family was left with no income. There was no welfare system — eight children and a mother, all alone."
+            ],
+            [
+              "Die Lösung",
+              "The solution was brutal, and common at the time: the children had to go to work. Theodor, eleven years old, was sent away to become a watchmaker’s apprentice."
+            ],
+            [
+              "Das Kind",
+              "A child of eleven, alone in a strange town, working from morning until evening. That was Norway in the 1800s."
+            ]
+          ]
+        },
+        {
+          "type": "choice",
+          "q": "You are Theodor. Eleven years old. Your father is dead, and your mother says you must travel away to work. What do you do?",
+          "options": [
+            "Ich weigere mich und verstecke mich",
+            "Go — but cry the whole way",
+            "Go and pretend to be grown up"
+          ],
+          "consequence": "Theodor went. He had no choice — and neither did the thousands of other children who were sent away in those years. But in his pocket he had a stub of pencil."
+        },
+        {
+          "type": "mc",
+          "q": "One of these things was impossible for Theodor in 1868, no matter how much he missed home. Which one?",
+          "options": [
+            "Seiner Mutter einen Brief nach Hause schicken",
+            "Tagelang zu Fuß nach Hause gehen",
+            "Seine Mutter anrufen"
+          ],
+          "correct": 2,
+          "hints": [
+            "Two of these things existed. One did not — not in any Norwegian home.",
+            "Denk nach: Was benutzt DU, wenn du jemanden vermisst?"
+          ],
+          "explain": "Telephones were not found in Norwegian homes in 1868. If you wanted to hear a voice from home, you had to travel there. Letters took days — sometimes weeks."
+        },
+        {
+          "type": "fragment",
+          "h": "Der Junge, der fortgehen musste",
+          "p": "Elf Jahre alt, allein, zur Arbeit fortgeschickt. Aber der Bleistift kam mit."
+        }
+      ]
+    },
+    {
+      "id": "oyet",
+      "code": "AAL",
+      "roman": "III",
+      "title": "Das Auge, das ihn sah",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Die Jahre vergehen. Theodor zeichnet weiter — heimlich, auf der Rückseite von Rechnungen.",
+            "Dann, eines Tages, sieht ein Mann seine Zeichnungen.",
+            "Und er sieht etwas, das niemand sonst gesehen hat."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "sil": true,
+          "demo": "Im Museum: Vergleiche mit den frühen Skizzen, die in diesem Raum hängen.",
+          "q": "Among the sketches in the room are Theodor’s early works. One kind of line appears again and again — alive and restless, as if everything in nature is breathing. Which silhouette is his?",
+          "options": [
+            "hus",
+            "troll",
+            "skip"
+          ],
+          "correct": 1,
+          "hints": [
+            "Theodor rarely drew straight, quiet lines. His nature is never completely still.",
+            "Look for the silhouette that seems as if it might wake up."
+          ],
+          "explain": "The restless, living line — where stones and forests almost become creatures — that is Kittelsen."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Der Mann",
+              "The man was Diderich Maria Aall. He was wealthy — and he decided to pay for Theodor to receive an artist’s education."
+            ],
+            [
+              "So funktionierte es",
+              "Without a rich patron: no art school. Talent alone was not enough when you were poor. That was how the rules worked in the 1800s."
+            ],
+            [
+              "Die Reise",
+              "Theodor konnte nach Christiania reisen — und später bis nach München in Deutschland, eines der großen Kunstzentren Europas."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "Denk darüber nach. Was gab Aall Theodor wirklich?",
+          "options": [
+            "Ruhm über Nacht",
+            "Eine sichere Stelle als Uhrmacher",
+            "A chance that poverty would otherwise have taken from him"
+          ],
+          "correct": 2,
+          "hints": [
+            "Did Theodor become famous at once? No. So what did he receive?",
+            "Was hatte die Armut ihm verschlossen?"
+          ],
+          "explain": "Aall gave him the door that poverty had closed: the chance to learn, to travel, to become an artist. The rest Theodor did himself."
+        },
+        {
+          "type": "fragment",
+          "h": "Der Junge, der gesehen wurde",
+          "p": "Ein Mann sah die Zeichnungen und verstand. Ohne Diderich Maria Aall — kein Kittelsen."
+        }
+      ]
+    },
+    {
+      "id": "oya",
+      "code": "TJE",
+      "roman": "IV",
+      "title": "Die Insel und die Dunkelheit",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Hör hin. Wellen. Nebel über dem Wasser.",
+            "Theodor lebt nun auf einer Insel — Jomfruland, bei seiner Schwester am Leuchtturm. Tag für Tag: nur Meer, Himmel und Wald.",
+            "Und hier... hier beginnt er, mich zu sehen."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "Im Museum: Betrachte die Naturmotive in diesem Raum und finde das, in dem etwas zurückblickt.",
+          "q": "Look at the nature motifs around you. In one of them, nature is not only nature — something is looking back at you. Which one?",
+          "options": [
+            "Ein sonniges Feld mit grasenden Kühen",
+            "Ein Fischerboot bei Sonnenuntergang",
+            "A dark tarn where two bright points break the surface"
+          ],
+          "correct": 2,
+          "hints": [
+            "Bright, pretty pictures? No. Look for the one that makes you a little uneasy.",
+            "Two bright points. In dark water. What is staring at you?"
+          ],
+          "explain": "Der Weiher mit den Augen. Dort. Das bin ich."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "The change",
+              "On Jomfruland, something happened to Theodor. Nature stopped being a background. The forest gained faces. Stones became trolls. The tarn gained eyes."
+            ],
+            [
+              "Das Neue",
+              "He painted something no one had painted before: Norwegian nature as it FEELS — beautiful and frightening at the same time. That is why he is so unique."
+            ],
+            [
+              "Der Nøkk",
+              "The Nøkk — the being in the tarn that lures people into deep water — had lived in people’s stories for hundreds of years. Theodor gave him a face. Or... almost a face."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "nokkenq": true,
+          "q": "Now answer my riddle: I have eyes, but no face. I live in the tarn, but I am not a fish. What am I really made of?",
+          "options": [
+            "Mud and weeds",
+            "Aus der eigenen Angst der Menschen",
+            "Ein ertrunkenes Pferd"
+          ],
+          "correct": 1,
+          "hints": [
+            "Think carefully: did I exist at all before someone feared the dark water?",
+            "Theodor malte kein Tier. Er malte ein Gefühl."
+          ],
+          "explain": "The Nøkk is the fear of the deep — given a shape. That is what Theodor understood. And painted.",
+          "aftercorrect": "...correct. No one has answered that before. Move on. Now."
+        },
+        {
+          "type": "fragment",
+          "h": "Der Mann, der der Dunkelheit Augen gab",
+          "p": "On Jomfruland, nature came alive. Trolls in the forest. Eyes in the tarn. Norway gained its world of fairy tales."
+        }
+      ]
+    },
+    {
+      "id": "inga",
+      "code": "ING",
+      "roman": "V",
+      "title": "Inga",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "inga": true,
+          "lines": [
+            "Diese Erinnerung gehört nicht ihm. Sie gehört mir.",
+            "Ich heiße Inga. Und wenn du Theodor verstehen willst, musst du zuerst unser Haus verstehen."
+          ]
+        },
+        {
+          "type": "cloze",
+          "jakt": true,
+          "demo": "Im Museum: Das Familienporträt im Raum zeigt, wie viele Kinder sie hatten.",
+          "intro": "Ein Brief von Inga ist auseinandergefallen. Fülle die fehlenden Wörter ein — sieh dich im Raum um; alles, was du brauchst, ist hier.",
+          "text": [
+            "Dear sister. It is ",
+            0,
+            " here, but we manage. Theodor paints from morning until evening, and I look after the ",
+            1,
+            " — wir haben ",
+            2,
+            " jetzt, kannst du das glauben! Das Geld für die Bilder kommt spät, also ",
+            3,
+            " and patch what I can. But when he shows me what he has painted, I forget all the struggle. Yours, Inga."
+          ],
+          "answers": [
+            "crowded",
+            "children",
+            "neun",
+            "nähen"
+          ],
+          "bank": [
+            "neun",
+            "nähen",
+            "crowded",
+            "children",
+            "Schloss",
+            "Diener"
+          ],
+          "hints": [
+            "Lies den Satz um die Lücke herum — nur ein Wort passt dort.",
+            "Nine children. Crowded rooms. She sewed things herself. You almost have it now."
+          ]
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Inga",
+              "Inga Christine Dahl heiratete Theodor 1889. Sie war zwanzig. Er war zweiunddreißig."
+            ],
+            [
+              "Das Haus",
+              "They had nine children. Nine! And an artist’s income that came and went. It was Inga who kept everyday life together."
+            ],
+            [
+              "The story",
+              "Without Inga, there would not have been a Kittelsen as we know him. History often forgets people like her. You will not."
+            ]
+          ]
+        },
+        {
+          "type": "multiselect",
+          "pick": 3,
+          "q": "Sieh den Raum mit Ingas Augen. Welche DREI dieser Dinge waren jeden Tag ihre Verantwortung?",
+          "options": [
+            "Essen für elf Menschen",
+            "Die Bilder fertig malen",
+            "Clothes — sewing, patching, caring for them",
+            "Rechnungen und Briefe an Verlage",
+            "Trolle in Stein hauen"
+          ],
+          "correct": [
+            0,
+            2,
+            3
+          ],
+          "hints": [
+            "Theodor malte. Alles andere...",
+            "Essen. Kleidung. Geld. Das sind die drei."
+          ],
+          "explain": "Essen, Kleidung und Geld — der Alltag von elf Menschen ruhte auf Inga, während Theodor malte."
+        },
+        {
+          "type": "fragment",
+          "h": "Die Frau, die das Haus trug",
+          "p": "Inga Kittelsen. Nine children, tight finances, a brilliant and restless husband. She held everything together."
+        }
+      ]
+    },
+    {
+      "id": "pesta",
+      "code": "PES",
+      "roman": "VI",
+      "title": "Pesta",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Jetzt musst du mutig sein.",
+            "Because now she is coming. The old woman who walks from farm to farm. Pesta.",
+            "The Black Death. The plague that killed half of Norway. And Theodor... he decided to paint it. Why on earth did he do that?"
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "In the museum: study the Pesta motifs in this room. She always carries the same two tools.",
+          "q": "Sieh dir die Pesta-Motive genau an. Sie trägt immer zwei Werkzeuge — und sie bedeuten Leben oder Tod. Welche?",
+          "options": [
+            "Sense und Schwert",
+            "Rechen und Besen",
+            "Laterne und Uhr"
+          ],
+          "correct": 1,
+          "hints": [
+            "Not weapons. Tools from the farm.",
+            "Das eine harkt. Das andere fegt."
+          ],
+          "explain": "The rake and the broom. Now you will learn why they mean life or death."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Die Pest",
+              "The Black Death came to Norway in 1349 and killed around half of everyone who lived here. Entire villages were left empty."
+            ],
+            [
+              "Pesta",
+              "People needed a way to understand the impossible. So the plague became Pesta — an old woman walking from farm to farm with a rake and a broom."
+            ],
+            [
+              "Die Zeichen",
+              "If she carried the rake, someone on the farm would survive — a rake gathers, but leaves something behind. If she carried the broom, she swept everyone away."
+            ],
+            [
+              "Theodor",
+              "In the 1890s, Theodor drew the whole Black Death series. He gave the nation’s worst memory a face people could look at — and bear to look at."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "Pesta stands by the gate of a farm. She lifts the rake. What does that mean for the people who live there?",
+          "options": [
+            "Alle werden sterben",
+            "Sie müssen den Hof vor dem Abend harken",
+            "Einige werden überleben"
+          ],
+          "correct": 2,
+          "hints": [
+            "Remember: the rake gathers — but it does not take everything with it.",
+            "The broom sweeps everything away. The rake leaves something behind..."
+          ],
+          "explain": "The rake leaves something behind. Someone on the farm would survive. That is how folklore made the impossible possible to talk about — and Theodor understood that."
+        },
+        {
+          "type": "fragment",
+          "h": "The man who painted what no one dared to see",
+          "p": "Theodor gab sogar der Pest ein Gesicht. Märchen und Volksglaube waren keine Dekoration — sie waren eine Art, das Schwere zu tragen."
+        }
+      ]
+    },
+    {
+      "id": "finale",
+      "code": null,
+      "roman": "VII",
+      "title": "Die siebte Erinnerung",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Sechs Erinnerungen. Du warst... besser, als ich dachte.",
+            "But the seventh is not yours. The seventh is MINE.",
+            "Because if you understand it... maybe I will no longer exist.",
+            "So prove it, then. Show me that you remember his whole story."
+          ]
+        },
+        {
+          "type": "order",
+          "q": "Put Theodor’s life in the right order. Tap the memories in the order they happened.",
+          "items": [
+            "Der Junge, der auf alles zeichnete",
+            "Der Junge, der fortgehen musste",
+            "Der Junge, der gesehen wurde",
+            "Der Mann, der der Dunkelheit Augen gab",
+            "Die Frau, die das Haus trug",
+            "The man who painted what no one dared to see"
+          ],
+          "hints": [
+            "Beginne mit der Kindheit in Kragerø. Ende mit Pesta.",
+            "Kragerø → his father’s death → Aall → Jomfruland → Inga → The Black Death."
+          ]
+        },
+        {
+          "type": "mc",
+          "nokkenq": true,
+          "q": "And now... the final question. The boy who drew. The grief. The loneliness on the island. The fear that gained a face. Look at everything you have collected — and answer me: WHO AM I?",
+          "options": [
+            "Ein Monster, das im Weiher beim Haus lebt",
+            "Der Geist von Diderich Maria Aall",
+            "Du bist Theodor — seine Fantasie und Dunkelheit, die zu Kunst wurde"
+          ],
+          "correct": 2,
+          "hints": [
+            "Wer sah mich zuerst? Woher kam ich wirklich?",
+            "Ich existierte nicht... bevor er mich zeichnete."
+          ],
+          "explain": "Der Nøkk, die Trolle, Pesta — sie alle kamen vom selben Ort: aus Theodors Innerem. Die Trauer, Einsamkeit und Angst, die er trug — verwandelte er in Bilder, die ganz Norwegen kennt.",
+          "aftercorrect": "...ja. Ich bin er. Die Trauer nach dem Vater. Die Einsamkeit auf der Insel. All die Dunkelheit — zu etwas Schönem gemacht. Darum ist er wichtig: Er zeigte, dass man das, wovor man Angst hat... in eine Form bringen kann."
+        },
+        {
+          "type": "fragment",
+          "h": "Der Mann, der nie aufhörte, auf alles zu zeichnen",
+          "p": "Theodor Kittelsen, 1857–1914. Er gab Norwegen seine Märchenwelt — und zeigte, dass Dunkelheit Kunst werden kann."
+        },
+        {
+          "type": "chest"
+        }
+      ]
+    }
+  ]
+};
+
+const QUESTS = { nb: QUEST_NB, nn: QUEST_NN, en: QUEST_EN, de: QUEST_DE };
 let QUEST = QUEST_NB;
 
 /* ============================================================
@@ -1170,8 +2228,8 @@ function stepArt(st, step){
 const UI = {
   "nb": {
     "flag": "🇳🇴",
-    "langName": "Norsk",
-    "nativeName": "Norsk",
+    "langName": "BM",
+    "nativeName": "Bokmål",
     "documentTitle": "Nøkken og de syv minnene — Kittelsenhuset",
     "gameTitle": "Nøkken og de syv minnene",
     "siteTitle": "Theodor Kittelsen-huset",
@@ -1285,6 +2343,124 @@ const UI = {
     "guardianText": "You brought back all seven of Theodor’s memories — and saw through the Nøkk itself.",
     "backToBook": "Back to the Memory Book",
     "dateLocale": "en-GB"
+  },
+  "nn": {
+    "flag": "🇳🇴",
+    "langName": "NN",
+    "nativeName": "Nynorsk",
+    "documentTitle": "Nøkken og dei sju minna — Kittelsenhuset",
+    "gameTitle": "Nøkken og dei sju minna",
+    "siteTitle": "Theodor Kittelsen-huset",
+    "start": "Start spel",
+    "language": "Språk",
+    "chooseLanguage": "Vel språk",
+    "back": "Tilbake",
+    "welcome": "Velkomen til Kittelsenhuset",
+    "kicker": "Nøkken og dei sju minna",
+    "intro": "Nøkken har stole Theodor Kittelsens minne. Leit etter kodar i museet. Bruk dei til å låse opp Minneboka og hente minna tilbake.",
+    "langNote": "Vel språk før de startar. Løypa kan bytast undervegs.",
+    "home": "Til minneboka",
+    "memory": "Minne",
+    "progressFinale": "Alle seks minne er henta heim. Finalen er open.",
+    "progressCount": "{count} av 6 minne henta heim.",
+    "homeLeadStart": "Nøkken har teke Theodors minne. Finn ein kode med tre bokstavar i rommet og tast han inn her.",
+    "homeLeadFinale": "Alle seks minne er henta heim. Nøkken ventar på deg...",
+    "homeLeadProgress": "{count} av 6 minne henta heim. Finn neste merke.",
+    "lockedFindCode": "Finn romkode",
+    "memoryAria": "Minne {roman}: {title}",
+    "lockedMemoryAria": "Låst minne {roman}. Finn romkoden i rommet.",
+    "codePlaceholder": "ROMKODE",
+    "codeAria": "Romkode, tre bokstavar",
+    "unlock": "Lås opp",
+    "reset": "Nullstill spelet",
+    "resetConfirm": "Nullstille alt og byrje på nytt?",
+    "questions": "Spørsmål?",
+    "unknownCode": "Nøkken kjenner ikkje den koden. Sjå betre etter.",
+    "finaleLocked": "Nøkken slepper deg ikkje inn enno. Seks minne først.",
+    "showFullText": "Vis heile teksten",
+    "continue": "Vidare",
+    "tapShowFull": "trykk for å vise heile teksten",
+    "tapContinue": "trykk på Vidare",
+    "next": "Neste",
+    "understand": "Eg forstår",
+    "answer": "Svar",
+    "actualHappened": "Det som faktisk skjedde",
+    "blankAria": "tomrom {num}",
+    "checkLetter": "Sjekk brevet",
+    "letterComplete": "Brevet er heilt igjen. Inga takkar deg.",
+    "selectAnswer": "Svar ({selected}/{total})",
+    "showNokken": "Vis Nøkken",
+    "slotEmpty": "— trykk eit minne under —",
+    "nokkenName": "Nøkken",
+    "nokkenWhispers": "Nøkken kviskrar: ",
+    "prototype": "Prototype",
+    "silhouette": "Silhuett",
+    "restored": "Minne {roman} gjenoppretta",
+    "addToBook": "Legg i Minneboka",
+    "chestText": "Ta dette med til Theodors kiste ved utgangen. Koden er året alt byrja:",
+    "guardianTitle": "Minnevaktar",
+    "guardianText": "Du henta tilbake alle dei sju minna til Theodor — og gjennomskoda Nøkken sjølv.",
+    "backToBook": "Tilbake til Minneboka",
+    "dateLocale": "nn-NO"
+  },
+  "de": {
+    "flag": "🇩🇪",
+    "langName": "Deutsch",
+    "nativeName": "Deutsch",
+    "documentTitle": "Der Nøkk und die sieben Erinnerungen — Kittelsenhaus",
+    "gameTitle": "Der Nøkk und die sieben Erinnerungen",
+    "siteTitle": "Theodor Kittelsenhaus",
+    "start": "Spiel starten",
+    "language": "Sprache",
+    "chooseLanguage": "Sprache wählen",
+    "back": "Zurück",
+    "welcome": "Willkommen im Kittelsenhaus",
+    "kicker": "Der Nøkk und die sieben Erinnerungen",
+    "intro": "Der Nøkk hat Theodor Kittelsens Erinnerungen gestohlen. Suche im Museum nach Codes. Benutze sie, um das Erinnerungsbuch zu öffnen und die Erinnerungen zurückzuholen.",
+    "langNote": "Wählt eine Sprache, bevor ihr startet. Ihr könnt sie unterwegs ändern.",
+    "home": "Zum Erinnerungsbuch",
+    "memory": "Erinnerung",
+    "progressFinale": "Alle sechs Erinnerungen sind zurückgeholt. Das Finale ist offen.",
+    "progressCount": "{count} von 6 Erinnerungen zurückgeholt.",
+    "homeLeadStart": "Der Nøkk hat Theodors Erinnerungen genommen. Findet im Raum einen Code mit drei Buchstaben und gebt ihn hier ein.",
+    "homeLeadFinale": "Alle sechs Erinnerungen sind zurückgeholt. Der Nøkk wartet auf dich...",
+    "homeLeadProgress": "{count} von 6 Erinnerungen zurückgeholt. Finde das nächste Zeichen.",
+    "lockedFindCode": "Raumcode finden",
+    "memoryAria": "Erinnerung {roman}: {title}",
+    "lockedMemoryAria": "Gesperrte Erinnerung {roman}. Finde den Raumcode im Raum.",
+    "codePlaceholder": "CODE",
+    "codeAria": "Raumcode, drei Buchstaben",
+    "unlock": "Öffnen",
+    "reset": "Spiel zurücksetzen",
+    "resetConfirm": "Alles zurücksetzen und neu beginnen?",
+    "questions": "Fragen?",
+    "unknownCode": "Der Nøkk kennt diesen Code nicht. Schau genauer hin.",
+    "finaleLocked": "Der Nøkk lässt dich noch nicht hinein. Erst sechs Erinnerungen.",
+    "showFullText": "Ganzen Text zeigen",
+    "continue": "Weiter",
+    "tapShowFull": "tippen, um den ganzen Text zu zeigen",
+    "tapContinue": "tippe auf Weiter",
+    "next": "Weiter",
+    "understand": "Ich verstehe",
+    "answer": "Antwort",
+    "actualHappened": "Was wirklich geschah",
+    "blankAria": "Lücke {num}",
+    "checkLetter": "Brief prüfen",
+    "letterComplete": "Der Brief ist wieder ganz. Inga dankt dir.",
+    "selectAnswer": "Antwort ({selected}/{total})",
+    "showNokken": "Nøkk zeigen",
+    "slotEmpty": "— tippe unten eine Erinnerung an —",
+    "nokkenName": "Der Nøkk",
+    "nokkenWhispers": "Der Nøkk flüstert: ",
+    "prototype": "Prototyp",
+    "silhouette": "Silhouette",
+    "restored": "Erinnerung {roman} wiederhergestellt",
+    "addToBook": "Ins Erinnerungsbuch legen",
+    "chestText": "Nimm dies mit zu Theodors Kiste am Ausgang. Der Code ist das Jahr, in dem alles begann:",
+    "guardianTitle": "Erinnerungswächter",
+    "guardianText": "Du hast alle sieben Erinnerungen Theodors zurückgeholt — und den Nøkk selbst durchschaut.",
+    "backToBook": "Zurück zum Erinnerungsbuch",
+    "dateLocale": "de-DE"
   }
 };
 function tr(key){ return (UI[state.lang] && UI[state.lang][key]) || UI.nb[key] || key; }
@@ -1348,7 +2524,7 @@ function showLanding(){
 function showLanguage(returnTo='landing'){
   updateChrome();
   const options = Object.keys(QUESTS).map(code=>`<button type="button" class="lang-option" data-lang="${code}" lang="${code}" aria-current="${state.lang===code?'true':'false'}">
-    <span class="flag" aria-hidden="true">${esc(UI[code].flag)}</span><span><strong>${esc(UI[code].langName)}</strong><small>${esc(UI[code].welcome)}</small></span>
+    <span class="flag" aria-hidden="true">${esc(UI[code].flag)}</span><span><strong>${esc(UI[code].langName)}</strong><small>${esc(UI[code].nativeName || UI[code].welcome)}</small></span>
   </button>`).join('');
   main.innerHTML = `<section class="screen active landing" id="language" lang="${state.lang}">
     <div class="landing-card">
