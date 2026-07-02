@@ -140,6 +140,44 @@ main{flex:1 1 auto;overflow-y:auto;position:relative;z-index:2;padding:6px 18px 
 .lang-option strong{display:block;font-size:17px}.lang-option small{display:block;margin-top:3px;font-weight:800;color:#755f30}.lang-option[aria-current="true"]{outline:3px solid var(--eye);outline-offset:0}
 
 
+
+/* ---------- Kittelsen-bilder ---------- */
+.intro-hero.has-image{
+  background-image:
+    linear-gradient(180deg, rgba(7,12,12,.12), rgba(7,12,12,.72)),
+    radial-gradient(ellipse at 50% 62%, rgba(7,12,12,.12), rgba(7,12,12,.64) 70%),
+    var(--hero-img);
+  background-size:cover;
+  background-position:center 42%;
+}
+.intro-hero.has-image::after{display:none}
+.artpanel{
+  position:relative;overflow:hidden;border-radius:16px;border:1.5px solid rgba(174,199,186,.24);
+  background:rgba(10,17,16,.42);box-shadow:inset 0 0 0 1px rgba(241,234,214,.04), 0 12px 28px rgba(0,0,0,.22);
+  margin:0 0 14px;
+}
+.artpanel img{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(.86) contrast(1.03)}
+.artpanel::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg, rgba(10,17,16,.05), rgba(10,17,16,.45));}
+.artpanel.quest{height:172px}
+.artpanel.quest img{object-position:center center}
+.artpanel.eyes{height:126px}
+.artpanel.eyes img{object-position:center center}
+.artpanel.pesta{height:138px}
+.artpanel.pesta img{object-position:center center}
+.frag-img{
+  width:100%;height:138px;border-radius:14px;overflow:hidden;margin:-6px 0 14px;
+  border:1.5px solid rgba(41,33,25,.55);background:#151f1c;
+}
+.frag-img img{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(.82) contrast(1.05)}
+.page.done{overflow:hidden;background:linear-gradient(180deg,var(--cream),var(--paper))}
+.page-thumb{position:absolute;inset:0;z-index:0;opacity:.22;pointer-events:none;background:#14201c}
+.page-thumb img{width:100%;height:100%;object-fit:cover;filter:saturate(.8) contrast(1.08)}
+.page.done::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(241,234,214,.86),rgba(241,234,214,.54));pointer-events:none}
+.page > .roman,.page > .ptitle{position:relative;z-index:2}
+.page.done::after{z-index:3}
+.diploma-mark{width:112px;height:62px;margin:0 auto 12px;border-radius:999px;overflow:hidden;border:1.5px solid rgba(41,33,25,.45);background:#111b18;opacity:.9}
+.diploma-mark img{width:100%;height:100%;object-fit:cover;filter:saturate(.75) contrast(1.06)}
+
 /* ---------- knapper ---------- */
 .btn{
   display:block;width:100%;padding:14px;border-radius:14px;cursor:pointer;
@@ -336,6 +374,34 @@ const SIL = {
   hus:  '<svg width="52" height="34" viewBox="0 0 52 34" aria-hidden="true"><path d="M4 32V16h10V8h8v8h10l6-6 6 6v16z" fill="#2b2118"/></svg>',
   troll:'<svg width="52" height="34" viewBox="0 0 52 34" aria-hidden="true"><path d="M6 32c1-8 3-11 5-13-2-3-1-7 2-9 2-6 9-8 14-5 4-3 10-1 11 3 4 1 6 5 4 9 3 3 5 7 6 15-4-2-7-1-9 1-3-3-7-3-9 0-3-4-8-4-11-1-3-3-9-3-13 0z" fill="#2b2118"/></svg>',
   skip: '<svg width="52" height="34" viewBox="0 0 52 34" aria-hidden="true"><path d="M8 26h36l-5 6H13zM25 4v20M25 6l14 14H25zM25 8L14 20h11z" fill="none" stroke="#2b2118" stroke-width="3"/></svg>'
+};
+
+
+/* ---------- Kittelsen-bilder (lokale filer i /media) ---------- */
+const ART = {
+  hero: { src:'media/nokken-hero.jpg', decorative:true },
+  thumbs: {
+    gutten:'media/kragero-skuter.jpg',
+    beskjeden:'media/nokken-eyes.jpg',
+    oyet:'media/kittelsen-selvportrett.jpg',
+    oya:'media/nokken-eyes.jpg',
+    inga:'media/nokken-1887.jpg',
+    pesta:'media/pesta-detail.jpg',
+    finale:'media/soria-moria.jpg'
+  },
+  fragments: {
+    gutten: { src:'media/kragero-skuter.jpg', alt:{nb:'Seilskuter ved Kragerø.', en:'Sailing ships by Kragerø.'}},
+    beskjeden: { src:'media/nokken-eyes.jpg', decorative:true },
+    oyet: { src:'media/kittelsen-selvportrett.jpg', alt:{nb:'Portrett av Theodor Kittelsen.', en:'Portrait of Theodor Kittelsen.'}},
+    oya: { src:'media/nokken-eyes.jpg', alt:{nb:'Mørkt tjern med to lysende øyne i vannflaten.', en:'A dark tarn with two glowing eyes in the water.'}},
+    inga: { src:'media/nokken-1887.jpg', decorative:true },
+    pesta: { src:'media/pesta-detail.jpg', alt:{nb:'Detalj av Pesta-skikkelsen.', en:'Detail of the figure Pesta.'}},
+    finale: { src:'media/soria-moria.jpg', alt:{nb:'Et lysende slott langt borte.', en:'A shining castle far away.'}}
+  },
+  steps: {
+    oya: { src:'media/nokken-1887.jpg', cls:'quest eyes', alt:{nb:'Mørkt tjern med to lysende øyne i vannflaten.', en:'A dark tarn with two glowing eyes in the water.'}},
+    pesta: { src:'media/pesta-kommer.jpg', cls:'quest pesta', alt:{nb:'Pesta-skikkelsen i et mørkt landskap.', en:'The figure Pesta in a dark landscape.'}}
+  }
 };
 
 /* ============================================================
@@ -1081,6 +1147,25 @@ function setLanguage(code){
 function station(id){ return QUEST.stations.find(s=>s.id===id); }
 function stIndex(id){ return QUEST.stations.findIndex(s=>s.id===id); }
 function esc(t){ const d=document.createElement('div'); d.textContent=t ?? ''; return d.innerHTML; }
+function artAlt(img){
+  if(!img || img.decorative) return '';
+  if(typeof img.alt === 'string') return img.alt;
+  return (img.alt && (img.alt[state.lang] || img.alt.nb)) || '';
+}
+function artImg(img, cls='artpanel', decorative=false){
+  if(!img || !img.src) return '';
+  const dec = decorative || img.decorative;
+  const alt = dec ? '' : artAlt(img);
+  return `<div class="${esc(cls)}" ${dec?'aria-hidden="true"':''}><img src="${esc(img.src)}" alt="${esc(alt)}" loading="lazy" decoding="async"></div>`;
+}
+function stationThumb(id){ return ART.thumbs && ART.thumbs[id] ? ART.thumbs[id] : null; }
+function stepArt(st, step){
+  if(!st || !step) return null;
+  if(step.image) return step.image;
+  if(st.id==='oya' && (step.nokkenq || (step.type==='mc' && step.correct===2))) return ART.steps.oya;
+  if(st.id==='pesta' && step.type==='mc') return ART.steps.pesta;
+  return null;
+}
 
 const UI = {
   "nb": {
@@ -1243,7 +1328,7 @@ function showLanding(){
   $('#eyes').classList.remove('calm');
   main.innerHTML = `<section class="screen active landing" id="landing" lang="${state.lang}">
     <div class="landing-card">
-      <div class="intro-hero" aria-hidden="true"></div>
+      <div class="intro-hero has-image" style="--hero-img:url('media/nokken-hero.jpg')" aria-hidden="true"></div>
       <div class="landing-kicker">${esc(tr('kicker'))}</div>
       <h2 class="landing-title" data-autofocus>${esc(tr('welcome'))}</h2>
       <p class="landing-copy">${esc(tr('intro'))}</p>
@@ -1295,8 +1380,9 @@ function showHome(msg){
     const cls='page'+(open?' open':' locked')+(done?' done':'')+(s.id==='finale'?' finale':'');
     const title = open ? s.title : (s.id==='finale' ? s.title : tr('lockedFindCode'));
     const aria = open ? fmt(tr('memoryAria'), {roman:s.roman, title}) : fmt(tr('lockedMemoryAria'), {roman:s.roman});
+    const thumb = done && stationThumb(s.id) ? `<span class="page-thumb" aria-hidden="true"><img src="${esc(stationThumb(s.id))}" alt="" loading="lazy" decoding="async"></span>` : '';
     pages+=`<button type="button" class="${cls}" data-st="${s.id}" ${open?'':'disabled'} aria-label="${esc(aria)}">
-      <div class="roman">${esc(tr('memory'))} ${s.roman}</div><div class="ptitle">${esc(title)}</div></button>`;
+      ${thumb}<div class="roman">${esc(tr('memory'))} ${s.roman}</div><div class="ptitle">${esc(title)}</div></button>`;
   });
   main.innerHTML = `<section class="screen active" id="home">
     <p class="homelead" data-autofocus>${doneCount===0
@@ -1434,7 +1520,9 @@ function rMC(step){
     const inner = step.sil ? SIL[o]+`<span>${esc(tr('silhouette'))} ${'ABC'[i]}</span>` : esc(o);
     return `<button class="opt" data-i="${i}">${inner}</button>`;
   }).join('');
+  const img = stepArt(station(state.cur), step);
   body.innerHTML=`${step.jakt&&CONFIG.DEMO?`<div class="demobox"><b>${esc(tr('prototype'))}:</b> ${esc(step.demo)}</div>`:''}
+    ${img ? artImg(img, `artpanel ${img.cls || 'quest'}`, false) : ''}
     <p class="qtext">${step.nokkenq?esc(tr('nokkenWhispers')):''}${esc(step.q)}</p>
     <div id="hint" aria-live="polite" role="status"></div><div id="opts">${opts}</div><div id="after"></div>`;
   footer.innerHTML='';
@@ -1634,9 +1722,10 @@ function rOrder(step){
 /* ---------- steg: fragment ---------- */
 function rFragment(step, st){
   const body=$('#stepbody');
+  const img = step.image || ART.fragments[st.id];
   body.innerHTML=`<div class="fragwrap">
     <div class="fraglabel">${esc(fmt(tr('restored'), {roman:st.roman}))}</div>
-    <div class="frag"><div class="roman">✦</div><h2>${esc(step.h)}</h2><p>${esc(step.p)}</p></div>
+    <div class="frag">${img ? artImg(img, 'frag-img', false) : ''}<div class="roman">✦</div><h2>${esc(step.h)}</h2><p>${esc(step.p)}</p></div>
   </div>`;
   setFooter(tr('addToBook'), next);
   stepCtx.auto=next;
@@ -1650,6 +1739,7 @@ function rChest(){
     <p class="qtext" style="text-align:center">${esc(tr('chestText'))}</p>
     <div class="chest" id="chestcode">${CONFIG.CHEST_CODE}</div>
     <div class="diploma">
+      ${artImg({src:'media/nokken-eyes.jpg', decorative:true}, 'diploma-mark', true)}
       <div class="dt">Kittelsen-huset · ${esc(ds)}</div>
       <h2>${esc(tr('guardianTitle'))}</h2>
       <p>${esc(tr('guardianText'))}</p>
