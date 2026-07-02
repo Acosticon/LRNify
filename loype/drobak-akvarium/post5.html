@@ -1,0 +1,28 @@
+# Akvarieløypa — Drøbak Akvarium (prototype)
+
+QR-basert oppgaveløype for LRNify. Målgruppe: barn opp til 10 år, lagbasert (familier).
+
+## Filer
+- `index.html` — start/registrering av lagnavn
+- `post1.html`–`post5.html` — de fem postene (QR-kodene peker hit)
+- `ferdig.html` — gratulasjon, score-levering, ukas toppliste
+- `loype-core.js` — sesjon, poeng, fremdrift, Firestore
+- `config.js` — ALT innhold redigeres her (oppgaver, poeng, Firebase)
+- `loype.css` — LRNify-designsystem
+- `qr-plakater.html` — utskriftsklare A4-plakater (åpne og skriv ut)
+
+## Oppsett
+1. Legg mappen i repoet som `loype/drobak-akvarium/`
+2. Lim inn firebaseConfig i `config.js` (feltet `firebase`) — samme prosjekt som feedback-widgeten
+3. Firestore-regler: tillat `create` (ikke read av enkeltfelt utover query) på `loype_drobak_scores`
+4. Firestore trenger en sammensatt indeks: `uke ASC, poeng DESC` (konsollen foreslår den automatisk første gang spørringen kjører)
+
+## Uten Firebase
+Står `firebase: null`, kjører alt i demo-modus: toppliste lagres kun i nettleseren. Perfekt for testing og demo for akvariet.
+
+## Viktige detaljer
+- Poster kan tas i vilkårlig rekkefølge (QR = faste URL-er)
+- Scanner noen en post uten å ha registrert lag, sendes de til start og tilbake igjen etterpå
+- Score-levering tåler dårlig dekning: feiler sending, ligger poengene trygt i localStorage med "prøv igjen"-knapp
+- Topplisten filtrerer på ISO-ukenummer — nullstilles automatisk hver mandag uten cron/sletting
+- Riktig svar på post 4 (antall sjøstjerner) settes i `config.js` → `post4.riktigSvar`

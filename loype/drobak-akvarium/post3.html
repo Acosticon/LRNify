@@ -3,30 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Post 5: Fjordhelten — Akvarieløypa</title>
+<title>Post 2: Krabbe-quiz — Akvarieløypa</title>
 <link rel="stylesheet" href="loype.css">
 </head>
 <body>
 <div id="loype-topp" class="ramme"></div>
 <main class="ramme">
   <div class="kort kort--sea senter">
-    <h1>🌊 Fjordhelten</h1>
+    <h1>🦀 Krabbe-quiz</h1>
     <p id="intro"></p>
   </div>
   <div class="kort">
     <p class="liten senter" id="teller"></p>
-    <h2 id="situasjon"></h2>
+    <h2 id="sporsmal" class="senter"></h2>
     <div class="mellomrom"></div>
-    <div id="valg"></div>
-    <p id="respons" class="senter" style="display:none; font-weight:800; margin-top:8px;"></p>
+    <div id="alternativer"></div>
   </div>
 </main>
 
 <script src="config.js"></script>
 <script src="loype-core.js"></script>
 <script>
-  const POST_ID = 5;
-  const CFG = LOYPE_CONFIG.post5;
+  const POST_ID = 2;
+  const CFG = LOYPE_CONFIG.post2;
   const MAKS = LOYPE_CONFIG.poster.find(p => p.id === POST_ID).maks;
 
   if (Loype.krevLag(POST_ID) && !Loype.sjekkAlleredeTatt(POST_ID)) {
@@ -35,44 +34,47 @@
 
     let indeks = 0, poeng = 0, laast = false;
 
-    function visDilemma() {
-      const d = CFG.dilemmaer[indeks];
+    function visSporsmal() {
+      const sp = CFG.sporsmal[indeks];
       document.getElementById("teller").textContent =
-        `Situasjon ${indeks + 1} av ${CFG.dilemmaer.length}`;
-      document.getElementById("situasjon").textContent = d.situasjon;
-      document.getElementById("respons").style.display = "none";
-      const div = document.getElementById("valg");
+        `Spørsmål ${indeks + 1} av ${CFG.sporsmal.length}`;
+      document.getElementById("sporsmal").textContent = sp.q;
+      const div = document.getElementById("alternativer");
       div.innerHTML = "";
-      Loype.stokk(d.valg).forEach(v => {
+      sp.alternativer.forEach((alt, i) => {
         const b = document.createElement("button");
         b.className = "knapp knapp--valg";
-        b.textContent = v.tekst;
-        b.addEventListener("click", () => velg(v, b));
+        b.textContent = alt;
+        b.addEventListener("click", () => svar(i, b));
         div.appendChild(b);
       });
       laast = false;
     }
 
-    function velg(valg, knapp) {
+    function svar(i, knapp) {
       if (laast) return;
       laast = true;
-      document.querySelectorAll("#valg .knapp").forEach(b => b.disabled = true);
-      knapp.classList.add(valg.poeng >= 10 ? "riktig" : valg.poeng > 0 ? "valgt" : "feil");
-      poeng += valg.poeng;
-      const resp = document.getElementById("respons");
-      resp.textContent = valg.respons;
-      resp.style.display = "block";
+      const sp = CFG.sporsmal[indeks];
+      const alle = document.querySelectorAll("#alternativer .knapp");
+      alle.forEach(b => b.disabled = true);
+      if (i === sp.riktig) {
+        knapp.classList.add("riktig");
+        poeng += CFG.poengPerRiktig;
+      } else {
+        knapp.classList.add("feil");
+        alle[sp.riktig].classList.add("riktig"); // vis fasit
+      }
       setTimeout(() => {
         indeks++;
-        if (indeks >= CFG.dilemmaer.length) {
+        if (indeks >= CFG.sporsmal.length) {
           Loype.fullforPost(POST_ID, poeng, MAKS);
         } else {
-          visDilemma();
+          visSporsmal();
         }
-      }, 2600);
+      }, 1200);
     }
 
-    visDilemma();
+    visSporsmal();
   }
 </script>
 </body>

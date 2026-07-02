@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gratulerer! — Akvarieløypa</title>
+<link rel="stylesheet" href="loype.css">
+<!-- Firebase (compat). Brukes bare hvis config.js har firebase-oppsett. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div id="loype-topp" class="ramme"></div>
+<main class="ramme">
+  <div class="kort kort--sea senter">
+    <h1 id="tittel">🎉 Gratulerer!</h1>
+    <p id="undertekst"></p>
+    <div class="poeng-stor" id="total"></div>
+    <p>poeng totalt</p>
+  </div>
+
+  <div class="kort senter" id="lever-status">
+    <p id="lever-tekst">Sender resultatet deres... 📡</p>
+    <div class="mellomrom"></div>
+    <button class="knapp" id="prov-igjen" style="display:none;">Prøv å sende igjen 🔄</button>
+  </div>
+
+  <div class="kort" id="toppliste-kort" style="display:none;">
+    <h2 class="senter">🏆 Ukas toppliste</h2>
+    <p class="liten senter" id="uke-tekst"></p>
+    <div class="mellomrom"></div>
+    <ol class="toppliste" id="toppliste"></ol>
+  </div>
+
+  <div class="kort senter">
+    <p>Takk for at dere var med! 🐙<br>Topplisten nullstilles hver mandag — kom tilbake og prøv igjen!</p>
+    <div class="mellomrom"></div>
+    <button class="knapp knapp--sek" id="nytt-lag">Spill igjen med nytt lag</button>
+  </div>
+</main>
+
+<script src="config.js"></script>
+<script src="loype-core.js"></script>
+<script>
+  const state = Loype.krevLag(null);
+  if (state) {
+    Loype.tegnTopp(null);
+    const total = Loype.totalPoeng(state);
+    const maksTotal = LOYPE_CONFIG.poster.reduce((s, p) => s + p.maks, 0);
+    const fullfort = Loype.antallFullfort(state);
+    const alle = LOYPE_CONFIG.poster.length;
+
+    document.getElementById("total").textContent = `${total} / ${maksTotal}`;
+    document.getElementById("undertekst").textContent =
+      fullfort >= alle
+        ? `${state.lag} fullførte alle ${alle} postene!`
+        : `${state.lag} tok ${fullfort} av ${alle} poster. (Dere kan fortsatt ta resten!)`;
+    document.getElementById("uke-tekst").textContent = `Uke ${Loype.ukeNaa().split("-W")[1]}`;
+
+    async function sendOgVis() {
+      const tekst = document.getElementById("lever-tekst");
+      const knapp = document.getElementById("prov-igjen");
+      knapp.style.display = "none";
+      tekst.textContent = "Sender resultatet deres... 📡";
+      try {
+        await Loype.leverScore();
+        tekst.textContent = "Resultatet er lagret! ✅";
+        await visToppliste();
+      } catch (e) {
+        // Dårlig dekning inne i akvariet er forventet — tilby retry
+        tekst.textContent = "Fikk ikke sendt resultatet (dårlig dekning?). Poengene deres er trygge på mobilen — prøv igjen om litt, gjerne nærmere utgangen! 📶";
+        knapp.style.display = "block";
+      }
+    }
+
+    async function visToppliste() {
+      try {
+        const liste = await Loype.hentToppliste(10);
+        const ol = document.getElementById("toppliste");
+        ol.innerHTML = liste.length
+          ? liste.map((r, i) => `
+              <li class="${r.lag === state.lag && r.poeng === total ? "meg" : ""}">
+                <span class="plass">${i + 1}.</span>
+                <span class="lag">${Loype.escapeHtml(r.lag)}</span>
+                <span>${r.poeng} p</span>
+              </li>`).join("")
+          : `<li><span class="lag">Dere er ukas første lag! 🥇</span></li>`;
+        document.getElementById("toppliste-kort").style.display = "block";
+      } catch (e) {
+        /* toppliste er ikke kritisk — vis den ikke hvis henting feiler */
+      }
+    }
+
+    document.getElementById("prov-igjen").addEventListener("click", sendOgVis);
+    document.getElementById("nytt-lag").addEventListener("click", () => {
+      if (confirm("Start på nytt med nytt lag? Poengene på mobilen slettes (topplisten beholdes).")) {
+        Loype.nullstill();
+        location.href = "index.html";
+      }
+    });
+
+    sendOgVis();
+  }
+</script>
+</body>
+</html>
