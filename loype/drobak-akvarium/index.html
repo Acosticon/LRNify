@@ -2,7 +2,7 @@
 <html lang="nb">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Fjordvokterne — Drøbak Akvarium</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,12 +17,15 @@
   --green:#4ade80; --red:#f87171; --sand:#fdf3d7;
   --border:3px solid var(--ink); --shadow:4px 4px 0 var(--ink);
 }
+html{-webkit-text-size-adjust:100%}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{
   font-family:'Nunito',sans-serif;background:var(--cream);color:var(--ink);
-  font-size:17px;line-height:1.45;min-height:100vh;min-height:100dvh;
+  font-size:19px;line-height:1.5;min-height:100vh;min-height:100dvh;
 }
-#app{max-width:560px;margin:0 auto;padding:12px;display:flex;flex-direction:column;min-height:100dvh}
+#app{max-width:560px;margin:0 auto;display:flex;flex-direction:column;min-height:100dvh;
+  padding:calc(10px + env(safe-area-inset-top)) calc(14px + env(safe-area-inset-right))
+          calc(32px + env(safe-area-inset-bottom)) calc(14px + env(safe-area-inset-left))}
 
 /* Bølgetopp */
 .bolge{width:100%;height:26px;flex:0 0 auto;
@@ -30,15 +33,15 @@ body{
   background-size:34px 26px;margin-bottom:6px}
 
 h1,h2,.display{font-family:'Chewy',cursive;font-weight:400;letter-spacing:.5px}
-h1{font-size:1.9rem}h2{font-size:1.35rem}
+h1{font-size:2.1rem}h2{font-size:1.45rem}
 
 .kort{background:#fff;border:var(--border);border-radius:16px;box-shadow:var(--shadow);
   padding:18px;margin-bottom:14px}
 .kort--sea{background:var(--sea-pale)}
 .kort--sand{background:var(--sand)}
-.senter{text-align:center}.liten{font-size:.88rem;opacity:.75}.mellomrom{height:10px}
+.senter{text-align:center}.liten{font-size:.95rem;opacity:.78}.mellomrom{height:10px}
 
-.knapp{display:block;width:100%;font-family:'Nunito',sans-serif;font-size:1.1rem;font-weight:800;
+.knapp{display:block;width:100%;font-family:'Nunito',sans-serif;font-size:1.15rem;font-weight:800;
   padding:14px 18px;min-height:54px;background:var(--yellow);border:var(--border);border-radius:14px;
   box-shadow:var(--shadow);cursor:pointer;color:var(--ink);text-align:center;text-decoration:none;
   transition:transform .08s ease,box-shadow .08s ease}
@@ -55,11 +58,11 @@ input[type="text"]{width:100%;font-family:'Nunito',sans-serif;font-size:1.15rem;
 /* Fjordboka: sideliste */
 .side{display:flex;align-items:center;gap:12px;width:100%;text-align:left;
   border:var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow);
-  padding:12px 14px;margin-bottom:12px;font-weight:800;font-size:1.02rem;cursor:pointer;
+  padding:14px;margin-bottom:12px;font-weight:800;font-size:1.08rem;cursor:pointer;
   font-family:'Nunito',sans-serif;color:var(--ink)}
 .side .ikon{font-size:1.9rem;width:44px;text-align:center;flex:0 0 auto}
 .side .tekst{flex:1}
-.side .status{font-size:.82rem;font-weight:800;opacity:.7;display:block}
+.side .status{font-size:.92rem;font-weight:700;opacity:.75;display:block}
 .side.laast{background:var(--sand);box-shadow:2px 2px 0 var(--ink);opacity:.92}
 .side.ferdig{background:var(--green)}
 .side.finale-klar{background:var(--yellow);animation:pulsA 1.6s ease-in-out infinite}
@@ -71,31 +74,30 @@ input[type="text"]{width:100%;font-family:'Nunito',sans-serif;font-size:1.15rem;
 .koderad .knapp{width:auto;flex:0 0 auto;padding:10px 18px}
 .kodemsg{min-height:22px;font-weight:800;text-align:center;margin-top:8px;color:#b91c1c}
 
-/* Bjørg snakker */
-.bjorg{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
-.bjorg .fjes{font-size:2.4rem;flex:0 0 auto;filter:drop-shadow(2px 2px 0 var(--ink))}
-.boble{position:relative;background:var(--sea-pale);border:var(--border);border-radius:14px;
+/* Bjørg og dyrene snakker */
+.bjorg{display:flex;gap:10px;align-items:flex-start;margin-bottom:12px}
+.bjorg .fjes{flex:0 0 auto;width:52px;height:52px;border:var(--border);border-radius:50%;
+  background:var(--sea-pale);display:grid;place-items:center;font-size:1.7rem;box-shadow:2px 2px 0 var(--ink)}
+.boble{flex:1;background:#fff;border:var(--border);border-radius:14px;border-top-left-radius:4px;
   box-shadow:var(--shadow);padding:12px 14px;font-weight:700}
-.boble::before{content:'';position:absolute;left:-11px;top:16px;border:8px solid transparent;border-right-color:var(--ink)}
-.boble::after{content:'';position:absolute;left:-6px;top:18px;border:6px solid transparent;border-right-color:var(--sea-pale)}
-.boble .hvem{font-family:'Chewy',cursive;color:var(--sea-deep);display:block;margin-bottom:2px}
-.bjorg.dyr .boble{background:var(--sand)}
-.bjorg.dyr .boble::after{border-right-color:var(--sand)}
+.boble .hvem{font-family:'Chewy',cursive;color:var(--sea-deep);display:block;margin-bottom:2px;font-size:1.1rem}
+.bjorg.dyr .fjes{background:var(--sand)}
 
-/* Stasjonsbilde */
-.hero{position:relative;border:var(--border);border-radius:14px;overflow:hidden;
-  box-shadow:var(--shadow);margin-bottom:14px;background:linear-gradient(180deg,var(--sea) 0%,var(--sea-deep) 100%);
-  min-height:120px;display:grid;place-items:center}
-.hero img{display:block;width:100%;height:180px;object-fit:cover}
-.hero .fallback{font-size:4rem;padding:26px;filter:drop-shadow(3px 3px 0 rgba(43,33,24,.5))}
-.hero.harbilde .fallback{display:none}
+/* Stasjonsbilde — vises kun hvis bildet finnes og lastes */
+.hero{display:none;border:var(--border);border-radius:14px;overflow:hidden;
+  box-shadow:var(--shadow);margin-bottom:14px}
+.hero.harbilde{display:block}
+.hero img{display:block;width:100%;height:190px;object-fit:cover}
 
 /* Oppgaver */
 .rutenett{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pool{display:flex;flex-direction:column;gap:8px}
 .brikke{border:var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow);
-  padding:12px 8px;min-height:64px;font-weight:800;font-size:.98rem;font-family:'Nunito',sans-serif;
+  padding:14px 10px;min-height:72px;font-weight:800;font-size:1.05rem;font-family:'Nunito',sans-serif;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
   cursor:pointer;text-align:center;color:var(--ink);transition:transform .08s ease}
+.pool .brikke{min-height:56px;padding:12px 14px}
+@media (max-width:380px){.rutenett{grid-template-columns:1fr}.brikke{min-height:56px}}
 .brikke:active{transform:scale(.96)}
 .brikke.valgt{background:var(--sea)}
 .brikke.riktig{background:var(--green);pointer-events:none}
@@ -136,11 +138,10 @@ input[type="text"]{width:100%;font-family:'Nunito',sans-serif;font-size:1.15rem;
 
 /* Fjordvokter-veggen */
 .vegg li{display:flex;align-items:center;gap:10px;border:var(--border);border-radius:12px;
-  background:#fff;padding:9px 12px;margin-bottom:9px;font-weight:800;list-style:none}
+  background:#fff;padding:11px 14px;margin-bottom:9px;font-weight:800;list-style:none}
 .vegg li:first-child{background:var(--yellow)}
-.vegg .anker{flex:0 0 auto}
 .vegg .lag{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.vegg .naar{font-size:.82rem;opacity:.7;flex:0 0 auto}
+.vegg .naar{font-size:.9rem;opacity:.72;flex:0 0 auto;font-weight:700}
 
 .tilbake{display:inline-block;font-weight:800;color:var(--sea-deep);text-decoration:none;
   margin-bottom:10px;cursor:pointer;background:none;border:none;font-family:'Nunito',sans-serif;font-size:1rem}
@@ -328,11 +329,11 @@ function alleFerdig(){ return state.ferdig.length >= STASJONER.length; }
 
 function heroHtml(st){
   const src = BILDER[st.bilde];
-  return `<div class="hero" id="hero">
-    <div class="fallback" aria-hidden="true">${st.ikon}</div>
-    ${src ? `<img src="${esc(src)}" alt="${esc(st.tittel)}" style="display:none"
-      onload="this.style.display='block';this.parentElement.classList.add('harbilde')"
-      onerror="this.remove()">` : ""}
+  if(!src) return "";
+  return `<div class="hero">
+    <img src="${esc(src)}" alt="${esc(st.tittel)}"
+      onload="this.parentElement.classList.add('harbilde')"
+      onerror="this.parentElement.remove()">
   </div>`;
 }
 function bobler(intro){
@@ -357,7 +358,6 @@ function vis(html){
 function visLanding(){
   vis(`
     <div class="kort kort--sea senter">
-      <div style="font-size:3.4rem" aria-hidden="true">🦞</div>
       <h1>Fjordvokterne</h1>
       <p style="font-weight:800">Drøbak Akvarium</p>
     </div>
@@ -369,20 +369,20 @@ function visLanding(){
       Vil dere hjelpe meg å fylle dem?</div>
     </div>
     <div class="kort">
-      <p><strong>Slik gjør dere:</strong><br>
-      🔎 Finn de fem dyrene mine rundt i akvariet<br>
-      🔤 Ved hvert dyr henger en <strong>kode på tre bokstaver</strong><br>
-      📖 Tast koden her — hør historien, løs oppgaven, fyll en side!</p>
+      <p><strong>Slik gjør dere:</strong></p>
+      <p>1. Finn de fem dyrene mine rundt i akvariet<br>
+      2. Ved hvert dyr henger en <strong>kode på tre bokstaver</strong><br>
+      3. Tast koden her — hør historien, løs oppgaven, fyll en side!</p>
       <div class="mellomrom"></div>
       <label for="lag"><strong>Hva heter laget deres?</strong></label>
       <div class="mellomrom"></div>
       <input type="text" id="lag" maxlength="40" placeholder="F.eks. Familien Blekksprut" autocomplete="off" enterkeyhint="go">
       <p class="kodemsg" id="lagfeil" role="alert"></p>
-      <button class="knapp" id="start">Vi hjelper Bjørg! 🚀</button>
+      <button class="knapp" id="start">Vi hjelper Bjørg!</button>
     </div>`);
   const start = ()=>{
     const navn = $("#lag").value.trim();
-    if(!navn){ $("#lagfeil").textContent = "Skriv inn et lagnavn først! 😊"; return; }
+    if(!navn){ $("#lagfeil").textContent = "Skriv inn et lagnavn først!"; return; }
     state = blank(); state.started = true; state.lag = navn; lagre();
     visHjem();
   };
@@ -398,19 +398,19 @@ function visHjem(melding){
     return `<button class="side ${ferdig?"ferdig":laast?"laast":""}" data-id="${st.id}" ${laast?"disabled":""}>
       <span class="ikon" aria-hidden="true">${laast?"🔒":st.ikon}</span>
       <span class="tekst">Side ${i+1}: ${esc(st.tittel)}
-        <span class="status">${ferdig?"✅ Fylt ut!":laast?`Finn koden ${esc(st.plassering)}`:"Åpnet — trykk for å fortsette"}</span>
+        <span class="status">${ferdig?"Fylt ut ✓":laast?`Finn koden ${esc(st.plassering)}`:"Åpnet — trykk for å fortsette"}</span>
       </span>
     </button>`;
   }).join("");
   const finale = `<button class="side ${alleFerdig()?"finale-klar":"laast"}" data-id="__finale" ${alleFerdig()?"":"disabled"}>
       <span class="ikon" aria-hidden="true">${alleFerdig()?"⚓":"🔒"}</span>
       <span class="tekst">Siste side: Fjordvokter-eden
-        <span class="status">${alleFerdig()?"Klar! Trykk her!":"Fyll de fem sidene først"}</span>
+        <span class="status">${alleFerdig()?"Klar — trykk her!":"Fyll de fem sidene først"}</span>
       </span>
     </button>`;
   vis(`
     <div class="kort kort--sea senter">
-      <h1>📖 Fjordboka</h1>
+      <h1>Fjordboka</h1>
       <p style="font-weight:800">Laget: ${esc(state.lag)}</p>
     </div>
     <div class="bjorg">
@@ -441,6 +441,7 @@ function visHjem(melding){
       lagre(); apneStasjon(st.id);
     };
     $("#laasopp").addEventListener("click", provKode);
+    $("#kode").addEventListener("input", e=>{ e.target.value = e.target.value.toUpperCase(); });
     $("#kode").addEventListener("keydown", e=>{ if(e.key==="Enter") provKode(); });
   }
   document.querySelectorAll(".side:not([disabled])").forEach(b=>{
@@ -467,7 +468,7 @@ function apneStasjon(id){
     <div class="kort kort--sea senter"><h1>${st.ikon} ${esc(st.tittel)}</h1></div>
     ${heroHtml(st)}
     ${bobler(st.intro)}
-    <button class="knapp" id="tiloppgave">Vi er klare for oppgaven! 💪</button>`);
+    <button class="knapp" id="tiloppgave">Vi er klare for oppgaven!</button>`);
   $("#tilbake").addEventListener("click", visHjem);
   $("#tiloppgave").addEventListener("click", ()=>visOppgave(st));
 }
@@ -500,7 +501,7 @@ function visOppgave(st){
           document.querySelectorAll("#alt .knapp").forEach(x=>x.disabled=true);
           b.classList.add("riktig");
           $("#fk").innerHTML=`<div class="forklaring">${esc(sp.forklaring)}</div>
-            <div class="mellomrom"></div><button class="knapp" id="neste">Videre ➡️</button>`;
+            <div class="mellomrom"></div><button class="knapp" id="neste">Videre</button>`;
           $("#neste").addEventListener("click",()=>{ i++; i<o.sporsmal.length ? tegn() : fullfor(); });
         } else {
           b.classList.add("feil"); b.disabled=true;
@@ -562,8 +563,8 @@ function visOppgave(st){
     };
     const vinn=()=>{
       tegn();
-      $("#fk").innerHTML=`<div class="forklaring">Perfekt rekkefølge! 🦈</div>
-        <div class="mellomrom"></div><button class="knapp" id="neste">Videre ➡️</button>`;
+      $("#fk").innerHTML=`<div class="forklaring">Perfekt rekkefølge!</div>
+        <div class="mellomrom"></div><button class="knapp" id="neste">Videre</button>`;
       $("#neste").addEventListener("click", fullfor);
     };
     tegn(); return;
@@ -614,7 +615,7 @@ function visOppgave(st){
         document.querySelectorAll("#valg .knapp").forEach(x=>x.disabled=true);
         b.classList.add(v.bra?"riktig":"feil");
         $("#fk").innerHTML=`<div class="forklaring">${esc(v.svar)}</div>
-          <div class="mellomrom"></div><button class="knapp" id="neste">Videre ➡️</button>`;
+          <div class="mellomrom"></div><button class="knapp" id="neste">Videre</button>`;
         $("#neste").addEventListener("click",()=>{ i++; i<o.situasjoner.length ? tegn() : fullfor(); });
       }));
     };
@@ -629,7 +630,7 @@ function visSideFerdig(st, gjensyn){
     <button class="tilbake" id="tilbake">← Tilbake til Fjordboka</button>
     <div class="fylt-side">
       <div class="stor" aria-hidden="true">${st.ikon}</div>
-      <h2>Side ${nr} er fylt ut! ✍️</h2>
+      <h2>Side ${nr} er fylt ut!</h2>
       <div class="mellomrom"></div>
       <p style="font-weight:800">«${esc(st.sideTekst)}»</p>
     </div>
@@ -641,7 +642,7 @@ function visSideFerdig(st, gjensyn){
         : `Takk! ${STASJONER.length - state.ferdig.length} side${STASJONER.length-state.ferdig.length===1?"":"r"} igjen. Finn neste dyr og neste kode!`
       }</div>
     </div>
-    <button class="knapp" id="hjem">Til Fjordboka 📖</button>`);
+    <button class="knapp" id="hjem">Til Fjordboka</button>`);
   $("#tilbake").addEventListener("click", visHjem);
   $("#hjem").addEventListener("click", visHjem);
 }
@@ -651,19 +652,19 @@ function visFinale(){
   if(!alleFerdig()) return visHjem();
   const avlagt = new Set();
   vis(`
-    <div class="kort kort--sea senter"><h1>⚓ Fjordvokter-eden</h1></div>
+    <div class="kort kort--sea senter"><h1>Fjordvokter-eden</h1></div>
     <div class="bjorg">
       <div class="fjes" aria-hidden="true">🦞</div>
       <div class="boble"><span class="hvem">Bjørg</span>
       Fjordboka er full — dere har møtt alle vennene mine! Nå gjenstår bare eden.
       Trykk på hvert løfte for å avlegge det:</div>
     </div>
-    ${ED.map((l,i)=>`<button class="lofte" data-i="${i}"><span class="boks-ikon" aria-hidden="true">⬜</span><span>${esc(l)}</span></button>`).join("")}
+    ${ED.map((l,i)=>`<button class="lofte" data-i="${i}" aria-pressed="false"><span class="boks-ikon" aria-hidden="true">○</span><span>${esc(l)}</span></button>`).join("")}
     <div class="mellomrom"></div>
-    <button class="knapp" id="sverg" disabled>Vi sverger! 🤝</button>`);
+    <button class="knapp" id="sverg" disabled>Vi sverger!</button>`);
   document.querySelectorAll(".lofte").forEach(b=>b.addEventListener("click",()=>{
-    b.classList.add("avlagt");
-    b.querySelector(".boks-ikon").textContent="✅";
+    b.classList.add("avlagt"); b.setAttribute("aria-pressed","true");
+    b.querySelector(".boks-ikon").textContent="✓";
     avlagt.add(b.dataset.i);
     if(avlagt.size===ED.length) $("#sverg").disabled=false;
   }));
@@ -675,7 +676,6 @@ async function visDiplom(){
   const dato=d.toLocaleDateString("nb-NO",{day:"numeric",month:"long",year:"numeric"});
   vis(`
     <div class="diplom">
-      <div style="font-size:3rem" aria-hidden="true">🏅</div>
       <h2>Fjordvokter-diplom</h2>
       <p class="lag">${esc(state.lag)}</p>
       <p style="font-weight:800">har fylt Fjordboka og avlagt Fjordvokter-eden</p>
@@ -685,20 +685,20 @@ async function visDiplom(){
     <div class="bjorg">
       <div class="fjes" aria-hidden="true">🦞</div>
       <div class="boble"><span class="hvem">Bjørg</span>
-      Velkommen blant fjordvokterne! Navnet deres skrives nå inn på veggen min. Tusen takk — fra meg og hele fjorden. 💙</div>
+      Velkommen blant fjordvokterne! Navnet deres skrives nå inn på veggen min. Tusen takk — fra meg og hele fjorden.</div>
     </div>
     <div class="kort senter" id="vegg-status">
-      <p id="vegg-tekst">Skriver dere inn på Fjordvokter-veggen... ✍️</p>
+      <p id="vegg-tekst">Skriver dere inn på Fjordvokter-veggen ...</p>
       <div class="mellomrom"></div>
-      <button class="knapp" id="prov-igjen" style="display:none">Prøv igjen 🔄</button>
+      <button class="knapp" id="prov-igjen" style="display:none">Prøv igjen</button>
     </div>
     <div class="kort" id="vegg-kort" style="display:none">
-      <h2 class="senter">🌊 Fjordvokter-veggen</h2>
+      <h2 class="senter">Fjordvokter-veggen</h2>
       <p class="liten senter">De nyeste fjordvokterne</p>
       <div class="mellomrom"></div>
       <ul class="vegg" id="vegg"></ul>
     </div>
-    <button class="knapp knapp--sek" id="hjem">Tilbake til Fjordboka 📖</button>`);
+    <button class="knapp knapp--sek" id="hjem">Tilbake til Fjordboka</button>`);
   $("#hjem").addEventListener("click", visHjem);
   $("#prov-igjen").addEventListener("click", skrivInn);
   skrivInn();
@@ -714,7 +714,7 @@ function initFb(){
 async function skrivInn(){
   const tekst=$("#vegg-tekst"), knapp=$("#prov-igjen");
   knapp.style.display="none";
-  tekst.textContent="Skriver dere inn på Fjordvokter-veggen... ✍️";
+  tekst.textContent="Skriver dere inn på Fjordvokter-veggen ...";
   try{
     if(!state.levert){
       const rad={ lag:state.lag.slice(0,40), tid:Date.now() };
@@ -726,10 +726,10 @@ async function skrivInn(){
       }
       state.levert=true; lagre();
     }
-    tekst.textContent="Dere står på veggen! 🎉";
+    tekst.textContent="Dere står på veggen!";
     await visVegg();
   }catch(e){
-    tekst.textContent="Fikk ikke kontakt med veggen (dårlig dekning?). Diplomet deres er trygt — prøv igjen om litt, gjerne nærmere utgangen! 📶";
+    tekst.textContent="Fikk ikke kontakt med veggen (dårlig dekning?). Diplomet deres er trygt — prøv igjen om litt, gjerne nærmere utgangen!";
     knapp.style.display="block";
   }
 }
@@ -747,9 +747,9 @@ async function visVegg(){
       ? liste.map(r=>{
           const t=new Date(r.tid);
           const naar=t.toLocaleDateString("nb-NO",{day:"numeric",month:"short"})+" kl. "+t.toLocaleTimeString("nb-NO",{hour:"2-digit",minute:"2-digit"});
-          return `<li><span class="anker" aria-hidden="true">⚓</span><span class="lag">${esc(r.lag)}</span><span class="naar">${esc(naar)}</span></li>`;
+          return `<li><span class="lag">${esc(r.lag)}</span><span class="naar">${esc(naar)}</span></li>`;
         }).join("")
-      : `<li><span class="lag">Dere er de aller første fjordvokterne! 🥇</span></li>`;
+      : `<li><span class="lag">Dere er de aller første fjordvokterne!</span></li>`;
     $("#vegg-kort").style.display="block";
   }catch(e){ /* veggen er ikke kritisk */ }
 }
