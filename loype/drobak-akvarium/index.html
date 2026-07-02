@@ -30,6 +30,7 @@
 
   <div class="kort senter" id="fortsett-kort" style="display:none;">
     <h2 id="fortsett-tittel"></h2>
+    <div id="gjenstaende"></div>
     <div class="mellomrom"></div>
     <a class="knapp" id="fortsett-knapp" href="#">Fortsett løypa 🔍</a>
     <div class="mellomrom"></div>
@@ -44,7 +45,7 @@
   const neste = new URLSearchParams(location.search).get("neste");
 
   if (state && state.lag) {
-    // Allerede registrert: vis fortsett-valg i stedet for skjema
+    // Allerede registrert: vis status — men aldri direktelenke til oppgaver
     document.getElementById("reg-kort").style.display = "none";
     const kort = document.getElementById("fortsett-kort");
     kort.style.display = "block";
@@ -55,7 +56,9 @@
       knapp.href = "ferdig.html";
       knapp.textContent = "Se resultatet deres 🏆";
     } else {
-      knapp.href = neste || LOYPE_CONFIG.poster.find(p => !state.poster[p.id]).url;
+      knapp.style.display = "none";
+      document.getElementById("gjenstaende").innerHTML =
+        `<p><strong>📱 Finn og scan disse QR-kodene:</strong></p>` + Loype.postListeHtml();
     }
     document.getElementById("nytt-lag-knapp").addEventListener("click", () => {
       if (confirm("Sikker? Da slettes poengene til laget deres.")) {
@@ -77,8 +80,13 @@
       return;
     }
     Loype.registrer(navn);
-    // Kom brukeren hit fra en scannet post? Send dem tilbake dit.
-    location.href = neste || LOYPE_CONFIG.poster[0].url;
+    if (neste) {
+      // Kom hit fra en scannet post-QR: send dem tilbake dit
+      location.href = neste;
+    } else {
+      // Scannet startplakaten: vis QR-lista (reload → fortsett-visning)
+      location.reload();
+    }
   }
 
   Loype.tegnTopp(null);
