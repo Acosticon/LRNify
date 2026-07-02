@@ -2,35 +2,59 @@
 <html lang="nb">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nøkken og de syv minnene — Kittelsen-huset</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --deep:#0b171a;          /* tjernmørke */
-  --tarn:#12262b;          /* panelmørke */
-  --tarn2:#1a3439;         /* lysere panel */
-  --mist:#8fb5ad;          /* tåketekst */
-  --mistdim:#5d7f78;
-  --cream:#fff9f0;         /* Minnebok-lys */
-  --ink:#2b2118;           /* LRNify-ink */
-  --eye:#e9f2a6;           /* Nøkkens øyne */
-  --gold:#facc15;          /* fremdrift/fragment */
-  --inga:#f2c4c4;          /* Ingas stemme */
-  --wrong:#e2604f;
-  --right:#7ec97e;
-  --line:rgba(143,181,173,.22);
+  --deep:#0a1110;          /* tjernmørke */
+  --deep2:#15201b;         /* skoggrønn dybde */
+  --tarn:#1a2825;          /* mørkt vann/panel */
+  --tarn2:#24362f;         /* lysere mosegrønn panel */
+  --mist:#aec7ba;          /* tåketekst */
+  --mistdim:#728b82;
+  --cream:#f1ead6;         /* gammelt papir */
+  --paper:#e5dbc0;
+  --ink:#292119;           /* blyant/brun-sort */
+  --eye:#efe7a4;           /* Nøkkens øyne */
+  --gold:#d4bd77;          /* dempet fragmentlys */
+  --inga:#e7c6bd;          /* Ingas stemme */
+  --wrong:#c15a4b;
+  --right:#8bb981;
+  --line:rgba(174,199,186,.24);
+  --shadow:rgba(0,0,0,.55);
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;overflow:hidden;position:fixed;width:100%;overscroll-behavior:none}
+html{min-height:100%;overflow-x:hidden}
 body{
-  background:var(--deep);
+  min-height:100%;overflow-x:hidden;overscroll-behavior-y:none;
+  background:
+    radial-gradient(ellipse at 50% 4%, rgba(173,199,186,.11), transparent 38%),
+    radial-gradient(ellipse at 50% 100%, rgba(62,98,82,.34), transparent 44%),
+    linear-gradient(180deg,#0a1110 0%,#101817 46%,#17251f 100%);
   font-family:'Nunito',sans-serif;color:var(--mist);
-  font-size:16px;line-height:1.45;
+  font-size:16px;line-height:1.45;touch-action:manipulation;
 }
-#app{height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:0 auto;position:relative}
+#app{
+  min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;
+  max-width:560px;margin:0 auto;position:relative;isolation:isolate;
+  background:
+    linear-gradient(180deg, rgba(10,17,16,.10), rgba(10,17,16,.34)),
+    radial-gradient(ellipse at 50% 36%, rgba(143,181,173,.10), transparent 56%);
+}
+#app::before{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.36;
+  background:
+    linear-gradient(180deg, transparent 0 58%, rgba(205,221,194,.06) 58% 59%, transparent 59% 100%),
+    repeating-linear-gradient(96deg, rgba(241,234,214,.035) 0 1px, transparent 1px 6px);
+  mix-blend-mode:screen;
+}
+#app::after{
+  content:'';position:absolute;left:-8%;right:-8%;bottom:-2%;height:28%;pointer-events:none;z-index:0;opacity:.26;
+  background:radial-gradient(ellipse at 50% 100%, rgba(20,43,36,.96), transparent 72%);
+}
 
 /* ---------- tåke-atmosfære ---------- */
 .fog{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
@@ -48,7 +72,7 @@ body{
 }
 
 /* ---------- header med Nøkkens øyne ---------- */
-header{position:relative;z-index:2;padding:14px 18px 8px;text-align:center;flex:0 0 auto}
+header{position:relative;z-index:2;padding:14px 18px 8px;text-align:center;flex:0 0 auto;background:linear-gradient(180deg,rgba(10,17,16,.90),rgba(10,17,16,.08))}
 .eyes{display:flex;justify-content:center;gap:26px;height:22px;margin-bottom:6px}
 .eye{
   width:30px;height:13px;border-radius:50%;
@@ -73,32 +97,77 @@ main{flex:1 1 auto;overflow-y:auto;position:relative;z-index:2;padding:6px 18px 
 .screen{display:none;flex:1;flex-direction:column}
 .screen.active{display:flex}
 
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.statusline{font-size:13px;color:var(--mistdim);text-align:center;margin-top:6px}
+.landing{flex:1;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:6px 0 12px}
+.landing-card{
+  position:relative;overflow:hidden;text-align:center;border:2px solid rgba(241,234,214,.22);border-radius:22px;
+  background:
+    linear-gradient(180deg, rgba(12,23,21,.70), rgba(23,37,31,.88)),
+    radial-gradient(ellipse at 50% 18%, rgba(239,231,164,.12), transparent 34%);
+  box-shadow:0 20px 50px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.05);
+  padding:22px 16px 18px;
+}
+.landing-card::before{
+  content:'';position:absolute;left:0;right:0;bottom:0;height:44%;opacity:.36;pointer-events:none;
+  background:
+    radial-gradient(ellipse at 18% 72%, rgba(214,189,119,.28), transparent 7%),
+    radial-gradient(ellipse at 25% 58%, rgba(214,189,119,.18), transparent 5%),
+    radial-gradient(ellipse at 50% 100%, rgba(43,73,58,.72), transparent 70%);
+}
+.intro-hero{position:relative;height:188px;margin:-4px -4px 12px;border-radius:18px;overflow:hidden;border:1px solid rgba(174,199,186,.18);
+  background:
+    radial-gradient(ellipse at 58% 52%, rgba(241,234,214,.32), transparent 17%),
+    radial-gradient(ellipse at 46% 53%, rgba(241,234,214,.34), transparent 5%),
+    radial-gradient(ellipse at 54% 54%, rgba(241,234,214,.34), transparent 5%),
+    linear-gradient(180deg, rgba(114,139,130,.16), transparent 38%),
+    linear-gradient(180deg, #18241f 0%, #1e312a 58%, #345c4f 100%);
+}
+.intro-hero::before{content:'';position:absolute;inset:0;opacity:.42;background:repeating-linear-gradient(104deg, rgba(241,234,214,.10) 0 1px, transparent 1px 6px)}
+.intro-hero::after{content:'';position:absolute;left:43%;top:42%;width:76px;height:36px;border-radius:50%;opacity:.75;background:radial-gradient(ellipse at 40% 50%, var(--eye) 0 6px, transparent 8px),radial-gradient(ellipse at 60% 50%, var(--eye) 0 6px, transparent 8px),radial-gradient(ellipse at 50% 54%, rgba(18,20,18,.95), rgba(18,20,18,.70) 54%, transparent 56%);box-shadow:0 0 24px rgba(239,231,164,.22)}
+.landing-kicker{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);font-weight:900;margin-bottom:6px}
+.landing-title{font-family:'Cormorant Garamond',serif;color:var(--cream);font-size:34px;line-height:1.05;font-weight:700;letter-spacing:.015em;outline:none}
+.landing-copy{color:var(--mist);font-size:15px;font-weight:700;max-width:36ch;margin:10px auto 0}
+.landing-actions{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.lang-row{display:flex;align-items:center;justify-content:center;margin-top:8px}
+.lang-pill{display:inline-flex;gap:8px;align-items:center;border:1.5px solid rgba(174,199,186,.38);background:rgba(26,40,37,.82);color:var(--mist);border-radius:999px;padding:9px 13px;font:800 14px 'Nunito',sans-serif;cursor:pointer}
+.flag{font-size:1.25em;line-height:1;display:inline-block}
+.lang-pill .flag{font-size:1.15em}
+.lang-pill:focus-visible,.lang-option:focus-visible{outline:3px solid var(--eye);outline-offset:3px}
+.language-list{display:grid;gap:10px;margin-top:12px}
+.lang-option{width:100%;text-align:left;border-radius:16px;border:2px solid rgba(41,33,25,.92);background:var(--cream);color:var(--ink);padding:14px;box-shadow:3px 3px 0 var(--shadow);font-family:'Nunito',sans-serif;cursor:pointer;display:flex;align-items:center;gap:12px}
+.lang-option .flag{font-size:28px;flex:0 0 auto}
+.lang-option strong{display:block;font-size:17px}.lang-option small{display:block;margin-top:3px;font-weight:800;color:#755f30}.lang-option[aria-current="true"]{outline:3px solid var(--eye);outline-offset:0}
+
+
 /* ---------- knapper ---------- */
 .btn{
   display:block;width:100%;padding:14px;border-radius:14px;cursor:pointer;
   font-family:'Nunito',sans-serif;font-weight:900;font-size:16px;text-align:center;
-  border:3px solid var(--ink);background:var(--gold);color:var(--ink);
-  box-shadow:4px 4px 0 rgba(0,0,0,.55);transition:transform .07s;
+  border:2px solid rgba(41,33,25,.96);background:linear-gradient(180deg,#ead898,var(--gold));color:var(--ink);
+  box-shadow:3px 3px 0 var(--shadow), inset 0 1px 0 rgba(255,255,255,.22);transition:transform .07s, filter .12s;
   user-select:none;-webkit-user-select:none;
 }
 .btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.55)}
-.btn.ghost{background:var(--tarn2);color:var(--mist);border-color:var(--mistdim);box-shadow:4px 4px 0 rgba(0,0,0,.4)}
+.btn.ghost{background:rgba(36,54,47,.92);color:var(--mist);border-color:var(--mistdim);box-shadow:3px 3px 0 rgba(0,0,0,.4)}
+.btn.secondary{background:rgba(36,54,47,.92);color:var(--mist);border-color:var(--mistdim)}
 .btn:disabled{opacity:.4;pointer-events:none}
-.btn:focus-visible,.opt:focus-visible,.chip:focus-visible{outline:3px solid var(--eye);outline-offset:2px}
-footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));position:relative;z-index:2}
+.btn:focus-visible,.opt:focus-visible,.chip:focus-visible,.page:focus-visible,.linklike:focus-visible,.codein:focus-visible,.taskin:focus-visible,.blank:focus-visible{outline:3px solid var(--eye);outline-offset:3px}
+footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));position:relative;z-index:2;background:linear-gradient(180deg,transparent,rgba(10,17,16,.74))}
 
 /* ---------- hjem / minnebok ---------- */
 .book{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:10px 0 14px}
 .page{
-  border-radius:14px;padding:12px 10px;min-height:86px;position:relative;
-  border:3px solid rgba(43,33,24,.9);
+  border-radius:14px;padding:12px 10px;min-height:86px;position:relative;width:100%;font-family:'Nunito',sans-serif;text-align:left;appearance:none;-webkit-appearance:none;
+  border:2px solid rgba(43,33,24,.9);
   display:flex;flex-direction:column;justify-content:center;gap:3px;
-  background:var(--tarn);color:var(--mistdim);
+  background:linear-gradient(180deg,rgba(36,54,47,.96),rgba(23,37,31,.96));color:var(--mistdim);
 }
 .page .roman{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:700;letter-spacing:.14em}
 .page .ptitle{font-weight:800;font-size:13.5px;line-height:1.25}
-.page.open{background:var(--cream);color:var(--ink);box-shadow:4px 4px 0 rgba(0,0,0,.55);cursor:pointer}
+.page.open{background:linear-gradient(180deg,var(--cream),var(--paper));color:var(--ink);box-shadow:3px 3px 0 var(--shadow);cursor:pointer}
 .page.open .roman{color:#8a6d1d}
+.page:disabled{opacity:1;cursor:not-allowed}
 .page.locked .ptitle{color:var(--mistdim)}
 .page.locked::after{content:'✕';position:absolute;top:8px;right:10px;color:var(--mistdim);font-size:12px;font-weight:900}
 .page.done::after{content:'✓';position:absolute;top:6px;right:10px;color:#3c7a3c;font-weight:900;font-size:15px}
@@ -108,7 +177,7 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
   flex:1;border-radius:14px;border:3px solid var(--ink);background:var(--cream);
   font-family:'Nunito',sans-serif;font-weight:900;font-size:20px;letter-spacing:.5em;text-align:center;
   color:var(--ink);text-transform:uppercase;padding:10px 4px 10px calc(4px + .5em);
-  box-shadow:4px 4px 0 rgba(0,0,0,.55);min-width:0;
+  box-shadow:3px 3px 0 var(--shadow);min-width:0;
 }
 .codein::placeholder{letter-spacing:.18em;font-size:13px;color:#9a8f80;font-weight:800}
 .coderow .btn{width:auto;padding:10px 18px;flex:0 0 auto}
@@ -127,8 +196,8 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
 
 /* ---------- kort / oppgaver ---------- */
 .card{
-  background:var(--cream);color:var(--ink);border:3px solid var(--ink);border-radius:16px;
-  box-shadow:5px 5px 0 rgba(0,0,0,.55);padding:16px;margin-bottom:12px;
+  background:linear-gradient(180deg,var(--cream),var(--paper));color:var(--ink);border:2px solid var(--ink);border-radius:16px;
+  box-shadow:3px 3px 0 var(--shadow);padding:16px;margin-bottom:12px;
 }
 .card .eyebrow{font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:900;color:#8a6d1d;margin-bottom:6px}
 .card p{font-size:15.5px;font-weight:700;line-height:1.5}
@@ -136,9 +205,9 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
 .qtext{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--cream);margin:6px 2px 14px;line-height:1.4}
 .opt{
   display:flex;align-items:center;gap:10px;width:100%;text-align:left;
-  background:var(--cream);color:var(--ink);border:3px solid var(--ink);border-radius:14px;
+  background:linear-gradient(180deg,var(--cream),var(--paper));color:var(--ink);border:2px solid var(--ink);border-radius:14px;
   padding:12px 14px;margin-bottom:10px;font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;
-  box-shadow:4px 4px 0 rgba(0,0,0,.55);cursor:pointer;transition:transform .07s;line-height:1.35;
+  box-shadow:3px 3px 0 var(--shadow);cursor:pointer;transition:transform .07s;line-height:1.35;min-height:48px;
 }
 .opt:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,.55)}
 .opt.sel{background:#fdeeb8;border-color:var(--ink)}
@@ -147,7 +216,7 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
 .opt svg{flex:0 0 auto}
 @keyframes shake{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 .hintbox{
-  background:var(--tarn2);border:2px solid var(--line);border-radius:12px;padding:10px 12px;
+  background:rgba(36,54,47,.94);border:2px solid var(--line);border-radius:12px;padding:10px 12px;
   font-size:14px;font-weight:700;color:var(--eye);margin-bottom:10px;
 }
 .hintbox.explain{color:var(--cream)}
@@ -166,17 +235,17 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
   box-shadow:5px 5px 0 rgba(0,0,0,.55);padding:16px;margin-bottom:12px;
   font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;line-height:1.75}
 .blank{
-  display:inline-block;min-width:64px;text-align:center;border-bottom:3px solid var(--ink);
+  display:inline-flex;align-items:center;justify-content:center;min-width:72px;min-height:44px;text-align:center;border-bottom:3px solid var(--ink);
   font-family:'Nunito',sans-serif;font-weight:900;font-size:15px;color:#8a6d1d;
-  padding:0 6px;cursor:pointer;vertical-align:baseline;
+  padding:0 8px;margin:3px 2px;cursor:pointer;vertical-align:baseline;
 }
 .blank.filled{color:var(--ink)}
 .blank.hot{background:#fdeeb8;border-radius:6px 6px 0 0}
 .bank{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 .chip{
-  border:3px solid var(--ink);background:var(--gold);color:var(--ink);border-radius:999px;
+  border:2px solid rgba(41,33,25,.96);background:linear-gradient(180deg,#ead898,var(--gold));color:var(--ink);border-radius:999px;
   font-family:'Nunito',sans-serif;font-weight:900;font-size:14px;padding:8px 14px;cursor:pointer;
-  box-shadow:3px 3px 0 rgba(0,0,0,.55);
+  box-shadow:3px 3px 0 var(--shadow);
 }
 .chip.used{opacity:.28;pointer-events:none}
 /* order */
@@ -199,7 +268,7 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
 .frag .roman{font-family:'Cormorant Garamond',serif;letter-spacing:.2em;color:#8a6d1d;font-weight:700;font-size:14px}
 .frag h2{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:700;margin:6px 0 8px;line-height:1.2}
 .frag p{font-weight:700;font-size:14.5px;line-height:1.5}
-.fraglabel{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:900}
+.fraglabel{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);font-weight:900;text-shadow:0 0 18px rgba(239,231,164,.16)}
 /* finale / diplom */
 .chest{
   font-family:'Cormorant Garamond',serif;font-size:44px;font-weight:700;letter-spacing:.24em;
@@ -227,7 +296,7 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
 }
 #testpanel button{font-size:10px;padding:3px 6px;border-radius:6px;border:1px solid var(--mist);background:var(--tarn2);color:var(--mist);cursor:pointer}
 .mini{font-size:11.5px;color:var(--mistdim);text-align:center;margin-top:8px}
-.linklike{background:none;border:none;color:var(--mistdim);text-decoration:underline;font-family:'Nunito',sans-serif;font-size:11.5px;cursor:pointer}
+.linklike{background:none;border:none;color:var(--mistdim);text-decoration:underline;font-family:'Nunito',sans-serif;font-size:11.5px;cursor:pointer}.mini a.linklike{display:inline-block}
 </style>
 </head>
 <body>
@@ -238,7 +307,8 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
     <div class="eyes" id="eyes"><div class="eye"></div><div class="eye"></div></div>
     <h1>Nøkken og de syv minnene</h1>
     <div class="sub">Theodor Kittelsen-huset</div>
-    <div class="progress" id="progress"></div>
+    <div class="progress" id="progress" aria-hidden="true"></div>
+    <div class="progress-text sr-only" id="progressText" aria-live="polite"></div>
   </header>
   <main id="main"></main>
   <footer id="footer"></footer>
@@ -252,9 +322,11 @@ footer{flex:0 0 auto;padding:10px 18px calc(12px + env(safe-area-inset-bottom));
    ============================================================ */
 
 const CONFIG = {
-  DEMO: true,              // true = vis demo-svar for fysiske jakter (prototype utenfor museet)
+  DEMO: false,             // true = vis demo-svar for fysiske jakter (kun prototype/test)
   TYPE_DELAY: 650,         // ms mellom Nøkken-linjer
   STORAGE_KEY: 'nokken_v1',
+  STATE_VERSION: 3,
+  DEFAULT_LANG: 'nb',
   CHEST_CODE: '1857',
   MAX_WRONG: 3             // etter 3 feil: forklaring + løses automatisk
 };
@@ -271,7 +343,7 @@ const SIL = {
    validert:false = biografisk innhold må verifiseres av museet,
    og fysiske jakter må mappes til faktiske objekter i rommene.
    ============================================================ */
-const QUEST = {
+const QUEST_NB = {
   stations: [
   { id:'gutten', code:'BLY', roman:'I', title:'Gutten', validert:false, steps:[
     { type:'nokken', lines:[
@@ -438,32 +510,780 @@ const QUEST = {
   ]}
 ]};
 
+const QUEST_EN = {
+  "stations": [
+    {
+      "id": "gutten",
+      "code": "BLY",
+      "roman": "I",
+      "title": "The Boy",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Kragerø, the 1860s. A town smelling of tar and salt water.",
+            "In a small house lives a family with eight children. One of them is always sitting by himself. He draws. On scraps of paper, on planks of wood, in the sand.",
+            "But the memory of him... it is coming apart right here. Bring it back to me."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "In the museum: look at the walls in this room for the motif that shows what the town lived from.",
+          "q": "Look around the room. Kragerø lived from the sea. Find the object that shows how families here made a living. What did you find?",
+          "options": [
+            "A picture of a sailing ship",
+            "A tractor",
+            "A grand piano"
+          ],
+          "correct": 0,
+          "hints": [
+            "Think: what does the town smell of? Tar and salt water...",
+            "What you are looking for has masts and sails."
+          ],
+          "explain": "Kragerø was a sailing-ship town. Almost everything — work, food, money — came from the sea and the ships."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "The boy",
+              "Theodor Severin Kittelsen was born here in Kragerø on 27 April 1857 — one of eight children."
+            ],
+            [
+              "The town",
+              "His father Johannes was a merchant. The town lived from sailing ships and timber. The sea was everything."
+            ],
+            [
+              "The line",
+              "Theodor drew on anything he could find. The adults shook their heads. Paper was not free."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "So answer me: why did the adults worry when little Theodor used up paper and pencils?",
+          "options": [
+            "Drawing was forbidden for children",
+            "Paper and pencils cost money the family needed for food",
+            "They were afraid he would get dirty"
+          ],
+          "correct": 1,
+          "hints": [
+            "Think about what eight children need. Every single day.",
+            "It is about money. And about bread."
+          ],
+          "explain": "With eight children, every coin mattered. Paper for drawing was money that could have become food."
+        },
+        {
+          "type": "fragment",
+          "h": "The boy who drew on everything",
+          "p": "Theodor, born in 1857 in Kragerø. The boy who could not stop drawing — even when it cost something."
+        }
+      ]
+    },
+    {
+      "id": "beskjeden",
+      "code": "KLO",
+      "roman": "II",
+      "title": "The Message",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "1868. Theodor is eleven years old.",
+            "One day a message comes to the house. After that day, nothing is the same.",
+            "But what was the message...? I am holding that memory tightly."
+          ]
+        },
+        {
+          "type": "input",
+          "jakt": true,
+          "answer": "1868",
+          "maxlen": 4,
+          "inputmode": "numeric",
+          "demo": "In the museum: find the clock in the room — the year is on the sign beside it. Demo answer: 1868.",
+          "q": "Find the clock in the room. Time stopped for this family in one particular year. Enter the year when everything changed.",
+          "hints": [
+            "It is on the sign beside the clock. Four digits.",
+            "Theodor was eleven years old. He was born in 1857..."
+          ],
+          "explain": "The year was 1868. That was the year the message came — the one no one in the house wanted."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "The message",
+              "His father Johannes died in 1868. The family was left with no income. There was no welfare system — eight children and a mother, all alone."
+            ],
+            [
+              "The solution",
+              "The solution was brutal, and common at the time: the children had to go to work. Theodor, eleven years old, was sent away to become a watchmaker’s apprentice."
+            ],
+            [
+              "The child",
+              "A child of eleven, alone in a strange town, working from morning until evening. That was Norway in the 1800s."
+            ]
+          ]
+        },
+        {
+          "type": "choice",
+          "q": "You are Theodor. Eleven years old. Your father is dead, and your mother says you must travel away to work. What do you do?",
+          "options": [
+            "Refuse and hide",
+            "Go — but cry the whole way",
+            "Go and pretend to be grown up"
+          ],
+          "consequence": "Theodor went. He had no choice — and neither did the thousands of other children who were sent away in those years. But in his pocket he had a stub of pencil."
+        },
+        {
+          "type": "mc",
+          "q": "One of these things was impossible for Theodor in 1868, no matter how much he missed home. Which one?",
+          "options": [
+            "Send a letter home to his mother",
+            "Walk for days to get home",
+            "Call his mother on the phone"
+          ],
+          "correct": 2,
+          "hints": [
+            "Two of these things existed. One did not — not in any Norwegian home.",
+            "Think: what do YOU use when you miss someone?"
+          ],
+          "explain": "Telephones were not found in Norwegian homes in 1868. If you wanted to hear a voice from home, you had to travel there. Letters took days — sometimes weeks."
+        },
+        {
+          "type": "fragment",
+          "h": "The boy who had to leave",
+          "p": "Eleven years old, alone, sent away to work. But the pencil came with him."
+        }
+      ]
+    },
+    {
+      "id": "oyet",
+      "code": "AAL",
+      "roman": "III",
+      "title": "The Eye That Saw Him",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "The years pass. Theodor still draws — in secret, on the backs of bills.",
+            "Then one day, one man sees his drawings.",
+            "And he sees something no one else has seen."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "sil": true,
+          "demo": "In the museum: compare with the early sketches hanging in this room.",
+          "q": "Among the sketches in the room are Theodor’s early works. One kind of line appears again and again — alive and restless, as if everything in nature is breathing. Which silhouette is his?",
+          "options": [
+            "hus",
+            "troll",
+            "skip"
+          ],
+          "correct": 1,
+          "hints": [
+            "Theodor rarely drew straight, quiet lines. His nature is never completely still.",
+            "Look for the silhouette that seems as if it might wake up."
+          ],
+          "explain": "The restless, living line — where stones and forests almost become creatures — that is Kittelsen."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "The man",
+              "The man was Diderich Maria Aall. He was wealthy — and he decided to pay for Theodor to receive an artist’s education."
+            ],
+            [
+              "How it worked",
+              "Without a rich patron: no art school. Talent alone was not enough when you were poor. That was how the rules worked in the 1800s."
+            ],
+            [
+              "The journey",
+              "Theodor was able to travel to Christiania — and later all the way to Munich in Germany, one of Europe’s great art centres."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "Think about it. What did Aall really give Theodor?",
+          "options": [
+            "Fame overnight",
+            "A safe job as a watchmaker",
+            "A chance that poverty would otherwise have taken from him"
+          ],
+          "correct": 2,
+          "hints": [
+            "Did Theodor become famous at once? No. So what did he receive?",
+            "What had poverty closed off for him?"
+          ],
+          "explain": "Aall gave him the door that poverty had closed: the chance to learn, to travel, to become an artist. The rest Theodor did himself."
+        },
+        {
+          "type": "fragment",
+          "h": "The boy who was seen",
+          "p": "One man saw the drawings and understood. Without Diderich Maria Aall — no Kittelsen."
+        }
+      ]
+    },
+    {
+      "id": "oya",
+      "code": "TJE",
+      "roman": "IV",
+      "title": "The Island and the Darkness",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Listen. Waves. Mist over the water.",
+            "Theodor now lives on an island — Jomfruland, with his sister by the lighthouse. Day after day: only sea, sky and forest.",
+            "And this is where... this is where he begins to see me."
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "In the museum: look at the nature motifs in this room and find the one where something looks back.",
+          "q": "Look at the nature motifs around you. In one of them, nature is not only nature — something is looking back at you. Which one?",
+          "options": [
+            "A sunny field with grazing cows",
+            "A fishing boat at sunset",
+            "A dark tarn where two bright points break the surface"
+          ],
+          "correct": 2,
+          "hints": [
+            "Bright, pretty pictures? No. Look for the one that makes you a little uneasy.",
+            "Two bright points. In dark water. What is staring at you?"
+          ],
+          "explain": "The tarn with the eyes. There. That is me."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "The change",
+              "On Jomfruland, something happened to Theodor. Nature stopped being a background. The forest gained faces. Stones became trolls. The tarn gained eyes."
+            ],
+            [
+              "The new thing",
+              "He painted something no one had painted before: Norwegian nature as it FEELS — beautiful and frightening at the same time. That is why he is so unique."
+            ],
+            [
+              "The Nøkk",
+              "The Nøkk — the being in the tarn that lures people into deep water — had lived in people’s stories for hundreds of years. Theodor gave him a face. Or... almost a face."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "nokkenq": true,
+          "q": "Now answer my riddle: I have eyes, but no face. I live in the tarn, but I am not a fish. What am I really made of?",
+          "options": [
+            "Mud and weeds",
+            "People’s own fear",
+            "A drowned horse"
+          ],
+          "correct": 1,
+          "hints": [
+            "Think carefully: did I exist at all before someone feared the dark water?",
+            "Theodor did not paint an animal. He painted a feeling."
+          ],
+          "explain": "The Nøkk is the fear of the deep — given a shape. That is what Theodor understood. And painted.",
+          "aftercorrect": "...correct. No one has answered that before. Move on. Now."
+        },
+        {
+          "type": "fragment",
+          "h": "The man who gave darkness eyes",
+          "p": "On Jomfruland, nature came alive. Trolls in the forest. Eyes in the tarn. Norway gained its world of fairy tales."
+        }
+      ]
+    },
+    {
+      "id": "inga",
+      "code": "ING",
+      "roman": "V",
+      "title": "Inga",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "inga": true,
+          "lines": [
+            "This memory is not his. It is mine.",
+            "My name is Inga. And if you want to understand Theodor, you must first understand our house."
+          ]
+        },
+        {
+          "type": "cloze",
+          "jakt": true,
+          "demo": "In the museum: the family portrait in the room shows how many children they had.",
+          "intro": "A letter from Inga has come apart. Fill in the missing words — look around the room; everything you need is here.",
+          "text": [
+            "Dear sister. It is ",
+            0,
+            " here, but we manage. Theodor paints from morning until evening, and I look after the ",
+            1,
+            " — we have ",
+            2,
+            " now, can you believe it! The money from the pictures comes late, so I ",
+            3,
+            " and patch what I can. But when he shows me what he has painted, I forget all the struggle. Yours, Inga."
+          ],
+          "answers": [
+            "crowded",
+            "children",
+            "nine",
+            "sew"
+          ],
+          "bank": [
+            "nine",
+            "sew",
+            "crowded",
+            "children",
+            "castle",
+            "servants"
+          ],
+          "hints": [
+            "Read the sentence around the gap — only one word makes sense there.",
+            "Nine children. Crowded rooms. She sewed things herself. You almost have it now."
+          ]
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "Inga",
+              "Inga Christine Dahl married Theodor in 1889. She was twenty. He was thirty-two."
+            ],
+            [
+              "The house",
+              "They had nine children. Nine! And an artist’s income that came and went. It was Inga who kept everyday life together."
+            ],
+            [
+              "The story",
+              "Without Inga, there would not have been a Kittelsen as we know him. History often forgets people like her. You will not."
+            ]
+          ]
+        },
+        {
+          "type": "multiselect",
+          "pick": 3,
+          "q": "Look at the room through Inga’s eyes. Which THREE of these were her responsibility — every single day?",
+          "options": [
+            "Food for eleven people",
+            "Finishing the paintings",
+            "Clothes — sewing, patching, caring for them",
+            "Accounts and letters to publishers",
+            "Carving trolls in stone"
+          ],
+          "correct": [
+            0,
+            2,
+            3
+          ],
+          "hints": [
+            "Theodor painted. Everything else...",
+            "Food. Clothes. Money. Those are the three."
+          ],
+          "explain": "Food, clothes and money — everyday life for eleven people rested on Inga, while Theodor painted."
+        },
+        {
+          "type": "fragment",
+          "h": "The woman who carried the house",
+          "p": "Inga Kittelsen. Nine children, tight finances, a brilliant and restless husband. She held everything together."
+        }
+      ]
+    },
+    {
+      "id": "pesta",
+      "code": "PES",
+      "roman": "VI",
+      "title": "Pesta",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Now you must be brave.",
+            "Because now she is coming. The old woman who walks from farm to farm. Pesta.",
+            "The Black Death. The plague that killed half of Norway. And Theodor... he decided to paint it. Why on earth did he do that?"
+          ]
+        },
+        {
+          "type": "mc",
+          "jakt": true,
+          "demo": "In the museum: study the Pesta motifs in this room. She always carries the same two tools.",
+          "q": "Look closely at the Pesta motifs. She always carries two tools — and they mean life or death. Which ones?",
+          "options": [
+            "Scythe and sword",
+            "Rake and broom",
+            "Lantern and clock"
+          ],
+          "correct": 1,
+          "hints": [
+            "Not weapons. Tools from the farm.",
+            "One rakes. The other sweeps."
+          ],
+          "explain": "The rake and the broom. Now you will learn why they mean life or death."
+        },
+        {
+          "type": "cards",
+          "cards": [
+            [
+              "The plague",
+              "The Black Death came to Norway in 1349 and killed around half of everyone who lived here. Entire villages were left empty."
+            ],
+            [
+              "Pesta",
+              "People needed a way to understand the impossible. So the plague became Pesta — an old woman walking from farm to farm with a rake and a broom."
+            ],
+            [
+              "The signs",
+              "If she carried the rake, someone on the farm would survive — a rake gathers, but leaves something behind. If she carried the broom, she swept everyone away."
+            ],
+            [
+              "Theodor",
+              "In the 1890s, Theodor drew the whole Black Death series. He gave the nation’s worst memory a face people could look at — and bear to look at."
+            ]
+          ]
+        },
+        {
+          "type": "mc",
+          "q": "Pesta stands by the gate of a farm. She lifts the rake. What does that mean for the people who live there?",
+          "options": [
+            "Everyone will die",
+            "They must rake the yard before evening",
+            "Some will survive"
+          ],
+          "correct": 2,
+          "hints": [
+            "Remember: the rake gathers — but it does not take everything with it.",
+            "The broom sweeps everything away. The rake leaves something behind..."
+          ],
+          "explain": "The rake leaves something behind. Someone on the farm would survive. That is how folklore made the impossible possible to talk about — and Theodor understood that."
+        },
+        {
+          "type": "fragment",
+          "h": "The man who painted what no one dared to see",
+          "p": "Theodor gave even the plague a face. Fairy tales and folklore were not decoration — they were the way people carried what was heavy."
+        }
+      ]
+    },
+    {
+      "id": "finale",
+      "code": null,
+      "roman": "VII",
+      "title": "The Seventh Memory",
+      "validert": false,
+      "steps": [
+        {
+          "type": "nokken",
+          "lines": [
+            "Six memories. You have been... better than I expected.",
+            "But the seventh is not yours. The seventh is MINE.",
+            "Because if you understand it... maybe I will no longer exist.",
+            "So prove it, then. Show me that you remember his whole story."
+          ]
+        },
+        {
+          "type": "order",
+          "q": "Put Theodor’s life in the right order. Tap the memories in the order they happened.",
+          "items": [
+            "The boy who drew on everything",
+            "The boy who had to leave",
+            "The boy who was seen",
+            "The man who gave darkness eyes",
+            "The woman who carried the house",
+            "The man who painted what no one dared to see"
+          ],
+          "hints": [
+            "Start with childhood in Kragerø. End with Pesta.",
+            "Kragerø → his father’s death → Aall → Jomfruland → Inga → The Black Death."
+          ]
+        },
+        {
+          "type": "mc",
+          "nokkenq": true,
+          "q": "And now... the final question. The boy who drew. The grief. The loneliness on the island. The fear that gained a face. Look at everything you have collected — and answer me: WHO AM I?",
+          "options": [
+            "A monster living in the tarn by the house",
+            "The ghost of Diderich Maria Aall",
+            "You are Theodor — his imagination and darkness, turned into art"
+          ],
+          "correct": 2,
+          "hints": [
+            "Who saw me first? Where did I really come from?",
+            "I did not exist... before he drew me."
+          ],
+          "explain": "The Nøkk, the trolls, Pesta — they all came from the same place: Theodor’s own inner world. The grief, loneliness and fear he carried — which he turned into images all of Norway knows.",
+          "aftercorrect": "...yes. I am him. The grief after his father. The loneliness on the island. All the darkness — made into something beautiful. That is why he matters, you see: he showed that you can take what you fear... and give it form."
+        },
+        {
+          "type": "fragment",
+          "h": "The man who never stopped drawing on everything",
+          "p": "Theodor Kittelsen, 1857–1914. He gave Norway its world of fairy tales — and showed that darkness can become art."
+        },
+        {
+          "type": "chest"
+        }
+      ]
+    }
+  ]
+};
+
+const QUESTS = { nb: QUEST_NB, en: QUEST_EN };
+let QUEST = QUEST_NB;
+
 /* ============================================================
    MOTOR
    ============================================================ */
 const $ = s => document.querySelector(s);
 const main = $('#main'), footer = $('#footer');
+const DEBUG_MODE = /[?&]test=1/.test(location.search);
 
-let state = load() || { unlocked:[], done:[], cur:null, step:0 };
-
-function save(){ try{ localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+function blankState(started=false, lang=CONFIG.DEFAULT_LANG){
+  return { v:CONFIG.STATE_VERSION, started, lang, unlocked:[], done:[], cur:null, step:0 };
+}
 function load(){ try{ return JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEY)); }catch(e){ return null; } }
+function normalizeState(raw){
+  const base = blankState(false, CONFIG.DEFAULT_LANG);
+  if(!raw || typeof raw!=='object') return base;
+  const ids = new Set(QUESTS.nb.stations.map(s=>s.id));
+  const hasProgress = Array.isArray(raw.unlocked)&&raw.unlocked.length || Array.isArray(raw.done)&&raw.done.length || !!raw.cur;
+  return {
+    v:CONFIG.STATE_VERSION,
+    started: Boolean(raw.started ?? hasProgress),
+    lang: Object.keys(QUESTS).includes(raw.lang) ? raw.lang : CONFIG.DEFAULT_LANG,
+    unlocked: Array.isArray(raw.unlocked) ? raw.unlocked.filter(id=>ids.has(id)) : [],
+    done: Array.isArray(raw.done) ? raw.done.filter(id=>ids.has(id)) : [],
+    cur: ids.has(raw.cur) ? raw.cur : null,
+    step: Number.isInteger(raw.step) && raw.step>=0 ? raw.step : 0
+  };
+}
+let state = normalizeState(load());
+QUEST = QUESTS[state.lang] || QUESTS.nb;
+function save(){ try{ localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+function setLanguage(code){
+  if(!QUESTS[code]) code = CONFIG.DEFAULT_LANG;
+  state.lang = code;
+  QUEST = QUESTS[state.lang] || QUESTS.nb;
+  document.documentElement.lang = state.lang;
+  save();
+}
 function station(id){ return QUEST.stations.find(s=>s.id===id); }
 function stIndex(id){ return QUEST.stations.findIndex(s=>s.id===id); }
-function esc(t){ const d=document.createElement('div'); d.textContent=t; return d.innerHTML; }
+function esc(t){ const d=document.createElement('div'); d.textContent=t ?? ''; return d.innerHTML; }
+
+const UI = {
+  "nb": {
+    "flag": "🇳🇴",
+    "langName": "Norsk",
+    "nativeName": "Norsk",
+    "documentTitle": "Nøkken og de syv minnene — Kittelsenhuset",
+    "gameTitle": "Nøkken og de syv minnene",
+    "siteTitle": "Theodor Kittelsen-huset",
+    "start": "Start spill",
+    "language": "Språk",
+    "chooseLanguage": "Velg språk",
+    "back": "Tilbake",
+    "welcome": "Velkommen til Kittelsenhuset",
+    "kicker": "Nøkken og de syv minnene",
+    "intro": "Nøkken har stjålet Theodor Kittelsens minner. Finn merkene i huset, lås opp Minneboken og hent minnene tilbake.",
+    "langNote": "Velg språk før dere starter. Selve løypen kan byttes underveis.",
+    "home": "Til minneboken",
+    "memory": "Minne",
+    "progressFinale": "Alle seks minner er hentet hjem. Finalen er åpen.",
+    "progressCount": "{count} av 6 minner hentet hjem.",
+    "homeLeadStart": "Nøkken har tatt Theodors minner. Finn en kode med tre bokstaver i rommet og tast den inn her.",
+    "homeLeadFinale": "Alle seks minner er hentet hjem. Nøkken venter på deg...",
+    "homeLeadProgress": "{count} av 6 minner hentet hjem. Finn neste merke.",
+    "lockedFindCode": "Finn romkode",
+    "memoryAria": "Minne {roman}: {title}",
+    "lockedMemoryAria": "Låst minne {roman}. Finn romkoden i rommet.",
+    "codePlaceholder": "ROMKODE",
+    "codeAria": "Romkode, tre bokstaver",
+    "unlock": "Lås opp",
+    "reset": "Nullstill spillet",
+    "resetConfirm": "Nullstille alt og begynne på nytt?",
+    "questions": "Spørsmål?",
+    "unknownCode": "Nøkken kjenner ikke den koden. Se bedre etter.",
+    "finaleLocked": "Nøkken slipper deg ikke inn ennå. Seks minner først.",
+    "showFullText": "Vis hele teksten",
+    "continue": "Videre",
+    "tapShowFull": "trykk for å vise hele teksten",
+    "tapContinue": "trykk på Videre",
+    "next": "Neste",
+    "understand": "Jeg forstår",
+    "answer": "Svar",
+    "actualHappened": "Det som faktisk skjedde",
+    "blankAria": "tomrom {num}",
+    "checkLetter": "Sjekk brevet",
+    "letterComplete": "Brevet er helt igjen. Inga takker deg.",
+    "selectAnswer": "Svar ({selected}/{total})",
+    "showNokken": "Vis Nøkken",
+    "slotEmpty": "— trykk et minne under —",
+    "nokkenName": "Nøkken",
+    "nokkenWhispers": "Nøkken hvisker: ",
+    "prototype": "Prototype",
+    "silhouette": "Silhuett",
+    "restored": "Minne {roman} gjenopprettet",
+    "addToBook": "Legg i Minneboken",
+    "chestText": "Ta dette med til Theodors kiste ved utgangen. Koden er året alt begynte:",
+    "guardianTitle": "Minnevokter",
+    "guardianText": "Du hentet tilbake alle Theodors syv minner — og gjennomskuet Nøkken selv.",
+    "backToBook": "Tilbake til Minneboken",
+    "dateLocale": "nb-NO"
+  },
+  "en": {
+    "flag": "🇬🇧",
+    "langName": "English",
+    "nativeName": "English",
+    "documentTitle": "The Nøkk and the Seven Memories — Kittelsen House",
+    "gameTitle": "The Nøkk and the Seven Memories",
+    "siteTitle": "Theodor Kittelsen House",
+    "start": "Start game",
+    "language": "Language",
+    "chooseLanguage": "Choose language",
+    "back": "Back",
+    "welcome": "Welcome to Kittelsen House",
+    "kicker": "The Nøkk and the Seven Memories",
+    "intro": "The Nøkk has stolen Theodor Kittelsen’s memories. Find the marks in the house, unlock the Memory Book and bring the memories back.",
+    "langNote": "Choose a language before you start. You can change it during the trail.",
+    "home": "To the Memory Book",
+    "memory": "Memory",
+    "progressFinale": "All six memories have been brought back. The finale is open.",
+    "progressCount": "{count} of 6 memories brought back.",
+    "homeLeadStart": "The Nøkk has taken Theodor’s memories. Find a three-letter room code and enter it here.",
+    "homeLeadFinale": "All six memories have been brought back. The Nøkk is waiting for you...",
+    "homeLeadProgress": "{count} of 6 memories brought back. Find the next mark.",
+    "lockedFindCode": "Find room code",
+    "memoryAria": "Memory {roman}: {title}",
+    "lockedMemoryAria": "Locked memory {roman}. Find the room code in the room.",
+    "codePlaceholder": "CODE",
+    "codeAria": "Room code, three letters",
+    "unlock": "Unlock",
+    "reset": "Reset game",
+    "resetConfirm": "Reset everything and start over?",
+    "questions": "Questions?",
+    "unknownCode": "The Nøkk does not know that code. Look more carefully.",
+    "finaleLocked": "The Nøkk will not let you in yet. Six memories first.",
+    "showFullText": "Show all text",
+    "continue": "Continue",
+    "tapShowFull": "tap to show all text",
+    "tapContinue": "tap Continue",
+    "next": "Next",
+    "understand": "I understand",
+    "answer": "Answer",
+    "actualHappened": "What actually happened",
+    "blankAria": "blank {num}",
+    "checkLetter": "Check the letter",
+    "letterComplete": "The letter is whole again. Inga thanks you.",
+    "selectAnswer": "Answer ({selected}/{total})",
+    "showNokken": "Show the Nøkk",
+    "slotEmpty": "— tap a memory below —",
+    "nokkenName": "The Nøkk",
+    "nokkenWhispers": "The Nøkk whispers: ",
+    "prototype": "Prototype",
+    "silhouette": "Silhouette",
+    "restored": "Memory {roman} restored",
+    "addToBook": "Place in the Memory Book",
+    "chestText": "Take this to Theodor’s chest by the exit. The code is the year everything began:",
+    "guardianTitle": "Memory Keeper",
+    "guardianText": "You brought back all seven of Theodor’s memories — and saw through the Nøkk itself.",
+    "backToBook": "Back to the Memory Book",
+    "dateLocale": "en-GB"
+  }
+};
+function tr(key){ return (UI[state.lang] && UI[state.lang][key]) || UI.nb[key] || key; }
+function fmt(text, vars={}){ return String(text).replace(/\{(\w+)\}/g, (_,k)=> vars[k] ?? ''); }
+function langFlag(code){ return (UI[code] || UI.nb).flag || ''; }
+function currentLangName(){ return (UI[state.lang] || UI.nb).langName; }
+function currentLangLabelHtml(){ return `<span class="flag" aria-hidden="true">${esc(langFlag(state.lang))}</span><span>${esc(currentLangName())}</span>`; }
+function updateChrome(){
+  document.documentElement.lang = state.lang;
+  document.title = tr('documentTitle');
+  const title = document.querySelector('header h1'); if(title) title.textContent = tr('gameTitle');
+  const sub = document.querySelector('header .sub'); if(sub) sub.textContent = tr('siteTitle');
+}
+function focusFirst(){
+  requestAnimationFrame(()=>{
+    const target = main.querySelector('[data-autofocus], .landing-title, .homelead, .qtext, .sthead h2, .card');
+    if(target){ target.setAttribute('tabindex','-1'); target.focus({preventScroll:true}); }
+  });
+}
 
 function renderProgress(){
-  const p = $('#progress'); p.innerHTML='';
+  const p = $('#progress'); if(!p) return;
+  p.innerHTML='';
   QUEST.stations.forEach(s=>{
     const d=document.createElement('div');
     d.className='pdot'+(state.done.includes(s.id)?' done':'')+(s.id==='finale'?' finale':'');
     p.appendChild(d);
   });
+  const pt=$('#progressText');
+  if(pt){
+    const doneCount=state.done.filter(id=>id!=='finale').length;
+    pt.textContent = doneCount>=6 ? tr('progressFinale') : fmt(tr('progressCount'), {count:doneCount});
+  }
+}
+
+
+/* ---------- FORSIDE / SPRÅK ---------- */
+function showLanding(){
+  state.cur=null; state.step=0; save(); updateChrome();
+  renderProgress();
+  $('#eyes').classList.remove('calm');
+  main.innerHTML = `<section class="screen active landing" id="landing" lang="${state.lang}">
+    <div class="landing-card">
+      <div class="intro-hero" aria-hidden="true"></div>
+      <div class="landing-kicker">${esc(tr('kicker'))}</div>
+      <h2 class="landing-title" data-autofocus>${esc(tr('welcome'))}</h2>
+      <p class="landing-copy">${esc(tr('intro'))}</p>
+      <div class="landing-actions">
+        <button type="button" class="btn" id="startGame">${esc(tr('start'))}</button>
+      </div>
+    </div>
+    <div class="lang-row"><button type="button" class="lang-pill" id="chooseLang" aria-label="${esc(tr('chooseLanguage'))}"><span aria-hidden="true">☾</span> <span>${esc(tr('language'))}:</span> ${currentLangLabelHtml()}</button></div>
+    <p class="statusline">${esc(tr('langNote'))}</p>
+  </section>`;
+  footer.innerHTML='';
+  $('#startGame').onclick = ()=>{ state.started=true; save(); showHome(); };
+  $('#chooseLang').onclick = ()=>showLanguage('landing');
+  main.scrollTop=0; focusFirst();
+}
+
+function showLanguage(returnTo='landing'){
+  updateChrome();
+  const options = Object.keys(QUESTS).map(code=>`<button type="button" class="lang-option" data-lang="${code}" lang="${code}" aria-current="${state.lang===code?'true':'false'}">
+    <span class="flag" aria-hidden="true">${esc(UI[code].flag)}</span><span><strong>${esc(UI[code].langName)}</strong><small>${esc(UI[code].welcome)}</small></span>
+  </button>`).join('');
+  main.innerHTML = `<section class="screen active landing" id="language" lang="${state.lang}">
+    <div class="landing-card">
+      <div class="landing-kicker">${esc(tr('language'))}</div>
+      <h2 class="landing-title" data-autofocus>${esc(tr('chooseLanguage'))}</h2>
+      <div class="language-list">${options}</div>
+    </div>
+  </section>`;
+  footer.innerHTML=`<button type="button" class="btn ghost" id="backLang">${esc(tr('back'))}</button>`;
+  function goBack(){ returnTo==='home' && state.started ? showHome() : showLanding(); }
+  main.querySelectorAll('.lang-option').forEach(btn=>{
+    btn.onclick=()=>{ setLanguage(btn.dataset.lang); updateChrome(); goBack(); };
+  });
+  $('#backLang').onclick=goBack;
+  main.scrollTop=0; focusFirst();
 }
 
 /* ---------- HJEM ---------- */
 function showHome(msg){
-  state.cur=null; state.step=0; save();
+  state.started=true; state.cur=null; state.step=0; save(); updateChrome();
   renderProgress();
   $('#eyes').classList.remove('calm');
   const doneCount = state.done.filter(id=>id!=='finale').length;
@@ -473,37 +1293,38 @@ function showHome(msg){
     const done=state.done.includes(s.id);
     const open=done || state.unlocked.includes(s.id) || (s.id==='finale'&&finaleReady);
     const cls='page'+(open?' open':' locked')+(done?' done':'')+(s.id==='finale'?' finale':'');
-    const title = open ? s.title : (s.id==='finale' ? 'Det syvende minnet' : '???');
-    pages+=`<div class="${cls}" data-st="${s.id}" role="button" tabindex="${open?0:-1}" aria-label="Minne ${s.roman}: ${esc(title)}">
-      <div class="roman">Minne ${s.roman}</div><div class="ptitle">${esc(title)}</div></div>`;
+    const title = open ? s.title : (s.id==='finale' ? s.title : tr('lockedFindCode'));
+    const aria = open ? fmt(tr('memoryAria'), {roman:s.roman, title}) : fmt(tr('lockedMemoryAria'), {roman:s.roman});
+    pages+=`<button type="button" class="${cls}" data-st="${s.id}" ${open?'':'disabled'} aria-label="${esc(aria)}">
+      <div class="roman">${esc(tr('memory'))} ${s.roman}</div><div class="ptitle">${esc(title)}</div></button>`;
   });
   main.innerHTML = `<section class="screen active" id="home">
-    <p class="homelead">${doneCount===0
-      ? 'Nøkken har tatt Theodors minner. Finn merkene hans i rommene og tast koden.'
-      : (finaleReady ? 'Alle seks minner er hentet hjem. Nøkken venter på deg...' : `${doneCount} av 6 minner hentet hjem. Finn neste merke.`)}</p>
+    <p class="homelead" data-autofocus>${doneCount===0
+      ? tr('homeLeadStart')
+      : (finaleReady ? tr('homeLeadFinale') : fmt(tr('homeLeadProgress'), {count:doneCount}))}</p>
     <div class="book">${pages}</div>
     <div class="coderow">
-      <input id="code" class="codein" maxlength="3" placeholder="ROMKODE" autocomplete="off" autocapitalize="characters" aria-label="Romkode, tre bokstaver">
-      <button class="btn" id="unlock">Lås opp</button>
+      <input id="code" class="codein" maxlength="3" placeholder="${esc(tr('codePlaceholder'))}" autocomplete="off" autocapitalize="characters" aria-label="${esc(tr('codeAria'))}">
+      <button type="button" class="btn" id="unlock">${esc(tr('unlock'))}</button>
     </div>
-    <div class="codemsg" id="codemsg">${msg?esc(msg):''}</div>
-    <div class="mini"><button class="linklike" id="reset">Nullstill spillet</button></div>
+    <div class="codemsg" id="codemsg" aria-live="polite" role="status">${msg?esc(msg):''}</div>
+    <div class="mini"><button type="button" class="linklike" id="changeLang">${esc(tr('language'))}: ${esc(langFlag(state.lang))} ${esc(currentLangName())}</button> · <button type="button" class="linklike" id="reset">${esc(tr('reset'))}</button> · <a class="linklike" href="mailto:kontakt@lrnify.no">${esc(tr('questions'))}</a></div>
   </section>`;
   footer.innerHTML='';
   $('#unlock').onclick = tryCode;
   $('#code').addEventListener('keydown',e=>{ if(e.key==='Enter') tryCode(); });
-  $('#reset').onclick = ()=>{ if(confirm('Nullstille alt og begynne på nytt?')){ state={unlocked:[],done:[],cur:null,step:0}; save(); showHome(); } };
+  $('#changeLang').onclick = ()=>showLanguage('home');
+  $('#reset').onclick = ()=>{ if(confirm(tr('resetConfirm'))){ const keepLang=state.lang; state=blankState(false,keepLang); setLanguage(keepLang); showLanding(); } };
   main.querySelectorAll('.page.open').forEach(el=>{
     el.onclick = ()=> openStation(el.dataset.st);
-    el.onkeydown = e=>{ if(e.key==='Enter'||e.key===' ') openStation(el.dataset.st); };
   });
-  main.scrollTop=0;
+  main.scrollTop=0; focusFirst();
 }
 
 function tryCode(){
   const v = ($('#code').value||'').trim().toUpperCase();
   const st = QUEST.stations.find(s=>s.code===v);
-  if(!st){ $('#codemsg').textContent='Nøkken kjenner ikke den koden. Se bedre etter.'; return; }
+  if(!st){ $('#codemsg').textContent=tr('unknownCode'); return; }
   if(!state.unlocked.includes(st.id)) state.unlocked.push(st.id);
   save(); openStation(st.id);
 }
@@ -511,7 +1332,7 @@ function tryCode(){
 /* ---------- STASJON ---------- */
 function openStation(id){
   const st=station(id); if(!st) return;
-  if(id==='finale' && state.done.filter(x=>x!=='finale').length<6){ showHome('Nøkken slipper deg ikke inn ennå. Seks minner først.'); return; }
+  if(id==='finale' && state.done.filter(x=>x!=='finale').length<6){ showHome(tr('finaleLocked')); return; }
   if(state.done.includes(id)){ showHome(); return; }
   const prev=state.cur;
   state.cur=id;
@@ -523,16 +1344,17 @@ function openStation(id){
 let stepCtx = null; // per-steg tilstand (feiltelling, valg, osv.)
 
 function renderStep(){
+  updateChrome();
   const st=station(state.cur); const step=st.steps[state.step];
   stepCtx = { wrong:0, sel:new Set(), seq:[], blanks:[] };
   renderProgress();
   $('#eyes').classList.toggle('calm', !!step.inga);
-  const dots = st.steps.map((_,i)=>`<div class="sdot${i<=state.step?' on':''}"></div>`).join('');
-  const head = `<div class="sthead"><div class="roman">Minne ${st.roman}</div><h2>${esc(st.title)}</h2><div class="steps">${dots}</div></div>`;
+  const dots = st.steps.map((_,i)=>`<div class="sdot${i<=state.step?' on':''}" aria-hidden="true"></div>`).join('');
+  const head = `<div class="sthead"><div class="roman">${esc(tr('memory'))} ${st.roman}</div><h2 data-autofocus>${esc(st.title)}</h2><div class="steps" aria-hidden="true">${dots}</div></div>`;
   const R = { nokken:rNokken, cards:rCards, mc:rMC, input:rInput, choice:rChoice, cloze:rCloze, multiselect:rMulti, order:rOrder, fragment:rFragment, chest:rChest };
   main.innerHTML = `<section class="screen active">${step.type==='fragment'||step.type==='chest'?'':head}<div id="stepbody" style="display:flex;flex-direction:column;flex:1"></div></section>`;
   R[step.type](step, st);
-  main.scrollTop=0;
+  main.scrollTop=0; focusFirst();
 }
 
 function next(){
@@ -546,8 +1368,8 @@ function completeStation(st){
   showHome();
 }
 function setFooter(label, fn, disabled){
-  footer.innerHTML=`<button class="btn" id="fbtn"${disabled?' disabled':''}>${esc(label)}</button>`;
-  $('#fbtn').onclick=fn;
+  footer.innerHTML=`<button type="button" class="btn" id="fbtn"${disabled?' disabled aria-disabled="true"':''}>${esc(label)}</button>`;
+  if(!disabled) $('#fbtn').onclick=fn;
 }
 
 /* ---------- steg: Nøkken taler ---------- */
@@ -555,16 +1377,27 @@ function rNokken(step){
   const body=$('#stepbody');
   body.innerHTML = `<div class="speech" id="speech">${
     step.lines.map(l=>`<div class="nline${step.inga?' inga':''}">${esc(l)}</div>`).join('')
-  }<div class="tapmore" id="tapmore">trykk for å fortsette</div></div>`;
+  }<div class="tapmore" id="tapmore">${esc(tr('tapShowFull'))}</div></div>`;
   const lines=[...body.querySelectorAll('.nline')];
   let shown=0;
-  function reveal(){ if(shown<lines.length){ lines[shown].classList.add('show'); shown++; if(shown===lines.length) armNext(); } }
-  function showAll(){ while(shown<lines.length) reveal(); }
-  let timer=setInterval(()=>{ reveal(); if(shown>=lines.length) clearInterval(timer); }, CONFIG.TYPE_DELAY);
-  reveal();
-  $('#speech').onclick=()=>{ clearInterval(timer); showAll(); };
-  function armNext(){ setFooter('Videre', next); }
-  setFooter('Videre', ()=>{ clearInterval(timer); showAll(); setTimeout(next,60); });
+  let timer=null;
+  function updateFooter(){
+    setFooter(shown<lines.length?tr('showFullText'):tr('continue'), ()=>{
+      if(shown<lines.length){ clearInterval(timer); showAll(); }
+      else next();
+    });
+  }
+  function reveal(){
+    if(shown<lines.length){
+      lines[shown].classList.add('show'); shown++;
+      if(shown===lines.length){ clearInterval(timer); $('#tapmore').textContent=tr('tapContinue'); }
+      updateFooter();
+    }
+  }
+  function showAll(){ while(shown<lines.length) reveal(); updateFooter(); }
+  timer=setInterval(()=>{ reveal(); if(shown>=lines.length) clearInterval(timer); }, CONFIG.TYPE_DELAY);
+  reveal(); updateFooter();
+  $('#speech').onclick=()=>{ if(shown<lines.length){ clearInterval(timer); showAll(); } };
   stepCtx.auto=()=>{ clearInterval(timer); next(); };
 }
 
@@ -575,7 +1408,7 @@ function rCards(step){
     const [eb,txt]=step.cards[i];
     body.innerHTML=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center">
       <div class="card"><div class="eyebrow">${esc(eb)} · ${i+1}/${step.cards.length}</div><p>${esc(txt)}</p></div></div>`;
-    setFooter(i<step.cards.length-1?'Neste':'Jeg forstår', ()=>{ i++; if(i>=step.cards.length) next(); else draw(); });
+    setFooter(i<step.cards.length-1?tr('next'):tr('understand'), ()=>{ i++; if(i>=step.cards.length) next(); else draw(); });
   }
   draw();
   stepCtx.auto=()=>{ i=step.cards.length-1; next(); };
@@ -590,7 +1423,7 @@ function feedbackWrong(step, boxSel){
     return 'resolve';
   }
   const h=step.hints[Math.min(stepCtx.wrong-1, step.hints.length-1)];
-  box.innerHTML=`<div class="hintbox">Nøkken: «${esc(h)}»</div>`;
+  box.innerHTML=`<div class="hintbox">${esc(tr('nokkenName'))}: «${esc(h)}»</div>`;
   return 'retry';
 }
 
@@ -598,12 +1431,12 @@ function feedbackWrong(step, boxSel){
 function rMC(step){
   const body=$('#stepbody');
   const opts = step.options.map((o,i)=>{
-    const inner = step.sil ? SIL[o]+`<span>Silhuett ${'ABC'[i]}</span>` : esc(o);
+    const inner = step.sil ? SIL[o]+`<span>${esc(tr('silhouette'))} ${'ABC'[i]}</span>` : esc(o);
     return `<button class="opt" data-i="${i}">${inner}</button>`;
   }).join('');
-  body.innerHTML=`${step.jakt&&CONFIG.DEMO?`<div class="demobox"><b>Prototype:</b> ${esc(step.demo)}</div>`:''}
-    <p class="qtext">${step.nokkenq?'Nøkken hvisker: ':''}${esc(step.q)}</p>
-    <div id="hint"></div><div id="opts">${opts}</div><div id="after"></div>`;
+  body.innerHTML=`${step.jakt&&CONFIG.DEMO?`<div class="demobox"><b>${esc(tr('prototype'))}:</b> ${esc(step.demo)}</div>`:''}
+    <p class="qtext">${step.nokkenq?esc(tr('nokkenWhispers')):''}${esc(step.q)}</p>
+    <div id="hint" aria-live="polite" role="status"></div><div id="opts">${opts}</div><div id="after"></div>`;
   footer.innerHTML='';
   let locked=false;
   body.querySelectorAll('.opt').forEach(btn=>{
@@ -623,7 +1456,7 @@ function rMC(step){
     locked=true; btn.classList.add('right');
     if(!auto && step.explain) $('#hint').innerHTML=`<div class="hintbox explain">${esc(step.explain)}</div>`;
     if(step.aftercorrect) $('#after').innerHTML=`<p class="qtext" style="margin-top:12px">«${esc(step.aftercorrect)}»</p>`;
-    setFooter('Videre', next);
+    setFooter(tr('continue'), next);
   }
   stepCtx.auto=()=>{ body.querySelector(`.opt[data-i="${step.correct}"]`).click(); setTimeout(next,20); };
   stepCtx.autoWrong=()=>{ const w=(step.correct+1)%step.options.length; body.querySelector(`.opt[data-i="${w}"]`).click(); };
@@ -632,19 +1465,19 @@ function rMC(step){
 /* ---------- steg: kode-input ---------- */
 function rInput(step){
   const body=$('#stepbody');
-  body.innerHTML=`${step.jakt&&CONFIG.DEMO?`<div class="demobox"><b>Prototype:</b> ${esc(step.demo)}</div>`:''}
-    <p class="qtext">${esc(step.q)}</p><div id="hint"></div>
+  body.innerHTML=`${step.jakt&&CONFIG.DEMO?`<div class="demobox"><b>${esc(tr('prototype'))}:</b> ${esc(step.demo)}</div>`:''}
+    <p class="qtext">${esc(step.q)}</p><div id="hint" aria-live="polite" role="status"></div>
     <input class="taskin" id="tin" maxlength="${step.maxlen}" inputmode="${step.inputmode||'text'}" autocomplete="off" aria-label="Svar">`;
-  setFooter('Svar', check);
+  setFooter(tr('answer'), check);
   $('#tin').addEventListener('keydown',e=>{ if(e.key==='Enter') check(); });
   function check(){
     const v=($('#tin').value||'').trim().toUpperCase();
     if(v===step.answer.toUpperCase()){
       $('#hint').innerHTML=`<div class="hintbox explain">${esc(step.explain)}</div>`;
-      $('#tin').style.borderColor='#2f6b2f'; setFooter('Videre', next);
+      $('#tin').style.borderColor='#2f6b2f'; setFooter(tr('continue'), next);
     } else {
       $('#tin').classList.add('wrong'); setTimeout(()=>$('#tin').classList.remove('wrong'),400);
-      if(feedbackWrong(step,'#hint')==='resolve'){ $('#tin').value=step.answer; setFooter('Videre', next); }
+      if(feedbackWrong(step,'#hint')==='resolve'){ $('#tin').value=step.answer; setFooter(tr('continue'), next); }
     }
   }
   stepCtx.auto=()=>{ $('#tin').value=step.answer; next(); };
@@ -662,8 +1495,8 @@ function rChoice(step){
   body.querySelectorAll('.opt').forEach(btn=>{
     btn.onclick=()=>{
       if(picked) return; picked=true; btn.classList.add('sel');
-      $('#cons').innerHTML=`<div class="card"><div class="eyebrow">Det som faktisk skjedde</div><p>${esc(step.consequence)}</p></div>`;
-      setFooter('Videre', next);
+      $('#cons').innerHTML=`<div class="card"><div class="eyebrow">${esc(tr('actualHappened'))}</div><p>${esc(step.consequence)}</p></div>`;
+      setFooter(tr('continue'), next);
     };
   });
   stepCtx.auto=()=>{ body.querySelector('.opt').click(); setTimeout(next,20); };
@@ -673,9 +1506,9 @@ function rChoice(step){
 function rCloze(step){
   const body=$('#stepbody');
   const html = step.text.map(part => typeof part==='number'
-    ? `<span class="blank" data-b="${part}" role="button" tabindex="0" aria-label="tomrom ${part+1}">______</span>` : esc(part)).join('');
-  body.innerHTML=`${step.jakt&&CONFIG.DEMO?`<div class="demobox"><b>Prototype:</b> ${esc(step.demo)}</div>`:''}
-    <p class="qtext" style="font-size:16px">${esc(step.intro)}</p><div id="hint"></div>
+    ? `<span class="blank" data-b="${part}" role="button" tabindex="0" aria-label="${esc(fmt(tr('blankAria'), {num:part+1}))}">______</span>` : esc(part)).join('');
+  body.innerHTML=`${step.jakt&&CONFIG.DEMO?`<div class="demobox"><b>${esc(tr('prototype'))}:</b> ${esc(step.demo)}</div>`:''}
+    <p class="qtext" style="font-size:16px">${esc(step.intro)}</p><div id="hint" aria-live="polite" role="status"></div>
     <div class="letter" id="letter">${html}</div>
     <div class="bank" id="bank">${step.bank.map((w,i)=>`<button class="chip" data-w="${esc(w)}" data-c="${i}">${esc(w)}</button>`).join('')}</div>`;
   const blanks=[...body.querySelectorAll('.blank')];
@@ -693,24 +1526,24 @@ function rCloze(step){
       c.classList.toggle('used',used);
     });
     const complete = blanks.every(b=>fill.hasOwnProperty(b.dataset.b));
-    setFooter('Sjekk brevet', check, !complete);
+    setFooter(tr('checkLetter'), check, !complete);
   }
   body.querySelectorAll('.chip').forEach(c=>{
     c.onclick=()=>{ const t=firstEmpty(); if(!t) return; fill[t.dataset.b]={w:c.dataset.w,c:c.dataset.c}; paint(); };
   });
   blanks.forEach(b=>{
     const clear=()=>{ if(fill.hasOwnProperty(b.dataset.b)){ delete fill[b.dataset.b]; paint(); } };
-    b.onclick=clear; b.onkeydown=e=>{ if(e.key==='Enter'||e.key===' ') clear(); };
+    b.onclick=clear; b.onkeydown=e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); clear(); } };
   });
   function check(){
     const ok = blanks.every(b=> fill[b.dataset.b] && fill[b.dataset.b].w===step.answers[+b.dataset.b]);
-    if(ok){ $('#hint').innerHTML=`<div class="hintbox explain">Brevet er helt igjen. Inga takker deg.</div>`; setFooter('Videre', next); }
+    if(ok){ $('#hint').innerHTML=`<div class="hintbox explain">${esc(tr('letterComplete'))}</div>`; setFooter(tr('continue'), next); }
     else{
       blanks.forEach(b=>{ if(fill[b.dataset.b] && fill[b.dataset.b].w!==step.answers[+b.dataset.b]){ delete fill[b.dataset.b]; } });
       paint();
       if(feedbackWrong(step,'#hint')==='resolve'){
         blanks.forEach(b=>{ const w=step.answers[+b.dataset.b]; fill[b.dataset.b]={w, c:String(step.bank.indexOf(w))}; });
-        paint(); setFooter('Videre', next);
+        paint(); setFooter(tr('continue'), next);
       }
     }
   }
@@ -722,14 +1555,14 @@ function rCloze(step){
 /* ---------- steg: velg flere ---------- */
 function rMulti(step){
   const body=$('#stepbody');
-  body.innerHTML=`<p class="qtext">${esc(step.q)}</p><div id="hint"></div>
+  body.innerHTML=`<p class="qtext">${esc(step.q)}</p><div id="hint" aria-live="polite" role="status"></div>
     <div id="opts">${step.options.map((o,i)=>`<button class="opt" data-i="${i}" aria-pressed="false">${esc(o)}</button>`).join('')}</div>`;
   function paint(){
     body.querySelectorAll('.opt').forEach(b=>{
       const on=stepCtx.sel.has(+b.dataset.i);
       b.classList.toggle('sel',on); b.setAttribute('aria-pressed',on);
     });
-    setFooter(`Svar (${stepCtx.sel.size}/${step.pick})`, check, stepCtx.sel.size!==step.pick);
+    setFooter(fmt(tr('selectAnswer'), {selected:stepCtx.sel.size, total:step.pick}), check, stepCtx.sel.size!==step.pick);
   }
   body.querySelectorAll('.opt').forEach(b=>{
     b.onclick=()=>{ const i=+b.dataset.i;
@@ -742,14 +1575,14 @@ function rMulti(step){
     if(ok){
       $('#hint').innerHTML=`<div class="hintbox explain">${esc(step.explain)}</div>`;
       step.correct.forEach(i=>body.querySelector(`.opt[data-i="${i}"]`).classList.add('right'));
-      setFooter('Videre', next);
+      setFooter(tr('continue'), next);
     } else {
       [...stepCtx.sel].forEach(i=>{ if(!step.correct.includes(i)){ const b=body.querySelector(`.opt[data-i="${i}"]`); b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),400); stepCtx.sel.delete(i); } });
       paint();
       if(feedbackWrong(step,'#hint')==='resolve'){
         stepCtx.sel=new Set(step.correct); paint();
         step.correct.forEach(i=>body.querySelector(`.opt[data-i="${i}"]`).classList.add('right'));
-        setFooter('Videre', next);
+        setFooter(tr('continue'), next);
       }
     }
   }
@@ -764,17 +1597,17 @@ function rOrder(step){
   const order=[...step.items.keys()];
   // deterministisk stokking (annenhver fra midten) så det aldri starter riktig
   const shuffled=[2,5,0,4,1,3].filter(i=>i<order.length);
-  body.innerHTML=`<p class="qtext">${esc(step.q)}</p><div id="hint"></div>
-    <div class="slotlist" id="slots">${step.items.map((_,i)=>`<div class="slot" data-s="${i}"><span class="num">${i+1}.</span><span class="lbl">— trykk et minne under —</span></div>`).join('')}</div>
+  body.innerHTML=`<p class="qtext">${esc(step.q)}</p><div id="hint" aria-live="polite" role="status"></div>
+    <div class="slotlist" id="slots">${step.items.map((_,i)=>`<div class="slot" data-s="${i}"><span class="num">${i+1}.</span><span class="lbl">${esc(tr('slotEmpty'))}</span></div>`).join('')}</div>
     <div class="bank" id="pool">${shuffled.map(i=>`<button class="chip" data-i="${i}">${esc(step.items[i])}</button>`).join('')}</div>`;
   function paint(){
     body.querySelectorAll('.slot').forEach((s,idx)=>{
       const v=stepCtx.seq[idx];
       s.classList.toggle('filled', v!==undefined);
-      s.querySelector('.lbl').textContent = v!==undefined ? step.items[v] : '— trykk et minne under —';
+      s.querySelector('.lbl').textContent = v!==undefined ? step.items[v] : tr('slotEmpty');
     });
     body.querySelectorAll('#pool .chip').forEach(c=>c.classList.toggle('used', stepCtx.seq.includes(+c.dataset.i)));
-    setFooter('Vis Nøkken', check, stepCtx.seq.length!==step.items.length);
+    setFooter(tr('showNokken'), check, stepCtx.seq.length!==step.items.length);
   }
   body.querySelectorAll('#pool .chip').forEach(c=>{
     c.onclick=()=>{ if(stepCtx.seq.length<step.items.length && !stepCtx.seq.includes(+c.dataset.i)){ stepCtx.seq.push(+c.dataset.i); paint(); } };
@@ -784,13 +1617,13 @@ function rOrder(step){
   });
   function check(){
     const ok = stepCtx.seq.every((v,i)=>v===i);
-    if(ok){ $('#hint').innerHTML=`<div class="hintbox explain">Nøkken: «...du husker. Du husker alt.»</div>`; setFooter('Videre', next); }
+    if(ok){ $('#hint').innerHTML=`<div class="hintbox explain">${esc(tr('nokkenName'))}: «...${state.lang==='en'?'you remember. You remember everything.':'du husker. Du husker alt.'}»</div>`; setFooter(tr('continue'), next); }
     else{
       stepCtx.seq=stepCtx.seq.filter((v,i)=>v===i && stepCtx.seq.slice(0,i).every((x,j)=>x===j));
       // behold bare korrekt prefiks
       let keep=[]; for(let i=0;i<step.items.length;i++){ if(stepCtx.seq[i]===i) keep.push(i); else break; } stepCtx.seq=keep;
       paint();
-      if(feedbackWrong(step,'#hint')==='resolve'){ stepCtx.seq=[...step.items.keys()]; paint(); setFooter('Videre', next); }
+      if(feedbackWrong(step,'#hint')==='resolve'){ stepCtx.seq=[...step.items.keys()]; paint(); setFooter(tr('continue'), next); }
     }
   }
   paint();
@@ -802,33 +1635,33 @@ function rOrder(step){
 function rFragment(step, st){
   const body=$('#stepbody');
   body.innerHTML=`<div class="fragwrap">
-    <div class="fraglabel">Minne ${st.roman} gjenopprettet</div>
+    <div class="fraglabel">${esc(fmt(tr('restored'), {roman:st.roman}))}</div>
     <div class="frag"><div class="roman">✦</div><h2>${esc(step.h)}</h2><p>${esc(step.p)}</p></div>
   </div>`;
-  setFooter('Legg i Minneboken', next);
+  setFooter(tr('addToBook'), next);
   stepCtx.auto=next;
 }
 
 /* ---------- steg: kiste + diplom ---------- */
 function rChest(){
   const body=$('#stepbody');
-  const d=new Date(); const ds=d.toLocaleDateString('nb-NO',{day:'numeric',month:'long',year:'numeric'});
+  const d=new Date(); const ds=d.toLocaleDateString(tr('dateLocale'),{day:'numeric',month:'long',year:'numeric'});
   body.innerHTML=`<div style="flex:1;display:flex;flex-direction:column;justify-content:center">
-    <p class="qtext" style="text-align:center">Ta dette med til Theodors kiste ved utgangen. Koden er året alt begynte:</p>
+    <p class="qtext" style="text-align:center">${esc(tr('chestText'))}</p>
     <div class="chest" id="chestcode">${CONFIG.CHEST_CODE}</div>
     <div class="diploma">
       <div class="dt">Kittelsen-huset · ${esc(ds)}</div>
-      <h2>Minnevokter</h2>
-      <p>Du hentet tilbake alle Theodors syv minner — og gjennomskuet Nøkken selv.</p>
+      <h2>${esc(tr('guardianTitle'))}</h2>
+      <p>${esc(tr('guardianText'))}</p>
     </div>
   </div>`;
-  setFooter('Tilbake til Minneboken', next);
+  setFooter(tr('backToBook'), next);
   stepCtx.auto=next;
 }
 
 /* ---------- testpanel + hook ---------- */
 function initTestPanel(){
-  if(!/[?&]test=1/.test(location.search)) return;
+  if(!DEBUG_MODE) return;
   const p=$('#testpanel'); p.style.display='flex';
   QUEST.stations.forEach(s=>{
     const b=document.createElement('button');
@@ -841,20 +1674,26 @@ function initTestPanel(){
   p.appendChild(all);
 }
 
+if(DEBUG_MODE){
 window.__game = {
+
   state: ()=>JSON.parse(JSON.stringify(state)),
   open: code=>{ const st=QUEST.stations.find(s=>s.code===code)||station(code); if(!st) return false;
     if(st.code&&!state.unlocked.includes(st.id)) state.unlocked.push(st.id); save(); openStation(st.id); return true; },
   auto: ()=>{ if(state.cur===null) return false; if(stepCtx&&stepCtx.auto){ stepCtx.auto(); return true; } return false; },
   autoWrong: ()=>{ if(stepCtx&&stepCtx.autoWrong){ stepCtx.autoWrong(); return true; } return false; },
   hintVisible: ()=>{ const h=$('#hint'); return !!(h&&h.querySelector('.hintbox')); },
-  reset: ()=>{ state={unlocked:[],done:[],cur:null,step:0}; save(); showHome(); },
+  reset: ()=>{ state=blankState(false,state.lang); save(); showLanding(); },
   home: ()=>showHome()
+
 };
+}
 
 /* ---------- oppstart ---------- */
 initTestPanel();
-if(state.cur && station(state.cur) && !state.done.includes(state.cur)){
+if(!state.started){
+  showLanding();
+} else if(state.cur && station(state.cur) && !state.done.includes(state.cur)){
   openStation(state.cur); // gjenoppta midt i et rom
 } else {
   showHome();
@@ -862,4 +1701,3 @@ if(state.cur && station(state.cur) && !state.done.includes(state.cur)){
 </script>
 </body>
 </html>
-
