@@ -171,8 +171,15 @@ const CONFIG = {
   storageKey: "lrnify_fjordvokterne",
   collection: "fjordvoktere",
   // Lim inn firebaseConfig her for ekte vegg. null = demo-modus (lokal vegg).
-  FIREBASE: null,
-  // FIREBASE: { apiKey:"...", authDomain:"....firebaseapp.com", projectId:"..." },
+  FIREBASE: {
+    apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+    authDomain: "poll-c6bd2.firebaseapp.com",
+    databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "poll-c6bd2",
+    storageBucket: "poll-c6bd2.firebasestorage.app",
+    messagingSenderId: "541647069675",
+    appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+  },
   veggAntall: 8,
 };
 
@@ -360,6 +367,10 @@ function visLanding(){
     <div class="kort kort--sea senter">
       <h1>Fjordvokterne</h1>
       <p style="font-weight:800">Drøbak Akvarium</p>
+    </div>
+    <div class="kort kort--sand senter">
+      <p style="font-weight:800">🔧 Dette er en tidlig prototype.</p>
+      <p class="liten">Bilder og oppgavetekster er ikke ferdige — vi tilpasser dette sammen med dere før lansering.</p>
     </div>
     <div class="bjorg">
       <div class="fjes" aria-hidden="true">🦞</div>
