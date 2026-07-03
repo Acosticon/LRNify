@@ -126,10 +126,33 @@ input[type="text"]{width:100%;font-family:'Nunito',sans-serif;font-size:1.15rem;
 .fylt-side{background:var(--sand);border:var(--border);border-radius:16px;box-shadow:var(--shadow);
   padding:20px;text-align:center;animation:sprett .35s ease;margin-bottom:14px}
 .fylt-side .stor{font-size:3rem}
-.diplom{background:var(--sand);border:4px double var(--ink);border-radius:16px;box-shadow:var(--shadow);
-  padding:22px 16px;text-align:center;margin-bottom:14px}
-.diplom h2{font-size:1.7rem;color:var(--sea-deep)}
-.diplom .lag{font-family:'Chewy',cursive;font-size:1.5rem;margin:8px 0}
+
+/* Diplomskjerm: fyller nesten hele skjermen */
+.diplom-scene{min-height:64dvh;display:flex;align-items:center;justify-content:center;padding:6px 0 18px}
+.diplom{background:var(--sand);border:5px double var(--ink);border-radius:22px;box-shadow:6px 6px 0 var(--ink);
+  padding:38px 24px;text-align:center;width:100%;animation:sprett .4s ease}
+.diplom .stempel{width:64px;height:64px;margin:0 auto 14px;border:var(--border);border-radius:50%;
+  background:var(--yellow);display:grid;place-items:center;box-shadow:3px 3px 0 var(--ink)}
+.diplom .stempel svg{width:34px;height:34px}
+.diplom h2{font-size:2.1rem;color:var(--sea-deep)}
+.diplom .lag{font-family:'Chewy',cursive;font-size:2.2rem;margin:14px 0;line-height:1.15;
+  word-break:break-word}
+.diplom .undertekst{font-size:1.08rem;font-weight:800;max-width:46ch;margin:0 auto}
+.diplom .liten{margin-top:14px}
+
+/* Fjordvokter-tavlen */
+.tavle-header{background:var(--sea-pale);border:var(--border);border-radius:16px;box-shadow:var(--shadow);
+  padding:18px;text-align:center;margin-bottom:16px;position:relative;overflow:hidden}
+.tavle-header::before{content:'';position:absolute;top:0;left:0;right:0;height:10px;
+  background:repeating-radial-gradient(circle at 10px -4px, transparent 8px, var(--sea) 9px, var(--sea) 10px, transparent 11px);
+  background-size:20px 10px}
+.vegg{padding-top:2px}
+.vegg li{animation:innrad .3s ease backwards}
+.vegg li:nth-child(1){animation-delay:.02s}.vegg li:nth-child(2){animation-delay:.06s}
+.vegg li:nth-child(3){animation-delay:.10s}.vegg li:nth-child(4){animation-delay:.14s}
+.vegg li:nth-child(5){animation-delay:.18s}.vegg li:nth-child(6){animation-delay:.22s}
+@keyframes innrad{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+.vegg .plass{font-family:'Chewy',cursive;font-size:1.3rem;color:var(--sea-deep);width:30px;flex:0 0 auto}
 
 /* Ed-løfter */
 .lofte{display:flex;gap:10px;align-items:center;width:100%;text-align:left;
@@ -692,65 +715,58 @@ async function visDiplom(){
   const d=new Date();
   const dato=d.toLocaleDateString("nb-NO",{day:"numeric",month:"long",year:"numeric"});
   vis(`
-    <div class="diplom">
-      <h2>Fjordvokter-diplom</h2>
-      <p class="lag">${esc(state.lag)}</p>
-      <p style="font-weight:800">har fylt Fjordboka og avlagt Fjordvokter-eden</p>
-      <div class="mellomrom"></div>
-      <p class="liten">Drøbak Akvarium · ${esc(dato)}</p>
+    <div class="diplom-scene">
+      <div class="diplom">
+        <div class="stempel" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2b2118" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3c-3 2-5 5-5 9a5 5 0 0 0 10 0c0-4-2-7-5-9Z"/>
+            <path d="M9 21c1-1 2-1.5 3-1.5s2 .5 3 1.5"/>
+          </svg>
+        </div>
+        <h2>Fjordvokter-diplom</h2>
+        <p class="lag">${esc(state.lag)}</p>
+        <p class="undertekst">har fylt Fjordboka og avlagt Fjordvokter-eden</p>
+        <p class="liten">Drøbak Akvarium · ${esc(dato)}</p>
+      </div>
     </div>
-    <div class="bjorg">
-      <div class="fjes" aria-hidden="true">🦞</div>
-      <div class="boble"><span class="hvem">Bjørg</span>
-      Velkommen blant fjordvokterne! Navnet deres skrives nå inn på veggen min. Tusen takk — fra meg og hele fjorden.</div>
-    </div>
-    <div class="kort senter" id="vegg-status">
-      <p id="vegg-tekst">Skriver dere inn på Fjordvokter-veggen ...</p>
-      <div class="mellomrom"></div>
-      <button class="knapp" id="prov-igjen" style="display:none">Prøv igjen</button>
-    </div>
-    <div class="kort" id="vegg-kort" style="display:none">
-      <h2 class="senter">Fjordvokter-veggen</h2>
-      <p class="liten senter">De nyeste fjordvokterne</p>
-      <div class="mellomrom"></div>
-      <ul class="vegg" id="vegg"></ul>
-    </div>
-    <button class="knapp knapp--sek" id="hjem">Tilbake til Fjordboka</button>`);
-  $("#hjem").addEventListener("click", visHjem);
-  $("#prov-igjen").addEventListener("click", skrivInn);
-  skrivInn();
+    <button class="knapp" id="tavle-knapp">Se alle fjordvoktere</button>`);
+  $("#tavle-knapp").addEventListener("click", visTavle);
+  // Skriv laget inn på veggen i bakgrunnen — diplomet er uansett trygt lokalt.
+  levrTilVeggen().catch(()=>{});
 }
 
-/* ---------------- Firebase / demo-vegg ---------------- */
-let db=null;
-function initFb(){
-  if(!CONFIG.FIREBASE || !window.firebase) return false;
-  if(!db){ firebase.initializeApp(CONFIG.FIREBASE); db=firebase.firestore(); }
-  return true;
-}
-async function skrivInn(){
-  const tekst=$("#vegg-tekst"), knapp=$("#prov-igjen");
-  knapp.style.display="none";
-  tekst.textContent="Skriver dere inn på Fjordvokter-veggen ...";
-  try{
-    if(!state.levert){
-      const rad={ lag:state.lag.slice(0,40), tid:Date.now() };
-      if(initFb()) await db.collection(CONFIG.collection).add(rad);
-      else {
-        const key=CONFIG.storageKey+"_demo_vegg";
-        const liste=JSON.parse(localStorage.getItem(key)||"[]");
-        liste.push(rad); localStorage.setItem(key, JSON.stringify(liste));
-      }
-      state.levert=true; lagre();
+/* ---------------- Fjordvokter-tavlen ---------------- */
+async function visTavle(){
+  vis(`
+    <button class="tilbake" id="tilbake">← Tilbake til diplomet</button>
+    <div class="tavle-header">
+      <h1>Fjordvokter-veggen</h1>
+      <p class="liten">De sist registrerte fjordvokterne</p>
+    </div>
+    <p class="kodemsg" id="tavle-status" style="display:none"></p>
+    <ol class="vegg" id="vegg"><li class="liten">Henter tavlen ...</li></ol>
+    <div class="mellomrom"></div>
+    <button class="knapp knapp--sek" id="nystart">Start på nytt</button>`);
+  $("#tilbake").addEventListener("click", visDiplom);
+  $("#nystart").addEventListener("click", ()=>{
+    if(confirm("Starte helt på nytt? Da tømmes Fjordboka til laget deres — dere beholder plassen på veggen.")){
+      state = blank(); lagre(); visLanding();
     }
-    tekst.textContent="Dere står på veggen!";
-    await visVegg();
-  }catch(e){
-    tekst.textContent="Fikk ikke kontakt med veggen (dårlig dekning?). Diplomet deres er trygt — prøv igjen om litt, gjerne nærmere utgangen!";
-    knapp.style.display="block";
+  });
+
+  // Ikke levert ennå (f.eks. dårlig dekning ved forrige forsøk)? Prøv én gang til.
+  if(!state.levert){
+    try{ await levrTilVeggen(); }
+    catch(e){
+      const s=$("#tavle-status");
+      s.textContent="Dere er ikke skrevet inn på veggen ennå (dårlig dekning?). Diplomet er trygt — prøv gjerne på nytt her.";
+      s.style.display="block";
+    }
   }
+  await lastTavle();
 }
-async function visVegg(){
+
+async function lastTavle(){
   try{
     let liste;
     if(initFb()){
@@ -761,14 +777,35 @@ async function visVegg(){
       liste=JSON.parse(localStorage.getItem(key)||"[]").sort((a,b)=>b.tid-a.tid).slice(0,CONFIG.veggAntall);
     }
     $("#vegg").innerHTML = liste.length
-      ? liste.map(r=>{
+      ? liste.map((r,i)=>{
           const t=new Date(r.tid);
           const naar=t.toLocaleDateString("nb-NO",{day:"numeric",month:"short"})+" kl. "+t.toLocaleTimeString("nb-NO",{hour:"2-digit",minute:"2-digit"});
-          return `<li><span class="lag">${esc(r.lag)}</span><span class="naar">${esc(naar)}</span></li>`;
+          return `<li><span class="plass">${i+1}</span><span class="lag">${esc(r.lag)}</span><span class="naar">${esc(naar)}</span></li>`;
         }).join("")
       : `<li><span class="lag">Dere er de aller første fjordvokterne!</span></li>`;
-    $("#vegg-kort").style.display="block";
-  }catch(e){ /* veggen er ikke kritisk */ }
+  }catch(e){
+    $("#vegg").innerHTML = `<li class="liten">Fikk ikke hentet tavlen akkurat nå.</li>`;
+  }
+}
+
+/* ---------------- Firebase / demo-lagring ---------------- */
+let db=null;
+function initFb(){
+  if(!CONFIG.FIREBASE || !window.firebase) return false;
+  if(!db){ firebase.initializeApp(CONFIG.FIREBASE); db=firebase.firestore(); }
+  return true;
+}
+// Skriver laget til veggen. Kaster ved feil (dårlig dekning) — kalles fanges opp av den som trenger det.
+async function levrTilVeggen(){
+  if(state.levert) return;
+  const rad={ lag:state.lag.slice(0,40), tid:Date.now() };
+  if(initFb()) await db.collection(CONFIG.collection).add(rad);
+  else {
+    const key=CONFIG.storageKey+"_demo_vegg";
+    const liste=JSON.parse(localStorage.getItem(key)||"[]");
+    liste.push(rad); localStorage.setItem(key, JSON.stringify(liste));
+  }
+  state.levert=true; lagre();
 }
 
 /* ---------------- debug-panel ---------------- */
