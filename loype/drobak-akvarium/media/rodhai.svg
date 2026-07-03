@@ -1,0 +1,26 @@
+<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#7dd3fc"/>
+  <rect y="330" width="800" height="120" fill="#0369a1" opacity="0.35"/>
+  <circle cx="130" cy="100" r="24" fill="#fff" opacity="0.5"/>
+  <circle cx="660" cy="70" r="16" fill="#fff9f0" opacity="0.6"/>
+  <circle cx="230" cy="395" r="8" fill="#fff9f0" opacity="0.6"/>
+  <!-- Rødhai -->
+  <g transform="translate(400,235)">
+    <path d="M -230 5 Q -160 -60 30 -55 Q 200 -50 270 5 Q 200 60 30 65 Q -160 90 -230 5 Z" fill="#b98a6a" stroke="#2b2118" stroke-width="6"/>
+    <path d="M 270 5 L 330 -45 L 305 5 L 330 55 Z" fill="#b98a6a" stroke="#2b2118" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M -10 -55 Q 30 -105 75 -80 Q 45 -60 20 -45 Z" fill="#a67954" stroke="#2b2118" stroke-width="5"/>
+    <path d="M -140 60 Q -110 90 -70 75 Q -100 55 -120 45 Z" fill="#a67954" stroke="#2b2118" stroke-width="5"/>
+    <ellipse cx="-155" cy="-3" rx="15" ry="16" fill="#fff9f0" stroke="#2b2118" stroke-width="5"/>
+    <circle cx="-151" cy="-3" r="5.5" fill="#2b2118"/>
+    <path d="M -215 22 Q -222 36 -212 42" stroke="#2b2118" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <!-- flekker -->
+    <circle cx="-60" cy="-15" r="7" fill="#2b2118" opacity="0.55"/>
+    <circle cx="10" cy="-25" r="6" fill="#2b2118" opacity="0.55"/>
+    <circle cx="80" cy="-10" r="8" fill="#2b2118" opacity="0.55"/>
+    <circle cx="-20" cy="15" r="6" fill="#2b2118" opacity="0.55"/>
+    <circle cx="60" cy="25" r="7" fill="#2b2118" opacity="0.55"/>
+    <circle cx="140" cy="0" r="6" fill="#2b2118" opacity="0.55"/>
+    <circle cx="-100" cy="20" r="5" fill="#2b2118" opacity="0.55"/>
+  </g>
+  <text x="400" y="430" font-family="Nunito, sans-serif" font-weight="800" font-size="22" fill="#2b2118" text-anchor="middle" opacity="0.55">Midlertidig illustrasjon — byttes med foto fra akvariet</text>
+</svg>
