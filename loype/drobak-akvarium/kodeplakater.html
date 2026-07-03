@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="nb"><head><meta charset="UTF-8">
+<title>Kodeplakater — Fjordvokterne</title>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4 portrait; margin: 0; }
+  * { box-sizing: border-box; }
+  body { font-family: Nunito, sans-serif; margin: 0; }
+  .plakat {
+    width: 210mm; height: 297mm; page-break-after: always;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: #fff9f0; color: #2b2118; text-align: center; padding: 16mm;
+    position: relative; overflow: hidden;
+  }
+  .plakat:last-child { page-break-after: auto; }
+  .bolgekant {
+    position: absolute; top: 0; left: 0; right: 0; height: 14mm;
+    background: #7dd3fc;
+    -webkit-mask-image: radial-gradient(circle at 10mm 0mm, transparent 7mm, black 7.3mm);
+    mask-image: radial-gradient(circle at 10mm 0mm, transparent 7mm, black 7.3mm);
+    -webkit-mask-size: 20mm 14mm; mask-size: 20mm 14mm;
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+  }
+  .kortlogo { font-family: Chewy, cursive; font-size: 16px; color: #0369a1; margin-top: 20mm; opacity: 0.8; }
+  .tittel {
+    font-family: Chewy, cursive; font-size: 64px; line-height: 1.05;
+    margin: 10mm 0 12mm; color: #2b2118; max-width: 165mm;
+  }
+  .kodeboks {
+    background: #facc15; border: 4px solid #2b2118; border-radius: 20px;
+    box-shadow: 7px 7px 0 #2b2118; padding: 10mm 14mm; margin-bottom: 10mm;
+  }
+  .kode {
+    font-family: Chewy, cursive; font-size: 78px; letter-spacing: 14px;
+    color: #2b2118; line-height: 1;
+  }
+  .instruks { font-size: 19px; font-weight: 800; max-width: 130mm; line-height: 1.5; margin-bottom: 8mm; }
+  .instruks .fokus { color: #0369a1; }
+  .qr {
+    background: #fff9f0; border: 3px solid #2b2118; border-radius: 14px;
+    padding: 4mm; box-shadow: 4px 4px 0 #2b2118;
+  }
+  .qr img { display: block; width: 32mm; height: 32mm; }
+  .qrtekst { font-size: 13px; font-weight: 700; opacity: 0.65; margin-top: 3mm; }
+  .fot { margin-top: auto; padding-top: 10mm; font-weight: 800; opacity: 0.6; font-size: 14px; }
+  @media print {
+    .plakat { height: 100vh; }
+  }
+</style></head><body>
+<div class="plakat">
+  <div class="bolgekant"></div>
+  <div class="kortlogo">FJORDVOKTERNE</div>
+  <div class="tittel">Torsk</div>
+  <div class="kodeboks"><div class="kode">TOR</div></div>
+  <div class="instruks">Tast koden <span class="fokus">TOR</span> på mobilen i Fjordboka-appen for å møte meg og løse oppgaven!</div>
+  <div class="qr">
+    <img src="data:image/png;base64,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" alt="QR-kode til Fjordvokterne">
+  </div>
+  <div class="qrtekst">Ny på Fjordboka? Scan meg for å starte</div>
+  <div class="fot">Fjordvokterne · Drøbak Akvarium · LRNify</div>
+</div>
+<div class="plakat">
+  <div class="bolgekant"></div>
+  <div class="kortlogo">FJORDVOKTERNE</div>
+  <div class="tittel">Gråsteinbit</div>
+  <div class="kodeboks"><div class="kode">STE</div></div>
+  <div class="instruks">Tast koden <span class="fokus">STE</span> på mobilen i Fjordboka-appen for å møte meg og løse oppgaven!</div>
+  <div class="qr">
+    <img src="data:image/png;base64,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" alt="QR-kode til Fjordvokterne">
+  </div>
+  <div class="qrtekst">Ny på Fjordboka? Scan meg for å starte</div>
+  <div class="fot">Fjordvokterne · Drøbak Akvarium · LRNify</div>
+</div>
+<div class="plakat">
+  <div class="bolgekant"></div>
+  <div class="kortlogo">FJORDVOKTERNE</div>
+  <div class="tittel">Småflekket rødhai</div>
+  <div class="kodeboks"><div class="kode">HAI</div></div>
+  <div class="instruks">Tast koden <span class="fokus">HAI</span> på mobilen i Fjordboka-appen for å møte meg og løse oppgaven!</div>
+  <div class="qr">
+    <img src="data:image/png;base64,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" alt="QR-kode til Fjordvokterne">
+  </div>
+  <div class="qrtekst">Ny på Fjordboka? Scan meg for å starte</div>
+  <div class="fot">Fjordvokterne · Drøbak Akvarium · LRNify</div>
+</div>
+<div class="plakat">
+  <div class="bolgekant"></div>
+  <div class="kortlogo">FJORDVOKTERNE</div>
+  <div class="tittel">Taskekrabbe</div>
+  <div class="kodeboks"><div class="kode">KRA</div></div>
+  <div class="instruks">Tast koden <span class="fokus">KRA</span> på mobilen i Fjordboka-appen for å møte meg og løse oppgaven!</div>
+  <div class="qr">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATYAAAE2CAIAAABk3in+AAAF2ElEQVR4nO3dPW6dNxBA0SjwYlxk/ytJ4WWoVaW0SRE+wPSIl5/PaQW9/ws2g+Hb58f7H0DVn6dfALAiUUiTKKRJFNIkCmkShTSJQppEIU2ikPZt/ee/vn//mtfxZf7+8eOn/3f9acw98pxTr/nGz2rO+tNwikKaRCFNopAmUUiTKKRJFNIkCmkShTSJQtqL6aK1nRmROc3pk+Ysztxndeq38bzfpFMU0iQKaRKFNIlCmkQhTaKQJlFIkyikSRTStqaL1p43ubJ2aqrpxr1Hp9z4m3SKQppEIU2ikCZRSJMopEkU0iQKaRKFNIlC2uB0Ef924yzOjfemPY9TFNIkCmkShTSJQppEIU2ikCZRSJMopEkU0kwXJczN4uw8sgmhAqcopEkU0iQKaRKFNIlCmkQhTaKQJlFIkyikDU4X3Thfsp6nufEdndL8JG/8Bp2ikCZRSJMopEkU0iQKaRKFNIlCmkQhTaKQtjVdtLPb5nnm5ml2thM973/XnvebdIpCmkQhTaKQJlFIkyikSRTSJAppEoU0iULa2+fH++nXcI1Tkytzd5/NuXFLUJNTFNIkCmkShTSJQppEIU2ikCZRSJMopEkU0l5MF53aMTM3T3NqUufG523uEDr1jk5xikKaRCFNopAmUUiTKKRJFNIkCmkShTSJQtrgdFFz08/a77YHaG5Oa+55105NvM09slMU0iQKaRKFNIlCmkQhTaKQJlFIkyikSRTSoruL5jRf8/P28czNpTVn2tZ2viOnKKRJFNIkCmkShTSJQppEIU2ikCZRSJMopH1b//l5m2BOPXLT3Ps9tW/peXNLTlFIkyikSRTSJAppEoU0iUKaRCFNopAmUUh7sbto7dQszqn7vE5p3l/WnMW58f26GQ0uJlFIkyikSRTSJAppEoU0iUKaRCFNopD2YndR856pNfNDX+PUPXFzmruanKKQJlFIkyikSRTSJAppEoU0iUKaRCFNopD2YnfRjdtrdpzaT3PjpE7zFrkbf7F2F8HFJAppEoU0iUKaRCFNopAmUUiTKKRJFNK2bkabMze50rzN7dRU09qNr3nt1HzYzjtyikKaRCFNopAmUUiTKKRJFNIkCmkShTSJQtoDb0bbec1z0yentuacmqa6cUtQk1MU0iQKaRKFNIlCmkQhTaKQJlFIkyikSRTSBncXzW2+ae4ushXpVzl1T1zzt+EUhTSJQppEIU2ikCZRSJMopEkU0iQKaRKFtK3dRac2wZzafNN83p1voblhaO3UvqW1uc/KKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmkvpovmJlfm3Lh/aM6pO9dOed436BSFNIlCmkQhTaKQJlFIkyikSRTSJAppEoW0FzejNe+Kaj7yjlPv98bPas6pz2rNKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmkvpot+N6cmSHZmcU7NAM3dqnbqcz51T9z6eZ2ikCZRSJMopEkU0iQKaRKFNIlCmkQhTaKQ9uJmtBs30KytJzlu3NbTnIiam9Q59X5PbTZyikKaRCFNopAmUUiTKKRJFNIkCmkShTSJQtqL6aK1uUmOHacmV+wQ+lXPu9bcIDXHKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmkvbka78SapG3f5zD3vnObs0Y7mtJxTFNIkCmkShTSJQppEIU2ikCZRSJMopEkU0rZ2Fz3P8yaETk2AndrGtPO/zX1LTlFIkyikSRTSJAppEoU0iUKaRCFNopAmUUgzXfQfN84P7WjO4qw1NwzNTUQ5RSFNopAmUUiTKKRJFNIkCmkShTSJQppEIW1wuqg5BTKneU/c88xtRdoxt/XKKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmlb00XNfTw75m7dmvvftblHnntVp5y6F2/NKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmlvnx/vp18D8L+copAmUUiTKKRJFNIkCmkShTSJQppEIU2ikPYPLxMTcpU3tA0AAAAASUVORK5CYII=" alt="QR-kode til Fjordvokterne">
+  </div>
+  <div class="qrtekst">Ny på Fjordboka? Scan meg for å starte</div>
+  <div class="fot">Fjordvokterne · Drøbak Akvarium · LRNify</div>
+</div>
+<div class="plakat">
+  <div class="bolgekant"></div>
+  <div class="kortlogo">FJORDVOKTERNE</div>
+  <div class="tittel">Hummer</div>
+  <div class="kodeboks"><div class="kode">HUM</div></div>
+  <div class="instruks">Tast koden <span class="fokus">HUM</span> på mobilen i Fjordboka-appen for å møte meg og løse oppgaven!</div>
+  <div class="qr">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAATYAAAE2CAIAAABk3in+AAAF2ElEQVR4nO3dPW6dNxBA0SjwYlxk/ytJ4WWoVaW0SRE+wPSIl5/PaQW9/ws2g+Hb58f7H0DVn6dfALAiUUiTKKRJFNIkCmkShTSJQppEIU2ikPZt/ee/vn//mtfxZf7+8eOn/3f9acw98pxTr/nGz2rO+tNwikKaRCFNopAmUUiTKKRJFNIkCmkShTSJQtqL6aK1nRmROc3pk+Ysztxndeq38bzfpFMU0iQKaRKFNIlCmkQhTaKQJlFIkyikSRTStqaL1p43ubJ2aqrpxr1Hp9z4m3SKQppEIU2ikCZRSJMopEkU0iQKaRKFNIlC2uB0Ef924yzOjfemPY9TFNIkCmkShTSJQppEIU2ikCZRSJMopEkU0kwXJczN4uw8sgmhAqcopEkU0iQKaRKFNIlCmkQhTaKQJlFIkyikDU4X3Thfsp6nufEdndL8JG/8Bp2ikCZRSJMopEkU0iQKaRKFNIlCmkQhTaKQtjVdtLPb5nnm5ml2thM973/XnvebdIpCmkQhTaKQJlFIkyikSRTSJAppEoU0iULa2+fH++nXcI1Tkytzd5/NuXFLUJNTFNIkCmkShTSJQppEIU2ikCZRSJMopEkU0l5MF53aMTM3T3NqUufG523uEDr1jk5xikKaRCFNopAmUUiTKKRJFNIkCmkShTSJQtrgdFFz08/a77YHaG5Oa+55105NvM09slMU0iQKaRKFNIlCmkQhTaKQJlFIkyikSRTSoruL5jRf8/P28czNpTVn2tZ2viOnKKRJFNIkCmkShTSJQppEIU2ikCZRSJMopH1b//l5m2BOPXLT3Ps9tW/peXNLTlFIkyikSRTSJAppEoU0iUKaRCFNopAmUUh7sbto7dQszqn7vE5p3l/WnMW58f26GQ0uJlFIkyikSRTSJAppEoU0iUKaRCFNopD2YndR856pNfNDX+PUPXFzmruanKKQJlFIkyikSRTSJAppEoU0iUKaRCFNopD2YnfRjdtrdpzaT3PjpE7zFrkbf7F2F8HFJAppEoU0iUKaRCFNopAmUUiTKKRJFNK2bkabMze50rzN7dRU09qNr3nt1HzYzjtyikKaRCFNopAmUUiTKKRJFNIkCmkShTSJQtoDb0bbec1z0yentuacmqa6cUtQk1MU0iQKaRKFNIlCmkQhTaKQJlFIkyikSRTSBncXzW2+ae4ushXpVzl1T1zzt+EUhTSJQppEIU2ikCZRSJMopEkU0iQKaRKFtK3dRac2wZzafNN83p1voblhaO3UvqW1uc/KKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmkvpovmJlfm3Lh/aM6pO9dOed436BSFNIlCmkQhTaKQJlFIkyikSRTSJAppEoW0FzejNe+Kaj7yjlPv98bPas6pz2rNKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmkvpot+N6cmSHZmcU7NAM3dqnbqcz51T9z6eZ2ikCZRSJMopEkU0iQKaRKFNIlCmkQhTaKQ9uJmtBs30KytJzlu3NbTnIiam9Q59X5PbTZyikKaRCFNopAmUUiTKKRJFNIkCmkShTSJQtqL6aK1uUmOHacmV+wQ+lXPu9bcIDXHKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmkvbka78SapG3f5zD3vnObs0Y7mtJxTFNIkCmkShTSJQppEIU2ikCZRSJMopEkU0rZ2Fz3P8yaETk2AndrGtPO/zX1LTlFIkyikSRTSJAppEoU0iUKaRCFNopAmUUgzXfQfN84P7WjO4qw1NwzNTUQ5RSFNopAmUUiTKKRJFNIkCmkShTSJQppEIW1wuqg5BTKneU/c88xtRdoxt/XKKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmlb00XNfTw75m7dmvvftblHnntVp5y6F2/NKQppEoU0iUKaRCFNopAmUUiTKKRJFNIkCmlvnx/vp18D8L+copAmUUiTKKRJFNIkCmkShTSJQppEIU2ikPYPLxMTcpU3tA0AAAAASUVORK5CYII=" alt="QR-kode til Fjordvokterne">
+  </div>
+  <div class="qrtekst">Ny på Fjordboka? Scan meg for å starte</div>
+  <div class="fot">Fjordvokterne · Drøbak Akvarium · LRNify</div>
+</div>
+</body></html>
