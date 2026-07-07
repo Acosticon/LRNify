@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VM 2026 Quiz - Resultater</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fff9f0;
+    --accent: #facc15;
+    --ink: #1a1a1a;
+    --green: #16a34a;
+    --green-bg: #dcfce7;
+    --grey-bg: #f0f0f0;
+    --grey-ink: #888;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Nunito', sans-serif;
+    padding: 24px 16px 60px;
+  }
+  h1 {
+    font-family: 'Chewy', cursive;
+    text-align: center;
+    font-size: 2.2rem;
+    margin: 0 0 4px;
+    letter-spacing: 0.5px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #555;
+    margin-bottom: 28px;
+    font-weight: 600;
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .card {
+    background: #fff;
+    border: 3px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+  .card h2 {
+    font-family: 'Chewy', cursive;
+    margin-top: 0;
+    font-size: 1.5rem;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+  }
+  .rank {
+    width: 28px;
+    font-weight: 800;
+    text-align: right;
+    color: #555;
+    flex-shrink: 0;
+  }
+  .bar-wrap {
+    flex: 1;
+    position: relative;
+    background: var(--grey-bg);
+    border: 2px solid var(--ink);
+    border-radius: 8px;
+    overflow: hidden;
+    height: 34px;
+  }
+  .bar {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    background: var(--accent);
+    border-right: 2px solid var(--ink);
+  }
+  .bar-label {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    padding: 0 10px;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .top1 .bar { background: #facc15; }
+  .top2 .bar { background: #fde68a; }
+  .top3 .bar { background: #fef3c7; }
+  .progress {
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #555;
+  }
+  .q-item {
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+  .q-item.pending {
+    background: var(--grey-bg);
+    opacity: 0.75;
+  }
+  .q-item.done {
+    background: var(--green-bg);
+  }
+  .q-text {
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+  .q-answer {
+    font-size: 0.85rem;
+    font-weight: 800;
+    white-space: nowrap;
+    text-align: right;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-left: 6px;
+  }
+  .badge.pending { background: var(--grey-ink); color: #fff; }
+  .badge.done { background: var(--green); color: #fff; }
+  .updated {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+    margin-top: 24px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>VM 2026 Quiz</h1>
+  <div class="subtitle">Foreløpige resultater</div>
+
+  <div class="card">
+    <h2>🏆 Topplista</h2>
+    <div id="leaderboard"></div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Spørsmålsoversikt</h2>
+    <div class="progress" id="progress"></div>
+    <div id="questions"></div>
+  </div>
+
+  <div class="updated">Sist oppdatert: 07.07.2026 07:42</div>
+</div>
+
+<script>
+const leaderboard = [{"navn": "Arvin Conradi", "poeng": 14}, {"navn": "Mathias \"Smultring\" Langaard", "poeng": 14}, {"navn": "El Jefe", "poeng": 14}, {"navn": "Njord Are", "poeng": 12}, {"navn": "Mathias Berge", "poeng": 12}, {"navn": "Mads Conradi", "poeng": 11}, {"navn": "Martin Moen", "poeng": 11}, {"navn": "Robin", "poeng": 11}, {"navn": "Jarle", "poeng": 10}, {"navn": "Julie", "poeng": 10}, {"navn": "Joachim E-H", "poeng": 10}, {"navn": "Nichlas André Furu Tunes", "poeng": 9}, {"navn": "Adrian", "poeng": 9}, {"navn": "ElToro", "poeng": 9}, {"navn": "Zippo", "poeng": 8}, {"navn": "Jonas Hagen", "poeng": 7}, {"navn": "Karsten", "poeng": 7}, {"navn": "Dons", "poeng": 6}, {"navn": "Brændmo", "poeng": 6}];
+const questions = [{"sporsmal": "Flest mål sluppet inn i en kamp (gruppespill)", "fasit": "7", "godkjent": "7", "avgjort": true}, {"sporsmal": "Antall kamper med mer enn 4,5 mål i gruppespillet", "fasit": "16", "godkjent": "15+", "avgjort": true}, {"sporsmal": "Hvilket lavest rangerte lag vinner en kamp?", "fasit": "Ghana", "godkjent": "Ghana, Annen", "avgjort": true}, {"sporsmal": "Lavest UEFA-rankede lag til å gå videre fra gruppespillet", "fasit": "Bosnia-Hercegovina", "godkjent": "Bosnia-Hercegovina", "avgjort": true}, {"sporsmal": "Høyest UEFA-rankede lag til å bli slått ut i gruppespillet", "fasit": "Tyrikia", "godkjent": "Tyrkia, Tyrikia", "avgjort": true}, {"sporsmal": "Norges plassering i gruppespillet", "fasit": "2", "godkjent": "2", "avgjort": true}, {"sporsmal": "Hvor mange poeng tar Norge i gruppespillet?", "fasit": "6", "godkjent": "6+", "avgjort": true}, {"sporsmal": "Totalt antall mål i gruppespillet", "fasit": "215", "godkjent": "201-250, 215", "avgjort": true}, {"sporsmal": "Hvor mange lag ender gruppespillet med null scorede mål?", "fasit": "1 - Panama", "godkjent": "1, 1 - Panama", "avgjort": true}, {"sporsmal": "Antall selvmål i gruppespillet", "fasit": "12", "godkjent": "Flere enn 2, 12", "avgjort": true}, {"sporsmal": "Topplag gruppe A-D: Hvor mange av disse vinner gruppen sin: Mexico, Sveits, Brasil, USA?", "fasit": "4", "godkjent": "4", "avgjort": true}, {"sporsmal": "Topplag gruppe A-D: Hvor mange av disse vinner gruppen sin: Tyskland, Nederland, Belgia, Spania?", "fasit": "4", "godkjent": "4", "avgjort": true}, {"sporsmal": "Topplag gruppe A-D: Hvor mange av disse vinner gruppen sin: Frankrike, Argentina, Portugal, England?", "fasit": "3", "godkjent": "3", "avgjort": true}, {"sporsmal": "Underdogs, gruppe A-D: Hvor mange går videre av Sør-Afrika, Bosnia-Hercegovina, Haiti, Paraguay?", "fasit": "3", "godkjent": "3", "avgjort": true}, {"sporsmal": "Underdogs, gruppe E-H: Hvor mange går videre av Curaçao, Tunisia, New Zealand, Kapp Verde?", "fasit": "1", "godkjent": "1", "avgjort": true}, {"sporsmal": "Underdogs, gruppe I-L: Hvor mange går videre av Irak, Jordan, DR Kongo, Ghana?", "fasit": "2", "godkjent": "2", "avgjort": true}, {"sporsmal": "Beste Vertsnasjon?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvilket europeisk lag kommer lengst i VM?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvilket afrikansk lag kommer lengst i VM?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvilket amerikansk lag kommer lengst i VM? (nord+sør, men utenom vertslandene!)", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvilket asiatisk lag kommer lengst i VM? (Inkludert oseania)", "fasit": "Australia og Japan", "godkjent": "Australia, Japan, Australia og Japan", "avgjort": true}, {"sporsmal": "Største målforskjell i en sluttspillskamp?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Havner England i en straffekonkurranse?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Antall kamper som står 0-0 ved full tid i sluttspillet?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Antall straffekonkurranser i VM?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Kommer minst én av Spania og Brasil til semifinale?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Kommer minst én av Frankrike og Argentina til semifinale?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Kommer minst én av England og Portugal til semifinale?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Kommer minst én av Tyskland og Nederland til semifinale?", "fasit": "Nei", "godkjent": "Nei", "avgjort": true}, {"sporsmal": "Hvem blir toppscorer?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvem får flest assists?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvem blir beste keeper?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvem blir beste unge spiller?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvilken av spiller får flest kort?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Totalt antall mål i VM", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvilket lag scorer flest mål i turneringen?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvilket lag holder flest clean sheets (fulltid)?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvem vinner VM?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvem får flest spilleminutter av Messi og Ronaldo?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Blir Norge involvert i straffesparkkonkurranse?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Antall mål toppscoreren ender på", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Totalt antall direkte røde kort", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Totalt antall gule kort over/under 200?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Totalt antall straffer dømt", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Totalt antall straffesparkkonkurranser", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Antall selvmål i løpet av VM?", "fasit": "7 eller flere", "godkjent": "7 eller flere", "avgjort": true}, {"sporsmal": "Største antall gule kort i én kamp? Over/under 11,5", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvem blir toppscorer blant spillere som er 21 år eller yngre ved turneringsstart?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvor mange mål scorer Norge totalt?", "fasit": "9+", "godkjent": "9+", "avgjort": true}, {"sporsmal": "Hvor mange mål slipper Norge inn totalt?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Vinner Norge-Irak?", "fasit": "Norge", "godkjent": "Norge", "avgjort": true}, {"sporsmal": "Vinner Norge-Senegal?", "fasit": "Norge", "godkjent": "Norge", "avgjort": true}, {"sporsmal": "Vinner Norge-Frankrike?", "fasit": "Frankrike", "godkjent": "Frankrike", "avgjort": true}, {"sporsmal": "Norges plassering i VM Skriv inn svar", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvem får Norges første gule kort?", "fasit": "Patrick Berg", "godkjent": "Patrick Berg", "avgjort": true}, {"sporsmal": "Får Norge rødt kort i løpet av VM?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Blir minst én kamp avbrutt midlertidig på grunn av vær?", "fasit": "Ja", "godkjent": "Ja", "avgjort": true}, {"sporsmal": "Høyeste offisielle temperatur ved kampstart", "fasit": "Over 37", "godkjent": "Over 37", "avgjort": true}, {"sporsmal": "Hvor langt kommer Norge?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvor mange gule kort får Ryerson?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Starter Ødegaard alle kampene?", "fasit": "Nei", "godkjent": "Nei", "avgjort": false}, {"sporsmal": "Hvor mange kamper får Thelo Aasgaard spille?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Får Solbakken gult kort?", "fasit": "", "godkjent": "", "avgjort": false}, {"sporsmal": "Hvem scorer Norges første mål?", "fasit": "Haaland", "godkjent": "Haaland", "avgjort": true}, {"sporsmal": "Hvor mange mål scorer Haaland totalt?", "fasit": "5+", "godkjent": "5+", "avgjort": true}, {"sporsmal": "Lengste distanse løpt i finalen av en spiller.", "fasit": "", "godkjent": "", "avgjort": false}];
+const maxScore = 14;
+
+const lbEl = document.getElementById('leaderboard');
+leaderboard.forEach((p, i) => {
+  const pct = Math.max(6, Math.round((p.poeng / maxScore) * 100));
+  const row = document.createElement('div');
+  row.className = 'row' + (i < 3 ? ' top' + (i + 1) : '');
+  row.innerHTML = `
+    <div class="rank">${i + 1}.</div>
+    <div class="bar-wrap">
+      <div class="bar" style="width:${pct}%"></div>
+      <div class="bar-label">
+        <span>${p.navn}</span>
+        <span>${p.poeng} p</span>
+      </div>
+    </div>`;
+  lbEl.appendChild(row);
+});
+
+const done = questions.filter(q => q.avgjort).length;
+document.getElementById('progress').textContent =
+  `${done} av ${questions.length} spørsmål avgjort`;
+
+const qEl = document.getElementById('questions');
+questions.forEach(q => {
+  const item = document.createElement('div');
+  item.className = 'q-item ' + (q.avgjort ? 'done' : 'pending');
+  const answerHtml = q.avgjort
+    ? `${q.fasit} <span class="badge done">AVGJORT</span>`
+    : `<span class="badge pending">VENTER</span>`;
+  item.innerHTML = `
+    <div class="q-text">${q.sporsmal}</div>
+    <div class="q-answer">${answerHtml}</div>`;
+  qEl.appendChild(item);
+});
+</script>
+</body>
+</html>
