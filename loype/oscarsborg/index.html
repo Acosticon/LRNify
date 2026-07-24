@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>04:21 — Natten ved Oscarsborg</title>
+<meta name="description" content="Prototype: en stedbasert tidsreise til natten 9. april 1940 ved Oscarsborg festning.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Stardos+Stencil:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --night:#0b0f14; --night2:#121821; --steel:#1b2530;
+  --ink:#e8e2d0; --dim:#9aa4ad; --dimmer:#5c6672;
+  --amber:#f0b429; --amber-deep:#b57e10; --amber-soft:#f6d47a;
+  --blood:#8f2d1f; --oil:#141a12;
+  --paper-no:#e9e1c9; --paper-no-ink:#26221a;
+  --paper-de:#d9d2bd; --paper-de-ink:#221f16;
+  --stamp:#8f2d1f;
+  --line:1px solid #2a3644;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'Special Elite','Courier New',monospace;
+  background:var(--night);color:var(--ink);
+  font-size:17px;line-height:1.6;min-height:100vh;min-height:100dvh;
+  overflow-x:hidden;
+}
+/* Atmosfære: vignett, skanline, drivende tåke */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;
+  background:radial-gradient(120% 90% at 50% 40%, transparent 45%, rgba(0,0,0,.55) 100%);}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:61;opacity:.35;
+  background:repeating-linear-gradient(to bottom, transparent 0 2px, rgba(0,0,0,.25) 2px 3px);}
+.fog{position:fixed;inset:-20%;pointer-events:none;z-index:59;opacity:.10;
+  background:radial-gradient(40% 30% at 20% 30%, #fff 0, transparent 60%),
+             radial-gradient(50% 40% at 80% 60%, #fff 0, transparent 60%),
+             radial-gradient(40% 30% at 50% 90%, #fff 0, transparent 60%);
+  animation:drift 34s linear infinite;}
+@keyframes drift{0%{transform:translate(0,0)}50%{transform:translate(-4%,2%)}100%{transform:translate(0,0)}}
+
+#app{max-width:600px;margin:0 auto;display:flex;flex-direction:column;min-height:100dvh;position:relative;z-index:1;
+  padding:calc(8px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+          calc(28px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left))}
+
+/* HUD */
+.hud{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  border-bottom:var(--line);padding:8px 2px 10px;margin-bottom:14px;font-size:.8rem;
+  letter-spacing:.06em;color:var(--dim);text-transform:uppercase}
+.hud .klokke{color:var(--amber);font-weight:700;font-size:.95rem;letter-spacing:.14em}
+.hud .sted{flex:1;text-align:center;color:var(--dimmer);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hud .lyd{cursor:pointer;color:var(--dimmer);border:var(--line);border-radius:4px;padding:2px 7px;background:transparent;font-family:inherit;font-size:.72rem}
+.hud .lyd.på{color:var(--amber);border-color:var(--amber-deep)}
+
+h1,h2,h3,.stencil{font-family:'Stardos Stencil','Special Elite',monospace}
+h1{font-size:2.5rem;letter-spacing:.06em;line-height:1;color:var(--amber);text-shadow:0 2px 0 #000}
+h2{font-size:1.35rem;letter-spacing:.04em;margin-bottom:6px}
+.klokkeslett{font-family:'Stardos Stencil',monospace;color:var(--amber);letter-spacing:.1em}
+
+.wrap{flex:1;display:flex;flex-direction:column;justify-content:center;animation:fade .5s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* Signallampe-boks / telegram */
+.tele{border:1px solid var(--dimmer);background:linear-gradient(180deg,#0e141b,#0a0e13);
+  border-radius:4px;padding:16px 16px 18px;margin-bottom:14px;position:relative}
+.tele::before{content:'';position:absolute;inset:5px;border:1px dashed #2c3947;border-radius:3px;pointer-events:none;opacity:.5}
+.tele .hode{font-size:.72rem;letter-spacing:.18em;color:var(--dimmer);text-transform:uppercase;
+  border-bottom:1px solid #24303c;padding-bottom:8px;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px}
+.tele p{margin:0 0 .7em}
+.tele p:last-child{margin-bottom:0}
+.stamp{display:inline-block;transform:rotate(-6deg);border:3px solid var(--stamp);color:var(--stamp);
+  font-family:'Stardos Stencil',monospace;font-weight:700;letter-spacing:.12em;padding:3px 12px;border-radius:3px;
+  opacity:.85;font-size:.9rem;text-transform:uppercase}
+
+/* Dagbok-fragmenter */
+.dagbok{border-radius:3px;padding:18px 18px 16px;margin:16px 0;position:relative;box-shadow:0 10px 26px rgba(0,0,0,.5);
+  transform:rotate(-.6deg)}
+.dagbok.no{background:var(--paper-no);color:var(--paper-no-ink);transform:rotate(.5deg)}
+.dagbok.de{background:var(--paper-de);color:var(--paper-de-ink);
+  background-image:repeating-linear-gradient(180deg, rgba(0,0,0,.045) 0 27px, rgba(0,0,0,0) 27px 28px)}
+.dagbok .kilde{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;opacity:.7;
+  border-bottom:1px solid rgba(0,0,0,.25);padding-bottom:6px;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px}
+.dagbok .orig{font-style:italic;opacity:.9;margin-bottom:.5em}
+.dagbok .oversatt{}
+.dagbok .flagg{font-size:.68rem;letter-spacing:.05em;opacity:.55;margin-top:12px;text-transform:uppercase}
+
+/* Knapper */
+.knapp{display:block;width:100%;font-family:'Stardos Stencil',monospace;font-size:1.05rem;letter-spacing:.08em;
+  padding:14px 16px;min-height:52px;background:transparent;border:1px solid var(--amber-deep);
+  color:var(--amber);border-radius:3px;cursor:pointer;text-align:center;text-transform:uppercase;
+  transition:background .12s,color .12s;margin-top:10px}
+.knapp:hover{background:var(--amber);color:#0b0f14}
+.knapp.sek{border-color:var(--dimmer);color:var(--dim)}
+.knapp.sek:hover{background:var(--steel);color:var(--ink)}
+.knapp:disabled{opacity:.3;cursor:default}
+.knapp.full{background:var(--amber);color:#0b0f14;border-color:var(--amber)}
+
+.valg{display:grid;gap:10px;margin-top:6px}
+.valg .knapp{margin-top:0;text-transform:none;font-family:'Special Elite',monospace;font-size:1rem;letter-spacing:0;text-align:left}
+.valg .knapp.riktig{background:#2b5a2e;border-color:#3c7a40;color:#eaf6ea}
+.valg .knapp.feil{background:#4a2420;border-color:var(--blood);color:#f3d9d3}
+
+.smaa{font-size:.82rem;color:var(--dim);letter-spacing:.03em}
+.senter{text-align:center}
+.mrgn{height:8px}
+.hint{font-size:.82rem;color:var(--dimmer);text-align:center;margin-top:10px;min-height:1.2em;letter-spacing:.05em}
+
+/* Signallampe */
+.lampe-scene{display:flex;flex-direction:column;align-items:center;gap:14px;margin:10px 0 6px}
+.lampe{width:96px;height:96px;border-radius:50%;background:#0a0e12;border:3px solid #2a3644;
+  box-shadow:inset 0 0 20px #000;transition:none;display:grid;place-items:center;position:relative}
+.lampe .glass{width:64px;height:64px;border-radius:50%;background:#0c1116;transition:none}
+.lampe.on{border-color:var(--amber)}
+.lampe.on .glass{background:radial-gradient(circle at 40% 35%,#fff6dd,#f0b429 55%,#8a5c07);
+  box-shadow:0 0 34px 12px rgba(240,180,41,.55)}
+.mtekst{font-family:'Stardos Stencil',monospace;letter-spacing:.5em;color:var(--amber-soft);
+  min-height:1.4em;font-size:1.2rem}
+
+/* Fyringssekvens */
+.kanoner{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 4px}
+.kanon{border:1px solid #2a3644;border-radius:4px;padding:12px;background:#0d131a;text-align:center}
+.kanon .navn{font-family:'Stardos Stencil',monospace;letter-spacing:.1em;color:var(--amber-soft);font-size:1.05rem;margin-bottom:8px}
+.steg{display:flex;gap:6px;justify-content:center}
+.steg button{flex:1;font-family:'Stardos Stencil',monospace;font-size:.78rem;letter-spacing:.04em;
+  padding:9px 2px;border:1px solid var(--dimmer);background:transparent;color:var(--dim);border-radius:3px;cursor:pointer;text-transform:uppercase}
+.steg button.klar{border-color:#3c7a40;color:#8fd694}
+.steg button.na{border-color:var(--amber);color:var(--amber);animation:puls 1s ease-in-out infinite}
+.steg button:disabled{opacity:.35;cursor:default}
+@keyframes puls{50%{background:rgba(240,180,41,.14)}}
+.kanon.ferdig{border-color:#3c7a40;background:#13201400}
+
+.boom{animation:shake .5s}
+@keyframes shake{0%,100%{transform:none}20%{transform:translate(-3px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-2px,-3px)}80%{transform:translate(2px,3px)}}
+.flash{position:fixed;inset:0;background:#fff;z-index:70;pointer-events:none;opacity:0}
+.flash.go{animation:fl .6s ease}
+@keyframes fl{0%{opacity:.85}100%{opacity:0}}
+
+/* Progresjon i natta */
+.tidslinje{display:flex;align-items:center;gap:6px;margin:2px 0 12px;font-size:.68rem;color:var(--dimmer);letter-spacing:.08em}
+.tidslinje .prikk{width:8px;height:8px;border-radius:50%;background:#2a3644;flex:0 0 auto}
+.tidslinje .prikk.på{background:var(--amber)}
+.tidslinje .strek{flex:1;height:1px;background:#2a3644}
+
+.omnote{border:1px dashed var(--dimmer);border-radius:4px;padding:12px 14px;margin-top:16px;color:var(--dim);font-size:.8rem;line-height:1.55}
+.omnote b{color:var(--amber-soft)}
+a{color:var(--amber-soft)}
+.faktaboks{border-left:3px solid var(--amber-deep);padding:4px 0 4px 14px;margin:14px 0;color:var(--dim);font-size:.9rem}
+</style>
+</head>
+<body>
+<div class="fog"></div>
+<div class="flash" id="flash"></div>
+<div id="app">
+  <div class="hud">
+    <span class="klokke" id="klokke">23:57</span>
+    <span class="sted" id="sted">Kaholmen · vaktrom</span>
+    <button class="lyd" id="lydknapp" aria-pressed="false">Lyd av</button>
+  </div>
+  <div class="wrap" id="wrap"></div>
+</div>
+
+<script>
+"use strict";
+/* ------------------------------------------------------------------ *
+ * 04:21 — Natten ved Oscarsborg  ·  PROTOTYPE
+ * Stedbasert tidsreise, 9. april 1940. Bygget på LRNify-loype-mønsteret.
+ * Dagbok-tekst fra "Blücher" er dramatisert plassholder — ekte utdrag
+ * skal komme fra museets salvagede materiale.
+ * ------------------------------------------------------------------ */
+
+var wrap   = document.getElementById('wrap');
+var klokke = document.getElementById('klokke');
+var stedEl = document.getElementById('sted');
+
+/* ---------- Lyd (valgfritt, av som standard) ---------- */
+var lydPå = false, actx = null;
+var lydknapp = document.getElementById('lydknapp');
+lydknapp.addEventListener('click', function(){
+  lydPå = !lydPå;
+  if(lydPå && !actx){ try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){ actx=null; } }
+  if(actx && actx.state==='suspended') actx.resume();
+  lydknapp.textContent = lydPå ? 'Lyd på' : 'Lyd av';
+  lydknapp.classList.toggle('på', lydPå);
+  lydknapp.setAttribute('aria-pressed', lydPå?'true':'false');
+});
+function tone(freq, dur, type, vol){
+  if(!lydPå || !actx) return;
+  var o=actx.createOscillator(), g=actx.createGain();
+  o.type=type||'sine'; o.frequency.value=freq;
+  g.gain.value=0.0001; o.connect(g); g.connect(actx.destination);
+  var t=actx.currentTime;
+  g.gain.exponentialRampToValueAtTime(vol||0.15, t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t+dur);
+  o.start(t); o.stop(t+dur+0.02);
+}
+function boomLyd(){
+  if(!lydPå||!actx) return;
+  var o=actx.createOscillator(), g=actx.createGain();
+  o.type='sawtooth'; o.frequency.setValueAtTime(90,actx.currentTime);
+  o.frequency.exponentialRampToValueAtTime(30,actx.currentTime+0.5);
+  g.gain.setValueAtTime(0.4,actx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001,actx.currentTime+0.7);
+  o.connect(g); g.connect(actx.destination); o.start(); o.stop(actx.currentTime+0.75);
+}
+
+/* ---------- HUD-hjelpere ---------- */
+function settKlokke(t){ klokke.textContent = t; }
+function settSted(s){ stedEl.textContent = s; }
+function flash(){ var f=document.getElementById('flash'); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
+
+function tidslinje(steg){ // steg 0..4
+  var d='<div class="tidslinje"><span>NATT</span>';
+  for(var i=0;i<5;i++){
+    d+='<span class="prikk'+(i<=steg?' på':'')+'"></span>';
+    if(i<4) d+='<span class="strek"></span>';
+  }
+  d+='<span>04:21</span></div>';
+  return d;
+}
+
+function vis(html){ wrap.innerHTML = html; wrap.scrollTop=0; window.scrollTo(0,0); }
+
+/* ================================================================== *
+ *  SKJERMER
+ * ================================================================== */
+
+/* ---------- 0. Boot / tidsmaskin ---------- */
+function scene_boot(){
+  settKlokke('––:––'); settSted('Oscarsborg festning · museum');
+  vis(
+    '<div class="senter">'
+    + '<div class="smaa" style="letter-spacing:.3em;margin-bottom:18px">OSCARSBORG FESTNING</div>'
+    + '<h1 style="font-size:2rem;color:var(--ink)">Museum</h1>'
+    + '<div class="mrgn"></div>'
+    + '<p class="smaa">Du står på Kaholmen. Under føttene dine er stein som har ligget her siden 1850-tallet. '
+    + 'Ute i sundet, 200 meter unna, sank en tysk krysser natten 9. april 1940.</p>'
+    + '<div class="mrgn"></div><div class="mrgn"></div>'
+    + '<button class="knapp full" id="start">▸ Skru klokka tilbake</button>'
+    + '<div class="hint">Prototype · slå på lyd oppe til høyre for full effekt</div>'
+    + '</div>'
+  );
+  document.getElementById('start').addEventListener('click', scene_glitch);
+}
+
+function scene_glitch(){
+  var linjer = [
+    ['9. april 2026', 'Museet er stille. Du holder telefonen opp.'],
+    ['…', 'Skjermen flimrer.'],
+    ['1990', 'Dykkere finner et vrak på 90 meters dyp.'],
+    ['1945', 'Krigen er slutt.'],
+    ['9. april 1940 · 04:21', 'Det smeller.'],
+    ['8. april 1940 · 23:57', 'Tåke. Blikkstille. Du er 17 år, og du er på vakt.']
+  ];
+  var i=0;
+  vis('<div class="senter"><div class="klokkeslett" id="gl-t" style="font-size:1.6rem;min-height:2rem"></div>'
+     +'<div class="mrgn"></div><p id="gl-b" style="min-height:3em"></p></div>');
+  var tEl=document.getElementById('gl-t'), bEl=document.getElementById('gl-b');
+  function neste(){
+    if(i>=linjer.length){ scene_intro(); return; }
+    tEl.textContent=linjer[i][0]; bEl.textContent=linjer[i][1];
+    tEl.style.opacity=0; bEl.style.opacity=0;
+    tEl.animate([{opacity:0},{opacity:1}],{duration:400,fill:'forwards'});
+    bEl.animate([{opacity:0},{opacity:1}],{duration:600,fill:'forwards',delay:150});
+    tone(180+i*40,0.08,'square',0.05);
+    i++;
+    setTimeout(neste, i===linjer.length ? 2300 : 1250);
+  }
+  neste();
+}
+
+/* ---------- 1. Intro ---------- */
+function scene_intro(){
+  settKlokke('23:57'); settSted('Kaholmen · signalvakta');
+  vis(
+    tidslinje(0)
+    + '<div class="tele"><div class="hode"><span>FELTLOGG</span><span>8. APRIL · 23:57</span></div>'
+    + '<p>Du heter <b>Kåre</b>. Signalgast, menig, 17 år. Innkalt for tre uker siden. '
+    + 'Du har avfyrt et gevær nøyaktig én gang.</p>'
+    + '<p>Festningen er halvt bemannet. Rekrutter som deg, og gamle karer som ble kalt tilbake. '
+    + 'Tre svære kanoner fra 1890-tallet — <i>Moses, Aron</i> og <i>Josva</i> — men bare folk nok til å skyte med to.</p>'
+    + '<p>Nå kommer det melding om ukjente skip sørfra, opp Drøbaksundet. Med slukte lys.</p></div>'
+
+    + '<div class="dagbok de"><div class="kilde"><span>Aus einem Tagebuch · «Blücher»</span><span>08.04 · 23:57</span></div>'
+    + '<p class="orig">«Morgen sind wir in Oslo. Der Krieg dauert nur ein paar Tage, sagen sie.»</p>'
+    + '<p class="oversatt">«I morgen er vi i Oslo. Krigen varer bare noen dager, sier de. Jeg er 18. '
+    + 'Jeg har aldri vært utenfor Bremen før.» — <b>Rolf</b>, matros.</p>'
+    + '<p class="flagg">⚑ Gjenskapt tekst · ekte dagbokutdrag kommer fra museet</p></div>'
+
+    + '<p class="smaa senter">To gutter på nesten samme alder. I natt lever du timene hans samtidig som dine egne.</p>'
+    + '<button class="knapp" id="v">▸ Ut i tåka</button>'
+  );
+  document.getElementById('v').addEventListener('click', scene_signal);
+}
+
+/* ---------- 2. Signalstasjonen — morse ---------- */
+var MORSE = {A:'.-',B:'-...',C:'-.-.',D:'-..',E:'.',F:'..-.',G:'--.',H:'....',I:'..',J:'.---',
+  K:'-.-',L:'.-..',M:'--',N:'-.',O:'---',P:'.--.',Q:'--.-',R:'.-.',S:'...',T:'-',U:'..-',
+  V:'...-',W:'.--',X:'-..-',Y:'-.--',Z:'--..'};
+
+function scene_signal(){
+  settKlokke('00:38'); settSted('Kaholmen · signalstasjonen');
+  var ord='OKV'; // ukjent gjenkjenningssignal
+  vis(
+    tidslinje(1)
+    + '<h2 class="klokkeslett">00:38 · Signalstasjonen</h2>'
+    + '<p class="smaa">Vaktbåten <i>Pol III</i> praier de ukjente skipene ute i mørket. '
+    + 'De svarer med blinklys. Ingen tenner lanterner. Du må lese blinken.</p>'
+    + '<div class="lampe-scene">'
+    +   '<div class="lampe" id="lampe"><div class="glass"></div></div>'
+    +   '<div class="mtekst" id="mtekst"></div>'
+    +   '<button class="knapp sek" id="blink" style="width:auto;padding:10px 22px;margin-top:0">◐ Les blinken</button>'
+    + '</div>'
+    + '<p class="smaa senter">Hvilke bokstaver blinket lampa?</p>'
+    + '<div class="valg" id="valg">'
+    +   '<button class="knapp" data-r="1">O–K–V &nbsp; <span class="smaa">(ukjent kode)</span></button>'
+    +   '<button class="knapp" data-r="0">S–O–S</button>'
+    +   '<button class="knapp" data-r="0">N–O–R</button>'
+    + '</div>'
+    + '<div class="hint" id="hint">Trykk «Les blinken» — se etter korte blink (·) og lange (—).</div>'
+  );
+
+  var lampe=document.getElementById('lampe'), mtekst=document.getElementById('mtekst');
+  var spiller=false;
+  document.getElementById('blink').addEventListener('click', function(){ if(!spiller) blinkOrd(ord); });
+
+  function blinkOrd(o){
+    spiller=true; mtekst.textContent='';
+    var seq=[], j;
+    for(var k=0;k<o.length;k++){
+      var m=MORSE[o[k]];
+      for(j=0;j<m.length;j++){ seq.push(m[j]==='.'?['on',180]:['on',520]); seq.push(['off',180]); }
+      seq.push(['off',560]); // mellomrom mellom bokstaver
+    }
+    var idx=0;
+    (function step(){
+      if(idx>=seq.length){ spiller=false; return; }
+      var s=seq[idx++];
+      if(s[0]==='on'){ lampe.classList.add('on'); tone(620, s[1]/1000, 'sine', 0.18); }
+      else lampe.classList.remove('on');
+      setTimeout(step, s[1]);
+    })();
+  }
+
+  document.getElementById('valg').addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var alle=this.querySelectorAll('button');
+    if(b.dataset.r==='1'){
+      b.classList.add('riktig'); alle.forEach(function(x){x.disabled=true;});
+      document.getElementById('hint').innerHTML='<span style="color:var(--amber-soft)">Ukjent kode. Dette er ingen norske skip.</span>';
+      setTimeout(scene_diary1, 1200);
+    } else {
+      b.classList.add('feil'); b.disabled=true;
+      document.getElementById('hint').textContent='Nei — les blinken en gang til.';
+    }
+  });
+}
+
+/* ---------- 3. Dagbok-fragment + eskalering ---------- */
+function scene_diary1(){
+  settKlokke('03:00'); settSted('Drøbaksundet · mørket');
+  vis(
+    tidslinje(2)
+    + '<h2 class="klokkeslett">03:00 · Skipene glir nordover</h2>'
+    + '<div class="tele"><div class="hode"><span>ORDRE FRA KOMMANDANTEN</span><span>OBERST B. ERIKSEN</span></div>'
+    + '<p>Skipene svarer ikke på varselskudd. De fortsetter opp mot den smaleste delen av sundet — '
+    + 'rett forbi kanonene dine.</p>'
+    + '<p>Kommandanten er 65 år. Han har ingen ordre ovenfra. Telefonlinjene er stille. '
+    + 'Ingen har sagt at det er krig.</p>'
+    + '<p class="senter"><span class="stamp">Klar til strid</span></p></div>'
+
+    + '<div class="dagbok de"><div class="kilde"><span>Tagebuch · «Blücher»</span><span>03:00</span></div>'
+    + '<p class="orig">«Es ist so eng hier. Berge auf beiden Seiten. Alles dunkel. Warum schießt keiner?»</p>'
+    + '<p class="oversatt">«Det er så trangt her. Fjell på begge sider. Alt er mørkt. Hvorfor skyter ingen? '
+    + 'Kanskje slipper de oss forbi. Jeg tenker på mor.» — <b>Rolf</b>, 18</p>'
+    + '<p class="flagg">⚑ Gjenskapt tekst · ekte utdrag kommer fra museet</p></div>'
+
+    + '<p class="smaa senter">Rolf håper de slipper forbi. Du står ved lunta. Begge har rett — '
+    + 'i noen minutter til.</p>'
+    + '<button class="knapp" id="v">▸ Til hovedbatteriet</button>'
+  );
+  document.getElementById('v').addEventListener('click', scene_battery);
+}
+
+/* ---------- 4. Hovedbatteriet — fyringssekvens ---------- */
+function scene_battery(){
+  settKlokke('04:20'); settSted('Kaholmen · hovedbatteriet');
+  vis(
+    tidslinje(3)
+    + '<h2 class="klokkeslett">04:20 · Moses og Aron</h2>'
+    + '<p class="smaa">Krysseren er 500 meter unna. Bare to av de tre kanonene har mannskap. '
+    + 'Kommandanten sier det den natta blir sitert etterpå:</p>'
+    + '<div class="faktaboks">«Enten blir jeg dekorert — eller jeg blir stilt for krigsrett. Fyr!»</div>'
+    + '<p class="smaa senter">Gjør hver kanon klar i riktig rekkefølge: <b>LAD → SIKT → FYR</b>.</p>'
+    + '<div class="kanoner">'
+    +   kanonHTML('moses','Moses') + kanonHTML('aron','Aron')
+    + '</div>'
+    + '<div class="hint" id="hint">Klokka er 04:20. Om ett minutt er det for sent.</div>'
+  );
+
+  var rekke=['lad','sikt','fyr'], state={moses:0,aron:0}, ferdig=0;
+  wrap.querySelectorAll('.steg button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var kanon=btn.dataset.k, steg=btn.dataset.s;
+      if(rekke[state[kanon]]!==steg){ // feil rekkefølge
+        document.getElementById('hint').textContent='Feil rekkefølge — start med LAD.';
+        return;
+      }
+      btn.classList.remove('na'); btn.classList.add('klar'); btn.disabled=true;
+      state[kanon]++;
+      tone(300+state[kanon]*120,0.09,'square',0.12);
+      oppdaterNa(kanon, state, rekke);
+      if(state[kanon]===3){ fyr(kanon); ferdig++; if(ferdig===2) etterSkudd(); }
+    });
+  });
+  oppdaterNa('moses',state,rekke); oppdaterNa('aron',state,rekke);
+
+  function fyr(kanon){
+    var boks=document.querySelector('.kanon[data-k="'+kanon+'"]');
+    boks.classList.add('ferdig'); document.getElementById('app').classList.add('boom');
+    flash(); boomLyd(); settKlokke('04:21');
+    setTimeout(function(){ document.getElementById('app').classList.remove('boom'); },500);
+  }
+  function etterSkudd(){
+    settSted('Drøbaksundet · 04:21');
+    setTimeout(scene_torpedo, 1400);
+  }
+}
+function kanonHTML(k,navn){
+  return '<div class="kanon" data-k="'+k+'"><div class="navn">'+navn+'</div><div class="steg">'
+    + '<button data-k="'+k+'" data-s="lad">Lad</button>'
+    + '<button data-k="'+k+'" data-s="sikt">Sikt</button>'
+    + '<button data-k="'+k+'" data-s="fyr">Fyr</button></div></div>';
+}
+function oppdaterNa(kanon,state,rekke){
+  var boks=document.querySelector('.kanon[data-k="'+kanon+'"]');
+  boks.querySelectorAll('.steg button').forEach(function(b){ b.classList.remove('na'); });
+  if(state[kanon]<3){
+    var neste=rekke[state[kanon]];
+    var b=boks.querySelector('.steg button[data-s="'+neste+'"]');
+    if(b) b.classList.add('na');
+  }
+}
+
+/* ---------- 5. Torpedobatteriet ---------- */
+function scene_torpedo(){
+  settKlokke('04:34'); settSted('Nord-Kaholmen · torpedobatteriet');
+  vis(
+    tidslinje(4)
+    + '<h2 class="klokkeslett">04:34 · Det skjulte batteriet</h2>'
+    + '<p class="smaa">Granatene har satt krysseren i brann, men den driver videre. '
+    + 'Under vann, i fjellet, ligger et hemmelig torpedobatteri fra 1901. Gamle karer bemanner det.</p>'
+    + '<p class="smaa">To torpedoer går i sjøen. To treff.</p>'
+    + '<div class="tele senter"><div class="hode"><span>MELDING</span><span>04:34</span></div>'
+    + '<p><b>«Blücher»</b> er dødelig truffet. Den brenner midtskips. Den begynner å krenge.</p></div>'
+    + '<button class="knapp" id="v">▸ Opp til utsikten</button>'
+  );
+  document.getElementById('v').addEventListener('click', scene_overlook);
+}
+
+/* ---------- 6. Utsikten — avsløring og ettertanke ---------- */
+function scene_overlook(){
+  settKlokke('06:22'); settSted('Utsikten · mot Askholmene');
+  vis(
+    '<div class="tidslinje"><span>NATT</span>'
+    + '<span class="prikk på"></span><span class="strek"></span><span class="prikk på"></span>'
+    + '<span class="strek"></span><span class="prikk på"></span><span class="strek"></span>'
+    + '<span class="prikk på"></span><span class="strek"></span><span class="prikk på"></span>'
+    + '<span>DAGGRY</span></div>'
+    + '<h2 class="klokkeslett">06:22 · Krysseren kantrer</h2>'
+    + '<p class="smaa">Se ut i sundet. Akkurat her, foran deg, ruller <b>«Blücher»</b> rundt og går ned '
+    + 'med baugen først. Vann fullt av olje og brennende gutter.</p>'
+
+    + '<div class="dagbok de"><div class="kilde"><span>Siste side · «Blücher»</span><span>≈04:30</span></div>'
+    + '<p class="orig">«Feuer. Ich kann nicht —»</p>'
+    + '<p class="oversatt">«Brann. Jeg får ikke —»</p>'
+    + '<p class="flagg">Her stopper Rolfs dagbok. Han var 18 år.</p></div>'
+
+    + '<div class="dagbok no"><div class="kilde"><span>Kåres feltlogg · samme morgen</span><span>07:10</span></div>'
+    + '<p>«Folk fra gårdene ved Hallangen rodde ut i småbåter og dro tyske gutter opp av det iskalde '
+    + 'vannet. Fienden. De var på min alder. Jeg vet ikke hva jeg skal føle.»</p></div>'
+
+    + '<div class="faktaboks">De timene festningen kjøpte, rakk kong Haakon, regjeringen og gullbeholdningen '
+    + 'å komme seg ut av Oslo. Derfor måtte det gjøres. Og det kostet dette.</div>'
+
+    + '<p class="smaa senter">Det er ikke to lag lenger. Det er to gutter, og bare den ene av dem '
+    + 'skal hjem igjen.</p>'
+    + '<button class="knapp" id="v">▸ Fram til i dag</button>'
+  );
+  document.getElementById('v').addEventListener('click', scene_end);
+}
+
+/* ---------- 7. Slutt / til museet ---------- */
+function scene_end(){
+  settKlokke('––:––'); settSted('Oscarsborg · i dag');
+  vis(
+    '<div class="senter">'
+    + '<div class="smaa" style="letter-spacing:.3em">SLUTT PÅ NATTA</div>'
+    + '<h1 style="font-size:2.1rem;margin:10px 0">04:21</h1>'
+    + '<p class="smaa">Du står igjen på Kaholmen i 2026. Steinen er den samme. Sundet er stille. '
+    + 'Nå vet du hvorfor tallet 04:21 betyr noe.</p>'
+    + '</div>'
+    + '<div class="omnote">'
+    + '<b>Om denne prototypen</b><br>'
+    + 'Dette er en konsept-demo for en stedbasert tidsreise på Oscarsborg, laget for skoleklasser / ungdom. '
+    + 'Spilleren beveger seg fysisk mellom postene på øya (signalstasjon → hovedbatteri → torpedobatteri → utsikt) '
+    + 'og skanner en QR-kode på hver post.<br><br>'
+    + '<b>Viktig:</b> Dagbok-teksten fra «Blücher» er <b>dramatisert plassholder</b>. De ekte utdragene skal '
+    + 'komme fra museets salvagede materiale. Historiske detaljer (klokkeslett, navn, tapstall) er omtrentlige '
+    + 'og må kvalitetssikres mot museets kilder før publisering.<br><br>'
+    + 'Bygget på LRNify · loype-mønsteret (jf. Fjordvokterne, Drøbak Akvarium).'
+    + '</div>'
+    + '<button class="knapp sek" id="omigjen">↺ Spill natta på nytt</button>'
+  );
+  document.getElementById('omigjen').addEventListener('click', scene_boot);
+}
+
+/* start */
+scene_boot();
+</script>
+</body>
+</html>
