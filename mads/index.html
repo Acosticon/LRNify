@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mads – LRNify</title>
+<meta name="description" content="Mads sin side på LRNify – spill og verktøy under arbeid.">
+<link rel="canonical" href="https://lrnify.no/mads/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Mads – LRNify">
+<meta property="og:description" content="Mads sin side på LRNify – spill og verktøy under arbeid.">
+<meta property="og:url" content="https://lrnify.no/mads/">
+<meta property="og:locale" content="nb_NO">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fff9f0;
+    --ink:#2b2118;
+    --yellow:#facc15;
+    --card:#ffffff;
+    --muted:#7a6f63;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    min-height:100%;
+    -webkit-tap-highlight-color:transparent;
+  }
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 24px;
+  }
+  .logo{
+    font-family:'Chewy',cursive;
+    font-size:clamp(2rem,6vw,3rem);
+    transform:rotate(-2deg);
+    line-height:1;
+    user-select:none;
+    text-decoration:none;
+    color:var(--ink);
+  }
+  .logo b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400;}
+  main{
+    max-width:960px;
+    margin:0 auto;
+    padding:24px 24px 64px;
+  }
+  h1{
+    font-family:'Chewy',cursive;
+    font-size:clamp(2.2rem,7vw,3.4rem);
+    font-weight:400;
+    line-height:1.1;
+    margin-bottom:12px;
+  }
+  .lead{
+    color:var(--muted);
+    font-size:1.1rem;
+    max-width:60ch;
+    margin-bottom:36px;
+  }
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+    gap:18px;
+  }
+  .card{
+    display:block;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:18px;
+    padding:20px;
+    text-decoration:none;
+    color:var(--ink);
+    box-shadow:4px 4px 0 var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .card:hover,.card:focus-visible{
+    transform:translate(-2px,-2px);
+    box-shadow:6px 6px 0 var(--ink);
+  }
+  .card h2{font-size:1.25rem;margin-bottom:6px;}
+  .card p{color:var(--muted);font-size:.95rem;}
+  .empty{
+    background:var(--card);
+    border:3px dashed var(--ink);
+    border-radius:18px;
+    padding:28px;
+    color:var(--muted);
+  }
+  .empty code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    background:var(--cream);
+    border:1px solid #e6dccb;
+    border-radius:6px;
+    padding:1px 6px;
+  }
+  footer{
+    max-width:960px;
+    margin:0 auto;
+    padding:0 24px 40px;
+    color:var(--muted);
+    font-size:.9rem;
+  }
+  footer a{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">LRN<b>ify</b></a>
+</header>
+
+<main>
+  <h1>Mads</h1>
+  <p class="lead">Her ligger spillene og verktøyene til Mads. Alt på denne siden hører til <code>/mads</code>-mappen.</p>
+
+  <!--
+    Legg til et kort per spill/verktøy. Mønster:
+
+    <a class="card" href="/mads/navn-pa-spill.html">
+      <h2>Navn på spill</h2>
+      <p>Kort beskrivelse.</p>
+    </a>
+  -->
+
+  <div class="grid">
+    <div class="empty">
+      Ingen spill lagt til ennå. Lag en HTML-fil i <code>mads/</code> og legg til et kort her.
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p><a href="/">← Tilbake til LRNify</a></p>
+</footer>
+
+</body>
+</html>
