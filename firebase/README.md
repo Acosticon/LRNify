@@ -81,6 +81,39 @@ uten at merket settes samtidig, og merket kan ikke fjernes etterpå.
 skrudd på, lages rom uten `owner`, og alt virker som i dag. Ingenting knekker
 av å publisere reglene først.
 
+## Fase 2: gjør `owner` obligatorisk
+
+Så lenge rom *kan* lages uten `owner`, kan de også slettes og styres av hvem
+som helst med romkoden. Det er med vilje — det er fallback-en som gjør at
+appene overlever uten anonym pålogging — men den bør stenges når alt annet er
+på plass.
+
+Rekkefølge (viktig — stenges den for tidlig, kan ingen lage rom i det hele
+tatt):
+
+1. Anonym pålogging er skrudd på i konsollen.
+2. Denne grenen er merget, så `lrnify.no` faktisk kjører koden som setter
+   `owner`.
+3. Kjør én ekte poll på to enheter og sjekk at stemmen kommer fram og at
+   samme enhet ikke får stemme to ganger.
+4. Ingen aktive rom fra gammel kode ligger igjen i databasen.
+
+Da kan `owner` legges til i `.validate` for begge rom-typene:
+
+```diff
+-".validate": "$room.matches(/^[A-Z0-9]{4,8}$/) && newData.hasChildren(['question', 'options', 'votes', 'open', 'createdAt'])",
++".validate": "$room.matches(/^[A-Z0-9]{4,8}$/) && newData.hasChildren(['question', 'options', 'votes', 'open', 'createdAt', 'owner'])",
+```
+
+```diff
+-".validate": "$room.matches(/^[A-Z0-9]{4,8}$/) && newData.hasChild('createdAt')",
++".validate": "$room.matches(/^[A-Z0-9]{4,8}$/) && newData.hasChildren(['createdAt', 'owner'])",
+```
+
+Fra da av er et rom uten eier umulig å lage, og hvert rom kan bare styres av
+nettleseren som lagde det. Prisen er at appene slutter å virke hvis anonym
+pålogging blir slått av igjen.
+
 ## Hva reglene tillater
 
 **Realtime Database**
