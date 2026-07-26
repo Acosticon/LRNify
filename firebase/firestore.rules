@@ -1,0 +1,27 @@
+rules_version = '2';
+
+// Firestore brukes bare av Fjordvokterne-veggen (loype/drobak-akvarium/).
+// Alt annet er stengt.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /fjordvoktere/{doc} {
+      // Veggen leses av alle som er inne på løypa.
+      allow read: if true;
+
+      // Nye innslag kan opprettes, men ikke endres eller slettes etterpå.
+      // Dokumentet er { lag: "Lagnavn", tid: 1732200000000 }.
+      allow create: if request.resource.data.keys().hasOnly(['lag', 'tid'])
+                    && request.resource.data.lag is string
+                    && request.resource.data.lag.size() > 0
+                    && request.resource.data.lag.size() <= 40
+                    && request.resource.data.tid is int
+                    && request.resource.data.tid <= request.time.toMillis() + 300000;
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -534,6 +534,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get, onValue, off, remove, push }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInAnonymously }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
@@ -546,6 +548,26 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
+
+/* Anonym pålogging: usynlig for elevene, ingen konto og ingen klikk.
+   Nettleseren får en tilfeldig id, og sikkerhetsreglene bruker den til å se
+   at det er læreren som lagde rommet som styrer terningen og avslutter.
+   Feiler den — eller er anonym pålogging ikke skrudd på i Firebase — går
+   alt som før, bare uten den ekstra beskyttelsen. */
+const auth = getAuth(app);
+let uid = null;
+let paalogging = null;
+function ensureAuth(){
+  if(uid) return Promise.resolve(uid);
+  // Bare én innlogging av gangen; feiler den, kan neste kall prøve på nytt.
+  if(!paalogging){
+    paalogging = signInAnonymously(auth)
+      .then(cred => (uid = cred.user.uid))
+      .catch(() => { paalogging = null; return null; });
+  }
+  return paalogging;
+}
+ensureAuth();
 
 /* ── SPILLDATA ── */
 const activities = {
@@ -626,7 +648,10 @@ function setPhase(phase) {
 window.createRoom = async () => {
   const code = makeCode();
   currentRoom = code;
-  await set(ref(db,`krle/${code}`),{state:{type:null},createdAt:Date.now()});
+  const rom = {state:{type:null},createdAt:Date.now()};
+  const owner = await ensureAuth();
+  if(owner) rom.owner = owner;
+  await set(ref(db,`krle/${code}`),rom);
   document.getElementById('topbarCode').textContent = code;
   document.getElementById('bigCode').textContent    = code;
   updateProgress();

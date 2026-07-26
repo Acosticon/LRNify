@@ -491,8 +491,10 @@
 <script type="module">
 import { initializeApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, off, remove }
+import { getDatabase, ref, set, get, update, onValue, off, remove }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInAnonymously }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
@@ -505,6 +507,26 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
+
+/* Anonym pålogging: helt usynlig for eleven, ingen konto og ingen klikk.
+   Nettleseren får en tilfeldig id som sikkerhetsreglene bruker til å se
+   forskjell på læreren (som lagde rommet) og elevene, og til å telle én
+   stemme per enhet. Slår den feil — eller er anonym pålogging ikke skrudd
+   på i Firebase — går alt som før, bare uten den ekstra beskyttelsen. */
+const auth = getAuth(app);
+let uid = null;
+let paalogging = null;
+function ensureAuth() {
+  if (uid) return Promise.resolve(uid);
+  // Bare én innlogging av gangen; feiler den, kan neste kall prøve på nytt.
+  if (!paalogging) {
+    paalogging = signInAnonymously(auth)
+      .then(cred => (uid = cred.user.uid))
+      .catch(() => { paalogging = null; return null; });
+  }
+  return paalogging;
+}
+ensureAuth();
 
 let currentRoom    = null;
 let currentListener = null;
@@ -538,11 +560,15 @@ window.createRoom = async () => {
   const code = makeCode();
   currentRoom = code;
 
-  await set(ref(db, `rooms/${code}`), {
+  const room = {
     question, options: opts,
     votes: { 0:0, 1:0, 2:0, 3:0 },
     open: true, createdAt: Date.now()
-  });
+  };
+  const owner = await ensureAuth();
+  if (owner) room.owner = owner;
+
+  await set(ref(db, `rooms/${code}`), room);
 
   document.getElementById('roomCodeDisplay').textContent = code;
   document.getElementById('liveQuestion').textContent    = question;
@@ -674,9 +700,45 @@ async function castVote(index, options) {
   status.className = 'status voted';
   status.textContent = `Du stemte: ${LABELS[index]} – ${options[index]} ✓`;
 
-  const voteRef  = ref(db, `rooms/${currentRoom}/votes/${index}`);
-  const snap     = await get(voteRef);
-  await set(voteRef, (snap.exists() ? snap.val() : 0) + 1);
+  const svar = await sendVote(index);
+  if (svar === 'ok') return;
+
+  // Kom ikke fram: gi knappene tilbake så eleven kan prøve igjen.
+  hasVoted = false;
+  document.querySelectorAll('.answer-btn').forEach(btn => {
+    btn.disabled = false;
+    btn.classList.remove('voted', 'not-voted');
+  });
+  status.className = 'status error';
+  status.textContent = svar === 'duplicate'
+    ? 'Du har allerede stemt fra denne enheten.'
+    : 'Fikk ikke sendt stemmen. Prøv en gang til.';
+}
+
+/* Stemmen og "denne enheten har stemt"-merket skrives i én operasjon, slik at
+   reglene kan kreve at de følges ad. Leser to elever samme tellerverdi
+   samtidig, avviser regelen den andre skrivingen — da leser vi på nytt i
+   stedet for å miste stemmen. */
+async function sendVote(index) {
+  const voter = await ensureAuth();
+
+  if (voter) {
+    const alt = await get(ref(db, `rooms/${currentRoom}/voters/${voter}`)).catch(() => null);
+    if (alt && alt.exists()) return 'duplicate';
+  }
+
+  for (let forsok = 0; forsok < 5; forsok++) {
+    try {
+      const snap = await get(ref(db, `rooms/${currentRoom}/votes/${index}`));
+      const endring = { [`votes/${index}`]: (snap.exists() ? snap.val() : 0) + 1 };
+      if (voter) endring[`voters/${voter}`] = true;
+      await update(ref(db, `rooms/${currentRoom}`), endring);
+      return 'ok';
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 100 + Math.random() * 250));
+    }
+  }
+  return 'error';
 }
 </script>
 </body>

@@ -1,0 +1,121 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "rooms": {
+      "$room": {
+        ".read": true,
+        ".write": "!data.exists() || (!newData.exists() && (!data.hasChild('owner') || (auth != null && data.child('owner').val() === auth.uid)))",
+        ".validate": "$room.matches(/^[A-Z0-9]{4,8}$/) && newData.hasChildren(['question', 'options', 'votes', 'open', 'createdAt'])",
+
+        "question": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 300"
+        },
+        "options": {
+          ".validate": "newData.hasChildren()",
+          "$index": {
+            ".validate": "$index.matches(/^[0-3]$/) && newData.isString() && newData.val().length <= 200"
+          }
+        },
+        "votes": {
+          ".validate": "newData.hasChildren(['0', '1'])",
+          "$index": {
+            ".write": "$index.matches(/^[0-3]$/) && data.exists() && newData.isNumber() && newData.val() === data.val() + 1 && (!data.parent().parent().hasChild('owner') || (auth != null && newData.parent().parent().child('voters').child(auth.uid).val() === true && !data.parent().parent().child('voters').child(auth.uid).exists()))",
+            ".validate": "$index.matches(/^[0-3]$/) && newData.isNumber() && newData.val() >= 0 && newData.val() <= 100000"
+          }
+        },
+        "voters": {
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid && !data.exists()",
+            ".validate": "newData.isBoolean() && newData.val() === true"
+          }
+        },
+        "owner": {
+          ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
+        },
+        "open": {
+          ".validate": "newData.isBoolean()"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+
+    "krle": {
+      "$room": {
+        ".read": true,
+        ".write": "!data.exists() || (!newData.exists() && (!data.hasChild('owner') || (auth != null && data.child('owner').val() === auth.uid)))",
+        ".validate": "$room.matches(/^[A-Z0-9]{4,8}$/) && newData.hasChild('createdAt')",
+
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+        "owner": {
+          ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
+        },
+
+        "state": {
+          ".write": "data.parent().exists() && (!data.parent().hasChild('owner') || (auth != null && data.parent().child('owner').val() === auth.uid))",
+          ".validate": "newData.hasChildren(['type', 'content', 'roll'])",
+          "type": {
+            ".validate": "newData.isString() && newData.val().matches(/^(activity|concept)$/)"
+          },
+          "content": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500"
+          },
+          "roll": {
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 6"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+
+        "teams": {
+          "$team": {
+            ".write": "!data.exists() && data.parent().parent().exists()",
+            ".validate": "newData.hasChildren(['name', 'joinedAt'])",
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24"
+            },
+            "joinedAt": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "answers": {
+          ".write": "!newData.exists() && data.parent().exists() && (!data.parent().hasChild('owner') || (auth != null && data.parent().child('owner').val() === auth.uid))",
+          "$answer": {
+            ".write": "!data.exists() && data.parent().parent().exists()",
+            ".validate": "newData.hasChildren(['text', 'team', 'sentAt'])",
+            "text": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500"
+            },
+            "team": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24"
+            },
+            "sentAt": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}
