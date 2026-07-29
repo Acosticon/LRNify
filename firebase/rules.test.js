@@ -1,5 +1,5 @@
 // Simulerer reglene i database.rules.json mot ekte klientoperasjoner fra
-// aktiviteter/poll/ og aktiviteter/terningspill/.
+// aktiviteter/poll/, aktiviteter/terningspill/ og aktiviteter/genetikhjul/.
 //
 //   npm install targaryen
 //   node firebase/rules.test.js
@@ -123,6 +123,54 @@ check('uinnlogget tømmer svar i gammelt rom', true, db(gammeltKrle, null).write
 check('uinnlogget avslutter gammelt rom', true, db(gammeltKrle, null).write('/krle/ABC123', null));
 check('uinnlogget elev blir med i gammelt rom', true, db(gammeltKrle, null).write('/krle/ABC123/teams/-Nz9', { name: 'Lag B', joinedAt: now }));
 check('gammelt rom: ugyldig state fortsatt blokkert', false, db(gammeltKrle, null).write('/krle/ABC123/state', { type: 'evil', content: 'x', roll: 3 }));
+
+/* ── genetikhjul (aktiviteter/genetikhjul/) ────────────────────────────────
+   Elevene sender inn uten pålogging (elev.html laster ikke auth-SDK-et), mens
+   tavla merker klassekoden med sin anonyme id og er den eneste som kan
+   nullstille klassen etterpå. */
+const profil    = { navn: 'Ada', kjonn: 'F', svar: { T:'dom', E:'rec', H:'dom', D:'rec', W:'dom', B:'rec' }, ts: now };
+const KODE      = '8B-HOST26';
+const eidHjul   = { genetikhjul: { [KODE]: { owner: LARER.uid, createdAt: now, elever: { '-Nh1': profil } } } };
+const loestHjul = { genetikhjul: { [KODE]: { elever: { '-Nh1': profil } } } };  // uten owner
+
+console.log('--- genetikhjul: lærerens flyt');
+check('tavla tar eierskap på tom kode', true, db({}, LARER).update('/genetikhjul/' + KODE, { owner: LARER.uid, createdAt: now }));
+check('tavla tar eierskap etter at elever har levert', true, db(loestHjul, LARER).update('/genetikhjul/' + KODE, { owner: LARER.uid, createdAt: now }));
+check('tavla leser klassen', true, db(eidHjul, LARER).read('/genetikhjul/' + KODE + '/elever'));
+check('eier nullstiller klassen', true, db(eidHjul, LARER).write('/genetikhjul/' + KODE + '/elever', null));
+
+console.log('--- genetikhjul: elevens flyt');
+check('elev sender inn uten pålogging', true, db(eidHjul, null).write('/genetikhjul/' + KODE + '/elever/-Nh2', profil));
+check('elev sender inn i kode som ikke finnes ennå', true, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', profil));
+check('elev sender inn fra pålogget nettleser', true, db(eidHjul, ELEV).write('/genetikhjul/' + KODE + '/elever/-Nh2', profil));
+check('elev leser klassen (tavla på egen skjerm)', true, db(eidHjul, ELEV).read('/genetikhjul/' + KODE));
+
+console.log('--- genetikhjul: hærverk');
+check('elev nullstiller klassen', false, db(eidHjul, ELEV).write('/genetikhjul/' + KODE + '/elever', null));
+check('uinnlogget nullstiller eid klasse', false, db(eidHjul, null).write('/genetikhjul/' + KODE + '/elever', null));
+check('elev endrer en annens profil', false, db(eidHjul, ELEV).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({}, profil, { navn: 'Tull' })));
+check('elev sletter en annens profil', false, db(eidHjul, ELEV).write('/genetikhjul/' + KODE + '/elever/-Nh1', null));
+check('elev overtar eierskapet', false, db(eidHjul, ELEV).write('/genetikhjul/' + KODE + '/owner', ELEV.uid));
+check('elev setter lærerens uid som owner', false, db({}, ELEV).write('/genetikhjul/' + KODE + '/owner', LARER.uid));
+check('uinnlogget setter owner', false, db({}, null).write('/genetikhjul/' + KODE + '/owner', 'anon'));
+check('lister opp /genetikhjul', false, db(eidHjul, LARER).read('/genetikhjul'));
+check('ugyldig klassekode', false, db({}, null).write('/genetikhjul/8b host!/elever/-Nh1', profil));
+check('for lang klassekode', false, db({}, null).write('/genetikhjul/' + 'A'.repeat(30) + '/elever/-Nh1', profil));
+check('profil uten svar', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', { navn: 'Ada', kjonn: 'F', ts: now }));
+check('profil med bare 5 gener', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({}, profil, { svar: { T:'dom', E:'rec', H:'dom', D:'rec', W:'dom' } })));
+check('ugyldig svarverdi', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({}, profil, { svar: Object.assign({}, profil.svar, { T: 'Bb' }) })));
+check('ukjent gen i svar', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({}, profil, { svar: Object.assign({}, profil.svar, { X: 'dom' }) })));
+check('ugyldig kjønn', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({}, profil, { kjonn: 'X' })));
+check('kjempelangt navn', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({}, profil, { navn: 'x'.repeat(100) })));
+check('tomt navn', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({}, profil, { navn: '' })));
+check('ukjent felt på profil', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({ evil: 1 }, profil)));
+check('ts langt inn i framtida', false, db({}, null).write('/genetikhjul/' + KODE + '/elever/-Nh1', Object.assign({}, profil, { ts: now + 999999999 })));
+check('overskriver hele klassen', false, db(eidHjul, ELEV).write('/genetikhjul/' + KODE, { elever: { '-Nh9': profil } }));
+check('skriver rett på /genetikhjul', false, db({}, LARER).write('/genetikhjul', { evil: true }));
+
+console.log('--- genetikhjul: klasser uten owner (anonym pålogging av)');
+check('uinnlogget tavle nullstiller klasse uten owner', true, db(loestHjul, null).write('/genetikhjul/' + KODE + '/elever', null));
+check('klasse uten owner: ugyldig profil fortsatt blokkert', false, db(loestHjul, null).write('/genetikhjul/' + KODE + '/elever/-Nh2', { navn: 'Ada', kjonn: 'F', ts: now }));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
