@@ -124,10 +124,10 @@ check('uinnlogget avslutter gammelt rom', true, db(gammeltKrle, null).write('/kr
 check('uinnlogget elev blir med i gammelt rom', true, db(gammeltKrle, null).write('/krle/ABC123/teams/-Nz9', { name: 'Lag B', joinedAt: now }));
 check('gammelt rom: ugyldig state fortsatt blokkert', false, db(gammeltKrle, null).write('/krle/ABC123/state', { type: 'evil', content: 'x', roll: 3 }));
 
-/* ── genetikhjul (aktiviteter/genetikhjul/) ────────────────────────────────
-   Elevene sender inn uten pålogging (elev.html laster ikke auth-SDK-et), mens
-   tavla merker klassekoden med sin anonyme id og er den eneste som kan
-   nullstille klassen etterpå. */
+/* ── genetikhjul (aktiviteter/genetikhjul/index.html) ──────────────────────
+   Elevene sender inn uten å logge på (reglene krever det ikke for /elever),
+   mens læreren merker klassekoden med sin anonyme id og er den eneste som
+   kan nullstille klassen etterpå. */
 const profil    = { navn: 'Ada', kjonn: 'F', svar: { T:'dom', E:'rec', H:'dom', D:'rec', W:'dom', B:'rec' }, ts: now };
 const KODE      = '8B-HOST26';
 const eidHjul   = { genetikhjul: { [KODE]: { owner: LARER.uid, createdAt: now, elever: { '-Nh1': profil } } } };
