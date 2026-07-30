@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Temaspinner — LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fff9f0;
+    --yellow:#facc15;
+    --ink:#1a1a1a;
+    --red:#dc2626;
+    --green:#16a34a;
+    --muted:#7a6f63;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh; background:var(--cream); color:var(--ink);
+    font-family:'Nunito',sans-serif; font-weight:700;
+    padding:16px 14px 48px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .skjult{ display:none !important; }
+
+  h1{
+    font-family:'Chewy',cursive; font-weight:400;
+    font-size:clamp(2rem,7vw,3rem); margin:6px 0 2px; text-align:center;
+    transform:rotate(-1.5deg);
+  }
+  .undertittel{ color:var(--muted); font-size:.95rem; margin-bottom:20px; text-align:center; }
+
+  /* ── Kort og knapper ── */
+  .kort{
+    background:#fff; border:4px solid var(--ink); border-radius:22px;
+    padding:22px 20px; width:100%; max-width:460px;
+    box-shadow:6px 6px 0 var(--ink);
+  }
+  .knapp{
+    display:block; width:100%; border:4px solid var(--ink); border-radius:16px;
+    background:var(--yellow); font-family:'Nunito',sans-serif; font-weight:900;
+    font-size:1.15rem; padding:16px; margin-top:14px; cursor:pointer;
+    box-shadow:4px 4px 0 var(--ink); transition:transform .08s, box-shadow .08s;
+    color:var(--ink);
+  }
+  .knapp:active{ transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+  .knapp[disabled]{ opacity:.45; cursor:not-allowed; }
+  .knapp[disabled]:active{ transform:none; box-shadow:4px 4px 0 var(--ink); }
+  .knapp.hvit{ background:#fff; }
+  .knapp.stor{ font-size:1.35rem; padding:24px 16px; }
+  .knapp.liten{ width:auto; display:inline-block; font-size:1rem; padding:11px 16px; margin-top:0; }
+  .knapp.fare{ background:#fee2e2; }
+
+  .tilbake{
+    background:none; border:none; font-family:'Nunito',sans-serif; font-weight:800;
+    color:var(--muted); cursor:pointer; padding:0; margin-bottom:14px;
+    font-size:.85rem; text-decoration:underline;
+  }
+
+  label.felt{
+    display:block; font-weight:900; font-size:.8rem; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--muted); margin-bottom:6px;
+  }
+  input[type=text], textarea{
+    width:100%; padding:14px 16px; border:3px solid var(--ink); border-radius:14px;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:1.1rem;
+    background:var(--cream); color:var(--ink);
+  }
+  textarea{ min-height:150px; resize:vertical; line-height:1.7; font-size:1rem; }
+  input[type=text]:focus, textarea:focus{ outline:3px solid var(--yellow); outline-offset:1px; }
+  .felt-gruppe{ margin-bottom:18px; }
+
+  /* Valgrader (nivå, temakilde, bytte) */
+  .valg{ display:flex; gap:10px; flex-wrap:wrap; }
+  .valg button{
+    flex:1 1 auto; min-width:120px; border:3px solid var(--ink); border-radius:14px;
+    background:#fff; font-family:'Nunito',sans-serif; font-weight:900; font-size:1rem;
+    padding:13px 12px; cursor:pointer; box-shadow:3px 3px 0 var(--ink); color:var(--ink);
+    text-align:center; line-height:1.25;
+  }
+  .valg button.pa{ background:var(--yellow); }
+  .valg button small{ display:block; font-weight:700; font-size:.78rem; color:var(--muted); }
+  .valg button.pa small{ color:#7a6410; }
+
+  .feil{
+    color:var(--red); font-weight:800; margin-top:12px; text-align:center;
+    background:#fee2e2; border:3px solid var(--red); border-radius:12px; padding:10px;
+  }
+  .hjelpetekst{ color:var(--muted); font-size:.85rem; font-weight:700; margin-top:6px; }
+
+  /* ── Lærerens topplinje ── */
+  .topplinje{
+    display:flex; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap;
+    margin-bottom:20px; width:100%;
+  }
+  .kodepille{
+    font-family:'Chewy',cursive; font-weight:400; font-size:2.6rem; letter-spacing:.12em;
+    background:#fff; border:4px solid var(--ink); border-radius:18px; padding:6px 22px;
+    box-shadow:5px 5px 0 var(--ink);
+  }
+  .qr-boks{
+    background:#fff; border:4px solid var(--ink); border-radius:16px; padding:8px;
+    box-shadow:4px 4px 0 var(--ink); line-height:0; cursor:pointer;
+  }
+  .qr-boks canvas{ display:block; width:120px; height:120px; image-rendering:pixelated; }
+  .blilenke{ font-weight:800; color:var(--muted); font-size:.9rem; word-break:break-all; text-align:center; }
+
+  /* ── Lobby ── */
+  .navnliste{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:16px 0; }
+  .navnbrikke{
+    background:#fff; border:3px solid var(--ink); border-radius:20px; padding:8px 16px;
+    font-weight:900; font-size:1rem; box-shadow:3px 3px 0 var(--ink);
+  }
+  .tomt{ color:var(--muted); font-weight:800; text-align:center; padding:22px 0; }
+
+  /* ── Oversiktstavle / tavlemodus-rutenett ── */
+  .rutenett{
+    display:grid; gap:14px; width:100%;
+    grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+  }
+  .elevkort{
+    background:#fff; border:4px solid var(--ink); border-radius:18px; padding:14px;
+    box-shadow:4px 4px 0 var(--ink); text-align:center;
+  }
+  .elevkort .navn{
+    font-weight:900; font-size:.9rem; color:var(--muted); text-transform:uppercase;
+    letter-spacing:.04em; margin-bottom:6px;
+  }
+  .elevkort .tema{
+    font-family:'Chewy',cursive; font-weight:400; font-size:1.5rem; line-height:1.15;
+    word-break:break-word;
+  }
+  .elevkort .tema.venter{ font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800; color:var(--muted); }
+  .elevkort .byttemerke{ font-size:.78rem; font-weight:800; color:var(--muted); margin-top:5px; }
+
+  /* ── Klokka ── */
+  .klokkelinje{
+    display:flex; gap:12px; align-items:center; justify-content:center; flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+  .klokke{
+    font-family:'Chewy',cursive; font-weight:400; font-size:clamp(2.6rem,9vw,4.2rem);
+    line-height:1; min-width:3.6em; text-align:center;
+    background:#fff; border:4px solid var(--ink); border-radius:18px; padding:8px 18px;
+    box-shadow:5px 5px 0 var(--ink); font-variant-numeric:tabular-nums;
+  }
+  .klokke.snart{ color:var(--red); border-color:var(--red); animation:puls 1s ease-in-out infinite; }
+  .klokke.ute{ color:var(--red); border-color:var(--red); }
+  @keyframes puls{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.045); } }
+  @media (prefers-reduced-motion:reduce){ .klokke.snart{ animation:none; } }
+
+  .statuslinje{ color:var(--muted); font-weight:800; font-size:.9rem; text-align:center; margin-bottom:14px; }
+
+  /* ── Elevens temaskjerm: det dramatiske øyeblikket ── */
+  #skjerm-elev-tema{ width:100%; max-width:900px; }
+  .temascene{
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; min-height:46vh; padding:20px 8px;
+  }
+  .temaord{
+    font-family:'Chewy',cursive; font-weight:400;
+    font-size:clamp(3rem,15vw,6rem); line-height:1.05;
+    word-break:break-word; max-width:100%;
+  }
+  .temaord.spinner{ color:var(--muted); opacity:.75; }
+  .temaord.laast{ animation:klakk .32s cubic-bezier(.2,1.6,.4,1); }
+  @keyframes klakk{ 0%{ transform:scale(1.18) rotate(-2deg); } 60%{ transform:scale(.97) rotate(.6deg); } 100%{ transform:scale(1) rotate(0); } }
+  @media (prefers-reduced-motion:reduce){ .temaord.laast{ animation:none; } }
+  .temamerke{
+    font-weight:900; font-size:.85rem; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); margin-bottom:10px;
+  }
+
+  .lydknapp{
+    position:fixed; top:10px; right:10px; z-index:50;
+    border:3px solid var(--ink); border-radius:12px; background:#fff; cursor:pointer;
+    font-size:1.1rem; padding:7px 10px; box-shadow:3px 3px 0 var(--ink); line-height:1;
+  }
+  .nettvarsel{
+    position:fixed; bottom:0; left:0; right:0; z-index:60;
+    background:var(--red); color:#fff; font-weight:900; text-align:center;
+    padding:10px; font-size:.9rem;
+  }
+
+  .bredt{ width:100%; max-width:1200px; }
+  footer{ margin-top:30px; color:var(--muted); opacity:.7; font-size:.8rem; text-align:center; }
+</style>
+</head>
+<body>
+
+<button class="lydknapp" id="lyd-knapp" title="Skru lyd av eller på">🔊</button>
+
+<h1>🎡 Temaspinner</h1>
+<div class="undertittel" id="undertittel">Alle får sitt eget tema — så er det ut på gulvet</div>
+
+<!-- ══════════ START: velg modus ══════════ -->
+<div class="skjerm kort" id="skjerm-start">
+  <label class="felt">Hvordan vil du kjøre økta?</label>
+  <button class="knapp stor" id="velg-rom">📱 Rom<small style="display:block;font-weight:700;font-size:.85rem;color:#7a6410;">Elevene bruker telefonen. Hver elev ser kun sitt eget tema.</small></button>
+  <button class="knapp stor hvit" id="velg-tavle">📺 Tavle<small style="display:block;font-weight:700;font-size:.85rem;color:var(--muted);">Alt på projektoren. Ingen elevenheter, ingen nett.</small></button>
+</div>
+
+<!-- ══════════ ROM: lærer eller elev ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-rolle">
+  <button class="tilbake" data-tilbake="skjerm-start">← Tilbake</button>
+  <label class="felt">Hvem er du?</label>
+  <button class="knapp stor" id="rolle-larer">🎓 Jeg er lærer<small style="display:block;font-weight:700;font-size:.85rem;color:#7a6410;">Lag et rom og styr økta</small></button>
+  <button class="knapp stor hvit" id="rolle-elev">🙋 Jeg er elev<small style="display:block;font-weight:700;font-size:.85rem;color:var(--muted);">Bli med med kode fra læreren</small></button>
+  <div class="feil skjult" id="feil-rolle"></div>
+</div>
+
+<!-- ══════════ LÆRER: oppsett ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-larer-oppsett">
+  <button class="tilbake" data-tilbake="skjerm-rolle">← Tilbake</button>
+  <div class="felt-gruppe" id="rom-temavelger"></div>
+  <div class="felt-gruppe">
+    <label class="felt">Spinnenivå</label>
+    <div class="valg" id="rom-niva">
+      <button data-niva="kjapt" class="pa">Kjapt<small>2 min · tenke på beina</small></button>
+      <button data-niva="fordypning">Fordypning<small>15 min · kilder og bøker</small></button>
+    </div>
+  </div>
+  <div class="felt-gruppe">
+    <label class="felt">Bytte-billett</label>
+    <div class="valg" id="rom-bytte">
+      <button data-bytte="ja" class="pa">På<small>Én bytte per elev</small></button>
+      <button data-bytte="nei">Av<small>Temaet står</small></button>
+    </div>
+  </div>
+  <button class="knapp" id="opprett-rom">Opprett rom →</button>
+  <div class="feil skjult" id="feil-opprett"></div>
+</div>
+
+<!-- ══════════ LÆRER: lobby ══════════ -->
+<div class="skjerm bredt skjult" id="skjerm-larer-lobby">
+  <div class="topplinje">
+    <div>
+      <div class="kodepille" id="lobby-kode">····</div>
+    </div>
+    <div class="qr-boks" id="lobby-qr" title="Klikk for å vise stor QR"><canvas id="lobby-qr-canvas"></canvas></div>
+  </div>
+  <div class="blilenke" id="lobby-lenke"></div>
+  <div class="statuslinje" id="lobby-status">Venter på at elevene blir med …</div>
+  <div class="navnliste" id="lobby-navn"></div>
+  <div style="max-width:460px;margin:0 auto;">
+    <button class="knapp" id="trekk-temaer" disabled>🎡 Trekk temaer</button>
+    <button class="knapp hvit" id="lobby-avbryt">Avslutt rommet</button>
+  </div>
+</div>
+
+<!-- ══════════ LÆRER: oversiktstavle ══════════ -->
+<div class="skjerm bredt skjult" id="skjerm-larer-tavle">
+  <div class="klokkelinje">
+    <div class="klokke" id="larer-klokke">02:00</div>
+    <div>
+      <button class="knapp liten" id="klokke-start">▶ Start</button>
+      <button class="knapp liten hvit" id="klokke-pause">⏸ Pause</button>
+      <button class="knapp liten hvit" id="klokke-pluss">+1 min</button>
+      <button class="knapp liten hvit" id="klokke-null">↺ Nullstill</button>
+    </div>
+  </div>
+  <div class="statuslinje" id="tavle-status"></div>
+  <div class="rutenett" id="tavle-rutenett"></div>
+  <div style="max-width:460px;margin:22px auto 0;">
+    <button class="knapp hvit" id="tavle-avslutt">Avslutt økta</button>
+  </div>
+</div>
+
+<!-- ══════════ ELEV: kode ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-elev-kode">
+  <button class="tilbake" data-tilbake="skjerm-rolle">← Tilbake</button>
+  <div class="felt-gruppe">
+    <label class="felt" for="elev-kode">Romkode fra læreren</label>
+    <input type="text" id="elev-kode" placeholder="ABCD" maxlength="8" autocomplete="off"
+           spellcheck="false" autocapitalize="characters"
+           style="text-transform:uppercase; font-size:2rem; text-align:center; letter-spacing:.28em; font-family:'Chewy',cursive; font-weight:400;">
+  </div>
+  <button class="knapp" id="elev-kode-neste">Bli med →</button>
+  <div class="feil skjult" id="feil-kode"></div>
+</div>
+
+<!-- ══════════ ELEV: navn ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-elev-navn">
+  <div class="felt-gruppe">
+    <label class="felt" for="elev-navn">Fornavnet ditt</label>
+    <input type="text" id="elev-navn" placeholder="Ida" maxlength="24" autocomplete="off">
+  </div>
+  <button class="knapp" id="elev-navn-neste">Klar →</button>
+  <div class="feil skjult" id="feil-navn"></div>
+</div>
+
+<!-- ══════════ ELEV: venter i lobbyen ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-elev-vent">
+  <div style="text-align:center; padding:20px 0;">
+    <div style="font-size:3.4rem; line-height:1;">✋</div>
+    <div style="font-family:'Chewy',cursive; font-size:1.8rem; margin:12px 0 6px;" id="vent-hilsen">Du er inne!</div>
+    <div class="hjelpetekst">Venter på at læreren trekker temaer …</div>
+  </div>
+</div>
+
+<!-- ══════════ ELEV: tema + klokke ══════════ -->
+<div class="skjerm skjult" id="skjerm-elev-tema">
+  <div class="klokkelinje" id="elev-klokkelinje">
+    <div class="klokke" id="elev-klokke">02:00</div>
+  </div>
+  <div class="temascene">
+    <div class="temamerke" id="elev-temamerke">Ditt tema</div>
+    <div class="temaord spinner" id="elev-temaord">…</div>
+  </div>
+  <div style="max-width:460px;margin:0 auto;">
+    <button class="knapp hvit skjult" id="elev-bytt">⇄ Bruk bytte-billetten</button>
+    <div class="hjelpetekst" style="text-align:center;" id="elev-byttehjelp"></div>
+  </div>
+</div>
+
+<!-- ══════════ TAVLEMODUS: oppsett ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-tavle-oppsett">
+  <button class="tilbake" data-tilbake="skjerm-start">← Tilbake</button>
+  <div class="felt-gruppe">
+    <label class="felt" for="tavle-navn">Navneliste — ett navn per linje</label>
+    <textarea id="tavle-navn" placeholder="Ida&#10;Jonas&#10;Sara"></textarea>
+    <div class="hjelpetekst" id="tavle-antall">0 navn</div>
+  </div>
+  <div class="felt-gruppe" id="tavle-temavelger"></div>
+  <div class="felt-gruppe">
+    <label class="felt">Spinnenivå</label>
+    <div class="valg" id="tavle-niva">
+      <button data-niva="kjapt" class="pa">Kjapt<small>2 min</small></button>
+      <button data-niva="fordypning">Fordypning<small>15 min</small></button>
+    </div>
+  </div>
+  <button class="knapp" id="tavle-trekk">🎡 Trekk</button>
+  <div class="feil skjult" id="feil-tavle"></div>
+</div>
+
+<!-- ══════════ TAVLEMODUS: resultat ══════════ -->
+<div class="skjerm bredt skjult" id="skjerm-tavle-resultat">
+  <div class="klokkelinje">
+    <div class="klokke" id="tavleklokke">02:00</div>
+    <div>
+      <button class="knapp liten" id="tk-start">▶ Start</button>
+      <button class="knapp liten hvit" id="tk-pause">⏸ Pause</button>
+      <button class="knapp liten hvit" id="tk-pluss">+1 min</button>
+      <button class="knapp liten hvit" id="tk-null">↺ Nullstill</button>
+    </div>
+  </div>
+  <div class="rutenett" id="tavle-resultat-rutenett"></div>
+  <div style="max-width:460px;margin:22px auto 0;">
+    <button class="knapp hvit" id="tavle-trekk-igjen">🎡 Trekk på nytt</button>
+    <button class="knapp hvit" id="tavle-nytt-oppsett">Nytt oppsett</button>
+  </div>
+</div>
+
+<footer>LRNify · Temaspinner</footer>
+
+<script type="module">
+/* ══════════════════════════════════════════════════════════════════════════
+   TEMAER
+   Alle innebygde lister ligger her øverst så de er lette å redigere.
+   ══════════════════════════════════════════════════════════════════════════ */
+const TEMAER = {
+  generelle: {
+    navn: 'Generelle temaer',
+    hjelp: 'Dagligdagse, litt absurde ord — ren muntlig trening',
+    ord: [
+      'Trafikklys','Køer','Sokker','Regn','Naboer','Busstopp','Mandager','Reklame',
+      'Kvitteringer','Handleposer','Vekkerklokker','Ventetid','Paraplyer','Tyggegummi',
+      'Rulletrapper','Matpakker','Snømåking','Selfier','Emojier','Passord',
+      'Ladere','Heiser','Venterom','Gymsko','Lekser','Skolebussen','Kantina',
+      'Søppelsortering','Pantemaskiner','Selvbetjeningskasser','Flyplasser','Hotellrom',
+      'Turistbilder','Sommerferien','Loppemarked','Bursdager','Gaver som ikke passer',
+      'Sofaputer','Fjernkontroller','Handlelister'
+    ]
+  },
+  norsk: {
+    navn: 'Norsk',
+    hjelp: 'Ungdomstrinnet',
+    ord: [
+      'Adjektiv','Verb','Substantiv','Metafor','Sammenligning','Rim','Novelle','Roman',
+      'Dikt','Drama','Fortelleren','Hovedpersonen','Konflikt','Spenningskurve',
+      'Miljøskildring','Dialekt','Nynorsk','Låneord','Argumenterende tekst',
+      'Kildekritikk','Sakprosa','Virkemidler'
+    ]
+  },
+  krle: {
+    navn: 'KRLE',
+    hjelp: 'Ungdomstrinnet',
+    ord: [
+      'Etikk','Moral','Den gylne regel','Toleranse','Menneskeverd','Ritualer','Høytider',
+      'Pilegrimsferd','Bønn','Hellige skrifter','Kristendom','Islam','Jødedom','Hinduisme',
+      'Buddhisme','Livssyn','Humanisme','Religionsfrihet','Symboler','Reinkarnasjon',
+      'Skapelsesberetninger','Samvittighet'
+    ]
+  },
+  naturfag: {
+    navn: 'Naturfag',
+    hjelp: 'Ungdomstrinnet',
+    ord: [
+      'Fotosyntese','Celledeling','DNA','Arv og miljø','Evolusjon','Økosystem',
+      'Næringskjede','Karbonkretsløpet','Klimagasser','Atomer','Grunnstoffer',
+      'Kjemisk reaksjon','Syrer og baser','Energi','Elektrisitet','Magnetisme',
+      'Tyngdekraft','Bølger','Lyd','Lys','Solsystemet','Bærekraft'
+    ]
+  },
+  samfunnsfag: {
+    navn: 'Samfunnsfag',
+    hjelp: 'Ungdomstrinnet',
+    ord: [
+      'Demokrati','Stortinget','Valg','Ytringsfrihet','Menneskerettigheter','Grunnloven',
+      'FN','NATO','Globalisering','Bærekraftsmålene','Migrasjon','Urfolk','Samene',
+      'Velferdsstaten','Skatt','Arbeidsledighet','Forbruk','Kildekritikk','Propaganda',
+      'Sosiale medier','Andre verdenskrig','Den kalde krigen'
+    ]
+  }
+};
+
+const NIVAAER = { kjapt: 120000, fordypning: 900000 };
+const LS = { lyd:'temaspinner.lyd', egne:'temaspinner.egneTemaer', elev:'temaspinner.elev' };
+
+/* ══════════════════════════════════════════════════════════════════════════
+   QR-KODE
+   Minimal generator (versjon 1–4, feilkorrigering L, byte-modus). Skrevet
+   lokalt fordi skolenett ofte blokkerer CDN-er, og fordi en QR-kode ikke er
+   verdt en ekstern avhengighet. Utdata er verifisert mot en uavhengig
+   avkoder — endrer du tabellene under, må du teste skanning på nytt.
+   ══════════════════════════════════════════════════════════════════════════ */
+const QR = (function(){
+  const EXP = new Array(512), LOG = new Array(256);
+  let x = 1;
+  for(let i=0;i<255;i++){ EXP[i]=x; LOG[x]=i; x<<=1; if(x & 0x100) x^=0x11d; }
+  for(let i=255;i<512;i++) EXP[i]=EXP[i-255];
+  const mul = (a,b)=> (a===0||b===0) ? 0 : EXP[LOG[a]+LOG[b]];
+
+  // Generatorpolynom, høyeste ledd først (monisk) slik divisjonen under krever
+  function genPoly(grad){
+    let g=[1];
+    for(let i=0;i<grad;i++){
+      const n=new Array(g.length+1).fill(0);
+      for(let j=0;j<g.length;j++){ n[j]^=g[j]; n[j+1]^=mul(g[j],EXP[i]); }
+      g=n;
+    }
+    return g;
+  }
+  function rs(data, ecLen){
+    const g=genPoly(ecLen), res=data.concat(new Array(ecLen).fill(0));
+    for(let i=0;i<data.length;i++){
+      const k=res[i];
+      if(k!==0) for(let j=0;j<g.length;j++) res[i+j]^=mul(g[j],k);
+    }
+    return res.slice(data.length);
+  }
+
+  // Versjon 1–4 på nivå L: én blokk, så ingen fletting av kodeord
+  const TAB={1:{s:21,d:19,e:7},2:{s:25,d:34,e:10},3:{s:29,d:55,e:15},4:{s:33,d:80,e:20}};
+  const bit=(v,i)=>(v>>>i)&1;
+
+  function formatCeller(s){
+    const c1=[];
+    for(let i=0;i<=5;i++) c1.push([i,8]);
+    c1.push([7,8],[8,8],[8,7]);
+    for(let i=9;i<15;i++) c1.push([8,14-i]);
+    const c2=new Array(15);
+    for(let i=0;i<7;i++) c2[14-i]=[s-1-i,8];
+    for(let i=0;i<8;i++) c2[7-i]=[8,s-8+i];
+    return {c1,c2};
+  }
+
+  function bygg(versjon, kodeord){
+    const s=TAB[versjon].s;
+    const m=Array.from({length:s},()=>new Array(s).fill(false));
+    const fast=Array.from({length:s},()=>new Array(s).fill(false));
+    const sett=(r,c,d)=>{ if(r<0||r>=s||c<0||c>=s) return; m[r][c]=d; fast[r][c]=true; };
+
+    // Søkemønstre i tre hjørner
+    for(const [rr,cc] of [[0,0],[0,s-7],[s-7,0]])
+      for(let r=-1;r<=7;r++) for(let c=-1;c<=7;c++){
+        const d=Math.max(Math.abs(r-3),Math.abs(c-3));
+        sett(rr+r,cc+c,d!==2&&d!==4);
+      }
+    // Justeringsmønster: versjon 2–6 har nøyaktig ett, nede til høyre
+    if(versjon>=2){
+      const k=s-7;
+      for(let r=-2;r<=2;r++) for(let c=-2;c<=2;c++)
+        sett(k+r,k+c,Math.max(Math.abs(r),Math.abs(c))!==1);
+    }
+    // Taktmønster
+    for(let i=8;i<s-8;i++){ sett(6,i,i%2===0); sett(i,6,i%2===0); }
+    // Reserver formatinfo + det faste mørke modulet
+    const {c1,c2}=formatCeller(s);
+    c1.concat(c2).forEach(([r,c])=>sett(r,c,false));
+    sett(s-8,8,true);
+
+    // Data i sikksakk nedenfra og opp, to kolonner om gangen
+    let i=0; const n=kodeord.length*8;
+    for(let hoyre=s-1;hoyre>=1;hoyre-=2){
+      if(hoyre===6) hoyre=5;
+      for(let v=0;v<s;v++) for(let j=0;j<2;j++){
+        const cx=hoyre-j, opp=((hoyre+1)&2)===0, cy=opp?s-1-v:v;
+        if(!fast[cy][cx] && i<n){ m[cy][cx]=bit(kodeord[i>>>3],7-(i&7))!==0; i++; }
+      }
+    }
+    return {s,m,fast};
+  }
+
+  function maske(k,r,c){
+    switch(k){
+      case 0: return (r+c)%2===0;
+      case 1: return r%2===0;
+      case 2: return c%3===0;
+      case 3: return (r+c)%3===0;
+      case 4: return (Math.floor(r/2)+Math.floor(c/3))%2===0;
+      case 5: return ((r*c)%2)+((r*c)%3)===0;
+      case 6: return (((r*c)%2)+((r*c)%3))%2===0;
+      default: return (((r+c)%2)+((r*c)%3))%2===0;
+    }
+  }
+
+  function ferdigRutenett(mat,k){
+    const {s,m,fast}=mat;
+    const g=m.map(r=>r.slice());
+    for(let r=0;r<s;r++) for(let c=0;c<s;c++)
+      if(!fast[r][c] && maske(k,r,c)) g[r][c]=!g[r][c];
+    // Formatinfo: 2 bit EC-nivå (01 = L) + 3 bit maske + 10 BCH-bit, xor 0x5412
+    const d=(0b01<<3)|k;
+    let rest=d;
+    for(let i=0;i<10;i++) rest=(rest<<1)^((rest>>>9)*0x537);
+    const bits=((d<<10)|rest)^0x5412;
+    const {c1,c2}=formatCeller(s);
+    c1.forEach(([r,c],i)=>{ g[r][c]=bit(bits,i)!==0; });
+    c2.forEach(([r,c],i)=>{ g[r][c]=bit(bits,i)!==0; });
+    g[s-8][8]=true;
+    return g;
+  }
+
+  // Straffepoeng etter standarden — velger den minst "urolige" masken
+  function straff(s,g){
+    let sum=0;
+    const kol=[];
+    for(let c=0;c<s;c++) kol.push(g.map(r=>r[c]));
+    const rekke=(l)=>{
+      let f=l[0],n=1,p=0;
+      for(let i=1;i<s;i++){ if(l[i]===f) n++; else { if(n>=5) p+=3+(n-5); f=l[i]; n=1; } }
+      if(n>=5) p+=3+(n-5);
+      return p;
+    };
+    for(let r=0;r<s;r++) sum+=rekke(g[r]);
+    for(let c=0;c<s;c++) sum+=rekke(kol[c]);
+    for(let r=0;r<s-1;r++) for(let c=0;c<s-1;c++){
+      const v=g[r][c];
+      if(v===g[r][c+1]&&v===g[r+1][c]&&v===g[r+1][c+1]) sum+=3;
+    }
+    const p1=[true,false,true,true,true,false,true,false,false,false,false];
+    const p2=[false,false,false,false,true,false,true,true,true,false,true];
+    const treff=(a,i,p)=>p.every((v,k)=>a[i+k]===v);
+    const skann=(l)=>{ let p=0; for(let i=0;i<=s-11;i++) if(treff(l,i,p1)||treff(l,i,p2)) p+=40; return p; };
+    for(let r=0;r<s;r++) sum+=skann(g[r]);
+    for(let c=0;c<s;c++) sum+=skann(kol[c]);
+    let morke=0;
+    for(let r=0;r<s;r++) for(let c=0;c<s;c++) if(g[r][c]) morke++;
+    const pst=(morke*100)/(s*s);
+    sum+=(Math.abs(Math.ceil(pst/5)*5-50)/5)*10;
+    return sum;
+  }
+
+  function lag(tekst){
+    const b=Array.from(new TextEncoder().encode(tekst));
+    let versjon=null;
+    for(const v of [1,2,3,4]) if(4+8+b.length*8 <= TAB[v].d*8){ versjon=v; break; }
+    if(versjon===null) return null; // for lang tekst — kaller viser lenka i klartekst
+    const bits=[];
+    const put=(v,l)=>{ for(let i=l-1;i>=0;i--) bits.push((v>>>i)&1); };
+    put(0b0100,4); put(b.length,8);
+    for(const v of b) put(v,8);
+    const kap=TAB[versjon].d*8;
+    for(let i=0,n=Math.min(4,kap-bits.length);i<n;i++) bits.push(0);
+    while(bits.length%8!==0) bits.push(0);
+    const fyll=[0xec,0x11];
+    for(let i=0;bits.length<kap;i++) put(fyll[i%2],8);
+    const dcw=[];
+    for(let i=0;i<bits.length;i+=8){
+      let v=0; for(let j=0;j<8;j++) v=(v<<1)|bits[i+j];
+      dcw.push(v);
+    }
+    const mat=bygg(versjon, dcw.concat(rs(dcw,TAB[versjon].e)));
+    let best=null,beste=Infinity;
+    for(let k=0;k<8;k++){
+      const g=ferdigRutenett(mat,k), p=straff(mat.s,g);
+      if(p<beste){ beste=p; best=g; }
+    }
+    return {storrelse:mat.s, rutenett:best};
+  }
+
+  /* Tegner på canvas. Modulstørrelsen rundes til hele piksler i
+     enhetsoppløsning, ellers blir kantene grumsete på høy-DPI-skjermer og
+     billige telefonkameraer sliter med å låse på koden. */
+  function tegn(canvas, tekst, cssBredde){
+    const q = lag(tekst);
+    if(!q) return false;
+    const dpr = window.devicePixelRatio || 1;
+    const stille = 4; // stillesone, 4 moduler som standarden krever
+    const totalt = q.storrelse + stille*2;
+    const skala = Math.max(1, Math.floor((cssBredde*dpr)/totalt));
+    const piksler = totalt*skala;
+    canvas.width = piksler; canvas.height = piksler;
+    canvas.style.width = (piksler/dpr)+'px';
+    canvas.style.height = (piksler/dpr)+'px';
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,piksler,piksler);
+    ctx.fillStyle = '#000';
+    for(let r=0;r<q.storrelse;r++) for(let c=0;c<q.storrelse;c++)
+      if(q.rutenett[r][c]) ctx.fillRect((c+stille)*skala,(r+stille)*skala,skala,skala);
+    return true;
+  }
+  return { tegn };
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LYD
+   To korte lyder laget med Web Audio — ingen lydfiler. Valget lagres.
+   ══════════════════════════════════════════════════════════════════════════ */
+let lydPa = localStorage.getItem(LS.lyd) !== 'av';
+let lydCtx = null;
+
+function laasOppLyd(){
+  if(lydCtx) return;
+  try{ lydCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+}
+function tone(frekvens, varighet, type, volum, glidTil){
+  if(!lydPa || !lydCtx) return;
+  try{
+    const t = lydCtx.currentTime;
+    const o = lydCtx.createOscillator(), g = lydCtx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(frekvens, t);
+    if(glidTil) o.frequency.exponentialRampToValueAtTime(glidTil, t+varighet);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(volum, t+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+varighet);
+    o.connect(g); g.connect(lydCtx.destination);
+    o.start(t); o.stop(t+varighet+0.02);
+  }catch(e){}
+}
+// Kort, tørt «klakk» når temaet låser seg
+function spillKlakk(){ tone(220, 0.09, 'square', 0.22, 90); }
+// To fallende toner når tida er ute
+function spillSlutt(){
+  tone(660, 0.22, 'triangle', 0.2);
+  setTimeout(()=>tone(440, 0.42, 'triangle', 0.2), 210);
+}
+function tegnLydknapp(){
+  document.getElementById('lyd-knapp').textContent = lydPa ? '🔊' : '🔇';
+}
+document.getElementById('lyd-knapp').addEventListener('click', ()=>{
+  lydPa = !lydPa;
+  localStorage.setItem(LS.lyd, lydPa ? 'pa' : 'av');
+  tegnLydknapp();
+  if(lydPa){ laasOppLyd(); spillKlakk(); }
+});
+tegnLydknapp();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FIREBASE
+   Samme prosjekt og samme mønster som resten av LRNify (poll-c6bd2).
+   Reglene ligger i firebase/database.rules.json under "temaspinner".
+   ══════════════════════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+/* Firebase lastes først når noen faktisk velger rom-modus, ikke ved sidelast.
+   Blokkerer skolenettet gstatic.com, skal tavlemodus fortsatt virke — den
+   trenger ikke nett i det hele tatt. Med statisk import ville hele fila dødd
+   av et blokkert CDN. */
+let FB = null, db = null, laster = null;
+const KILDE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+
+function lastFirebase(){
+  if(FB) return Promise.resolve(FB);
+  if(!laster){
+    laster = Promise.all([
+      import(KILDE + 'firebase-app.js'),
+      import(KILDE + 'firebase-database.js'),
+      import(KILDE + 'firebase-auth.js')
+    ]).then(([a, d, g]) => {
+      const app = a.initializeApp(firebaseConfig);
+      db = d.getDatabase(app);
+      const auth = g.getAuth(app);
+      FB = {
+        ref: d.ref, set: d.set, update: d.update, get: d.get, onValue: d.onValue,
+        auth, paalogg: g.signInAnonymously
+      };
+      // Klientklokker i et klasserom spriker fort med minutter. Vi henter
+      // Firebase sitt tidsavvik og regner all nedtelling mot servertid, ellers
+      // ville elever og lærer sett ulik tid på klokka.
+      FB.onValue(FB.ref(db, '.info/serverTimeOffset'), s => { tidsavvik = s.val() || 0; }, () => {});
+      FB.onValue(FB.ref(db, '.info/connected'), s => { settKontakt(s.val() !== false); }, () => {});
+      return FB;
+    }).catch(e => { laster = null; throw e; });
+  }
+  return laster;
+}
+const R = (sti) => FB.ref(db, sti);
+
+/* Anonym pålogging gir hver nettleser en fast id uten konto eller
+   innloggingsskjerm. Den brukes til to ting: læreren merker rommet som sitt
+   (owner), og elevens id ER nøkkelen under /elever — så en refresh gir samme
+   elev og samme tema tilbake. */
+let uid = null, paalogging = null;
+function sikreAuth(){
+  if(uid) return Promise.resolve(uid);
+  if(!paalogging){
+    paalogging = lastFirebase()
+      .then(() => FB.paalogg(FB.auth))
+      .then(c => (uid = c.user.uid))
+      .catch(() => { paalogging = null; return null; });
+  }
+  return paalogging;
+}
+
+let tidsavvik = 0;
+const naa = () => Date.now() + tidsavvik;
+
+// Nettstatus — vises som en stripe nederst, aldri som en blokkerende feil
+let harKontakt = true;
+function settKontakt(pa){
+  if(pa === harKontakt) return;
+  harKontakt = pa;
+  let el = document.getElementById('nettvarsel');
+  if(!pa){
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'nettvarsel'; el.className = 'nettvarsel';
+      el.textContent = '⚠ Mistet kontakt, prøver igjen …';
+      document.body.appendChild(el);
+    }
+  } else if(el){ el.remove(); }
+}
+
+const ALFABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // uten O/0 og I/1
+function lagRomkode(){
+  let k = '';
+  const b = new Uint32Array(4);
+  (window.crypto || window.msCrypto).getRandomValues(b);
+  for(let i=0;i<4;i++) k += ALFABET[b[i] % ALFABET.length];
+  return k;
+}
+const romSti = (kode) => 'temaspinner/' + kode;
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KORTSTOKK
+   Ikke ren tilfeldighet: temalista stokkes, deles ut ett kort om gangen, og
+   når stokken er tom stokkes hele lista på nytt. Med 12 temaer og 25 elever
+   blir alle 12 brukt før noe gjentas.
+   ══════════════════════════════════════════════════════════════════════════ */
+function stokkOm(liste){
+  const a = liste.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+/* Trekker ett kort. Får en tom stokk inn, stokkes temalista på nytt først.
+   Returnerer både kortet og resten, så kalleren kan dele ut flere i slengen
+   uten å skrive til databasen mellom hver. */
+function trekkKort(igjen, temaListe){
+  let rest = (igjen && igjen.length) ? igjen.slice() : stokkOm(temaListe);
+  if(!rest.length) return { tema:null, rest:[] };
+  const tema = rest.shift();
+  return { tema, rest };
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KLOKKE
+   endsAt lagres som et absolutt tidspunkt, aldri som «sekunder igjen». Da
+   tåler klokka at en elev laster på nytt, kommer sent eller mister nettet.
+   ══════════════════════════════════════════════════════════════════════════ */
+function msIgjen(klokke, varighetMs){
+  if(!klokke) return varighetMs;
+  if(klokke.endsAt) return Math.max(0, klokke.endsAt - naa());
+  if(klokke.pausetMedIgjen != null) return klokke.pausetMedIgjen;
+  return varighetMs;
+}
+function formatTid(ms){
+  const s = Math.ceil(ms/1000);
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
+function tegnKlokke(el, ms, gaar){
+  el.textContent = ms <= 0 ? 'Tiden er ute' : formatTid(ms);
+  el.classList.toggle('ute', ms <= 0);
+  el.classList.toggle('snart', ms > 0 && ms <= 30000 && gaar);
+  el.style.fontSize = ms <= 0 ? 'clamp(1.6rem,5vw,2.4rem)' : '';
+}
+// Regner ut ny klokketilstand for hver av lærerens fire knapper
+function klokkeStart(klokke, varighetMs){
+  const igjen = (klokke && klokke.pausetMedIgjen != null) ? klokke.pausetMedIgjen : varighetMs;
+  return { endsAt: naa() + igjen, pausetMedIgjen: null };
+}
+function klokkePause(klokke, varighetMs){
+  if(!klokke || !klokke.endsAt) return null; // går ikke — ingenting å pause
+  return { endsAt: null, pausetMedIgjen: Math.max(0, klokke.endsAt - naa()) };
+}
+function klokkePluss(klokke, varighetMs){
+  if(klokke && klokke.endsAt) return { endsAt: klokke.endsAt + 60000, pausetMedIgjen: null };
+  if(klokke && klokke.pausetMedIgjen != null) return { endsAt: null, pausetMedIgjen: klokke.pausetMedIgjen + 60000 };
+  return { nyVarighet: varighetMs + 60000 }; // ikke startet ennå
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FELLES UI
+   ══════════════════════════════════════════════════════════════════════════ */
+function visSkjerm(id){
+  document.querySelectorAll('.skjerm').forEach(s => s.classList.add('skjult'));
+  const el = document.getElementById(id);
+  if(el) el.classList.remove('skjult');
+  const bare = id === 'skjerm-elev-tema';
+  document.getElementById('undertittel').classList.toggle('skjult', bare);
+  document.querySelector('h1').classList.toggle('skjult', bare);
+}
+function visFeil(id, melding){
+  const el = document.getElementById(id);
+  el.textContent = melding;
+  el.classList.remove('skjult');
+}
+function skjulFeil(id){ document.getElementById(id).classList.add('skjult'); }
+
+document.querySelectorAll('[data-tilbake]').forEach(b => {
+  b.addEventListener('click', () => visSkjerm(b.dataset.tilbake));
+});
+
+/* Bygger temavelgeren. Brukes både i rom-oppsettet og i tavlemodus, derfor
+   som funksjon og ikke som duplisert markup. */
+function byggTemaVelger(container){
+  container.innerHTML =
+    '<label class="felt">Temaer</label>' +
+    '<div class="valg kilder"></div>' +
+    '<div class="egne skjult" style="margin-top:12px;">' +
+      '<textarea placeholder="Ett tema per linje"></textarea>' +
+      '<div class="hjelpetekst">Lagres på denne maskinen til neste gang.</div>' +
+    '</div>' +
+    '<div class="hjelpetekst antall"></div>';
+  const kilder = container.querySelector('.kilder');
+  const egneBoks = container.querySelector('.egne');
+  const egneFelt = container.querySelector('textarea');
+  const antall = container.querySelector('.antall');
+  let valgt = 'generelle';
+
+  egneFelt.value = localStorage.getItem(LS.egne) || '';
+
+  Object.keys(TEMAER).forEach(n => {
+    const b = document.createElement('button');
+    b.type = 'button'; b.dataset.kilde = n;
+    b.innerHTML = TEMAER[n].navn + '<small>' + TEMAER[n].ord.length + ' temaer</small>';
+    kilder.appendChild(b);
+  });
+  const egneKnapp = document.createElement('button');
+  egneKnapp.type = 'button'; egneKnapp.dataset.kilde = 'egne';
+  egneKnapp.innerHTML = 'Egne temaer<small>lim inn selv</small>';
+  kilder.appendChild(egneKnapp);
+
+  function hent(){
+    if(valgt === 'egne'){
+      return egneFelt.value.split('\n').map(s => s.trim()).filter(Boolean);
+    }
+    return TEMAER[valgt].ord.slice();
+  }
+  function tegn(){
+    kilder.querySelectorAll('button').forEach(b => b.classList.toggle('pa', b.dataset.kilde === valgt));
+    egneBoks.classList.toggle('skjult', valgt !== 'egne');
+    const n = hent().length;
+    antall.textContent = n === 0 ? 'Ingen temaer valgt' : n + ' temaer i stokken';
+  }
+  kilder.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if(!b) return;
+    valgt = b.dataset.kilde;
+    tegn();
+  });
+  egneFelt.addEventListener('input', () => {
+    localStorage.setItem(LS.egne, egneFelt.value);
+    tegn();
+  });
+  tegn();
+  return { hent };
+}
+
+// Enkel av/på-rad (nivå, bytte-billett)
+function knyttValg(container, attributt, standard, ved){
+  let verdi = standard;
+  container.addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if(!b) return;
+    verdi = b.dataset[attributt];
+    container.querySelectorAll('button').forEach(k => k.classList.toggle('pa', k === b));
+    if(ved) ved(verdi);
+  });
+  return { hent: () => verdi };
+}
+
+// Tegner et rutenett av elevkort. Brukes av både oversiktstavla og tavlemodus.
+function tegnRutenett(container, rader){
+  container.innerHTML = '';
+  if(!rader.length){
+    const t = document.createElement('div');
+    t.className = 'tomt';
+    t.textContent = 'Ingen elever ennå.';
+    container.appendChild(t);
+    return;
+  }
+  rader.forEach(r => {
+    const kort = document.createElement('div');
+    kort.className = 'elevkort';
+    const navn = document.createElement('div');
+    navn.className = 'navn';
+    navn.textContent = r.navn;
+    const tema = document.createElement('div');
+    tema.className = 'tema' + (r.tema ? '' : ' venter');
+    tema.textContent = r.tema || 'venter på tema …';
+    kort.appendChild(navn); kort.appendChild(tema);
+    if(r.harByttet){
+      const m = document.createElement('div');
+      m.className = 'byttemerke';
+      m.textContent = '⇄ byttet';
+      kort.appendChild(m);
+    }
+    container.appendChild(kort);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UI-LÆRER
+   ══════════════════════════════════════════════════════════════════════════ */
+let romTema = null, romNiva = null, romBytte = null;
+let larerKode = null, larerRom = null, larerAvlytt = null;
+
+document.getElementById('velg-rom').addEventListener('click', async () => {
+  laasOppLyd();
+  visSkjerm('skjerm-rolle');
+  skjulFeil('feil-rolle');
+  try{
+    await lastFirebase();
+  }catch(e){
+    visFeil('feil-rolle',
+      'Får ikke lastet Firebase. Skolenettet blokkerer kanskje www.gstatic.com. ' +
+      'Tavlemodus virker uansett — den trenger ikke nett.');
+  }
+});
+document.getElementById('velg-tavle').addEventListener('click', () => { laasOppLyd(); visSkjerm('skjerm-tavle-oppsett'); });
+document.getElementById('rolle-larer').addEventListener('click', () => visSkjerm('skjerm-larer-oppsett'));
+document.getElementById('rolle-elev').addEventListener('click', () => visSkjerm('skjerm-elev-kode'));
+
+romTema = byggTemaVelger(document.getElementById('rom-temavelger'));
+romNiva = knyttValg(document.getElementById('rom-niva'), 'niva', 'kjapt');
+romBytte = knyttValg(document.getElementById('rom-bytte'), 'bytte', 'ja');
+
+function blilenke(kode){
+  return location.origin + location.pathname + '?kode=' + encodeURIComponent(kode);
+}
+
+document.getElementById('opprett-rom').addEventListener('click', async () => {
+  skjulFeil('feil-opprett');
+  const temaer = romTema.hent();
+  if(temaer.length < 2){
+    visFeil('feil-opprett', 'Du trenger minst to temaer i stokken.');
+    return;
+  }
+  const knapp = document.getElementById('opprett-rom');
+  knapp.disabled = true;
+  try{
+    const id = await sikreAuth();
+    if(!id){
+      visFeil('feil-opprett', 'Fikk ikke kontakt med Firebase. Sjekk nettet og prøv igjen.');
+      return;
+    }
+    const kode = lagRomkode();
+    await FB.set(R(romSti(kode)), {
+      opprettet: naa(),
+      owner: id,
+      fase: 'lobby',
+      temaListe: temaer,
+      stokk: { igjen: stokkOm(temaer) },
+      byttBillettPa: romBytte.hent() === 'ja',
+      varighetMs: NIVAAER[romNiva.hent()]
+    });
+    larerKode = kode;
+    startLarerLobby();
+  }catch(e){
+    visFeil('feil-opprett', 'Kunne ikke opprette rommet: ' + e.message);
+  }finally{
+    knapp.disabled = false;
+  }
+});
+
+function startLarerLobby(){
+  visSkjerm('skjerm-larer-lobby');
+  document.getElementById('lobby-kode').textContent = larerKode;
+  const lenke = blilenke(larerKode);
+  document.getElementById('lobby-lenke').textContent = lenke;
+  const ok = QR.tegn(document.getElementById('lobby-qr-canvas'), lenke, 120);
+  document.getElementById('lobby-qr').classList.toggle('skjult', !ok);
+  history.replaceState(null, '', '?kode=' + encodeURIComponent(larerKode));
+  avlyttRom();
+}
+
+/* Læreren er eneste kortgiver. Hver gang rommet endrer seg ser vi etter
+   elever som mangler tema (nye eller sent ankomne) eller som har bedt om
+   bytte, og deler ut til alle i én skriving. At bare én klient deler ut gjør
+   det umulig for to enheter å trekke samme kort. */
+let delerUt = false;
+async function delUtKort(rom){
+  if(delerUt || !larerKode || rom.fase === 'lobby') return;
+  const elever = rom.elever || {};
+  const kanBytte = rom.byttBillettPa === true;
+  const trenger = Object.keys(elever).filter(id => {
+    const e = elever[id];
+    return !e.tema || (kanBytte && e.onskerBytte === true && e.harByttet !== true);
+  });
+  if(!trenger.length) return;
+  delerUt = true;
+  try{
+    let igjen = (rom.stokk && rom.stokk.igjen) ? rom.stokk.igjen.slice() : [];
+    const temaListe = rom.temaListe || [];
+    const endring = {};
+    for(const id of trenger){
+      const elev = elever[id];
+      let t = trekkKort(igjen, temaListe);
+      if(!t.tema) break;
+      /* Ved bytte: stokken kan nettopp ha blitt stokket om, så det samme
+         temaet kan komme opp igjen. Å bruke sin eneste bytte-billett og få
+         akkurat det man ville bort fra er en dårlig opplevelse — har stokken
+         noe annet å by på, tar vi neste kort og legger det avviste bakerst. */
+      if(elev.onskerBytte === true && t.tema === elev.tema){
+        const neste = trekkKort(t.rest, temaListe);
+        if(neste.tema && neste.tema !== elev.tema){
+          neste.rest.push(t.tema);
+          t = neste;
+        }
+      }
+      igjen = t.rest;
+      endring['elever/' + id + '/tema'] = t.tema;
+      if(elev.onskerBytte === true){
+        endring['elever/' + id + '/harByttet'] = true;
+        endring['elever/' + id + '/onskerBytte'] = false;
+      }
+    }
+    endring['stokk/igjen'] = igjen;
+    await FB.update(R(romSti(larerKode)), endring);
+  }catch(e){
+    // Nettet kan ryke midt i — neste snapshot prøver på nytt av seg selv
+  }finally{
+    delerUt = false;
+  }
+}
+
+function avlyttRom(){
+  if(larerAvlytt) larerAvlytt();
+  larerAvlytt = FB.onValue(R(romSti(larerKode)), snap => {
+    larerRom = snap.val();
+    if(!larerRom) return;
+    tegnLarer();
+    delUtKort(larerRom);
+  }, () => {});
+}
+
+function elevRader(rom){
+  const e = rom.elever || {};
+  return Object.keys(e)
+    .map(id => ({ id, navn: e[id].navn || '?', tema: e[id].tema || null, harByttet: e[id].harByttet === true, ts: e[id].ts || 0 }))
+    .sort((a,b) => a.ts - b.ts);
+}
+
+function tegnLarer(){
+  const rom = larerRom;
+  const rader = elevRader(rom);
+  if(rom.fase === 'lobby'){
+    visSkjerm('skjerm-larer-lobby');
+    const liste = document.getElementById('lobby-navn');
+    liste.innerHTML = '';
+    rader.forEach(r => {
+      const b = document.createElement('div');
+      b.className = 'navnbrikke';
+      b.textContent = r.navn;
+      liste.appendChild(b);
+    });
+    document.getElementById('lobby-status').textContent = rader.length
+      ? rader.length + (rader.length === 1 ? ' elev er inne' : ' elever er inne')
+      : 'Venter på at elevene blir med …';
+    document.getElementById('trekk-temaer').disabled = rader.length === 0;
+  } else {
+    visSkjerm('skjerm-larer-tavle');
+    tegnRutenett(document.getElementById('tavle-rutenett'), rader);
+    const byttet = rader.filter(r => r.harByttet).length;
+    document.getElementById('tavle-status').textContent =
+      'Kode ' + larerKode + ' · ' + rader.length + ' elever' +
+      (rom.byttBillettPa ? ' · bytte brukt: ' + byttet : ' · bytte av');
+  }
+}
+
+document.getElementById('trekk-temaer').addEventListener('click', async () => {
+  if(!larerKode) return;
+  laasOppLyd();
+  await FB.update(R(romSti(larerKode)), { fase: 'trekning' });
+});
+
+document.getElementById('lobby-avbryt').addEventListener('click', async () => {
+  if(!larerKode) return;
+  if(!confirm('Avslutte rommet? Elevene mister temaene sine.')) return;
+  try{ await FB.set(R(romSti(larerKode)), null); }catch(e){}
+  if(larerAvlytt) larerAvlytt();
+  larerKode = null; larerRom = null;
+  history.replaceState(null, '', location.pathname);
+  visSkjerm('skjerm-larer-oppsett');
+});
+
+document.getElementById('tavle-avslutt').addEventListener('click', async () => {
+  if(!larerKode) return;
+  if(!confirm('Avslutte økta? Elevene ser «Tiden er ute».')) return;
+  await FB.update(R(romSti(larerKode)), { fase: 'ferdig', 'klokke/endsAt': null, 'klokke/pausetMedIgjen': 0 });
+});
+
+// Lærerens klokkeknapper. «Start» er også overgangen trekning → forberedelse.
+document.getElementById('klokke-start').addEventListener('click', async () => {
+  if(!larerRom) return;
+  laasOppLyd();
+  const k = klokkeStart(larerRom.klokke, larerRom.varighetMs || NIVAAER.kjapt);
+  await FB.update(R(romSti(larerKode)), {
+    'klokke/endsAt': k.endsAt,
+    'klokke/pausetMedIgjen': null,
+    fase: 'forberedelse'
+  });
+});
+document.getElementById('klokke-pause').addEventListener('click', async () => {
+  if(!larerRom) return;
+  const k = klokkePause(larerRom.klokke, larerRom.varighetMs);
+  if(!k) return;
+  await FB.update(R(romSti(larerKode)), { 'klokke/endsAt': null, 'klokke/pausetMedIgjen': k.pausetMedIgjen });
+});
+document.getElementById('klokke-pluss').addEventListener('click', async () => {
+  if(!larerRom) return;
+  const k = klokkePluss(larerRom.klokke, larerRom.varighetMs || NIVAAER.kjapt);
+  if(k.nyVarighet != null){
+    await FB.update(R(romSti(larerKode)), { varighetMs: k.nyVarighet });
+  } else {
+    await FB.update(R(romSti(larerKode)), { 'klokke/endsAt': k.endsAt, 'klokke/pausetMedIgjen': k.pausetMedIgjen });
+  }
+});
+document.getElementById('klokke-null').addEventListener('click', async () => {
+  if(!larerRom) return;
+  await FB.update(R(romSti(larerKode)), { 'klokke/endsAt': null, 'klokke/pausetMedIgjen': null });
+});
+
+// Stor QR når læreren klikker på den lille
+document.getElementById('lobby-qr').addEventListener('click', () => {
+  const o = document.createElement('div');
+  o.style.cssText = 'position:fixed;inset:0;background:#fff9f0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;cursor:pointer;padding:20px;';
+  const pille = document.createElement('div');
+  pille.className = 'kodepille';
+  pille.style.fontSize = '4rem';
+  pille.textContent = larerKode;
+  const boks = document.createElement('div');
+  boks.className = 'qr-boks';
+  const c = document.createElement('canvas');
+  boks.appendChild(c);
+  const hint = document.createElement('div');
+  hint.className = 'blilenke';
+  hint.textContent = blilenke(larerKode);
+  o.appendChild(pille); o.appendChild(boks); o.appendChild(hint);
+  document.body.appendChild(o);
+  QR.tegn(c, blilenke(larerKode), Math.min(360, window.innerWidth - 90));
+  c.style.width = Math.min(360, window.innerWidth - 90) + 'px';
+  c.style.height = c.style.width;
+  o.addEventListener('click', () => o.remove());
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UI-ELEV
+   ══════════════════════════════════════════════════════════════════════════ */
+let elevKode = null, elevRom = null, elevAvlytt = null;
+let elevNavn = '', mittTema = null, visesTema = null, venterBytte = false;
+let sluttlydSpilt = false;
+
+const elevLagret = (() => {
+  try{ return JSON.parse(localStorage.getItem(LS.elev) || 'null'); }catch(e){ return null; }
+})();
+
+function lagreElev(){
+  try{
+    localStorage.setItem(LS.elev, JSON.stringify({ kode: elevKode, navn: elevNavn, tema: mittTema }));
+  }catch(e){}
+}
+
+/* Laster eleven siden på nytt uten nett, har vi ingenting å hente fra
+   Firebase — men temaet ligger i localStorage. Da viser vi det med en gang og
+   lar avlytteren ta over når nettet er tilbake, i stedet for å møte eleven med
+   en feilmelding hen ikke kommer videre fra. */
+function visLagretTema(kode){
+  if(!elevLagret || elevLagret.kode !== kode || !elevLagret.tema) return false;
+  elevKode = kode;
+  elevNavn = elevLagret.navn || '';
+  mittTema = elevLagret.tema;
+  visesTema = mittTema;
+  visSkjerm('skjerm-elev-tema');
+  document.getElementById('elev-temamerke').textContent = 'Ditt tema';
+  const ord = document.getElementById('elev-temaord');
+  ord.textContent = mittTema;
+  ord.classList.remove('spinner');
+  settKontakt(false);
+  startElev();
+  return true;
+}
+
+document.getElementById('elev-kode-neste').addEventListener('click', async () => {
+  skjulFeil('feil-kode');
+  const kode = document.getElementById('elev-kode').value.trim().toUpperCase();
+  if(!/^[A-Z0-9]{4,8}$/.test(kode)){
+    visFeil('feil-kode', 'Romkoden er fire tegn — bokstaver og tall. Sjekk tavla.');
+    return;
+  }
+  const knapp = document.getElementById('elev-kode-neste');
+  knapp.disabled = true;
+  try{
+    const id = await sikreAuth();
+    if(!id || !FB){
+      if(visLagretTema(kode)) return;
+      visFeil('feil-kode', 'Får ikke kontakt med Firebase. Sjekk nettet, eller be læreren kjøre tavlemodus.');
+      return;
+    }
+    const snap = await FB.get(R(romSti(kode)));
+    if(!snap.exists()){
+      visFeil('feil-kode', 'Fant ikke rom med koden ' + kode + '. Sjekk at du har skrevet riktig.');
+      return;
+    }
+    elevKode = kode;
+    laasOppLyd();
+    // Har vi vært her før i denne nettleseren, hopper vi rett inn igjen
+    const eksisterende = uid && snap.val().elever && snap.val().elever[uid];
+    if(eksisterende){
+      elevNavn = eksisterende.navn;
+      startElev();
+    } else {
+      visSkjerm('skjerm-elev-navn');
+      document.getElementById('elev-navn').focus();
+    }
+  }catch(e){
+    if(!visLagretTema(kode)){
+      visFeil('feil-kode', 'Fikk ikke kontakt. Sjekk nettet og prøv igjen.');
+    }
+  }finally{
+    knapp.disabled = false;
+  }
+});
+
+document.getElementById('elev-navn-neste').addEventListener('click', async () => {
+  skjulFeil('feil-navn');
+  const navn = document.getElementById('elev-navn').value.trim();
+  if(!navn){ visFeil('feil-navn', 'Skriv fornavnet ditt.'); return; }
+  if(navn.length > 24){ visFeil('feil-navn', 'Bruk bare fornavnet — maks 24 tegn.'); return; }
+  const knapp = document.getElementById('elev-navn-neste');
+  knapp.disabled = true;
+  try{
+    const id = await sikreAuth();
+    if(!id){ visFeil('feil-navn', 'Fikk ikke kontakt. Prøv igjen.'); return; }
+    // Bare navn og ts — reglene lar ikke eleven skrive sitt eget tema
+    await FB.update(R(romSti(elevKode) + '/elever/' + id), { navn, ts: naa() });
+    elevNavn = navn;
+    lagreElev();
+    startElev();
+  }catch(e){
+    visFeil('feil-navn', 'Kunne ikke bli med: ' + e.message);
+  }finally{
+    knapp.disabled = false;
+  }
+});
+
+function startElev(){
+  document.getElementById('vent-hilsen').textContent = 'Du er inne, ' + elevNavn + '!';
+  // Har vi allerede et tema (gjenopprettet uten nett), skal det bli stående
+  if(!mittTema) visSkjerm('skjerm-elev-vent');
+  history.replaceState(null, '', '?kode=' + encodeURIComponent(elevKode));
+  avlyttElev();
+}
+
+/* Åpnet eleven siden helt uten nett, rakk ikke Firebase å laste. Nettleseren
+   husker at modulen feilet, så nye import()-forsøk på samme adresse er
+   nytteløse — siden må lastes på nytt. Det gjør vi automatisk når nettet
+   melder seg tilbake, og eleven kan trykke selv i mellomtiden. Temaet står
+   trygt på skjermen hele veien, hentet fra localStorage. */
+let degradert = false;
+function gaaIDegradertModus(){
+  if(degradert) return;
+  degradert = true;
+  settKontakt(false);
+  const varsel = document.getElementById('nettvarsel');
+  if(varsel && !varsel.querySelector('button')){
+    const knapp = document.createElement('button');
+    knapp.id = 'proev-igjen';
+    knapp.textContent = 'Prøv igjen';
+    knapp.style.cssText = 'margin-left:12px;border:2px solid #fff;background:none;color:#fff;'
+      + 'font-family:inherit;font-weight:900;border-radius:9px;padding:3px 12px;cursor:pointer;';
+    knapp.addEventListener('click', () => location.reload());
+    varsel.appendChild(knapp);
+  }
+  window.addEventListener('online', () => location.reload(), { once: true });
+}
+
+/* Kobler eleven på rommet. Kom hen inn fra localStorage uten nett, finnes
+   verken Firebase eller uid ennå. */
+function avlyttElev(){
+  if(!FB || !uid){
+    sikreAuth().then(id => {
+      if(id && FB) avlyttElev();
+      else gaaIDegradertModus();
+    });
+    return;
+  }
+  if(elevAvlytt) elevAvlytt();
+  elevAvlytt = FB.onValue(R(romSti(elevKode)), snap => {
+    const rom = snap.val();
+    if(!rom){
+      // Læreren har avsluttet rommet — vis siste kjente tema, ikke en blank skjerm
+      document.getElementById('elev-temamerke').textContent = 'Økta er avsluttet';
+      return;
+    }
+    elevRom = rom;
+    tegnElev();
+  }, () => {});
+}
+
+function tegnElev(){
+  const rom = elevRom;
+  const meg = (rom.elever && uid) ? rom.elever[uid] : null;
+
+  if(rom.fase === 'lobby'){
+    visSkjerm('skjerm-elev-vent');
+    return;
+  }
+  visSkjerm('skjerm-elev-tema');
+
+  const nyttTema = meg ? meg.tema : null;
+  if(nyttTema && nyttTema !== mittTema){
+    mittTema = nyttTema;
+    lagreElev();
+  }
+
+  // Bytte-billetten: knappen forsvinner for godt når den er brukt
+  const kanBytte = rom.byttBillettPa === true && meg && meg.harByttet !== true && !!mittTema;
+  const byttKnapp = document.getElementById('elev-bytt');
+  byttKnapp.classList.toggle('skjult', !kanBytte || venterBytte);
+  document.getElementById('elev-byttehjelp').textContent =
+    (meg && meg.harByttet) ? 'Bytte-billetten er brukt.' : (kanBytte ? 'Du har én bytte-billett.' : '');
+
+  if(venterBytte && meg && meg.harByttet === true){
+    venterBytte = false;
+    spinnController.avslutt(mittTema);
+  } else if(!venterBytte && mittTema && visesTema !== mittTema){
+    spinnController.avslutt(mittTema);
+  } else if(!mittTema){
+    spinnController.start();
+  }
+}
+
+/* Spinnet er selve poenget: temaer flimrer forbi, bremser opp og låser seg
+   med et klakk. Venter vi fortsatt på kortet fra læreren, flimrer det videre
+   til det kommer — så ventetiden på nettet blir en del av dramatikken. */
+const spinnController = (function(){
+  const el = document.getElementById('elev-temaord');
+  const MIN_SPINN = 1200;
+  let gaar = false, startTid = 0, nesteBytte = 0, maal = null, rafId = null;
+
+  function ordliste(){
+    const l = (elevRom && elevRom.temaListe) ? elevRom.temaListe : [];
+    return l.length ? l : ['…'];
+  }
+  function flimre(){
+    const l = ordliste();
+    el.textContent = l[Math.floor(Math.random()*l.length)];
+  }
+  function steg(t){
+    if(!gaar) return;
+    const gaatt = t - startTid;
+    if(maal && gaatt >= MIN_SPINN){ laas(); return; }
+    if(t >= nesteBytte){
+      flimre();
+      // Bremser bare ned når vi vet hvor vi skal lande
+      const p = maal ? Math.min(1, gaatt/MIN_SPINN) : 0;
+      nesteBytte = t + 45 + p*p*165;
+    }
+    rafId = requestAnimationFrame(steg);
+  }
+  function laas(){
+    gaar = false;
+    if(rafId){ cancelAnimationFrame(rafId); rafId = null; }
+    el.textContent = maal;
+    el.classList.remove('spinner');
+    el.classList.remove('laast');
+    void el.offsetWidth; // tvinger omstart av animasjonen ved bytte
+    el.classList.add('laast');
+    visesTema = maal;
+    spillKlakk();
+    document.getElementById('elev-temamerke').textContent = 'Ditt tema';
+  }
+  function begynn(){
+    gaar = true;
+    startTid = performance.now();
+    nesteBytte = 0;
+    el.classList.add('spinner');
+    el.classList.remove('laast');
+    document.getElementById('elev-temamerke').textContent = 'Trekker …';
+    if(rafId === null) rafId = requestAnimationFrame(steg);
+  }
+  return {
+    // Flimrer i det uendelige — brukes mens vi venter på kortet fra læreren
+    start(){
+      if(gaar && !maal) return;
+      maal = null;
+      visesTema = null;
+      begynn();
+    },
+    /* Kjører den siste sekunden med oppbremsing og låser. Klokka startes på
+       nytt her, ikke da flimringen begynte: har eleven ventet fem sekunder på
+       kortet, skal hen likevel få hele det dramatiske nedbremsingen — ikke et
+       øyeblikkelig hopp rett til svaret. */
+    avslutt(tema){
+      if(visesTema === tema) return;      // står allerede på dette temaet
+      if(gaar && maal === tema) return;   // er allerede på vei mot det
+      maal = tema;
+      begynn();
+    }
+  };
+})();
+
+document.getElementById('elev-bytt').addEventListener('click', async () => {
+  if(!elevKode || !uid || venterBytte) return;
+  venterBytte = true;
+  document.getElementById('elev-bytt').classList.add('skjult');
+  spinnController.start();
+  try{
+    await FB.set(R(romSti(elevKode) + '/elever/' + uid + '/onskerBytte'), true);
+  }catch(e){
+    venterBytte = false;
+    spinnController.avslutt(mittTema);
+  }
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TAVLEMODUS
+   Alt lokalt: ingen Firebase, ingen elevenheter, ingen romkode.
+   ══════════════════════════════════════════════════════════════════════════ */
+let tavleTema = null, tavleNiva = null;
+let tavleRader = [], tavleKlokke = null, tavleVarighet = NIVAAER.kjapt;
+let tavleSluttSpilt = false;
+
+tavleTema = byggTemaVelger(document.getElementById('tavle-temavelger'));
+tavleNiva = knyttValg(document.getElementById('tavle-niva'), 'niva', 'kjapt', n => {
+  tavleVarighet = NIVAAER[n];
+});
+
+const tavleNavnFelt = document.getElementById('tavle-navn');
+function tavleNavnListe(){
+  return tavleNavnFelt.value.split('\n').map(s => s.trim()).filter(Boolean);
+}
+tavleNavnFelt.addEventListener('input', () => {
+  const n = tavleNavnListe().length;
+  document.getElementById('tavle-antall').textContent = n + (n === 1 ? ' navn' : ' navn');
+});
+
+function tavleTrekk(){
+  const navn = tavleNavnListe();
+  const temaer = tavleTema.hent();
+  if(!navn.length){ visFeil('feil-tavle', 'Lim inn minst ett navn.'); return false; }
+  if(temaer.length < 2){ visFeil('feil-tavle', 'Du trenger minst to temaer i stokken.'); return false; }
+  skjulFeil('feil-tavle');
+  let igjen = [];
+  tavleRader = navn.map(n => {
+    const t = trekkKort(igjen, temaer);
+    igjen = t.rest;
+    return { navn: n, tema: t.tema, harByttet: false };
+  });
+  tavleVarighet = NIVAAER[tavleNiva.hent()];
+  tavleKlokke = null;
+  tavleSluttSpilt = false;
+  tegnRutenett(document.getElementById('tavle-resultat-rutenett'), tavleRader);
+  return true;
+}
+
+document.getElementById('tavle-trekk').addEventListener('click', () => {
+  laasOppLyd();
+  if(tavleTrekk()) visSkjerm('skjerm-tavle-resultat');
+});
+document.getElementById('tavle-trekk-igjen').addEventListener('click', () => { tavleTrekk(); });
+document.getElementById('tavle-nytt-oppsett').addEventListener('click', () => visSkjerm('skjerm-tavle-oppsett'));
+
+document.getElementById('tk-start').addEventListener('click', () => {
+  laasOppLyd();
+  tavleKlokke = klokkeStart(tavleKlokke, tavleVarighet);
+  tavleSluttSpilt = false;
+});
+document.getElementById('tk-pause').addEventListener('click', () => {
+  const k = klokkePause(tavleKlokke, tavleVarighet);
+  if(k) tavleKlokke = k;
+});
+document.getElementById('tk-pluss').addEventListener('click', () => {
+  const k = klokkePluss(tavleKlokke, tavleVarighet);
+  if(k.nyVarighet != null) tavleVarighet = k.nyVarighet;
+  else tavleKlokke = k;
+});
+document.getElementById('tk-null').addEventListener('click', () => {
+  tavleKlokke = null;
+  tavleSluttSpilt = false;
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TIKK — én felles løkke som tegner alle klokkene fra absolutt endsAt
+   ══════════════════════════════════════════════════════════════════════════ */
+setInterval(() => {
+  // Lærerens oversiktstavle
+  if(larerRom && !document.getElementById('skjerm-larer-tavle').classList.contains('skjult')){
+    const v = larerRom.varighetMs || NIVAAER.kjapt;
+    const ms = msIgjen(larerRom.klokke, v);
+    tegnKlokke(document.getElementById('larer-klokke'), ms, !!(larerRom.klokke && larerRom.klokke.endsAt));
+  }
+  // Elevens klokke
+  if(elevRom && !document.getElementById('skjerm-elev-tema').classList.contains('skjult')){
+    const v = elevRom.varighetMs || NIVAAER.kjapt;
+    const gaar = !!(elevRom.klokke && elevRom.klokke.endsAt);
+    const ms = msIgjen(elevRom.klokke, v);
+    const linje = document.getElementById('elev-klokkelinje');
+    // Klokka vises først når læreren har startet den — ellers stjeler den
+    // oppmerksomhet fra temaet
+    linje.classList.toggle('skjult', !gaar && !(elevRom.klokke && elevRom.klokke.pausetMedIgjen != null) && elevRom.fase !== 'ferdig');
+    tegnKlokke(document.getElementById('elev-klokke'), ms, gaar);
+    if(gaar && ms <= 0 && !sluttlydSpilt){ sluttlydSpilt = true; spillSlutt(); }
+    if(ms > 0) sluttlydSpilt = false;
+  }
+  // Tavlemodus
+  if(!document.getElementById('skjerm-tavle-resultat').classList.contains('skjult')){
+    const ms = msIgjen(tavleKlokke, tavleVarighet);
+    const gaar = !!(tavleKlokke && tavleKlokke.endsAt);
+    tegnKlokke(document.getElementById('tavleklokke'), ms, gaar);
+    if(gaar && ms <= 0 && !tavleSluttSpilt){ tavleSluttSpilt = true; spillSlutt(); }
+  }
+}, 200);
+
+/* ══════════════════════════════════════════════════════════════════════════
+   OPPSTART
+   ══════════════════════════════════════════════════════════════════════════ */
+(function start(){
+  try{
+    const fraUrl = (new URLSearchParams(location.search).get('kode') || '').trim().toUpperCase();
+    if(fraUrl && /^[A-Z0-9]{4,8}$/.test(fraUrl)){
+      // QR-koden og delelenka tar eleven rett hit
+      document.getElementById('elev-kode').value = fraUrl;
+      visSkjerm('skjerm-elev-kode');
+      document.getElementById('elev-kode-neste').click();
+      return;
+    }
+    if(elevLagret && elevLagret.kode && elevLagret.tema){
+      // Eleven har vært inne før — tilby å gå rett inn igjen
+      document.getElementById('elev-kode').value = elevLagret.kode;
+    }
+    visSkjerm('skjerm-start');
+  }catch(e){
+    visSkjerm('skjerm-start');
+  }
+})();
+</script>
+</body>
+</html>
