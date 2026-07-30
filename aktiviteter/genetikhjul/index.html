@@ -380,6 +380,18 @@ const GENES = [
     yesEmoji:'🟤', noEmoji:'🔵' },
 ];
 
+/* Hvilket av de 64 feltene en fullført profil havner i (1–64), i samme
+   rekkefølge som ringene i det personlige hjulet (se renderPersonalWheel).
+   Brukes av tavla til å vise hvilke tall klassen har "tatt". */
+function computeWheelNumber(svar){
+  let cum = 0;
+  for(let i=0; i<GENES.length; i++){
+    const bit = svar[GENES[i].key] === 'rec' ? 1 : 0;
+    cum = cum*2 + bit;
+  }
+  return cum + 1;
+}
+
 /* ============ ROLLEVALG ============ */
 function showTopScreen(id){
   document.querySelectorAll('.top-screen').forEach(s=>s.classList.add('hidden'));
@@ -793,7 +805,13 @@ function renderDashboard(){
     };
   });
 
-  renderAggWheel(stats, list.length);
+  const tallCounts = new Array(64).fill(0);
+  list.forEach(s=>{
+    if(!s.svar) return;
+    tallCounts[computeWheelNumber(s.svar) - 1]++;
+  });
+
+  renderAggWheel(stats, list.length, tallCounts);
   renderTopList(stats);
 }
 
@@ -836,14 +854,17 @@ function pctToColor(pct){
   return `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`;
 }
 
-/* ============ AGGREGERT HJUL (SVG heatmap) ============
-   Med vilje IKKE et forgrenet 64-felts hjul som det personlige: en hel
-   klasse fordelt på 64 mulige kombinasjoner ville gitt tomme felt de fleste
-   steder. Her er hver ring uavhengig og deles i to etter hvor stor andel av
-   klassen som svarte dominant/recessivt på akkurat det genet. */
-const A_SIZE = 460, A_CX = A_SIZE/2, A_CY = A_SIZE/2, A_R0 = 42, A_RSTEP = 30;
+/* ============ AGGREGERT HJUL (SVG heatmap + tallring) ============
+   De 6 innerste ringene er MED VILJE ikke forgrenet som det personlige
+   hjulet: en hel klasse fordelt på 64 mulige kombinasjoner ville gitt tomme
+   felt de fleste steder. Her er hver ring uavhengig og deles i to etter hvor
+   stor andel av klassen som svarte dominant/recessivt på akkurat det genet.
+   Den ytterste, tynne ringen ER de 64 feltene (samme nummerering som det
+   personlige hjulet, se computeWheelNumber) — den viser bare AT et tall er
+   tatt, ikke fenotypen bak det, så den unngår problemet over. */
+const A_SIZE = 520, A_CX = A_SIZE/2, A_CY = A_SIZE/2, A_R0 = 42, A_RSTEP = 30, A_NUMRING_W = 24;
 
-function renderAggWheel(stats, n){
+function renderAggWheel(stats, n, tallCounts){
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS,'svg');
   svg.setAttribute('viewBox', `0 0 ${A_SIZE} ${A_SIZE}`);
@@ -887,11 +908,41 @@ function renderAggWheel(stats, n){
   text.textContent = n;
   svg.appendChild(text);
 
-  const outerR = A_R0 + GENES.length*A_RSTEP;
+  // ytterste ring: alle 64 mulige tall, med de klassen faktisk har "tatt" markert
+  const numRIn = A_R0 + GENES.length*A_RSTEP;
+  const numROut = numRIn + A_NUMRING_W;
+  for(let i=0;i<64;i++){
+    const angW = 360/64;
+    const aStart = i*angW, aEnd = aStart+angW;
+    const count = tallCounts ? tallCounts[i] : 0;
+    const path = document.createElementNS(svgNS,'path');
+    path.setAttribute('d', donutSectorPath(A_CX,A_CY,numRIn,numROut,aStart,aEnd));
+    path.setAttribute('fill', count>0 ? '#facc15' : '#fff9f0');
+    path.setAttribute('stroke', '#1a1a1a');
+    path.setAttribute('stroke-width', '1');
+    svg.appendChild(path);
+
+    const midAngle = (aStart+aEnd)/2, midR = (numRIn+numROut)/2;
+    const [tx,ty] = pt(A_CX,A_CY,midR,midAngle);
+    const text = document.createElementNS(svgNS,'text');
+    text.setAttribute('x', tx); text.setAttribute('y', ty+3);
+    text.setAttribute('text-anchor','middle');
+    text.setAttribute('font-size','7.5');
+    text.setAttribute('font-weight', count>0 ? '900' : '700');
+    text.setAttribute('fill', count>0 ? '#1a1a1a' : '#c9bfa8');
+    text.textContent = String(i+1) + (count>1 ? '×'+count : '');
+    svg.appendChild(text);
+  }
+
+  const outerR = numROut;
   const circle2 = document.createElementNS(svgNS,'circle');
   circle2.setAttribute('cx',A_CX); circle2.setAttribute('cy',A_CY); circle2.setAttribute('r',outerR);
   circle2.setAttribute('fill','none'); circle2.setAttribute('stroke','#1a1a1a'); circle2.setAttribute('stroke-width','3');
   svg.appendChild(circle2);
+  const innerFrame = document.createElementNS(svgNS,'circle');
+  innerFrame.setAttribute('cx',A_CX); innerFrame.setAttribute('cy',A_CY); innerFrame.setAttribute('r',numRIn);
+  innerFrame.setAttribute('fill','none'); innerFrame.setAttribute('stroke','#1a1a1a'); innerFrame.setAttribute('stroke-width','2');
+  svg.appendChild(innerFrame);
 
   const holder = document.getElementById('wheel-agg');
   holder.innerHTML = '';
@@ -903,7 +954,8 @@ function renderAggWheel(stats, n){
   legend.style.fontWeight = '800';
   legend.style.fontSize = '.82rem';
   legend.style.opacity = '.65';
-  legend.innerHTML = GENES.map((g,i)=>`Ring ${i+1}: ${g.navn}`).join(' &nbsp;·&nbsp; ');
+  legend.innerHTML = GENES.map((g,i)=>`Ring ${i+1}: ${g.navn}`).join(' &nbsp;·&nbsp; ')
+    + ' &nbsp;·&nbsp; Ytterste ring: elevenes tall (1–64) — gult felt betyr minst én elev landet der';
   holder.appendChild(legend);
 }
 
