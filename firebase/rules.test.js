@@ -1,5 +1,6 @@
 // Simulerer reglene i database.rules.json mot ekte klientoperasjoner fra
-// aktiviteter/poll/, aktiviteter/terningspill/ og aktiviteter/genetikhjul/.
+// aktiviteter/poll/, aktiviteter/terningspill/, aktiviteter/genetikhjul/ og
+// aktiviteter/temaspinner/.
 //
 //   npm install targaryen
 //   node firebase/rules.test.js
@@ -171,6 +172,86 @@ check('skriver rett på /genetikhjul', false, db({}, LARER).write('/genetikhjul'
 console.log('--- genetikhjul: klasser uten owner (anonym pålogging av)');
 check('uinnlogget tavle nullstiller klasse uten owner', true, db(loestHjul, null).write('/genetikhjul/' + KODE + '/elever', null));
 check('klasse uten owner: ugyldig profil fortsatt blokkert', false, db(loestHjul, null).write('/genetikhjul/' + KODE + '/elever/-Nh2', { navn: 'Ada', kjonn: 'F', ts: now }));
+
+/* ══════════════════════════════════════════════════════════════
+   TEMASPINNER
+   Læreren eier rommet og er eneste kortgiver: bare eieren skriver fase,
+   klokke, stokk og elevenes temaer. Eleven skriver bare sitt eget navn
+   (én gang) og sin egen bytte-forespørsel.
+   ══════════════════════════════════════════════════════════════ */
+const TKODE = '8QY8';
+const tRom = {
+  opprettet: now,
+  owner: LARER.uid,
+  fase: 'lobby',
+  temaListe: ['Trafikklys', 'Køer', 'Sokker'],
+  stokk: { igjen: ['Køer', 'Sokker'] },
+  byttBillettPa: true,
+  varighetMs: 120000,
+  klokke: { endsAt: now + 120000 },
+  elever: {
+    [ELEV.uid]: { navn: 'Ida', ts: now, tema: 'Trafikklys', harByttet: false },
+  },
+};
+const tp = (rom) => ({ temaspinner: { [TKODE]: rom || tRom } });
+const tPath = '/temaspinner/' + TKODE;
+const nyttTRom = { opprettet: now, owner: LARER.uid, fase: 'lobby', temaListe: ['Trafikklys', 'Køer'] };
+
+console.log('--- temaspinner: lærerens flyt');
+check('lærer oppretter rom', true, db({}, LARER).write(tPath, nyttTRom));
+check('lærer overskriver sitt eget rom', true, db(tp(), LARER).write(tPath, nyttTRom));
+check('lærer setter fase til trekning', true, db(tp(), LARER).write(tPath + '/fase', 'trekning'));
+check('lærer starter klokka', true, db(tp(), LARER).write(tPath + '/klokke/endsAt', now + 120000));
+check('lærer pauser klokka', true, db(tp(), LARER).update(tPath + '/klokke', { endsAt: null, pausetMedIgjen: 45000 }));
+check('lærer oppdaterer stokken', true, db(tp(), LARER).write(tPath + '/stokk/igjen', ['Sokker']));
+check('lærer deler ut tema', true, db(tp(), LARER).write(tPath + '/elever/' + ELEV.uid + '/tema', 'Køer'));
+check('lærer merker bytte brukt', true, db(tp(), LARER).update(tPath + '/elever/' + ELEV.uid, { tema: 'Sokker', harByttet: true, onskerBytte: false }));
+check('lærer tømmer elevlista', true, db(tp(), LARER).write(tPath + '/elever', null));
+check('lærer sletter rommet', true, db(tp(), LARER).write(tPath, null));
+
+console.log('--- temaspinner: elevens flyt');
+check('elev leser rommet (polling)', true, db(tp(), ELEV2).read(tPath));
+check('elev melder seg på med navn', true, db(tp(), ELEV2).update(tPath + '/elever/' + ELEV2.uid, { navn: 'Jonas', ts: now }));
+check('elev ber om bytte', true, db(tp(), ELEV).write(tPath + '/elever/' + ELEV.uid + '/onskerBytte', true));
+
+console.log('--- temaspinner: gjenbruk av romkode');
+const gammeltTRom = Object.assign({}, tRom, { opprettet: now - 20 * 3600 * 1000 });
+check('annen lærer overtar gammel kode (>12t)', true, db(tp(gammeltTRom), ELEV2).write(tPath, Object.assign({}, nyttTRom, { owner: ELEV2.uid })));
+check('annen lærer kaprer ferskt rom', false, db(tp(), ELEV2).write(tPath, Object.assign({}, nyttTRom, { owner: ELEV2.uid })));
+
+console.log('--- temaspinner: hærverk');
+check('elev velger sitt eget tema', false, db(tp(), ELEV).write(tPath + '/elever/' + ELEV.uid + '/tema', 'Sokker'));
+check('elev skriver hele sin egen node med tema', false, db(tp(), ELEV).write(tPath + '/elever/' + ELEV.uid, { navn: 'Ida', ts: now, tema: 'Sokker' }));
+check('elev endrer navnet sitt etterpå', false, db(tp(), ELEV).write(tPath + '/elever/' + ELEV.uid + '/navn', 'Tull'));
+check('elev setter harByttet selv', false, db(tp(), ELEV).write(tPath + '/elever/' + ELEV.uid + '/harByttet', false));
+check('elev ber om bytte to ganger', false, db(tp(Object.assign({}, tRom, { elever: { [ELEV.uid]: { navn: 'Ida', ts: now, tema: 'Køer', harByttet: true } } })), ELEV).write(tPath + '/elever/' + ELEV.uid + '/onskerBytte', true));
+check('elev ber om bytte når det er avslått', false, db(tp(Object.assign({}, tRom, { byttBillettPa: false })), ELEV).write(tPath + '/elever/' + ELEV.uid + '/onskerBytte', true));
+check('elev ber om bytte for en annen', false, db(tp(), ELEV2).write(tPath + '/elever/' + ELEV.uid + '/onskerBytte', true));
+check('elev endrer fasen', false, db(tp(), ELEV).write(tPath + '/fase', 'ferdig'));
+check('elev stopper klokka', false, db(tp(), ELEV).write(tPath + '/klokke/endsAt', now + 999999));
+check('elev endrer temalista', false, db(tp(), ELEV).write(tPath + '/temaListe', ['Lett tema']));
+check('elev stokker om', false, db(tp(), ELEV).write(tPath + '/stokk/igjen', ['Sokker']));
+check('elev sletter en annens node', false, db(tp(), ELEV2).write(tPath + '/elever/' + ELEV.uid, null));
+check('elev tømmer elevlista', false, db(tp(), ELEV).write(tPath + '/elever', null));
+check('elev overtar eierskapet', false, db(tp(), ELEV).write(tPath + '/owner', ELEV.uid));
+check('uinnlogget oppretter rom', false, db({}, null).write(tPath, nyttTRom));
+check('uinnlogget melder seg på', false, db(tp(), null).update(tPath + '/elever/anon', { navn: 'Anon', ts: now }));
+check('lister opp /temaspinner', false, db(tp(), LARER).read('/temaspinner'));
+
+console.log('--- temaspinner: ugyldige data');
+check('ugyldig fase', false, db(tp(), LARER).write(tPath + '/fase', 'presentasjon'));
+check('ugyldig romkode', false, db({}, LARER).write('/temaspinner/8qy 8', nyttTRom));
+check('for lang romkode', false, db({}, LARER).write('/temaspinner/' + 'A'.repeat(12), nyttTRom));
+check('rom uten temaListe', false, db({}, LARER).write(tPath, { opprettet: now, owner: LARER.uid, fase: 'lobby' }));
+check('rom med annens uid som owner', false, db({}, ELEV).write(tPath, Object.assign({}, nyttTRom, { owner: LARER.uid })));
+check('tomt elevnavn', false, db(tp(), ELEV2).update(tPath + '/elever/' + ELEV2.uid, { navn: '', ts: now }));
+check('kjempelangt elevnavn', false, db(tp(), ELEV2).update(tPath + '/elever/' + ELEV2.uid, { navn: 'x'.repeat(60), ts: now }));
+check('elev uten ts', false, db(tp(), ELEV2).write(tPath + '/elever/' + ELEV2.uid, { navn: 'Jonas' }));
+check('ukjent felt på elev', false, db(tp(), LARER).write(tPath + '/elever/' + ELEV2.uid, { navn: 'Jonas', ts: now, poeng: 10 }));
+check('ukjent felt på klokka', false, db(tp(), LARER).write(tPath + '/klokke/hastighet', 2));
+check('kjempelangt tema', false, db(tp(), LARER).write(tPath + '/elever/' + ELEV.uid + '/tema', 'x'.repeat(200)));
+check('urimelig lang varighet', false, db(tp(), LARER).write(tPath + '/varighetMs', 99999999));
+check('skriver rett på /temaspinner', false, db({}, LARER).write('/temaspinner', { evil: true }));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

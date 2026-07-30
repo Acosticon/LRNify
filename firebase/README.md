@@ -11,11 +11,18 @@ gang uten å la hvem som helst skrive hva som helst.
 | `aktiviteter/poll/` | Realtime Database | `rooms/{ROMKODE}` | Lærer lager/sletter rom, elev teller opp én stemme |
 | `aktiviteter/terningspill/` | Realtime Database | `krle/{ROMKODE}` | Lærer lager/sletter rom og setter `state`, elev legger til lag og svar |
 | `aktiviteter/genetikhjul/` | Realtime Database | `genetikhjul/{KLASSEKODE}` | Elev sender inn én profil, lærerens tavle nullstiller klassen |
+| `aktiviteter/temaspinner/` | Realtime Database | `temaspinner/{ROMKODE}` | Lærer lager rom, deler ut temaer og styrer klokka; elev melder seg på og ber om bytte |
 | `loype/drobak-akvarium/` | Firestore | `fjordvoktere` | Legger til ett lag på veggen (`{ lag, tid }`) |
 
-Ingen av appene logger inn brukere, så reglene kan ikke kreve `auth != null`.
-Sikkerheten ligger i at romkoden må være kjent, og i at reglene låser *formen*
-på det som kan skrives.
+Ingen av appene ber brukeren logge inn, så reglene kan i hovedsak ikke kreve
+`auth != null`. Sikkerheten ligger i at romkoden må være kjent, og i at reglene
+låser *formen* på det som kan skrives.
+
+**Unntaket er Temaspinner**, som er bygget etter at anonym pålogging kom på
+plass og derfor krever den overalt: elevens anonyme id *er* nøkkelen under
+`elever/`, og det er den som skiller «mitt tema» fra «en annens tema». Uten
+anonym pålogging virker ikke rom-modus i Temaspinner — men tavlemodus i samme
+app går helt uten nett og er upåvirket.
 
 ## Raskeste vei (Firebase Console, ~2 minutter)
 
@@ -31,9 +38,11 @@ på det som kan skrives.
 
 Firestore har sin egen 30-dagers utløpsfrist, så ta den samtidig.
 
-Rekkefølgen spiller ingen rolle, og steg 1 kan hoppes over: appene prøver å
-logge på anonymt, og går videre som før hvis det ikke lar seg gjøre. Da mister
-du bare eier-beskyttelsen under, ikke funksjonaliteten.
+Rekkefølgen spiller ingen rolle. Steg 1 kan hoppes over for de eldre appene:
+de prøver å logge på anonymt, og går videre som før hvis det ikke lar seg
+gjøre — da mister du bare eier-beskyttelsen under, ikke funksjonaliteten.
+Temaspinner er unntaket, se avsnittet over: der er steg 1 påkrevd for
+rom-modus.
 
 ## Alternativ: Firebase CLI
 
@@ -48,7 +57,7 @@ riktige filer.
 
 ## Teste reglene
 
-`rules.test.js` simulerer de faktiske klientkallene fra appene (95 tilfeller:
+`rules.test.js` simulerer de faktiske klientkallene fra appene (140 tilfeller:
 både det som skal virke og det som skal blokkeres, med og uten anonym
 pålogging):
 
@@ -136,8 +145,16 @@ pålogging blir slått av igjen.
   `kjonn` `M` eller `F`. Profiler kan legges til, men ikke endres eller
   slettes enkeltvis. Tavla merker klassekoden med sin anonyme id første gang
   visningen startes, og bare den kan tømme klassen med «Nullstill klasse».
+* Temaspinner: romkoden er 4 tegn `A–Z`/`0–9`. Læreren som lager rommet er
+  eneste kortgiver — bare eieren kan sette `fase`, `klokke`, `stokk` og
+  elevenes `tema`. Eleven kan bare skrive sitt eget navn (én gang, under sin
+  egen anonyme id) og sin egen `onskerBytte`, og bare når bytte-billetten er
+  påslått og ikke allerede brukt. Det gjør at ingen kan velge sitt eget tema,
+  gi seg selv en ny bytte-billett eller stoppe klokka for klassen. En romkode
+  kan gjenbrukes av en annen lærer først når rommet er over 12 timer gammelt,
+  så et rom som er i bruk ikke kan overskrives midt i en økt.
 * Lengdegrenser på all tekst (spørsmål 300, alternativ 200, svar 500, lagnavn
-  24 tegn), og ukjente felt avvises.
+  24 tegn, tema 120 tegn), og ukjente felt avvises.
 
 **Firestore**
 
@@ -149,8 +166,10 @@ pålogging blir slått av igjen.
 
 * **Rom blir liggende.** Realtime Database har ingen automatisk sletting. Rom
   som læreren ikke lukker, blir liggende for alltid. Rydd av og til i
-  konsollen, eller slett `rooms`/`krle`/`genetikhjul` helt mellom skoleårene —
-  appene lager nye rom ved behov.
+  konsollen, eller slett `rooms`/`krle`/`genetikhjul`/`temaspinner` helt
+  mellom skoleårene — appene lager nye rom ved behov. Temaspinner rydder litt
+  selv: en romkode som er over 12 timer gammel kan overskrives av neste lærer
+  som tilfeldigvis trekker den.
 * **Spam.** Anonyme id-er er gratis å lage: den som virkelig vil, kan tømme
   nettleserdata og få en ny id, eller lage mange tomme rom. Det hever terskelen
   fra «hold inne F5» til «skriv et skript», men fjerner den ikke. Vil du
