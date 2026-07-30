@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Genetisk Hjul</title>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<style>
+  :root{
+    --cream:#fff9f0;
+    --yellow:#facc15;
+    --ink:#1a1a1a;
+    --dom:#f97316;
+    --rec:#38bdf8;
+    --green:#22c55e;
+    --red:#ef4444;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; min-height:100vh; background:var(--cream);
+    font-family:'Nunito',sans-serif; color:var(--ink);
+    display:flex; flex-direction:column; align-items:center;
+    padding:16px; padding-bottom:40px;
+  }
+  h1{
+    font-family:'Chewy',cursive; font-size:1.9rem; margin:8px 0 4px;
+    text-align:center; color:var(--ink);
+  }
+  .sub{ font-weight:700; opacity:.65; margin-bottom:18px; text-align:center; font-size:.95rem;}
+  .card{
+    background:#fff; border:4px solid var(--ink); border-radius:22px;
+    padding:22px 20px; width:100%; max-width:440px;
+    box-shadow:6px 6px 0 var(--ink);
+  }
+  input[type=text]{
+    width:100%; padding:14px 16px; border:3px solid var(--ink); border-radius:14px;
+    font-family:'Nunito'; font-weight:800; font-size:1.1rem; margin-top:8px;
+    background:var(--cream);
+  }
+  label.field-label{ font-weight:900; font-size:.9rem; text-transform:uppercase; letter-spacing:.03em; opacity:.7;}
+  .btn{
+    display:block; width:100%; border:4px solid var(--ink); border-radius:16px;
+    background:var(--yellow); font-family:'Nunito'; font-weight:900; font-size:1.15rem;
+    padding:16px; margin-top:16px; cursor:pointer; box-shadow:4px 4px 0 var(--ink);
+    transition:transform .08s;
+  }
+  .btn:active{ transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+  .btn.secondary{ background:#fff; }
+  .btn.big-choice{ font-size:1.3rem; padding:22px 16px; margin-top:14px; }
+  .sex-row{ display:flex; gap:12px; margin-top:10px; }
+  .sex-btn{
+    flex:1; border:4px solid var(--ink); border-radius:16px; padding:22px 8px;
+    background:#fff; font-family:'Chewy'; font-size:2rem; cursor:pointer;
+    box-shadow:4px 4px 0 var(--ink);
+  }
+  .sex-btn.active{ background:var(--yellow); }
+  .progress{ display:flex; gap:6px; justify-content:center; margin:18px 0 8px; }
+  .dot{ width:12px; height:12px; border-radius:50%; border:2px solid var(--ink); background:#fff; }
+  .dot.done{ background:var(--green); }
+  .dot.now{ background:var(--yellow); }
+  .q-title{ font-family:'Chewy'; font-size:1.5rem; text-align:center; margin:4px 0 6px; }
+  .q-text{ font-weight:800; text-align:center; font-size:1.15rem; margin-bottom:6px; }
+  .choice-row{ display:flex; flex-direction:column; gap:12px; margin-top:14px; }
+  .choice-btn{
+    border:4px solid var(--ink); border-radius:16px; padding:18px; background:#fff;
+    font-weight:900; font-size:1.1rem; cursor:pointer; box-shadow:4px 4px 0 var(--ink);
+    text-align:left; display:flex; align-items:center; gap:12px;
+  }
+  .choice-btn .emoji{ font-size:1.6rem; }
+  .choice-btn:active{ transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+  .wheel-wrap{ display:flex; justify-content:center; margin:18px 0 6px; }
+  svg{ max-width:100%; height:auto; }
+  .wheel-wrap > div.is-fullscreen{
+    background:var(--cream); width:100vw; height:100vh;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .wheel-wrap > div.is-fullscreen svg{ width:92vmin; height:92vmin; max-width:none; }
+  .status{ text-align:center; font-weight:800; margin-top:10px; opacity:.7; font-size:.9rem;}
+  .hidden{ display:none !important; }
+  .center-msg{ text-align:center; font-weight:800; padding:30px 10px; }
+  .final-emoji{ font-size:3rem; text-align:center; margin-bottom:6px;}
+  .error{ color:var(--red); font-weight:800; text-align:center; margin-top:10px; }
+  footer{ margin-top:24px; opacity:.4; font-size:.8rem; font-weight:700; }
+  .action-row{ display:flex; gap:10px; margin-top:14px; }
+  .action-row .btn{ margin-top:0; }
+</style>
+</head>
+<body>
+
+<h1>🧬 Genetisk Hjul</h1>
+<div class="sub">Bygg din egen genetiske profil</div>
+
+<!-- STEG 0: Klassekode -->
+<div class="card" id="step-kode">
+  <label class="field-label">Klassekode (fra læreren)</label>
+  <input type="text" id="input-kode" placeholder="f.eks. 8B-HOST26" autocomplete="off"
+         maxlength="24" spellcheck="false" autocapitalize="characters"
+         style="text-transform:uppercase;">
+  <button class="btn" onclick="goToNavn()">Neste →</button>
+  <div class="error hidden" id="err-kode"></div>
+</div>
+
+<!-- STEG 1: Navn + kjønn -->
+<div class="card hidden" id="step-navn">
+  <label class="field-label">Fornavn</label>
+  <input type="text" id="input-navn" placeholder="Skriv fornavnet ditt" autocomplete="off" maxlength="24">
+  <label class="field-label" style="margin-top:16px; display:block;">Kjønn</label>
+  <div class="sex-row">
+    <div class="sex-btn" id="sex-m" onclick="setSex('M')">♂</div>
+    <div class="sex-btn" id="sex-f" onclick="setSex('F')">♀</div>
+  </div>
+  <button class="btn" onclick="goToQuiz()">Start →</button>
+  <div class="error hidden" id="err-navn"></div>
+</div>
+
+<!-- STEG 2: Spørsmål + hjul -->
+<div class="card hidden" id="step-quiz">
+  <div class="progress" id="progress"></div>
+  <div class="q-title" id="q-title"></div>
+  <div class="q-text" id="q-text"></div>
+  <div class="choice-row" id="choice-row"></div>
+  <div class="wheel-wrap"><div id="wheel-holder"></div></div>
+  <div class="status" id="status-text"></div>
+</div>
+
+<!-- STEG 3: Ferdig -->
+<div class="card hidden" id="step-done">
+  <div class="final-emoji">🎉</div>
+  <div class="center-msg">Takk! Profilen din er sendt inn og vises nå på tavla.</div>
+  <div class="wheel-wrap"><div id="wheel-final"></div></div>
+  <div class="action-row">
+    <button class="btn secondary" onclick="toggleFullscreen('wheel-final')">⛶ Fullskjerm</button>
+    <button class="btn secondary" onclick="downloadWheelImage('wheel-final')">📷 Last ned bilde</button>
+  </div>
+  <button class="btn" onclick="location.reload()">Gjør på nytt</button>
+</div>
+
+<footer>LRNify · Genetisk Hjul</footer>
+
+<script>
+/* ============ FIREBASE CONFIG ============
+   Samme prosjekt som resten av LRNify (poll-c6bd2). Reglene som slipper
+   igjennom skrivingen under ligger i firebase/database.rules.json
+   (grenen "genetikhjul") — se firebase/README.md.
+=========================================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+/* Klassekoden læreren velger selv, men den blir en nøkkel i databasen og må
+   derfor holde seg til tegn Realtime Database godtar. Samme normalisering
+   ligger i tavle.html, slik at "8b-host26" og "8B-HOST26" treffer hverandre. */
+const KODE_REGEX = /^[A-Z0-9-]{3,24}$/;
+function normaliserKode(v){ return String(v || '').trim().toUpperCase(); }
+
+/* ============ GENENE ============ */
+const GENES = [
+  { key:'T', navn:'Tunge-rulling', tittel:'Tunga 👅', sporsmal:'Kan du rulle tunga til et rør?',
+    domLabel:'Kan rulle', recLabel:'Kan ikke rulle', domCode:'T-', recCode:'tt', yesIsDom:true,
+    yesEmoji:'😛', noEmoji:'😐' },
+  { key:'E', navn:'Øreflipp', tittel:'Øreflippen 👂', sporsmal:'Henger øreflippen din løst ned (ikke festet direkte til hodet)?',
+    domLabel:'Løs øreflipp', recLabel:'Fast øreflipp', domCode:'E-', recCode:'ee', yesIsDom:true,
+    yesEmoji:'👂', noEmoji:'👂' },
+  { key:'H', navn:'Hårvirvel', tittel:'Hårvirvelen 🌀', sporsmal:'Virvler håret ditt med klokka, sett bakfra?',
+    domLabel:'Med klokka', recLabel:'Mot klokka', domCode:'H-', recCode:'hh', yesIsDom:true,
+    yesEmoji:'🌀', noEmoji:'🔄' },
+  { key:'D', navn:'Tommelbøy', tittel:'Tommelen 👍', sporsmal:'Kan du bøye tommelen tydelig bakover ("haiker-tommel")?',
+    domLabel:'Rett tommel', recLabel:'Haiker-tommel', domCode:'D-', recCode:'dd', yesIsDom:false,
+    yesEmoji:'👍', noEmoji:'👍' },
+  { key:'W', navn:'Hårfeste', tittel:'Hårfestet 📐', sporsmal:'Har du en tydelig spiss i hårfestet (widow\'s peak)?',
+    domLabel:"Widow's peak", recLabel:'Rett hårfeste', domCode:'W-', recCode:'ww', yesIsDom:true,
+    yesEmoji:'📐', noEmoji:'➖' },
+  { key:'B', navn:'Øyefarge', tittel:'Øynene 👀', sporsmal:'Har du mørke (brune) øyne?',
+    domLabel:'Mørke øyne', recLabel:'Lyse øyne', domCode:'B-', recCode:'bb', yesIsDom:true,
+    yesEmoji:'🟤', noEmoji:'🔵' },
+];
+
+let state = { kode:null, navn:null, kjonn:null, svar:{}, qIndex:0 };
+
+/* ============ NAVIGASJON ============ */
+function goToNavn(){
+  const v = normaliserKode(document.getElementById('input-kode').value);
+  if(!v){ showErr('err-kode','Skriv inn klassekoden du fikk av læreren.'); return; }
+  if(!KODE_REGEX.test(v)){
+    showErr('err-kode','Klassekoden kan bare inneholde bokstaver (A–Z), tall og bindestrek — 3 til 24 tegn.');
+    return;
+  }
+  state.kode = v;
+  document.getElementById('step-kode').classList.add('hidden');
+  document.getElementById('step-navn').classList.remove('hidden');
+  document.getElementById('input-navn').focus();
+}
+
+/* QR-koden og delelenken fra tavla har koden med seg (?kode=8B-HOST26),
+   så eleven slipper å skrive den av. Er koden gyldig, hopper vi rett til navn. */
+(function prefillKode(){
+  const fraUrl = normaliserKode(new URLSearchParams(location.search).get('kode'));
+  if(!fraUrl) return;
+  document.getElementById('input-kode').value = fraUrl;
+  if(KODE_REGEX.test(fraUrl)) goToNavn();
+})();
+function setSex(s){
+  state.kjonn = s;
+  document.getElementById('sex-m').classList.toggle('active', s==='M');
+  document.getElementById('sex-f').classList.toggle('active', s==='F');
+}
+function goToQuiz(){
+  const v = document.getElementById('input-navn').value.trim();
+  if(!v){ showErr('err-navn','Skriv inn fornavnet ditt.'); return; }
+  if(v.length > 24){ showErr('err-navn','Bruk bare fornavnet — maks 24 tegn.'); return; }
+  if(!state.kjonn){ showErr('err-navn','Velg kjønn.'); return; }
+  state.navn = v;
+  document.getElementById('step-navn').classList.add('hidden');
+  document.getElementById('step-quiz').classList.remove('hidden');
+  renderProgress();
+  renderQuestion();
+  renderWheel('wheel-holder', partialProfile(), false);
+}
+function showErr(id,msg){
+  const el = document.getElementById(id);
+  el.textContent = msg; el.classList.remove('hidden');
+}
+
+/* ============ QUIZ ============ */
+function renderProgress(){
+  const p = document.getElementById('progress');
+  p.innerHTML = '';
+  GENES.forEach((g,i)=>{
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < state.qIndex ? ' done' : i===state.qIndex ? ' now' : '');
+    p.appendChild(d);
+  });
+}
+function renderQuestion(){
+  const g = GENES[state.qIndex];
+  document.getElementById('q-title').textContent = g.tittel;
+  document.getElementById('q-text').textContent = g.sporsmal;
+  const row = document.getElementById('choice-row');
+  row.innerHTML = '';
+  const yesBtn = document.createElement('div');
+  yesBtn.className = 'choice-btn'; yesBtn.innerHTML = `<span class="emoji">${g.yesEmoji}</span> Ja`;
+  yesBtn.onclick = ()=>answer(g, true);
+  const noBtn = document.createElement('div');
+  noBtn.className = 'choice-btn'; noBtn.innerHTML = `<span class="emoji">${g.noEmoji}</span> Nei`;
+  noBtn.onclick = ()=>answer(g, false);
+  row.appendChild(yesBtn); row.appendChild(noBtn);
+  document.getElementById('status-text').textContent = `Spørsmål ${state.qIndex+1} av ${GENES.length}`;
+}
+function answer(g, yes){
+  const isDom = g.yesIsDom ? yes : !yes;
+  state.svar[g.key] = isDom ? 'dom' : 'rec';
+  // Først etter at qIndex er økt inkluderer partialProfile() ringen eleven
+  // nettopp svarte på — ellers henger hjulet ett svar bak.
+  state.qIndex++;
+  renderWheel('wheel-holder', partialProfile(), false);
+  if(state.qIndex >= GENES.length){
+    finishQuiz();
+  } else {
+    renderProgress();
+    renderQuestion();
+  }
+}
+function partialProfile(){
+  return { kjonn: state.kjonn, svar: state.svar, upTo: state.qIndex };
+}
+function finishQuiz(){
+  document.getElementById('step-quiz').classList.add('hidden');
+  document.getElementById('step-done').classList.remove('hidden');
+  renderWheel('wheel-final', { kjonn: state.kjonn, svar: state.svar, upTo: GENES.length }, false);
+  submitToFirebase();
+}
+function submitToFirebase(){
+  const ref = db.ref('genetikhjul/' + state.kode + '/elever').push();
+  ref.set({
+    navn: state.navn,
+    kjonn: state.kjonn,
+    svar: state.svar,
+    ts: Date.now()
+  }).catch(err=>{
+    document.getElementById('step-done').innerHTML =
+      '<div class="center-msg">Kunne ikke sende inn 😕<br><small>' + err.message + '</small></div>' +
+      '<button class="btn secondary" onclick="location.reload()">Prøv igjen</button>';
+  });
+}
+
+/* ============ HJUL-TEGNING (SVG) ============ */
+// Standard klokke-vinkel: 0 = topp, medurs positiv
+function pt(cx,cy,r,angleDeg){
+  const a = (angleDeg) * Math.PI/180;
+  return [cx + r*Math.sin(a), cy - r*Math.cos(a)];
+}
+function donutSectorPath(cx,cy,rInner,rOuter,startDeg,endDeg){
+  const large = (endDeg-startDeg) > 180 ? 1 : 0;
+  const [x1,y1] = pt(cx,cy,rOuter,startDeg);
+  const [x2,y2] = pt(cx,cy,rOuter,endDeg);
+  const [x3,y3] = pt(cx,cy,rInner,endDeg);
+  const [x4,y4] = pt(cx,cy,rInner,startDeg);
+  return `M ${x1} ${y1} A ${rOuter} ${rOuter} 0 ${large} 1 ${x2} ${y2} L ${x3} ${y3} A ${rInner} ${rInner} 0 ${large} 0 ${x4} ${y4} Z`;
+}
+const SIZE = 360, CX = SIZE/2, CY = SIZE/2, R0 = 34, RSTEP = 24;
+
+function renderWheel(holderId, profile, isAggregate){
+  const holder = document.getElementById(holderId);
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS,'svg');
+  svg.setAttribute('viewBox', `0 0 ${SIZE} ${SIZE}`);
+  svg.setAttribute('width', SIZE); svg.setAttribute('height', SIZE);
+
+  // base rings (cream, empty)
+  GENES.forEach((g,i)=>{
+    const rIn = R0 + i*RSTEP, rOut = rIn + RSTEP;
+    [ [0,180], [180,360] ].forEach(([s,e])=>{
+      const path = document.createElementNS(svgNS,'path');
+      path.setAttribute('d', donutSectorPath(CX,CY,rIn,rOut,s,e));
+      path.setAttribute('fill', '#fff9f0');
+      path.setAttribute('stroke', '#1a1a1a');
+      path.setAttribute('stroke-width', '2');
+      svg.appendChild(path);
+    });
+  });
+
+  // fill answered rings
+  const upTo = profile.upTo !== undefined ? profile.upTo : GENES.length;
+  GENES.forEach((g,i)=>{
+    if(i >= upTo) return;
+    const rIn = R0 + i*RSTEP, rOut = rIn + RSTEP;
+    const a = profile.svar[g.key];
+    if(!a) return;
+    const [s,e] = a === 'dom' ? [0,180] : [180,360];
+    const path = document.createElementNS(svgNS,'path');
+    path.setAttribute('d', donutSectorPath(CX,CY,rIn,rOut,s,e));
+    path.setAttribute('fill', a === 'dom' ? '#f97316' : '#38bdf8');
+    path.setAttribute('stroke', '#1a1a1a');
+    path.setAttribute('stroke-width', '2');
+    svg.appendChild(path);
+  });
+
+  // center sex circle
+  const rC = R0;
+  [ [0,180,'F','#fbcfe8'], [180,360,'M','#bae6fd'] ].forEach(([s,e,sex,fallback])=>{
+    const path = document.createElementNS(svgNS,'path');
+    // simple half-disc via arc from center
+    const [x1,y1] = pt(CX,CY,rC,s);
+    const [x2,y2] = pt(CX,CY,rC,e);
+    const d = `M ${CX} ${CY} L ${x1} ${y1} A ${rC} ${rC} 0 0 1 ${x2} ${y2} Z`;
+    path.setAttribute('d', d);
+    const active = profile.kjonn === sex;
+    path.setAttribute('fill', active ? '#facc15' : fallback);
+    path.setAttribute('stroke', '#1a1a1a');
+    path.setAttribute('stroke-width', '2.5');
+    svg.appendChild(path);
+  });
+
+  // sex symbols
+  const symM = document.createElementNS(svgNS,'text');
+  symM.setAttribute('x', CX - rC/2); symM.setAttribute('y', CY + 6);
+  symM.setAttribute('text-anchor','middle'); symM.setAttribute('font-size','16');
+  symM.setAttribute('font-weight','900'); symM.textContent = '♂';
+  svg.appendChild(symM);
+  const symF = document.createElementNS(svgNS,'text');
+  symF.setAttribute('x', CX + rC/2); symF.setAttribute('y', CY + 6);
+  symF.setAttribute('text-anchor','middle'); symF.setAttribute('font-size','16');
+  symF.setAttribute('font-weight','900'); symF.textContent = '♀';
+  svg.appendChild(symF);
+
+  // outer ring divider circle
+  const outerR = R0 + GENES.length*RSTEP;
+  const circle = document.createElementNS(svgNS,'circle');
+  circle.setAttribute('cx',CX); circle.setAttribute('cy',CY); circle.setAttribute('r',outerR);
+  circle.setAttribute('fill','none'); circle.setAttribute('stroke','#1a1a1a'); circle.setAttribute('stroke-width','3');
+  svg.appendChild(circle);
+
+  holder.innerHTML = '';
+  holder.appendChild(svg);
+}
+
+/* ============ FULLSKJERM ============ */
+function toggleFullscreen(holderId){
+  const holder = document.getElementById(holderId);
+  if(!document.fullscreenElement){
+    (holder.requestFullscreen || holder.webkitRequestFullscreen || function(){}).call(holder);
+  } else {
+    (document.exitFullscreen || document.webkitExitFullscreen || function(){}).call(document);
+  }
+}
+document.addEventListener('fullscreenchange', ()=>{
+  document.querySelectorAll('.wheel-wrap > div').forEach(el=>{
+    el.classList.toggle('is-fullscreen', document.fullscreenElement === el);
+  });
+});
+
+/* ============ EKSPORTER SOM BILDE ============ */
+function downloadWheelImage(holderId, filename){
+  filename = filename || 'genetisk-hjul.png';
+  const svg = document.querySelector('#'+holderId+' svg');
+  if(!svg) return;
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const svgBlob = new Blob([svgStr], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = function(){
+    const scale = 2;
+    const w = svg.viewBox.baseVal.width || svg.width.baseVal.value;
+    const h = svg.viewBox.baseVal.height || svg.height.baseVal.value;
+    const canvas = document.createElement('canvas');
+    canvas.width = w*scale; canvas.height = h*scale;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff9f0';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.scale(scale,scale);
+    ctx.drawImage(img,0,0);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(blob=>{
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+    });
+  };
+  img.src = url;
+}
+</script>
+</body>
+</html>

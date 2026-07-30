@@ -116,6 +116,54 @@
           ".validate": false
         }
       }
+    },
+
+    "genetikhjul": {
+      "$kode": {
+        ".read": true,
+        ".validate": "$kode.matches(/^[A-Z0-9-]{3,24}$/)",
+
+        "owner": {
+          ".write": "$kode.matches(/^[A-Z0-9-]{3,24}$/) && !data.exists() && auth != null && newData.val() === auth.uid",
+          ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
+        },
+        "createdAt": {
+          ".write": "$kode.matches(/^[A-Z0-9-]{3,24}$/) && !data.exists() && auth != null",
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+
+        "elever": {
+          ".write": "!newData.exists() && (!data.parent().hasChild('owner') || (auth != null && data.parent().child('owner').val() === auth.uid))",
+
+          "$elev": {
+            ".write": "$kode.matches(/^[A-Z0-9-]{3,24}$/) && !data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren(['navn', 'kjonn', 'svar', 'ts'])",
+
+            "navn": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24"
+            },
+            "kjonn": {
+              ".validate": "newData.isString() && newData.val().matches(/^(M|F)$/)"
+            },
+            "svar": {
+              ".validate": "newData.hasChildren(['T', 'E', 'H', 'D', 'W', 'B'])",
+              "$gen": {
+                ".validate": "$gen.matches(/^[TEHDWB]$/) && newData.isString() && newData.val().matches(/^(dom|rec)$/)"
+              }
+            },
+            "ts": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "$other": {
+          ".validate": false
+        }
+      }
     }
   }
 }
