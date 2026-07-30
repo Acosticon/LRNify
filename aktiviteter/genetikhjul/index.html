@@ -216,11 +216,13 @@
     <div class="error hidden" id="err-elev-kode"></div>
   </div>
 
-  <!-- STEG 1: Navn + kjønn -->
+  <!-- STEG 1: Navn + kjønn (navnet skjules i alene-modus) -->
   <div class="card hidden" id="step-navn">
-    <label class="field-label">Fornavn</label>
-    <input type="text" id="input-navn" placeholder="Skriv fornavnet ditt" autocomplete="off" maxlength="24">
-    <label class="field-label" style="margin-top:16px; display:block;">Kjønn</label>
+    <div id="navn-felt">
+      <label class="field-label">Fornavn</label>
+      <input type="text" id="input-navn" placeholder="Skriv fornavnet ditt" autocomplete="off" maxlength="24">
+    </div>
+    <label class="field-label" id="kjonn-label" style="margin-top:16px; display:block;">Kjønn</label>
     <div class="sex-row">
       <div class="sex-btn" id="sex-m" onclick="setSex('M')">♂</div>
       <div class="sex-btn" id="sex-f" onclick="setSex('F')">♀</div>
@@ -424,6 +426,7 @@ window.goElevRolle  = ()=>{
   aleneModus = false;
   // Tilbake til klassekode-steget, i tilfelle man har vært innom en annen rolle
   ['step-navn','step-quiz','step-done'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('navn-felt').classList.remove('hidden');
   document.getElementById('step-kode').classList.remove('hidden');
   showTopScreen('screen-elev');
 };
@@ -446,11 +449,13 @@ window.goAleneRolle = function(){
   aleneModus = true;
   state = { kode:null, navn:null, kjonn:null, svar:{}, qIndex:0 };
   showTopScreen('screen-elev');
-  ['step-kode','step-navn','step-done'].forEach(id=>document.getElementById(id).classList.add('hidden'));
-  document.getElementById('step-quiz').classList.remove('hidden');
-  renderProgress();
-  renderQuestion();
-  renderPersonalWheel('wheel-holder', partialProfile());
+  ['step-kode','step-quiz','step-done'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  // Kjønnet er med på hjulet, så det spørres om også alene — navnet er det ikke
+  // bruk for når ingenting sendes inn
+  document.getElementById('navn-felt').classList.add('hidden');
+  document.getElementById('err-navn').classList.add('hidden');
+  setSex(null);
+  document.getElementById('step-navn').classList.remove('hidden');
 };
 
 window.goToNavn = function(){
@@ -473,11 +478,13 @@ window.setSex = function(s){
 };
 
 window.goToQuiz = function(){
-  const v = document.getElementById('input-navn').value.trim();
-  if(!v){ showErr('err-navn','Skriv inn fornavnet ditt.'); return; }
-  if(v.length > 24){ showErr('err-navn','Bruk bare fornavnet — maks 24 tegn.'); return; }
+  if(!aleneModus){
+    const v = document.getElementById('input-navn').value.trim();
+    if(!v){ showErr('err-navn','Skriv inn fornavnet ditt.'); return; }
+    if(v.length > 24){ showErr('err-navn','Bruk bare fornavnet — maks 24 tegn.'); return; }
+    state.navn = v;
+  }
   if(!state.kjonn){ showErr('err-navn','Velg kjønn.'); return; }
-  state.navn = v;
   document.getElementById('step-navn').classList.add('hidden');
   document.getElementById('step-quiz').classList.remove('hidden');
   renderProgress();
@@ -721,16 +728,32 @@ window.startSession = function(){
   listen();
 };
 
-/* Merk klassekoden som "vår" hvis ingen har gjort det før. Reglene tillater
-   bare å skrive owner når feltet er tomt, så den første tavla som starter
-   visningen får eierskapet — og bare den kan nullstille klassen etterpå.
-   Uten anonym pålogging skjer ingenting, og nullstilling er åpen som før. */
+/* Merk klassekoden som "vår", og sørg for at en ny økt starter med blanke ark.
+   Klassekoden er nå fire siffer og trekkes tilfeldig, så den kan før eller
+   siden treffe en kode som har vært brukt. Da skal ikke forrige økts profiler
+   dukke opp på tavla. Ligger det allerede profiler der, spør vi først — en
+   lærer som med vilje skriver inn en gammel kode kan ha tenkt å fortsette. */
 function claimOwner(){
   const kodeVedStart = kode;
   return ensureAuth().then(id => {
     if(!id || kodeVedStart !== kode) return;
-    return FB.get(R('genetikhjul/' + kodeVedStart + '/owner')).then(snap => {
-      if(snap.exists()) return;
+    return FB.get(R('genetikhjul/' + kodeVedStart)).then(snap => {
+      const klasse = snap.val();
+      const antall = klasse && klasse.elever ? Object.keys(klasse.elever).length : 0;
+      if(antall > 0){
+        const svar = confirm(
+          'Klassekoden ' + kodeVedStart + ' har allerede ' + antall +
+          (antall === 1 ? ' profil' : ' profiler') + ' fra en tidligere økt.\n\n' +
+          'OK = start med blanke ark\nAvbryt = fortsett på den gamle klassen');
+        if(!svar) return;
+        return FB.update(R('genetikhjul/' + kodeVedStart), {
+          elever: null, owner: id, createdAt: Date.now()
+        }).catch(() => {
+          alert('Fikk ikke tømt klassen — den ble startet fra en annen enhet som fortsatt er aktiv.\n'
+              + 'Velg en annen klassekode.');
+        });
+      }
+      if(klasse && klasse.owner) return; // fersk klasse med eier, la den være
       return FB.update(R('genetikhjul/' + kodeVedStart), { owner: id, createdAt: Date.now() }).catch(()=>{});
     });
   }).catch(()=>{});

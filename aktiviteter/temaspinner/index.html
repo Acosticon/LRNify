@@ -1187,14 +1187,32 @@ let elevKode = null, elevRom = null, elevAvlytt = null;
 let elevNavn = '', mittTema = null, visesTema = null, venterBytte = false;
 let sluttlydSpilt = false;
 
+/* Elevens tema mellomlagres bare for å overleve en refresh eller et nettbrudd i
+   samme økt. Det skal ikke dukke opp igjen neste time, så mellomlageret har en
+   levetid og kastes når økta er over. (Lydvalget og lærerens egne temalister
+   er innstillinger, ikke øktdata, og blir liggende med vilje.) */
+const ELEV_LEVETID = 4 * 60 * 60 * 1000;
+
 const elevLagret = (() => {
-  try{ return JSON.parse(localStorage.getItem(LS.elev) || 'null'); }catch(e){ return null; }
+  try{
+    const lagret = JSON.parse(localStorage.getItem(LS.elev) || 'null');
+    if(!lagret || !lagret.ts || Date.now() - lagret.ts > ELEV_LEVETID){
+      localStorage.removeItem(LS.elev);
+      return null;
+    }
+    return lagret;
+  }catch(e){ return null; }
 })();
 
 function lagreElev(){
   try{
-    localStorage.setItem(LS.elev, JSON.stringify({ kode: elevKode, navn: elevNavn, tema: mittTema }));
+    localStorage.setItem(LS.elev, JSON.stringify({
+      kode: elevKode, navn: elevNavn, tema: mittTema, ts: Date.now()
+    }));
   }catch(e){}
+}
+function glemElev(){
+  try{ localStorage.removeItem(LS.elev); }catch(e){}
 }
 
 /* Laster eleven siden på nytt uten nett, har vi ingenting å hente fra
@@ -1325,8 +1343,10 @@ function avlyttElev(){
   elevAvlytt = FB.onValue(R(romSti(elevKode)), snap => {
     const rom = snap.val();
     if(!rom){
-      // Læreren har avsluttet rommet — vis siste kjente tema, ikke en blank skjerm
+      // Læreren har avsluttet rommet — vis siste kjente tema, ikke en blank
+      // skjerm, men ikke ta det med videre til neste gang siden åpnes
       document.getElementById('elev-temamerke').textContent = 'Økta er avsluttet';
+      glemElev();
       return;
     }
     elevRom = rom;

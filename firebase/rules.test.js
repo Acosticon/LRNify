@@ -169,6 +169,25 @@ check('ts langt inn i framtida', false, db({}, null).write('/genetikhjul/' + KOD
 check('overskriver hele klassen', false, db(eidHjul, ELEV).write('/genetikhjul/' + KODE, { elever: { '-Nh9': profil } }));
 check('skriver rett på /genetikhjul', false, db({}, LARER).write('/genetikhjul', { evil: true }));
 
+/* Klassekoden er fire siffer og trekkes tilfeldig, så den treffer før eller
+   siden en kode som har vært brukt. En ny økt skal da kunne starte med blanke
+   ark — men bare når den gamle klassen faktisk er gammel, ellers kunne hvem
+   som helst tømme en klasse som er midt i en time. */
+const gammeltHjul = { genetikhjul: { [KODE]: {
+  owner: LARER.uid, createdAt: now - 20 * 3600 * 1000, elever: { '-Nh1': profil }
+} } };
+
+console.log('--- genetikhjul: gjenbruk av klassekode');
+check('ny lærer tømmer klasse fra i går', true, db(gammeltHjul, ELEV2).update('/genetikhjul/' + KODE, { elever: null, owner: ELEV2.uid, createdAt: now }));
+check('ny lærer overtar gammel klassekode', true, db(gammeltHjul, ELEV2).write('/genetikhjul/' + KODE + '/owner', ELEV2.uid));
+check('gammel createdAt kan oppdateres', true, db(gammeltHjul, ELEV2).write('/genetikhjul/' + KODE + '/createdAt', now));
+check('eier tømmer sin egen ferske klasse', true, db(eidHjul, LARER).update('/genetikhjul/' + KODE, { elever: null, owner: LARER.uid, createdAt: now }));
+check('fremmed tømmer fersk klasse', false, db(eidHjul, ELEV2).update('/genetikhjul/' + KODE, { elever: null, owner: ELEV2.uid, createdAt: now }));
+check('fremmed kaprer fersk klassekode', false, db(eidHjul, ELEV2).write('/genetikhjul/' + KODE + '/owner', ELEV2.uid));
+check('fersk createdAt kan ikke stilles tilbake', false, db(eidHjul, ELEV2).write('/genetikhjul/' + KODE + '/createdAt', now - 99999));
+check('uinnlogget tømmer gammel klasse', false, db(gammeltHjul, null).write('/genetikhjul/' + KODE + '/elever', null));
+check('elev sletter enkeltprofil i gammel klasse', false, db(gammeltHjul, ELEV2).write('/genetikhjul/' + KODE + '/elever/-Nh1', null));
+
 console.log('--- genetikhjul: klasser uten owner (anonym pålogging av)');
 check('uinnlogget tavle nullstiller klasse uten owner', true, db(loestHjul, null).write('/genetikhjul/' + KODE + '/elever', null));
 check('klasse uten owner: ugyldig profil fortsatt blokkert', false, db(loestHjul, null).write('/genetikhjul/' + KODE + '/elever/-Nh2', { navn: 'Ada', kjonn: 'F', ts: now }));
