@@ -201,6 +201,7 @@
   <label class="felt">Hvordan vil du kjøre økta?</label>
   <button class="knapp stor" id="velg-rom">📱 Rom<small style="display:block;font-weight:700;font-size:.85rem;color:#7a6410;">Elevene bruker telefonen. Hver elev ser kun sitt eget tema.</small></button>
   <button class="knapp stor hvit" id="velg-tavle">📺 Tavle<small style="display:block;font-weight:700;font-size:.85rem;color:var(--muted);">Alt på projektoren. Ingen elevenheter, ingen nett.</small></button>
+  <button class="knapp stor hvit" id="velg-alene">🎲 Alene<small style="display:block;font-weight:700;font-size:.85rem;color:var(--muted);">Du trekker et tema selv og forbereder deg.</small></button>
 </div>
 
 <!-- ══════════ ROM: lærer eller elev ══════════ -->
@@ -313,6 +314,42 @@
   <div style="max-width:460px;margin:0 auto;">
     <button class="knapp hvit skjult" id="elev-bytt">⇄ Bruk bytte-billetten</button>
     <div class="hjelpetekst" style="text-align:center;" id="elev-byttehjelp"></div>
+  </div>
+</div>
+
+<!-- ══════════ ALENE: oppsett ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-alene-oppsett">
+  <button class="tilbake" data-tilbake="skjerm-start">← Tilbake</button>
+  <div class="felt-gruppe" id="alene-temavelger"></div>
+  <div class="felt-gruppe">
+    <label class="felt">Spinnenivå</label>
+    <div class="valg" id="alene-niva">
+      <button data-niva="kjapt" class="pa">Kjapt<small>2 min</small></button>
+      <button data-niva="fordypning">Fordypning<small>15 min</small></button>
+    </div>
+  </div>
+  <button class="knapp" id="alene-trekk">🎡 Trekk tema</button>
+  <div class="feil skjult" id="feil-alene"></div>
+</div>
+
+<!-- ══════════ ALENE: tema + klokke ══════════ -->
+<div class="skjerm skjult" id="skjerm-alene-tema">
+  <div class="klokkelinje">
+    <div class="klokke" id="alene-klokke">02:00</div>
+    <div>
+      <button class="knapp liten" id="alene-start">▶ Start</button>
+      <button class="knapp liten hvit" id="alene-pause">⏸ Pause</button>
+      <button class="knapp liten hvit" id="alene-pluss">+1 min</button>
+      <button class="knapp liten hvit" id="alene-null">↺ Nullstill</button>
+    </div>
+  </div>
+  <div class="temascene">
+    <div class="temamerke" id="alene-temamerke">Ditt tema</div>
+    <div class="temaord spinner" id="alene-temaord">…</div>
+  </div>
+  <div style="max-width:460px;margin:0 auto;">
+    <button class="knapp hvit" id="alene-trekk-igjen">🎡 Trekk på nytt</button>
+    <button class="knapp hvit" id="alene-nytt-oppsett">Nytt oppsett</button>
   </div>
 </div>
 
@@ -821,7 +858,7 @@ function visSkjerm(id){
   document.querySelectorAll('.skjerm').forEach(s => s.classList.add('skjult'));
   const el = document.getElementById(id);
   if(el) el.classList.remove('skjult');
-  const bare = id === 'skjerm-elev-tema';
+  const bare = id === 'skjerm-elev-tema' || id === 'skjerm-alene-tema';
   document.getElementById('undertittel').classList.toggle('skjult', bare);
   document.querySelector('h1').classList.toggle('skjult', bare);
 }
@@ -1538,6 +1575,114 @@ document.getElementById('tk-null').addEventListener('click', () => {
 });
 
 /* ══════════════════════════════════════════════════════════════════════════
+   ALENE
+   For den som vil trekke et tema for seg selv og forberede seg — uten klasse,
+   uten romkode og uten Firebase. Egen lokal tilstand, samme mønster som
+   TAVLEMODUS. Ingen bytte-billett her: siden det bare er én person og ingen
+   andre å dele stokken rettferdig med, kan man bare trekke på nytt så mange
+   ganger man vil.
+   ══════════════════════════════════════════════════════════════════════════ */
+let aleneTemaVelger = null, aleneNivaVelger = null;
+let aleneTemaListe = [], aleneStokk = [], aleneKlokke = null, aleneVarighet = NIVAAER.kjapt;
+let aleneSluttSpilt = false;
+
+aleneTemaVelger = byggTemaVelger(document.getElementById('alene-temavelger'));
+aleneNivaVelger = knyttValg(document.getElementById('alene-niva'), 'niva', 'kjapt', n => {
+  aleneVarighet = NIVAAER[n];
+});
+
+document.getElementById('velg-alene').addEventListener('click', () => { laasOppLyd(); visSkjerm('skjerm-alene-oppsett'); });
+
+function aleneTrekkNyttTema(){
+  const t = trekkKort(aleneStokk, aleneTemaListe);
+  aleneStokk = t.rest;
+  return t.tema;
+}
+
+document.getElementById('alene-trekk').addEventListener('click', () => {
+  skjulFeil('feil-alene');
+  const temaer = aleneTemaVelger.hent();
+  if(!temaer.length){ visFeil('feil-alene', 'Velg minst ett tema.'); return; }
+  laasOppLyd();
+  aleneTemaListe = temaer;
+  aleneStokk = [];
+  aleneVarighet = NIVAAER[aleneNivaVelger.hent()];
+  aleneKlokke = null;
+  aleneSluttSpilt = false;
+  visSkjerm('skjerm-alene-tema');
+  aleneSpinn.til(aleneTrekkNyttTema());
+});
+document.getElementById('alene-trekk-igjen').addEventListener('click', () => {
+  aleneSpinn.til(aleneTrekkNyttTema());
+});
+document.getElementById('alene-nytt-oppsett').addEventListener('click', () => visSkjerm('skjerm-alene-oppsett'));
+
+document.getElementById('alene-start').addEventListener('click', () => {
+  laasOppLyd();
+  aleneKlokke = klokkeStart(aleneKlokke, aleneVarighet);
+  aleneSluttSpilt = false;
+});
+document.getElementById('alene-pause').addEventListener('click', () => {
+  const k = klokkePause(aleneKlokke, aleneVarighet);
+  if(k) aleneKlokke = k;
+});
+document.getElementById('alene-pluss').addEventListener('click', () => {
+  const k = klokkePluss(aleneKlokke, aleneVarighet);
+  if(k.nyVarighet != null) aleneVarighet = k.nyVarighet;
+  else aleneKlokke = k;
+});
+document.getElementById('alene-null').addEventListener('click', () => {
+  aleneKlokke = null;
+  aleneSluttSpilt = false;
+});
+
+/* Egen liten spinn-løkke — samme følelse som elevens (flimrer, bremser opp,
+   låser med klakk), men fullstendig uavhengig av rom-modusens spinnController
+   og dens globale visesTema. Alene-modus har ingen ekstern kilde å vente på,
+   så den går rett i oppbremsing med en gang målet er kjent. */
+const aleneSpinn = (function(){
+  const el = document.getElementById('alene-temaord');
+  const merke = document.getElementById('alene-temamerke');
+  const MIN_SPINN = 1200;
+  let rafId = null;
+  function flimre(){
+    el.textContent = aleneTemaListe.length
+      ? aleneTemaListe[Math.floor(Math.random()*aleneTemaListe.length)]
+      : '…';
+  }
+  return {
+    til(tema){
+      if(rafId) cancelAnimationFrame(rafId);
+      const start = performance.now();
+      let neste = 0;
+      el.classList.add('spinner');
+      el.classList.remove('laast');
+      merke.textContent = 'Trekker …';
+      function steg(t){
+        const gaatt = t - start;
+        if(gaatt >= MIN_SPINN){
+          el.textContent = tema;
+          el.classList.remove('spinner');
+          void el.offsetWidth; // tvinger omstart av animasjonen ved ny trekning
+          el.classList.add('laast');
+          merke.textContent = 'Ditt tema';
+          spillKlakk();
+          rafId = null;
+          return;
+        }
+        if(t >= neste){
+          flimre();
+          const p = gaatt / MIN_SPINN;
+          neste = t + 45 + p*p*165;
+        }
+        rafId = requestAnimationFrame(steg);
+      }
+      rafId = requestAnimationFrame(steg);
+    }
+  };
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
    TIKK — én felles løkke som tegner alle klokkene fra absolutt endsAt
    ══════════════════════════════════════════════════════════════════════════ */
 setInterval(() => {
@@ -1566,6 +1711,13 @@ setInterval(() => {
     const gaar = !!(tavleKlokke && tavleKlokke.endsAt);
     tegnKlokke(document.getElementById('tavleklokke'), ms, gaar);
     if(gaar && ms <= 0 && !tavleSluttSpilt){ tavleSluttSpilt = true; spillSlutt(); }
+  }
+  // Alene
+  if(!document.getElementById('skjerm-alene-tema').classList.contains('skjult')){
+    const ms = msIgjen(aleneKlokke, aleneVarighet);
+    const gaar = !!(aleneKlokke && aleneKlokke.endsAt);
+    tegnKlokke(document.getElementById('alene-klokke'), ms, gaar);
+    if(gaar && ms <= 0 && !aleneSluttSpilt){ aleneSluttSpilt = true; spillSlutt(); }
   }
 }, 200);
 
