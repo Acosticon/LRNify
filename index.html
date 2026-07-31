@@ -131,8 +131,8 @@
   .mode-switch{
     position:relative;
     display:grid;
-    grid-template-columns:1fr 1fr 1fr;
-    width:min(760px,100%);
+    grid-template-columns:repeat(4,1fr);
+    width:min(880px,100%);
     background:var(--card);
     border:4px solid var(--ink);
     box-shadow:0 7px 0 var(--ink);
@@ -159,7 +159,7 @@
     z-index:1;
     top:0;
     left:0;
-    width:33.3333%;
+    width:25%;
     height:100%;
     background:var(--yellow);
     border-right:4px solid var(--ink);
@@ -172,12 +172,38 @@
   }
   .mode-switch[data-mode="aktiviteter"] .mode-pill{
     transform:translateX(200%);
+    border-right:4px solid var(--ink);
+    border-left:4px solid var(--ink);
+  }
+  .mode-switch[data-mode="lek"] .mode-pill{
+    transform:translateX(300%);
     border-right:0;
     border-left:4px solid var(--ink);
   }
   .mode-option.active{color:var(--ink);}
-  @media (max-width:520px){
-    .mode-option{padding:12px 8px;font-size:.8rem;}
+  /* Fire faner får ikke plass på én rad på smale skjermer — «Klasseromsressurser»
+     alene er bredere enn en fjerdedel av en mobilskjerm. Da legger vi dem i 2x2
+     og flytter den gule pilla i to akser i stedet for én. */
+  @media (max-width:720px){
+    .mode-switch{grid-template-columns:1fr 1fr;}
+    .mode-option{padding:13px 8px;font-size:clamp(.78rem,3.2vw,.95rem);}
+    .mode-pill{width:50%;height:50%;}
+    .mode-switch[data-mode="games"] .mode-pill{
+      transform:translate(0,0);
+      border:0;border-right:4px solid var(--ink);border-bottom:4px solid var(--ink);
+    }
+    .mode-switch[data-mode="tools"] .mode-pill{
+      transform:translate(100%,0);
+      border:0;border-left:4px solid var(--ink);border-bottom:4px solid var(--ink);
+    }
+    .mode-switch[data-mode="aktiviteter"] .mode-pill{
+      transform:translate(0,100%);
+      border:0;border-right:4px solid var(--ink);border-top:4px solid var(--ink);
+    }
+    .mode-switch[data-mode="lek"] .mode-pill{
+      transform:translate(100%,100%);
+      border:0;border-left:4px solid var(--ink);border-top:4px solid var(--ink);
+    }
   }
 
   /* ===== GRID ===== */
@@ -336,6 +362,7 @@
       <button class="mode-option active" id="gamesMode" type="button" aria-pressed="true">Læringsspill</button>
       <button class="mode-option" id="toolsMode" type="button" aria-pressed="false">Klasseromsressurser</button>
       <button class="mode-option" id="activitiesMode" type="button" aria-pressed="false">Aktiviteter</button>
+      <button class="mode-option" id="lekMode" type="button" aria-pressed="false">Lek</button>
       <span class="mode-pill" aria-hidden="true"></span>
     </div>
   </section>
@@ -374,7 +401,6 @@
    ========================================================= */
 const GAMES = [
   { title:"Land i Europa",         file:"geografi/europa_land/index.html",   category:"Geografi", icon:"globe", color:"#0891b2", size: "S", locked:false },
-  { title:"Straffekonk",           file:"straffekonk/index.html",        category:"VM",           icon:"football", color:"#d97706", size: "S", locked:false },
   { title:"Operasjon frihet",      file:"operasjonfrihet/index.html",    category:"Samfunnsfag",  icon:"globe", color:"#b91c1c", size: "M", locked:false },
   { title:"Koblinger",             file:"koblinger/index.html",          category:"Flere fag",    icon:"koblinger", color:"#d97706", size: "S", locked:false },
   { title:"Terningspill",          file:"terningspill/index.html",        category:"KRLE",         icon:"globe", color:"#0891b2", size: "S", locked:false },
@@ -434,6 +460,15 @@ const ACTIVITIES = [
   { title:"Temaspinner", file:"temaspinner/index.html", category:"Aktivitet", icon:"cards", color:"#d97706", size:"M", locked:false },
 ];
 
+/* =========================================================
+   LEK
+   Rent moro uten fagmål. Filene ligger i games/-mappen som
+   læringsspillene, så "file" er relativ til den.
+   ========================================================= */
+const LEK = [
+  { title:"Straffekonk", file:"straffekonk/index.html", category:"VM", icon:"football", color:"#d97706", size:"S", locked:false },
+];
+
 /* Ekstra ikoner til lærerressurser */
 Object.assign(ICONS, {
   book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5z"/></svg>',
@@ -450,24 +485,29 @@ const modeSwitch = document.getElementById('modeSwitch');
 const gamesMode = document.getElementById('gamesMode');
 const toolsMode = document.getElementById('toolsMode');
 const activitiesMode = document.getElementById('activitiesMode');
+const lekMode = document.getElementById('lekMode');
 
 let currentMode = 'games';
 
+// Lek-kortene ligger sammen med læringsspillene i games/, bare i en egen fane
 function getCardBasePath(){
-  if(currentMode === 'games') return 'games/';
+  if(currentMode === 'games' || currentMode === 'lek') return 'games/';
   if(currentMode === 'tools') return 'tools/';
   return 'aktiviteter/';
 }
 
 function getImageBasePath(){
-  if(currentMode === 'games') return 'media/cards/';
+  if(currentMode === 'games' || currentMode === 'lek') return 'media/cards/';
   if(currentMode === 'tools') return 'media/tools/';
   return 'media/aktiviteter/';
 }
 
 function renderCards(items){
   grid.innerHTML = '';
-  grid.setAttribute('aria-label', currentMode === 'games' ? 'Spill' : currentMode === 'tools' ? 'Lærerressurser' : 'Aktiviteter');
+  grid.setAttribute('aria-label',
+    currentMode === 'games' ? 'Spill' :
+    currentMode === 'tools' ? 'Lærerressurser' :
+    currentMode === 'lek' ? 'Lek' : 'Aktiviteter');
 
   items.forEach((g,i)=>{
     const a = document.createElement('a');
@@ -498,6 +538,7 @@ function renderCards(items){
 function getCurrentItems(){
   if(currentMode === 'games') return GAMES;
   if(currentMode === 'tools') return TEACHER_RESOURCES;
+  if(currentMode === 'lek') return LEK;
   return ACTIVITIES;
 }
 
@@ -506,21 +547,26 @@ function setMode(mode){
   const isGames = mode === 'games';
   const isTools = mode === 'tools';
   const isActivities = mode === 'aktiviteter';
+  const isLek = mode === 'lek';
 
   modeSwitch.dataset.mode = mode;
 
   gamesMode.classList.toggle('active', isGames);
   toolsMode.classList.toggle('active', isTools);
   activitiesMode.classList.toggle('active', isActivities);
+  lekMode.classList.toggle('active', isLek);
 
   gamesMode.setAttribute('aria-pressed', String(isGames));
   toolsMode.setAttribute('aria-pressed', String(isTools));
   activitiesMode.setAttribute('aria-pressed', String(isActivities));
+  lekMode.setAttribute('aria-pressed', String(isLek));
 
   if(isTools){
     pageTitle.textContent = 'Velg en ressurs til klasserommet';
   }else if(isActivities){
     pageTitle.textContent = 'Velg en aktivitet til klasserommet';
+  }else if(isLek){
+    pageTitle.textContent = 'Velg noe å leke med';
   }else{
     pageTitle.textContent = 'Velg et spill og hopp inn';
   }
@@ -531,6 +577,7 @@ function setMode(mode){
 gamesMode.addEventListener('click', () => setMode('games'));
 toolsMode.addEventListener('click', () => setMode('tools'));
 activitiesMode.addEventListener('click', () => setMode('aktiviteter'));
+lekMode.addEventListener('click', () => setMode('lek'));
 
 setMode('games');
 

@@ -57,7 +57,7 @@ riktige filer.
 
 ## Teste reglene
 
-`rules.test.js` simulerer de faktiske klientkallene fra appene (140 tilfeller:
+`rules.test.js` simulerer de faktiske klientkallene fra appene (149 tilfeller:
 både det som skal virke og det som skal blokkeres, med og uten anonym
 pålogging):
 
@@ -145,6 +145,11 @@ pålogging blir slått av igjen.
   `kjonn` `M` eller `F`. Profiler kan legges til, men ikke endres eller
   slettes enkeltvis. Tavla merker klassekoden med sin anonyme id første gang
   visningen startes, og bare den kan tømme klassen med «Nullstill klasse».
+  Klassekoden er fire siffer og trekkes tilfeldig, så den treffer før eller
+  siden en kode som har vært brukt. En klasse som er over 12 timer gammel kan
+  derfor overtas og tømmes av neste lærer — men bare i én operasjon som
+  samtidig setter `owner` til den nye læreren, så ingen kan tømme en klasse
+  uten å ta over den. Ferske klasser er urørlige for andre enn eieren.
 * Temaspinner: romkoden er 4 tegn `A–Z`/`0–9`. Læreren som lager rommet er
   eneste kortgiver — bare eieren kan sette `fase`, `klokke`, `stokk` og
   elevenes `tema`. Eleven kan bare skrive sitt eget navn (én gang, under sin

@@ -124,16 +124,16 @@
         ".validate": "$kode.matches(/^[A-Z0-9-]{3,24}$/)",
 
         "owner": {
-          ".write": "$kode.matches(/^[A-Z0-9-]{3,24}$/) && !data.exists() && auth != null && newData.val() === auth.uid",
+          ".write": "$kode.matches(/^[A-Z0-9-]{3,24}$/) && auth != null && newData.val() === auth.uid && (!data.exists() || data.val() === auth.uid || data.parent().child('createdAt').val() < now - 43200000)",
           ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
         },
         "createdAt": {
-          ".write": "$kode.matches(/^[A-Z0-9-]{3,24}$/) && !data.exists() && auth != null",
+          ".write": "$kode.matches(/^[A-Z0-9-]{3,24}$/) && auth != null && (!data.exists() || data.val() < now - 43200000 || data.parent().child('owner').val() === auth.uid)",
           ".validate": "newData.isNumber() && newData.val() <= now + 300000"
         },
 
         "elever": {
-          ".write": "!newData.exists() && (!data.parent().hasChild('owner') || (auth != null && data.parent().child('owner').val() === auth.uid))",
+          ".write": "!newData.exists() && (!data.parent().hasChild('owner') || (auth != null && data.parent().child('owner').val() === auth.uid) || (auth != null && data.parent().child('createdAt').val() < now - 43200000 && newData.parent().child('owner').val() === auth.uid))",
 
           "$elev": {
             ".write": "$kode.matches(/^[A-Z0-9-]{3,24}$/) && !data.exists() && newData.exists()",

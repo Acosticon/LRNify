@@ -198,6 +198,7 @@
     <label class="field-label">Hvem er du?</label>
     <button class="btn big-choice" onclick="goElevRolle()">🙋 Jeg er elev</button>
     <button class="btn big-choice secondary" onclick="goLarerRolle()">🎓 Jeg er lærer</button>
+    <button class="btn big-choice secondary" onclick="goAleneRolle()">🎮 Jeg spiller alene</button>
   </div>
 </div>
 
@@ -215,11 +216,13 @@
     <div class="error hidden" id="err-elev-kode"></div>
   </div>
 
-  <!-- STEG 1: Navn + kjønn -->
+  <!-- STEG 1: Navn + kjønn (navnet skjules i alene-modus) -->
   <div class="card hidden" id="step-navn">
-    <label class="field-label">Fornavn</label>
-    <input type="text" id="input-navn" placeholder="Skriv fornavnet ditt" autocomplete="off" maxlength="24">
-    <label class="field-label" style="margin-top:16px; display:block;">Kjønn</label>
+    <div id="navn-felt">
+      <label class="field-label">Fornavn</label>
+      <input type="text" id="input-navn" placeholder="Skriv fornavnet ditt" autocomplete="off" maxlength="24">
+    </div>
+    <label class="field-label" id="kjonn-label" style="margin-top:16px; display:block;">Kjønn</label>
     <div class="sex-row">
       <div class="sex-btn" id="sex-m" onclick="setSex('M')">♂</div>
       <div class="sex-btn" id="sex-f" onclick="setSex('F')">♀</div>
@@ -241,7 +244,7 @@
   <!-- STEG 3: Ferdig -->
   <div class="card hidden" id="step-done">
     <div class="final-emoji">🎉</div>
-    <div class="center-msg">Takk! Profilen din er sendt inn og vises nå på tavla.</div>
+    <div class="center-msg" id="done-msg">Takk! Profilen din er sendt inn og vises nå på tavla.</div>
     <div class="wheel-wrap"><div id="wheel-final"></div></div>
     <div class="final-number" id="final-number"></div>
     <div class="action-row">
@@ -257,8 +260,11 @@
 
   <div id="setup-bar" style="text-align:center;">
     <button type="button" class="link-back" onclick="showTopScreen('screen-role')">← Bytt rolle</button>
+    <label class="field-label" for="larer-input-kode" style="display:block; margin-bottom:8px;">
+      Klassekoden elevene skal skrive inn — bytt den gjerne til noe du husker
+    </label>
     <div class="topbar">
-      <input type="text" id="larer-input-kode" placeholder="Skriv klassekode, f.eks. 8B-HOST26">
+      <input type="text" id="larer-input-kode" placeholder="f.eks. 8B-HOST26">
       <button class="btn icon-inline" onclick="startSession()">Start visning →</button>
     </div>
   </div>
@@ -311,13 +317,6 @@
 <footer>LRNify · Genetisk Hjul</footer>
 
 <script type="module">
-import { initializeApp }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, push, set, update, remove, get, onValue }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getAuth, signInAnonymously }
-  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
 /* ============ FIREBASE CONFIG ============
    Samme prosjekt som resten av LRNify (poll-c6bd2). Reglene som slipper
    igjennom skrivingen under ligger i firebase/database.rules.json
@@ -332,9 +331,33 @@ const firebaseConfig = {
   messagingSenderId: "541647069675",
   appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
 };
-const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
-const auth = getAuth(app);
+/* Firebase lastes først når noe faktisk trenger det. Med statisk import døde
+   hele fila hvis skolenettet blokkerte gstatic.com — også «Jeg spiller alene»,
+   som ikke rører databasen i det hele tatt. */
+let FB = null, db = null, laster = null;
+const KILDE = "https://www.gstatic.com/firebasejs/10.12.2/";
+
+function lastFirebase(){
+  if(FB) return Promise.resolve(FB);
+  if(!laster){
+    laster = Promise.all([
+      import(KILDE + "firebase-app.js"),
+      import(KILDE + "firebase-database.js"),
+      import(KILDE + "firebase-auth.js")
+    ]).then(([a, d, g]) => {
+      const app = a.initializeApp(firebaseConfig);
+      db = d.getDatabase(app);
+      FB = {
+        ref:d.ref, push:d.push, set:d.set, update:d.update,
+        remove:d.remove, get:d.get, onValue:d.onValue,
+        auth:g.getAuth(app), paalogg:g.signInAnonymously
+      };
+      return FB;
+    }).catch(e => { laster = null; throw e; });
+  }
+  return laster;
+}
+const R = (sti) => FB.ref(db, sti);
 
 /* Anonym pålogging — brukes bare av læreren (se claimOwner nedenfor), usynlig
    og uten konto/klikk. Elever sender inn uten å logge på i det hele tatt —
@@ -346,7 +369,8 @@ let paalogging = null;
 function ensureAuth(){
   if(uid) return Promise.resolve(uid);
   if(!paalogging){
-    paalogging = signInAnonymously(auth)
+    paalogging = lastFirebase()
+      .then(() => FB.paalogg(FB.auth))
       .then(cred => (uid = cred.user.uid))
       .catch(() => { paalogging = null; return null; });
   }
@@ -398,13 +422,41 @@ function showTopScreen(id){
   document.getElementById(id).classList.remove('hidden');
 }
 window.showTopScreen = showTopScreen;
-window.goElevRolle  = ()=> showTopScreen('screen-elev');
-window.goLarerRolle = ()=> showTopScreen('screen-larer');
+window.goElevRolle  = ()=>{
+  aleneModus = false;
+  // Tilbake til klassekode-steget, i tilfelle man har vært innom en annen rolle
+  ['step-navn','step-quiz','step-done'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('navn-felt').classList.remove('hidden');
+  document.getElementById('step-kode').classList.remove('hidden');
+  showTopScreen('screen-elev');
+};
+window.goLarerRolle = ()=>{
+  aleneModus = false;
+  showTopScreen('screen-larer');
+};
 
 /* ══════════════════════════════════════════════════════════════
    ELEV
    ══════════════════════════════════════════════════════════════ */
 let state = { kode:null, navn:null, kjonn:null, svar:{}, qIndex:0 };
+
+/* «Jeg spiller alene» hopper over både klassekode, navn og innsending — bare
+   spørsmålene og ditt eget hjul. Ingen Firebase i det hele tatt, så modusen
+   virker også når skolenettet er nede. */
+let aleneModus = false;
+
+window.goAleneRolle = function(){
+  aleneModus = true;
+  state = { kode:null, navn:null, kjonn:null, svar:{}, qIndex:0 };
+  showTopScreen('screen-elev');
+  ['step-kode','step-quiz','step-done'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  // Kjønnet er med på hjulet, så det spørres om også alene — navnet er det ikke
+  // bruk for når ingenting sendes inn
+  document.getElementById('navn-felt').classList.add('hidden');
+  document.getElementById('err-navn').classList.add('hidden');
+  setSex(null);
+  document.getElementById('step-navn').classList.remove('hidden');
+};
 
 window.goToNavn = function(){
   const v = normaliserKode(document.getElementById('elev-input-kode').value);
@@ -426,11 +478,13 @@ window.setSex = function(s){
 };
 
 window.goToQuiz = function(){
-  const v = document.getElementById('input-navn').value.trim();
-  if(!v){ showErr('err-navn','Skriv inn fornavnet ditt.'); return; }
-  if(v.length > 24){ showErr('err-navn','Bruk bare fornavnet — maks 24 tegn.'); return; }
+  if(!aleneModus){
+    const v = document.getElementById('input-navn').value.trim();
+    if(!v){ showErr('err-navn','Skriv inn fornavnet ditt.'); return; }
+    if(v.length > 24){ showErr('err-navn','Bruk bare fornavnet — maks 24 tegn.'); return; }
+    state.navn = v;
+  }
   if(!state.kjonn){ showErr('err-navn','Velg kjønn.'); return; }
-  state.navn = v;
   document.getElementById('step-navn').classList.add('hidden');
   document.getElementById('step-quiz').classList.remove('hidden');
   renderProgress();
@@ -489,15 +543,21 @@ function finishQuiz(){
   document.getElementById('step-done').classList.remove('hidden');
   const tall = renderPersonalWheel('wheel-final', { kjonn: state.kjonn, svar: state.svar, upTo: GENES.length });
   document.getElementById('final-number').textContent = tall ? `Din unike kombinasjon: nr. ${tall} av 64!` : '';
+  if(aleneModus){
+    // Ingen klasse å sende til — hjulet er hele poenget
+    document.getElementById('done-msg').textContent = 'Ferdig! Dette er ditt genetiske hjul.';
+    return;
+  }
+  document.getElementById('done-msg').textContent = 'Takk! Profilen din er sendt inn og vises nå på tavla.';
   submitToFirebase();
 }
 function submitToFirebase(){
-  push(ref(db, 'genetikhjul/' + state.kode + '/elever'), {
+  lastFirebase().then(()=> FB.push(R('genetikhjul/' + state.kode + '/elever'), {
     navn: state.navn,
     kjonn: state.kjonn,
     svar: state.svar,
     ts: Date.now()
-  }).catch(err=>{
+  })).catch(err=>{
     document.getElementById('step-done').innerHTML =
       '<div class="center-msg">Kunne ikke sende inn 😕<br><small>' + err.message + '</small></div>' +
       '<button class="btn secondary" onclick="location.reload()">Prøv igjen</button>';
@@ -668,17 +728,33 @@ window.startSession = function(){
   listen();
 };
 
-/* Merk klassekoden som "vår" hvis ingen har gjort det før. Reglene tillater
-   bare å skrive owner når feltet er tomt, så den første tavla som starter
-   visningen får eierskapet — og bare den kan nullstille klassen etterpå.
-   Uten anonym pålogging skjer ingenting, og nullstilling er åpen som før. */
+/* Merk klassekoden som "vår", og sørg for at en ny økt starter med blanke ark.
+   Klassekoden er nå fire siffer og trekkes tilfeldig, så den kan før eller
+   siden treffe en kode som har vært brukt. Da skal ikke forrige økts profiler
+   dukke opp på tavla. Ligger det allerede profiler der, spør vi først — en
+   lærer som med vilje skriver inn en gammel kode kan ha tenkt å fortsette. */
 function claimOwner(){
   const kodeVedStart = kode;
   return ensureAuth().then(id => {
     if(!id || kodeVedStart !== kode) return;
-    return get(ref(db, 'genetikhjul/' + kodeVedStart + '/owner')).then(snap => {
-      if(snap.exists()) return;
-      return update(ref(db, 'genetikhjul/' + kodeVedStart), { owner: id, createdAt: Date.now() }).catch(()=>{});
+    return FB.get(R('genetikhjul/' + kodeVedStart)).then(snap => {
+      const klasse = snap.val();
+      const antall = klasse && klasse.elever ? Object.keys(klasse.elever).length : 0;
+      if(antall > 0){
+        const svar = confirm(
+          'Klassekoden ' + kodeVedStart + ' har allerede ' + antall +
+          (antall === 1 ? ' profil' : ' profiler') + ' fra en tidligere økt.\n\n' +
+          'OK = start med blanke ark\nAvbryt = fortsett på den gamle klassen');
+        if(!svar) return;
+        return FB.update(R('genetikhjul/' + kodeVedStart), {
+          elever: null, owner: id, createdAt: Date.now()
+        }).catch(() => {
+          alert('Fikk ikke tømt klassen — den ble startet fra en annen enhet som fortsatt er aktiv.\n'
+              + 'Velg en annen klassekode.');
+        });
+      }
+      if(klasse && klasse.owner) return; // fersk klasse med eier, la den være
+      return FB.update(R('genetikhjul/' + kodeVedStart), { owner: id, createdAt: Date.now() }).catch(()=>{});
     });
   }).catch(()=>{});
 }
@@ -740,16 +816,22 @@ window.copyLink = function(){
 
 window.resetKlasse = function(){
   if(!confirm('Slette alle innsendte profiler for klassekode "' + kode + '"? Dette kan ikke angres.')) return;
-  remove(ref(db, 'genetikhjul/' + kode + '/elever')).catch(()=>{
+  if(!FB) return;
+  FB.remove(R('genetikhjul/' + kode + '/elever')).catch(()=>{
     alert('Kunne ikke nullstille. Klassekoden ble startet fra en annen enhet eller nettleser,\n'
         + 'og bare den kan slette profilene. Åpne tavla der, eller bruk en ny klassekode.');
   });
 };
 
 function listen(){
-  onValue(ref(db, 'genetikhjul/' + kode + '/elever'), snap=>{
-    students = snap.val() || {};
-    renderDashboard();
+  lastFirebase().then(()=>{
+    FB.onValue(R('genetikhjul/' + kode + '/elever'), snap=>{
+      students = snap.val() || {};
+      renderDashboard();
+    });
+  }).catch(()=>{
+    document.getElementById('name-chips').innerHTML =
+      '<div class="empty">Får ikke lastet Firebase. Skolenettet blokkerer kanskje www.gstatic.com.</div>';
   });
 }
 
@@ -1035,10 +1117,21 @@ window.downloadWheelImage = function(holderId, filename){
   img.src = url;
 };
 
-// pre-fill kode fra ?kode= i lærerens felt også, i tilfelle noen deler den lenka videre
+/* Lærerens kodefelt fylles ut på forhånd. Et tomt felt så ut som om koden
+   fantes fra før og skulle skrives av et sted, mens den i praksis er noe
+   læreren finner på. Fire sifre er nok til å skille klasser som kjører
+   samtidig, og lett å lese høyt i et klasserom. Feltet er fortsatt redigerbart
+   for den som heller vil bruke f.eks. 8B-HOST26. */
+function lagKlassekode(){
+  const b = new Uint32Array(4);
+  (window.crypto || window.msCrypto).getRandomValues(b);
+  let k = '';
+  for(let i=0;i<4;i++) k += b[i] % 10;
+  return k;
+}
 (function prefillLarerKode(){
   const fraUrl = normaliserKode(new URLSearchParams(location.search).get('kode'));
-  if(fraUrl) document.getElementById('larer-input-kode').value = fraUrl;
+  document.getElementById('larer-input-kode').value = fraUrl || lagKlassekode();
 })();
 </script>
 </body>
