@@ -519,7 +519,12 @@ function renderCards(items){
     a.dataset.category = g.category;
     a.style.transform = 'rotate(' + ((i % 2 === 0) ? -1 : 1) + 'deg)';
 
-    const folderName = g.file.replace(/\.html$/,'').split('/')[0];
+    // Siste mappenivå i "file" — de fleste spill ligger rett i en mappe
+    // (f.eks. "einstein/index.html" -> "einstein"), men noen ligger i en
+    // undermappe (f.eks. "geografi/europa_land/index.html" -> "europa_land").
+    // Bildet skal hete det samme som mappa spillet faktisk bor i.
+    const stier = g.file.replace(/\.html$/,'').split('/');
+    const folderName = stier[stier.length - 2];
     const imgPath = getImageBasePath() + folderName + '.png';
 
     a.innerHTML =
