@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blogg – LRNify</title>
+<meta name="description" content="LRNify-bloggen: tips til hvordan du bruker klasseromsressurser og læringsspill i undervisningen, laget for LK20.">
+<link rel="canonical" href="https://lrnify.no/blogg/index.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Blogg – LRNify">
+<meta property="og:description" content="Tips til hvordan du bruker klasseromsressurser og læringsspill i undervisningen, laget for LK20.">
+<meta property="og:url" content="https://lrnify.no/blogg/index.html">
+<meta property="og:locale" content="nb_NO">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "LRNify-bloggen",
+  "url": "https://lrnify.no/blogg/index.html",
+  "description": "Tips til hvordan du bruker klasseromsressurser og læringsspill i undervisningen, laget for LK20.",
+  "inLanguage": "nb-NO",
+  "publisher": {
+    "@type": "Organization",
+    "name": "LRNify",
+    "url": "https://lrnify.no/"
+  }
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fff9f0;
+    --ink:#2b2118;
+    --yellow:#facc15;
+    --card:#ffffff;
+    --muted:#7a6f63;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:var(--cream);
+    color:var(--ink);
+    min-height:100%;
+  }
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:18px 24px;
+  }
+  .logo{
+    font-family:'Chewy',cursive;
+    font-size:clamp(2rem,6vw,3rem);
+    transform:rotate(-2deg);
+    line-height:1;
+    color:inherit;
+    text-decoration:none;
+    display:inline-block;
+  }
+  .logo b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400;}
+  header a.back{
+    font-weight:800;color:var(--ink);text-decoration:none;
+    font-size:.95rem;
+  }
+  main{max-width:760px;margin:0 auto;padding:12px 24px 60px;}
+  h1.page-title{font-size:clamp(1.8rem,5vw,2.4rem);margin-bottom:8px;}
+  main > p.lead{color:var(--muted);margin-bottom:32px;font-size:1.05rem;}
+  .post-list{display:flex;flex-direction:column;gap:16px;}
+  .post-card{
+    background:var(--card);border:2px solid rgba(43,33,24,.08);
+    border-radius:16px;padding:20px 22px;text-decoration:none;color:inherit;
+    display:block;transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .post-card:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(43,33,24,.08);}
+  .post-card time{display:block;font-size:.85rem;color:var(--muted);font-weight:700;margin-bottom:6px;}
+  .post-card h2{font-size:1.25rem;margin-bottom:6px;}
+  .post-card p{color:var(--muted);font-size:.98rem;line-height:1.5;}
+  footer{text-align:center;padding:30px 24px;color:var(--muted);font-size:.9rem;}
+</style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="/index.html">LRN<b>ify</b></a>
+    <a class="back" href="/index.html">← Til spill &amp; verktøy</a>
+  </header>
+
+  <main>
+    <h1 class="page-title">Blogg</h1>
+    <p class="lead">Tips og ideer til hvordan du bruker LRNifys klasseromsressurser og læringsspill i undervisningen.</p>
+    <div class="post-list" id="postList" role="list"></div>
+  </main>
+
+  <footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+/* =========================================================
+   BLOGGINNLEGG — eneste sted du redigerer for å legge til innlegg.
+   Nyeste øverst. "slug" er mappenavnet under blogg/.
+   ========================================================= */
+const POSTS = [
+  {
+    slug: "klassekart-for-larere",
+    title: "Klassekart: slutt å bruke ti minutter på å plassere elever",
+    date: "2026-08-02",
+    excerpt: "Slik bruker du Klassekart til å generere rettferdige, tilfeldige sitteplasser på sekunder – og hvorfor det er mer enn bare bekvemmelighet."
+  }
+];
+
+const list = document.getElementById('postList');
+POSTS.forEach(p => {
+  const a = document.createElement('a');
+  a.className = 'post-card';
+  a.href = p.slug + '/index.html';
+  a.setAttribute('role', 'listitem');
+  const d = new Date(p.date);
+  const dateStr = d.toLocaleDateString('nb-NO', { day: 'numeric', month: 'long', year: 'numeric' });
+  a.innerHTML = `<time datetime="${p.date}">${dateStr}</time><h2>${p.title}</h2><p>${p.excerpt}</p>`;
+  list.appendChild(a);
+});
+</script>
+</body>
+</html>

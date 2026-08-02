@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://lrnify.no/</loc><priority>1.0</priority></url>
+  <url><loc>https://lrnify.no/</loc><priority>1.0</priority><lastmod>2026-08-02</lastmod></url>
 
   <!-- Læringsspill -->
-  <url><loc>https://lrnify.no/games/geografi/europa_land/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/straffekonk/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/operasjonfrihet/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/koblinger/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/terningspill/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/fotballgloser/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/3s1f/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/einstein/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/brokstigen/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/myldresprak/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/geografi/europa_land/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/straffekonk/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/operasjonfrihet/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/koblinger/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/fotballgloser/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/3s1f/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/einstein/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/brokstigen/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/myldresprak/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/games/beinjakten/index.html</loc><lastmod>2026-08-02</lastmod></url>
 
   <!-- Klasseromsressurser -->
-  <url><loc>https://lrnify.no/tools/klassekart/index.html</loc></url>
-  <url><loc>https://lrnify.no/tools/elevvelger/index.html</loc></url>
-  <url><loc>https://lrnify.no/tools/nedtelling/index.html</loc></url>
-  <url><loc>https://lrnify.no/tools/stoppeklokke/index.html</loc></url>
-  <url><loc>https://lrnify.no/tools/lyd/index.html</loc></url>
-  <url><loc>https://lrnify.no/tools/graftegner/index.html</loc></url>
+  <url><loc>https://lrnify.no/tools/klassekart/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/tools/elevvelger/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/tools/nedtelling/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/tools/stoppeklokke/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/tools/lyd/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/tools/graftegner/index.html</loc><lastmod>2026-08-02</lastmod></url>
 
   <!-- Aktiviteter -->
-  <url><loc>https://lrnify.no/aktiviteter/terningspill/index.html</loc></url>
-  <url><loc>https://lrnify.no/aktiviteter/tps/index.html</loc></url>
-  <url><loc>https://lrnify.no/aktiviteter/poll/index.html</loc></url>
-  <url><loc>https://lrnify.no/aktiviteter/genetikhjul/index.html</loc></url>
-  <url><loc>https://lrnify.no/aktiviteter/temaspinner/index.html</loc></url>
+  <url><loc>https://lrnify.no/aktiviteter/terningspill/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/aktiviteter/tps/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/aktiviteter/poll/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/aktiviteter/genetikhjul/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/aktiviteter/temaspinner/index.html</loc><lastmod>2026-08-02</lastmod></url>
+
+  <!-- Blogg -->
+  <url><loc>https://lrnify.no/blogg/index.html</loc><lastmod>2026-08-02</lastmod></url>
+  <url><loc>https://lrnify.no/blogg/klassekart-for-larere/index.html</loc><lastmod>2026-08-02</lastmod></url>
 </urlset>
