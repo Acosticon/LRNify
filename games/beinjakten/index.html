@@ -94,9 +94,25 @@
   .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
   .btn-back {
     font-weight: 800; color: var(--muted); text-decoration: none; font-size: .9rem;
-    padding: 4px 0;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
   }
   .btn-back:hover { color: var(--ink); }
+
+  .level-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px; width: 100%;
+  }
+  .level-btn {
+    font-family: 'Nunito', sans-serif; background: var(--card); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 12px 8px; cursor: pointer; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .level-btn:hover  { transform: translateY(-3px); box-shadow: 0 9px 0 var(--ink); }
+  .level-btn:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .level-btn .level-name { font-family: 'Chewy', cursive; font-size: 1.05rem; }
+  .level-btn .level-range { font-weight: 800; font-size: .72rem; color: var(--muted); }
 
   /* ══ SPILLSKJERM ══ */
   #screen-game { padding: 0 16px 30px; }
@@ -140,7 +156,7 @@
      mellom rutenettlinjene — hunden står PÅ et punkt, ikke inni en rute. */
   .plane-grid {
     display: grid;
-    grid-template-columns: 24px 1fr;
+    grid-template-columns: 28px 1fr;
     grid-template-rows: auto 22px;
     column-gap: 6px; row-gap: 6px;
     width: min(94vw, 480px);
@@ -163,32 +179,38 @@
     background-image:
       linear-gradient(to right, var(--gridline) 1px, transparent 1px),
       linear-gradient(to bottom, var(--gridline) 1px, transparent 1px);
-    background-size: 10% 10%;
-    border-top: 2px solid var(--gridline);
-    border-right: 2px solid var(--gridline);
-    border-left: 4px solid var(--ink);   /* x = 0 -aksen */
-    border-bottom: 4px solid var(--ink); /* y = 0 -aksen */
+    background-size: calc(100% / var(--cols, 10)) calc(100% / var(--cols, 10));
+    border: 2px solid var(--gridline);
     touch-action: manipulation;
   }
 
+  /* Punktene i skjæringspunktene er usynlige klikkeflater — ingen
+     permanente prikker, bare et svakt gult glimt ved hover/trykk. */
   .point {
     position: absolute;
-    width: 9%; height: 9%;
     transform: translate(-50%, -50%);
-    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%;
     cursor: pointer; background: transparent; border: none; padding: 0;
+    transition: background .12s ease;
   }
-  .point::before {
-    content: "";
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--muted); opacity: .5;
-    transition: transform .12s ease, background .12s ease, opacity .12s ease;
+  .point:hover, .point:focus-visible { background: rgba(250,204,21,.35); }
+  .point:active { background: rgba(250,204,21,.6); }
+  .point:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  /* Aksekorset — går alltid gjennom origo, med piler i begge ender
+     som viser at aksene fortsetter i det uendelige. */
+  .axis-line { position: absolute; background: var(--ink); pointer-events: none; z-index: 2; }
+  .axis-line-x { left: 0; right: 0; height: 3px; transform: translateY(-50%); }
+  .axis-line-y { top: 0; bottom: 0; width: 3px; transform: translateX(-50%); }
+  .axis-arrow { position: absolute; width: 0; height: 0; }
+  .axis-line-x .arrow-left  { left: 0; top: 50%; transform: translate(-100%,-50%); border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-right: 10px solid var(--ink); }
+  .axis-line-x .arrow-right { right: 0; top: 50%; transform: translate(100%,-50%); border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 10px solid var(--ink); }
+  .axis-line-y .arrow-up    { top: 0; left: 50%; transform: translate(-50%,-100%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 10px solid var(--ink); }
+  .axis-line-y .arrow-down  { bottom: 0; left: 50%; transform: translate(-50%,100%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid var(--ink); }
+
+  .level-tag {
+    text-align: center; font-weight: 800; font-size: .75rem; color: var(--muted);
   }
-  .point:hover::before, .point:focus-visible::before {
-    background: var(--ink); opacity: 1; transform: scale(1.7);
-  }
-  .point:active::before { background: var(--yellow); }
-  .point:focus-visible { outline: none; }
 
   .dog-anchor {
     position: absolute; width: 0; height: 0;
@@ -320,7 +342,10 @@
         <li>Grav opp alle 5 beina så raskt du kan!</li>
       </ul>
     </div>
-    <button class="btn-primary" id="btn-start">Start spillet</button>
+    <div class="card">
+      <h2>Velg nivå</h2>
+      <div class="level-grid" id="levelGrid"></div>
+    </div>
   </div>
 </div>
 
@@ -345,6 +370,7 @@
       </div>
     </div>
 
+    <div class="level-tag" id="levelTag"></div>
     <div class="bone-tray" id="boneTray"></div>
 
     <div class="board-area">
@@ -378,6 +404,7 @@
       <div class="result-row"><span>Antall steg</span><strong id="endSteps">0</strong></div>
     </div>
     <button class="btn-primary" id="btn-again">Spill igjen</button>
+    <button class="btn-back" id="btn-change-level">Bytt nivå</button>
     <a class="btn-back" href="../../index.html">← Tilbake til LRNify</a>
   </div>
 </div>
@@ -389,9 +416,20 @@
 <script>
 "use strict";
 
-const GRID_MAX = 10;      // koordinater 0–10
 const TOTAL_BONES = 5;
 const $ = id => document.getElementById(id);
+
+/* ── NIVÅER ── Aksekorset går alltid gjennom origo (0,0) er med i
+   hvert nivås koordinatområde), så x- og y-aksen er alltid synlige. */
+const LEVELS = [
+  { id: 1, name: 'Nivå 1', xMin: 0,  xMax: 6,  yMin: 0,  yMax: 6  },
+  { id: 2, name: 'Nivå 2', xMin: 0,  xMax: 10, yMin: 0,  yMax: 10 },
+  { id: 3, name: 'Nivå 3', xMin: -6, xMax: 0,  yMin: 0,  yMax: 6  },
+  { id: 4, name: 'Nivå 4', xMin: 0,  xMax: 6,  yMin: -6, yMax: 0  },
+  { id: 5, name: 'Nivå 5', xMin: -6, xMax: 6,  yMin: -6, yMax: 6  },
+];
+const levelRangeText = lv => `(${lv.xMin}, ${lv.yMin}) – (${lv.xMax}, ${lv.yMax})`;
+let currentLevel = LEVELS[1];
 
 const showScreen = id => {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -442,10 +480,10 @@ let busy = false;
 
 const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
-function makeTargets(){
+function makeTargets(level){
   const pool = [];
-  for(let x=0;x<=GRID_MAX;x++) for(let y=0;y<=GRID_MAX;y++){
-    if(x===0 && y===0) continue; // ikke start-ruta
+  for(let x=level.xMin;x<=level.xMax;x++) for(let y=level.yMin;y<=level.yMax;y++){
+    if(x===0 && y===0) continue; // ikke start-punktet
     pool.push({x,y});
   }
   return shuffle(pool).slice(0, TOTAL_BONES);
@@ -472,23 +510,43 @@ const feedbackEl = document.createElement('div');
 feedbackEl.className = 'board-feedback';
 fxLayer.appendChild(feedbackEl);
 
+const axisLineX = document.createElement('div');
+axisLineX.className = 'axis-line axis-line-x';
+axisLineX.innerHTML =
+  '<div class="axis-arrow arrow-left"></div><div class="axis-arrow arrow-right"></div>';
+const axisLineY = document.createElement('div');
+axisLineY.className = 'axis-line axis-line-y';
+axisLineY.innerHTML =
+  '<div class="axis-arrow arrow-up"></div><div class="axis-arrow arrow-down"></div>';
+
 function pointPct(x, y){
-  return { left: (x/GRID_MAX)*100, top: ((GRID_MAX-y)/GRID_MAX)*100 };
+  const lv = currentLevel;
+  return {
+    left: ((x - lv.xMin) / (lv.xMax - lv.xMin)) * 100,
+    top:  ((lv.yMax - y) / (lv.yMax - lv.yMin)) * 100,
+  };
 }
 
-function buildBoard(){
+function buildBoard(level){
+  currentLevel = level;
   plane.innerHTML = '';
   yAxisLabels.innerHTML = '';
   xAxisLabels.innerHTML = '';
 
-  for(let y = 0; y <= GRID_MAX; y++){
-    for(let x = 0; x <= GRID_MAX; x++){
+  const cols = level.xMax - level.xMin; // like på begge akser (kvadratiske nivåer)
+  plane.style.setProperty('--cols', cols);
+  const pointSize = Math.max(5, (100/cols) * 0.85) + '%';
+
+  for(let y = level.yMin; y <= level.yMax; y++){
+    for(let x = level.xMin; x <= level.xMax; x++){
       const p = pointPct(x, y);
       const point = document.createElement('button');
       point.type = 'button';
       point.className = 'point';
       point.style.left = p.left + '%';
       point.style.top = p.top + '%';
+      point.style.width = pointSize;
+      point.style.height = pointSize;
       point.dataset.x = x; point.dataset.y = y;
       point.setAttribute('aria-label', 'Flytt hunden til (' + x + ', ' + y + ')');
       point.addEventListener('click', () => handleMoveTo(x, y));
@@ -496,23 +554,28 @@ function buildBoard(){
     }
   }
 
-  for(let y = 0; y <= GRID_MAX; y++){
+  for(let y = level.yMin; y <= level.yMax; y++){
     const yl = document.createElement('span');
-    yl.style.top = pointPct(0, y).top + '%';
+    yl.style.top = pointPct(level.xMin, y).top + '%';
     yl.textContent = y;
     yAxisLabels.appendChild(yl);
   }
-  for(let x = 0; x <= GRID_MAX; x++){
+  for(let x = level.xMin; x <= level.xMax; x++){
     const xl = document.createElement('span');
-    xl.style.left = pointPct(x, 0).left + '%';
+    xl.style.left = pointPct(x, level.yMin).left + '%';
     xl.textContent = x;
     xAxisLabels.appendChild(xl);
   }
 
+  const origin = pointPct(0, 0);
+  axisLineX.style.top = origin.top + '%';
+  axisLineY.style.left = origin.left + '%';
+  plane.appendChild(axisLineX);
+  plane.appendChild(axisLineY);
+
   plane.appendChild(dogAnchor);
   plane.appendChild(fxLayer);
 }
-buildBoard();
 
 /* ── HUNDENS POSISJON ── */
 function updateDogPosition(){
@@ -548,15 +611,18 @@ function startTimer(){
 function stopTimer(){ clearInterval(timerId); }
 
 /* ── SPILLFLYT ── */
-function startGame(){
+function startGame(level){
+  if(level) currentLevel = level;
   initAudio();
+  buildBoard(currentLevel);
   dog = { x: 0, y: 0 };
-  targets = makeTargets();
+  targets = makeTargets(currentLevel);
   round = 0;
   steps = 0;
   busy = false;
   $('hudSteps').textContent = '0';
   $('hudTime').textContent = '00:00';
+  $('levelTag').textContent = currentLevel.name + ' · ' + levelRangeText(currentLevel);
   buildBoneTray();
   updateDogPosition();
   showScreen('screen-game');
@@ -586,8 +652,9 @@ function handleMoveTo(x, y){
 
 function handleMoveBy(dx, dy){
   if(busy) return;
-  const x = Math.min(GRID_MAX, Math.max(0, dog.x + dx));
-  const y = Math.min(GRID_MAX, Math.max(0, dog.y + dy));
+  const lv = currentLevel;
+  const x = Math.min(lv.xMax, Math.max(lv.xMin, dog.x + dx));
+  const y = Math.min(lv.yMax, Math.max(lv.yMin, dog.y + dy));
   if(x === dog.x && y === dog.y) return; // traff kanten
   handleMoveTo(x, y);
 }
@@ -678,8 +745,24 @@ function endGame(){
 }
 
 /* ── KONTROLLER ── */
-$('btn-start').addEventListener('click', startGame);
-$('btn-again').addEventListener('click', startGame);
+function buildLevelGrid(){
+  const grid = $('levelGrid');
+  grid.innerHTML = '';
+  LEVELS.forEach(level => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'level-btn';
+    btn.innerHTML =
+      '<span class="level-name">' + level.name + '</span>' +
+      '<span class="level-range">' + levelRangeText(level) + '</span>';
+    btn.addEventListener('click', () => startGame(level));
+    grid.appendChild(btn);
+  });
+}
+buildLevelGrid();
+
+$('btn-again').addEventListener('click', () => startGame());
+$('btn-change-level').addEventListener('click', () => showScreen('screen-start'));
 
 $('dpad').addEventListener('click', e => {
   const btn = e.target.closest('button[data-dir]');
