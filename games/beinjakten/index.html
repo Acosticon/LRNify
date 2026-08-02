@@ -16,8 +16,7 @@
     --muted: #7a6f63;
     --green: #6fcf97;
     --orange:#ff9d78;
-    --cell-a:#fffdf7;
-    --cell-b:#fff3d6;
+    --gridline:#e8dfc9;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -136,84 +135,112 @@
   .board-area {
     display: flex; flex-direction: column; align-items: center; gap: 16px;
   }
-  .coord-grid {
-    position: relative;
+
+  /* Ekte koordinatsystem: aksemerker utenfor, punkter i skjæringspunktene
+     mellom rutenettlinjene — hunden står PÅ et punkt, ikke inni en rute. */
+  .plane-grid {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(12, 1fr);
+    grid-template-columns: 24px 1fr;
+    grid-template-rows: auto 22px;
+    column-gap: 6px; row-gap: 6px;
     width: min(94vw, 480px);
-    aspect-ratio: 1;
-    background: var(--ink);
-    border: 4px solid var(--ink);
-    gap: 1px;
-    touch-action: manipulation;
   }
-  .axis-label {
-    background: var(--cream);
-    display: flex; align-items: center; justify-content: center;
-    font-weight: 900; font-size: clamp(.55rem, 2vw, .8rem); color: var(--muted);
+  .y-axis-labels { grid-column: 1; grid-row: 1; position: relative; }
+  .x-axis-labels { grid-column: 2; grid-row: 2; position: relative; }
+  .y-axis-labels span, .x-axis-labels span {
+    position: absolute;
+    font-weight: 900; font-size: clamp(.55rem, 2vw, .75rem); color: var(--muted);
     user-select: none;
   }
-  .axis-label.corner { background: var(--ink); }
-  .cell {
-    background: var(--cell-a);
-    cursor: pointer;
-  }
-  .cell:nth-child(odd) { background: var(--cell-b); }
-  .cell:hover { background: #ffe9a8; }
-  .cell:active { background: var(--yellow); }
+  .y-axis-labels span { right: 4px; transform: translateY(-50%); }
+  .x-axis-labels span { top: 2px; transform: translateX(-50%); }
 
-  .dog-sprite {
+  .plane {
+    grid-column: 2; grid-row: 1;
+    position: relative;
+    aspect-ratio: 1;
+    background-color: var(--card);
+    background-image:
+      linear-gradient(to right, var(--gridline) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--gridline) 1px, transparent 1px);
+    background-size: 10% 10%;
+    border-top: 2px solid var(--gridline);
+    border-right: 2px solid var(--gridline);
+    border-left: 4px solid var(--ink);   /* x = 0 -aksen */
+    border-bottom: 4px solid var(--ink); /* y = 0 -aksen */
+    touch-action: manipulation;
+  }
+
+  .point {
     position: absolute;
-    width: calc(100% / 12);
-    height: calc(100% / 12);
+    width: 9%; height: 9%;
+    transform: translate(-50%, -50%);
     display: flex; align-items: center; justify-content: center;
-    font-size: clamp(1rem, 5.2vw, 1.8rem);
+    cursor: pointer; background: transparent; border: none; padding: 0;
+  }
+  .point::before {
+    content: "";
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--muted); opacity: .5;
+    transition: transform .12s ease, background .12s ease, opacity .12s ease;
+  }
+  .point:hover::before, .point:focus-visible::before {
+    background: var(--ink); opacity: 1; transform: scale(1.7);
+  }
+  .point:active::before { background: var(--yellow); }
+  .point:focus-visible { outline: none; }
+
+  .dog-anchor {
+    position: absolute; width: 0; height: 0;
     transition: left .22s ease, top .22s ease;
-    left: calc(100% / 12); top: calc(100% / 12 * 10);
     pointer-events: none; z-index: 3;
+  }
+  .dog-sprite {
+    position: absolute; left: 0; top: 0;
+    display: block;
+    font-size: clamp(1.1rem, 5.4vw, 1.9rem);
+    transform: translate(-50%, -50%);
     filter: drop-shadow(0 3px 0 rgba(0,0,0,.25));
   }
-  .dog-sprite.facing-left { transform: scaleX(-1); }
+  .dog-sprite.facing-left { transform: translate(-50%, -50%) scaleX(-1); }
   .dog-sprite.digging { animation: digShake .5s ease; }
   @keyframes digShake {
-    0%,100% { transform: translateY(0) rotate(0); }
-    20%     { transform: translateY(2px) rotate(-10deg); }
-    40%     { transform: translateY(-3px) rotate(10deg); }
-    60%     { transform: translateY(2px) rotate(-8deg); }
-    80%     { transform: translateY(-2px) rotate(6deg); }
+    0%,100% { transform: translate(-50%,-50%) rotate(0); }
+    20%     { transform: translate(-50%,-50%) translateY(2px) rotate(-10deg); }
+    40%     { transform: translate(-50%,-50%) translateY(-3px) rotate(10deg); }
+    60%     { transform: translate(-50%,-50%) translateY(2px) rotate(-8deg); }
+    80%     { transform: translate(-50%,-50%) translateY(-2px) rotate(6deg); }
   }
   .dog-sprite.facing-left.digging { animation: digShakeFlip .5s ease; }
   @keyframes digShakeFlip {
-    0%,100% { transform: scaleX(-1) translateY(0) rotate(0); }
-    20%     { transform: scaleX(-1) translateY(2px) rotate(-10deg); }
-    40%     { transform: scaleX(-1) translateY(-3px) rotate(10deg); }
-    60%     { transform: scaleX(-1) translateY(2px) rotate(-8deg); }
-    80%     { transform: scaleX(-1) translateY(-2px) rotate(6deg); }
+    0%,100% { transform: translate(-50%,-50%) scaleX(-1) rotate(0); }
+    20%     { transform: translate(-50%,-50%) scaleX(-1) translateY(2px) rotate(-10deg); }
+    40%     { transform: translate(-50%,-50%) scaleX(-1) translateY(-3px) rotate(10deg); }
+    60%     { transform: translate(-50%,-50%) scaleX(-1) translateY(2px) rotate(-8deg); }
+    80%     { transform: translate(-50%,-50%) scaleX(-1) translateY(-2px) rotate(6deg); }
   }
 
   .fx-layer { position: absolute; inset: 0; pointer-events: none; z-index: 4; overflow: visible; }
   .bone-pop {
     position: absolute;
-    width: calc(100% / 12); height: calc(100% / 12);
     display: flex; align-items: center; justify-content: center;
     font-size: clamp(1.1rem, 5.6vw, 2rem);
-    transform: scale(0);
+    transform: translate(-50%, -50%) scale(0);
   }
   .bone-pop.pop { animation: bonePopIn .7s cubic-bezier(.2,.9,.3,1.4) forwards; }
   @keyframes bonePopIn {
-    0%   { transform: scale(0) rotate(-30deg) translateY(0); opacity: 0; }
-    45%  { transform: scale(1.3) rotate(10deg) translateY(-14px); opacity: 1; }
-    70%  { transform: scale(1) rotate(-4deg) translateY(-6px); opacity: 1; }
-    100% { transform: scale(.9) rotate(0) translateY(0); opacity: 1; }
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(-30deg) translateY(0); opacity: 0; }
+    45%  { transform: translate(-50%,-50%) scale(1.3) rotate(10deg) translateY(-14px); opacity: 1; }
+    70%  { transform: translate(-50%,-50%) scale(1) rotate(-4deg) translateY(-6px); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(.9) rotate(0) translateY(0); opacity: 1; }
   }
   .spark {
     position: absolute; width: 8px; height: 8px; border-radius: 2px;
     animation: sparkFly .7s ease-out forwards;
   }
   @keyframes sparkFly {
-    0%   { transform: translate(0,0) scale(1); opacity: 1; }
-    100% { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
+    0%   { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(.3); opacity: 0; }
   }
 
   .board-feedback {
@@ -289,7 +316,7 @@
       <h2>Slik spiller du</h2>
       <ul>
         <li>Du får en koordinat, for eksempel <strong>(4, 7)</strong></li>
-        <li>Flytt hunden dit med piltastene, knappene eller ved å klikke i rutenettet</li>
+        <li>Flytt hunden dit med piltastene, knappene eller ved å klikke på et punkt i koordinatsystemet</li>
         <li>Grav opp alle 5 beina så raskt du kan!</li>
       </ul>
     </div>
@@ -321,7 +348,11 @@
     <div class="bone-tray" id="boneTray"></div>
 
     <div class="board-area">
-      <div class="coord-grid" id="coordGrid" role="grid" aria-label="Koordinatsystem, klikk en rute for å flytte hunden dit"></div>
+      <div class="plane-grid">
+        <div class="y-axis-labels" id="yAxisLabels"></div>
+        <div class="plane" id="plane" role="grid" aria-label="Koordinatsystem, klikk et punkt for å flytte hunden dit"></div>
+        <div class="x-axis-labels" id="xAxisLabels"></div>
+      </div>
 
       <div class="dpad" id="dpad">
         <button type="button" data-dir="up" aria-label="Flytt opp">▲</button>
@@ -420,56 +451,74 @@ function makeTargets(){
   return shuffle(pool).slice(0, TOTAL_BONES);
 }
 
-/* ── OPPBYGGING AV RUTENETT (12x12: aksemerker + 11x11 spillrute) ── */
-const grid = $('coordGrid');
+/* ── OPPBYGGING AV KOORDINATSYSTEMET ──
+   Punktene ligger i skjæringspunktene mellom rutenettlinjene (0–10 på
+   hver akse), ikke inni rutene mellom dem — hunden flyttes fra punkt
+   til punkt, akkurat som i et ekte koordinatsystem. */
+const plane = $('plane');
+const yAxisLabels = $('yAxisLabels');
+const xAxisLabels = $('xAxisLabels');
+
+const dogAnchor = document.createElement('div');
+dogAnchor.className = 'dog-anchor';
 const dogEl = document.createElement('div');
 dogEl.className = 'dog-sprite';
 dogEl.textContent = '🐶';
+dogAnchor.appendChild(dogEl);
+
 const fxLayer = document.createElement('div');
 fxLayer.className = 'fx-layer';
 const feedbackEl = document.createElement('div');
 feedbackEl.className = 'board-feedback';
 fxLayer.appendChild(feedbackEl);
 
+function pointPct(x, y){
+  return { left: (x/GRID_MAX)*100, top: ((GRID_MAX-y)/GRID_MAX)*100 };
+}
+
 function buildBoard(){
-  grid.innerHTML = '';
-  for(let rowY = GRID_MAX; rowY >= 0; rowY--){
-    const yl = document.createElement('div');
-    yl.className = 'axis-label';
-    yl.textContent = rowY;
-    grid.appendChild(yl);
-    for(let x=0; x<=GRID_MAX; x++){
-      const cell = document.createElement('div');
-      cell.className = 'cell';
-      cell.dataset.x = x; cell.dataset.y = rowY;
-      cell.addEventListener('click', () => handleMoveTo(x, rowY));
-      grid.appendChild(cell);
+  plane.innerHTML = '';
+  yAxisLabels.innerHTML = '';
+  xAxisLabels.innerHTML = '';
+
+  for(let y = 0; y <= GRID_MAX; y++){
+    for(let x = 0; x <= GRID_MAX; x++){
+      const p = pointPct(x, y);
+      const point = document.createElement('button');
+      point.type = 'button';
+      point.className = 'point';
+      point.style.left = p.left + '%';
+      point.style.top = p.top + '%';
+      point.dataset.x = x; point.dataset.y = y;
+      point.setAttribute('aria-label', 'Flytt hunden til (' + x + ', ' + y + ')');
+      point.addEventListener('click', () => handleMoveTo(x, y));
+      plane.appendChild(point);
     }
   }
-  const corner = document.createElement('div');
-  corner.className = 'axis-label corner';
-  grid.appendChild(corner);
-  for(let x=0; x<=GRID_MAX; x++){
-    const xl = document.createElement('div');
-    xl.className = 'axis-label';
-    xl.textContent = x;
-    grid.appendChild(xl);
+
+  for(let y = 0; y <= GRID_MAX; y++){
+    const yl = document.createElement('span');
+    yl.style.top = pointPct(0, y).top + '%';
+    yl.textContent = y;
+    yAxisLabels.appendChild(yl);
   }
-  grid.appendChild(dogEl);
-  grid.appendChild(fxLayer);
+  for(let x = 0; x <= GRID_MAX; x++){
+    const xl = document.createElement('span');
+    xl.style.left = pointPct(x, 0).left + '%';
+    xl.textContent = x;
+    xAxisLabels.appendChild(xl);
+  }
+
+  plane.appendChild(dogAnchor);
+  plane.appendChild(fxLayer);
 }
 buildBoard();
 
 /* ── HUNDENS POSISJON ── */
 function updateDogPosition(){
-  const pct = 100/12;
-  dogEl.style.left = (pct*(1+dog.x)) + '%';
-  dogEl.style.top  = (pct*(GRID_MAX-dog.y)) + '%';
-}
-
-function cellCenterPct(x, y){
-  const pct = 100/12;
-  return { left: pct*(1+x), top: pct*(GRID_MAX-y) };
+  const p = pointPct(dog.x, dog.y);
+  dogAnchor.style.left = p.left + '%';
+  dogAnchor.style.top  = p.top + '%';
 }
 
 /* ── BEIN-BRETT (fremdrift) ── */
@@ -586,7 +635,7 @@ function onBoneFound(){
   setTimeout(() => {
     dogEl.classList.remove('digging');
 
-    const c = cellCenterPct(dog.x, dog.y);
+    const c = pointPct(dog.x, dog.y);
     const bone = document.createElement('div');
     bone.className = 'bone-pop';
     bone.textContent = '🦴';
