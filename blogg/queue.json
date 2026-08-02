@@ -1,0 +1,12 @@
+[
+  { "slug": "elevvelger", "sourceFile": "tools/elevvelger/index.html", "url": "tools/elevvelger/index.html", "category": "Klasserom" },
+  { "slug": "nedtelling", "sourceFile": "tools/nedtelling/index.html", "url": "tools/nedtelling/index.html", "category": "Klasserom" },
+  { "slug": "stoppeklokke", "sourceFile": "tools/stoppeklokke/index.html", "url": "tools/stoppeklokke/index.html", "category": "Klasserom" },
+  { "slug": "lydmaaler", "sourceFile": "tools/lyd/index.html", "url": "tools/lyd/index.html", "category": "Klasserom" },
+  { "slug": "graftegner", "sourceFile": "tools/graftegner/index.html", "url": "tools/graftegner/index.html", "category": "Klasserom" },
+  { "slug": "krle-terningspill", "sourceFile": "aktiviteter/terningspill/index.html", "url": "aktiviteter/terningspill/index.html", "category": "KRLE" },
+  { "slug": "think-pair-share", "sourceFile": "aktiviteter/tps/index.html", "url": "aktiviteter/tps/index.html", "category": "Aktivitet" },
+  { "slug": "klassepoll", "sourceFile": "aktiviteter/poll/index.html", "url": "aktiviteter/poll/index.html", "category": "Aktivitet" },
+  { "slug": "genetisk-hjul", "sourceFile": "aktiviteter/genetikhjul/index.html", "url": "aktiviteter/genetikhjul/index.html", "category": "Naturfag" },
+  { "slug": "temaspinner", "sourceFile": "aktiviteter/temaspinner/index.html", "url": "aktiviteter/temaspinner/index.html", "category": "Aktivitet" }
+]
