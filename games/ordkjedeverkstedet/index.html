@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordkjedeverkstedet</title>
+<style>
+  :root{
+    --ink:#1b2a4a;
+    --ink-soft:#5a6b8a;
+    --paper:#ffffff;
+    --bg-1:#eaf2ff;
+    --bg-2:#dff3ea;
+    --accent:#2b6cff;
+    --accent-dark:#1a4fd1;
+    --good:#1e9e5a;
+    --good-bg:#e3f8ec;
+    --bad:#c0392b;
+    --bad-bg:#fdecea;
+    --chip-bg:#ffffff;
+    --chip-border:#c9d6ee;
+    --focus:#8a4fff;
+    --radius:16px;
+    --shadow:0 6px 0 rgba(20,30,60,.10), 0 10px 20px rgba(20,30,60,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100%;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--bg-1),var(--bg-2) 70%);
+    font-size:clamp(15px,2.2vw,18px);
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    padding:env(safe-area-inset-top) max(14px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(14px, env(safe-area-inset-left));
+  }
+  .screen{ display:none; flex:1; flex-direction:column; min-width:0; }
+  .screen.active{ display:flex; }
+
+  a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:3px solid var(--focus);
+    outline-offset:2px;
+  }
+
+  /* ---------- Startskjerm ---------- */
+  #screen-start{
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:18px;
+    padding:24px 12px;
+    max-width:520px;
+    margin:0 auto;
+  }
+  #screen-start h1{
+    font-size:clamp(1.3rem,7vw,2.4rem);
+    margin:0;
+    color:var(--accent-dark);
+    overflow-wrap:break-word;
+    word-break:break-word;
+    max-width:100%;
+  }
+  .rule{
+    font-size:1.05em;
+    line-height:1.5;
+    margin:0;
+    max-width:38ch;
+    overflow-wrap:break-word;
+  }
+  .example{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    margin:6px 0;
+  }
+  .example .chip{
+    background:var(--chip-bg);
+    border:2px solid var(--chip-border);
+    border-radius:12px;
+    padding:8px 14px;
+    font-weight:800;
+    letter-spacing:.03em;
+  }
+  .example .arrow{ font-weight:700; color:var(--ink-soft); }
+
+  .btn-primary{
+    appearance:none;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-size:1.15em;
+    font-weight:800;
+    padding:14px 34px;
+    min-height:44px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    touch-action:manipulation;
+  }
+  .btn-primary:hover{ background:var(--accent-dark); }
+  .btn-primary:active{ transform:translateY(2px); box-shadow:none; }
+
+  /* ---------- Spillskjerm ---------- */
+  #screen-game{ max-width:640px; margin:0 auto; width:100%; gap:10px; padding:10px 2px 14px; }
+
+  .hud{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:6px 4px;
+  }
+  .hud-item{ display:flex; flex-direction:column; gap:2px; }
+  .hud-item .label{
+    font-size:.75em;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    font-weight:700;
+  }
+  .hud-item.score #scoreVal{
+    font-size:1.6em;
+    font-weight:900;
+    color:var(--accent-dark);
+    line-height:1;
+  }
+  .hud-item.timer{ flex:1; min-width:0; }
+  .timer-row{ display:flex; align-items:center; gap:8px; }
+  .timebar-track{
+    flex:1;
+    height:14px;
+    background:#dbe4f5;
+    border-radius:999px;
+    overflow:hidden;
+    border:1px solid #c4d1ea;
+  }
+  .timebar-fill{
+    height:100%;
+    width:100%;
+    background:var(--accent);
+    border-radius:999px;
+    transition:width .1s linear, background-color .2s ease;
+  }
+  .timebar-fill.low{ background:var(--bad); }
+  #timeVal{ font-weight:900; min-width:2.2ch; text-align:right; font-variant-numeric:tabular-nums; }
+
+  .chain{
+    min-height:64px;
+    max-height:38vh;
+    overflow-y:auto;
+    display:flex;
+    flex-wrap:wrap;
+    align-content:flex-start;
+    gap:8px;
+    padding:12px;
+    background:rgba(255,255,255,.55);
+    border-radius:var(--radius);
+    border:1px solid #d3ddf1;
+  }
+  .chain .word-chip{
+    background:var(--chip-bg);
+    border:2px solid var(--chip-border);
+    border-radius:12px;
+    padding:8px 12px;
+    font-weight:700;
+    font-size:1em;
+    color:var(--ink-soft);
+    white-space:nowrap;
+    max-width:100%;
+    overflow-wrap:break-word;
+  }
+  .chain .word-chip.current{
+    color:var(--ink);
+    border-color:var(--accent);
+    font-size:1.15em;
+    box-shadow:0 2px 0 rgba(43,108,255,.25);
+  }
+  .chain .word-chip .hl{
+    color:var(--accent-dark);
+    text-decoration:underline;
+    text-decoration-thickness:3px;
+    text-underline-offset:2px;
+  }
+  .chain .word-chip.new-word{ animation:popIn .28s ease-out; }
+  @media (prefers-reduced-motion: reduce){
+    .chain .word-chip.new-word{ animation:none; }
+  }
+  @keyframes popIn{
+    from{ opacity:0; transform:translateY(6px) scale(.9); }
+    to{ opacity:1; transform:none; }
+  }
+
+  form#wordForm{ display:flex; gap:8px; }
+  #wordInput{
+    flex:1;
+    min-width:0;
+    font-size:1.1em;
+    padding:12px 14px;
+    min-height:44px;
+    border-radius:12px;
+    border:2px solid var(--chip-border);
+    background:#fff;
+    color:var(--ink);
+  }
+  #wordInput.shake{ animation:shake .28s ease-in-out; }
+  @media (prefers-reduced-motion: reduce){
+    #wordInput.shake{ animation:none; }
+  }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+  #addBtn{
+    appearance:none;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-weight:800;
+    font-size:1em;
+    padding:0 20px;
+    min-height:44px;
+    border-radius:12px;
+    cursor:pointer;
+    touch-action:manipulation;
+    white-space:nowrap;
+  }
+  #addBtn:active{ background:var(--accent-dark); }
+
+  #errorMsg{
+    min-height:1.4em;
+    font-weight:700;
+    color:var(--bad);
+    padding:2px 4px;
+  }
+  #errorMsg.ok{ color:var(--good); }
+  #errorMsg:empty{ visibility:hidden; }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  /* ---------- Sluttskjerm ---------- */
+  #screen-end{
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:14px;
+    padding:24px 12px;
+    max-width:560px;
+    margin:0 auto;
+  }
+  #screen-end h2{ margin:0; font-size:clamp(1.4rem,5vw,2rem); color:var(--accent-dark); }
+  .end-chain{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:6px;
+    max-height:32vh;
+    overflow-y:auto;
+    padding:10px;
+    background:rgba(255,255,255,.55);
+    border-radius:var(--radius);
+    border:1px solid #d3ddf1;
+  }
+  .end-chain .word-chip{
+    background:var(--chip-bg);
+    border:2px solid var(--chip-border);
+    border-radius:10px;
+    padding:5px 10px;
+    font-weight:700;
+    font-size:.95em;
+  }
+  .best{ color:var(--ink-soft); font-weight:700; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="screen-start" class="screen active">
+    <h1>Ordkjedeverkstedet</h1>
+    <p class="rule">Skriv et ord som starter med siste bokstav i ordet foran.</p>
+    <div class="example" aria-hidden="true">
+      <span class="chip">KATT</span><span class="arrow">→</span>
+      <span class="chip">TOG</span><span class="arrow">→</span>
+      <span class="chip">GUL</span>
+    </div>
+    <button id="startBtn" class="btn-primary" type="button">Start</button>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <div class="hud">
+      <div class="hud-item score">
+        <span class="label">Poeng</span>
+        <span id="scoreVal">0</span>
+      </div>
+      <div class="hud-item timer">
+        <span class="label">Tid igjen</span>
+        <div class="timer-row">
+          <div class="timebar-track">
+            <div id="timeBar" class="timebar-fill"></div>
+          </div>
+          <span id="timeVal">20</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="chain" class="chain" role="list" aria-label="Ordkjede"></div>
+
+    <form id="wordForm" autocomplete="off">
+      <label for="wordInput" class="sr-only">Skriv neste ord i kjeden</label>
+      <input id="wordInput" name="word" type="text" autocomplete="off" autocapitalize="off"
+             autocorrect="off" spellcheck="false" maxlength="40" />
+      <button id="addBtn" type="submit">Legg til</button>
+    </form>
+    <div id="errorMsg" role="alert" aria-live="assertive"></div>
+  </section>
+
+  <section id="screen-end" class="screen">
+    <h2>Runden er over!</h2>
+    <p>Du fikk <strong id="endScore">0</strong> poeng med <strong id="endCount">0</strong> ord i kjeden.</p>
+    <div id="endChain" class="end-chain" role="list" aria-label="Din ordkjede"></div>
+    <p class="best">Beste resultat denne økten: <strong id="bestScoreVal">0</strong> poeng</p>
+    <button id="restartBtn" class="btn-primary" type="button">Spill igjen</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     ORDLISTE — innebygd, ca. 490 vanlige norske substantiv,
+     verb og adjektiv (grunnform / infinitiv). Rediger fritt,
+     ett ord per "token", skilt med mellomrom/linjeskift.
+     ========================================================= */
+  var WORD_LIST_RAW = "\
+    hus bil katt hund fugl fisk bok stol bord dør \
+    vindu skole lærer elev venn familie mor far søster bror \
+    barn mann kvinne gutt jente by land verden konge dronning \
+    prins prinsesse nabo gjest \
+    hav sjø elv fjell skog tre blomst gress sol måne \
+    stjerne himmel sky regn snø vind vinter sommer høst vår \
+    dag natt morgen kveld time minutt uke måned år klokke \
+    øy holme fjord kyst brygge havn ørken jungel dal foss \
+    regnskog \
+    penn blyant papir bilde farge sekk viskelær linjal saks lim \
+    tape tavle kritt datamaskin skjerm tastatur mus hodetelefon telefon kamera \
+    ur radio \
+    sykkel tog buss fly båt bro vei gate park hage \
+    anker seil mast ror kompass kart rakett satellitt planet astronaut \
+    kjøkken bad seng sofa lampe speil teppe gulv tak vegg \
+    mur stein sand gull sølv veske jakke bukse skjorte genser \
+    kjole sko lue skjerf belte ring kjede \
+    mat brød melk ost smør egg kjøtt suppe salat frukt \
+    eple banan drue potet gulrot løk tomat agurk is kake \
+    sjokolade kaffe te saft vann sukker salt pepper olje eddik \
+    kniv gaffel skje tallerken kopp glass flaske boks pose ris \
+    pasta pizza grøt yoghurt rømme fløte majones ketchup sennep karamell \
+    vaffel pannekake jordbær bringebær appelsin \
+    øye øre nese munn hånd fot arm bein hode hjerte \
+    blod hud hår tann tunge skulder finger negl mage rygg \
+    albue kne hake panne kinn lår legg \
+    løve tiger bjørn ulv rev elg hjort rein sau geit \
+    gris hest ku okse kylling and gås svane ugle kråke \
+    måke spurv svale stær due papegøye slange padde frosk mus \
+    rotte ekorn pinnsvin flaggermus delfin hval sel oter mår grevling \
+    ilder hare kanin ørn \
+    lege sykepleier tannlege bonde fisker snekker maler elektriker rørlegger politi \
+    brannmann sjåfør pilot kaptein soldat dommer advokat forfatter journalist fotograf \
+    kunstner musiker skuespiller danser kokk baker slakter frisør \
+    løpe hoppe svømme synge danse spille lese skrive tegne male \
+    bygge lage koke steke bake vaske rydde rengjøre sove våkne \
+    spise drikke smile le gråte rope hviske snakke lytte høre \
+    se kikke titte gå kjøre sykle fly seile ro klatre \
+    falle reise sitte stå ligge tenke huske glemme lære undervise \
+    forklare spørre svare hjelpe dele gi ta kjøpe selge betale \
+    spare bruke finne miste lete søke vinne tape kjempe sy \
+    åpne \
+    stor liten lang kort bred smal høy lav tung lett \
+    rask sen varm kald tørr våt ren skitten pen stygg \
+    glad trist sint redd modig snill slem klok dum sterk \
+    svak frisk syk rik fattig gammel ung ny grønn blå \
+    rød gul hvit svart brun rosa lilla oransje ærlig \
+    gård torg plass bibliotek museum sykehus apotek bank post kirke \
+    slott tårn tunnel motorvei sti øks åker ål \
+    mandag tirsdag onsdag torsdag fredag lørdag søndag \
+    januar februar mars april mai juni juli august september oktober november desember \
+    fire fem seks sju åtte ni ti elleve tolv tjue hundre tusen \
+    navn null nord nøkkel nummer nydelig nyte nakke natur nisse \
+    idrett iskrem innsjø internett invitere ingefær istid \
+    yoga yr ytterdør \
+    esel eik enkel edderkopp energi erte \
+  ";
+
+  var WORDS = new Set(WORD_LIST_RAW.trim().split(/\s+/));
+  var WORDS_ARR = Array.from(WORDS);
+
+  var START_TIME = 20;
+  var MAX_TIME = 20;
+  var TIME_BONUS = 5;
+  var TICK_MS = 100;
+
+  var screens = {
+    start: document.getElementById('screen-start'),
+    game: document.getElementById('screen-game'),
+    end: document.getElementById('screen-end')
+  };
+  var startBtn = document.getElementById('startBtn');
+  var restartBtn = document.getElementById('restartBtn');
+  var wordForm = document.getElementById('wordForm');
+  var wordInput = document.getElementById('wordInput');
+  var errorMsg = document.getElementById('errorMsg');
+  var chainEl = document.getElementById('chain');
+  var endChainEl = document.getElementById('endChain');
+  var scoreVal = document.getElementById('scoreVal');
+  var timeVal = document.getElementById('timeVal');
+  var timeBar = document.getElementById('timeBar');
+  var endScore = document.getElementById('endScore');
+  var endCount = document.getElementById('endCount');
+  var bestScoreVal = document.getElementById('bestScoreVal');
+
+  var chain = [];
+  var usedWords = new Set();
+  var score = 0;
+  var timeLeft = START_TIME;
+  var timerHandle = null;
+  var bestScore = 0;
+  var roundActive = false;
+
+  function showScreen(name){
+    Object.keys(screens).forEach(function(key){
+      screens[key].classList.toggle('active', key === name);
+    });
+  }
+
+  function normalize(raw){
+    return raw.trim().toLocaleLowerCase('nb-NO');
+  }
+
+  function lastLetter(word){
+    return word.charAt(word.length - 1);
+  }
+
+  function renderChip(container, word, isCurrent, animate){
+    var chip = document.createElement('span');
+    chip.className = 'word-chip' + (isCurrent ? ' current' : '') + (animate ? ' new-word' : '');
+    chip.setAttribute('role', 'listitem');
+    var head = word.slice(0, -1);
+    var tail = word.slice(-1);
+    chip.innerHTML = escapeHtml(head) + '<span class="hl">' + escapeHtml(tail) + '</span>';
+    container.appendChild(chip);
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function renderChain(animateLast){
+    chainEl.innerHTML = '';
+    chain.forEach(function(word, i){
+      renderChip(chainEl, word, i === chain.length - 1, animateLast && i === chain.length - 1);
+    });
+    chainEl.scrollTop = chainEl.scrollHeight;
+  }
+
+  function updateTimerUI(){
+    var pct = Math.max(0, Math.min(100, (timeLeft / MAX_TIME) * 100));
+    timeBar.style.width = pct + '%';
+    timeBar.classList.toggle('low', timeLeft <= 5);
+    timeVal.textContent = Math.ceil(timeLeft);
+  }
+
+  function updatePlaceholder(){
+    var letter = lastLetter(chain[chain.length - 1]).toLocaleUpperCase('nb-NO');
+    wordInput.placeholder = 'Skriv et ord som starter med «' + letter + '»';
+    wordInput.setAttribute('aria-label', 'Skriv et ord som starter med ' + letter);
+  }
+
+  function setError(text, ok){
+    errorMsg.textContent = text || '';
+    errorMsg.classList.toggle('ok', !!ok);
+  }
+
+  function tick(){
+    timeLeft -= TICK_MS / 1000;
+    if(timeLeft <= 0){
+      timeLeft = 0;
+      updateTimerUI();
+      endRound();
+      return;
+    }
+    updateTimerUI();
+  }
+
+  function startRound(){
+    if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
+
+    chain = [];
+    usedWords = new Set();
+    score = 0;
+    timeLeft = START_TIME;
+    roundActive = true;
+
+    var startWord = WORDS_ARR[Math.floor(Math.random() * WORDS_ARR.length)];
+    chain.push(startWord);
+    usedWords.add(startWord);
+
+    scoreVal.textContent = '0';
+    setError('');
+    renderChain(false);
+    updateTimerUI();
+    updatePlaceholder();
+
+    showScreen('game');
+    wordInput.value = '';
+    wordInput.focus();
+
+    timerHandle = setInterval(tick, TICK_MS);
+  }
+
+  function endRound(){
+    roundActive = false;
+    if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
+
+    bestScore = Math.max(bestScore, score);
+
+    endScore.textContent = String(score);
+    endCount.textContent = String(chain.length);
+    bestScoreVal.textContent = String(bestScore);
+
+    endChainEl.innerHTML = '';
+    chain.forEach(function(word){ renderChip(endChainEl, word, false, false); });
+
+    showScreen('end');
+  }
+
+  function submitWord(){
+    if(!roundActive) return;
+    var raw = wordInput.value;
+    var word = normalize(raw);
+    if(word === ''){ return; }
+
+    var requiredLetter = lastLetter(chain[chain.length - 1]);
+    var ok = false;
+
+    if(!WORDS.has(word)){
+      setError('Ordet finnes ikke i ordlisten', false);
+    } else if(word.charAt(0) !== requiredLetter){
+      setError('Ordet må starte med «' + requiredLetter.toLocaleUpperCase('nb-NO') + '»', false);
+    } else if(usedWords.has(word)){
+      setError('Dette ordet er allerede brukt', false);
+    } else {
+      ok = true;
+    }
+
+    if(ok){
+      chain.push(word);
+      usedWords.add(word);
+      score += 1;
+      timeLeft = Math.min(MAX_TIME, timeLeft + TIME_BONUS);
+      scoreVal.textContent = String(score);
+      setError('Riktig!', true);
+      renderChain(true);
+      updateTimerUI();
+      updatePlaceholder();
+    } else {
+      wordInput.classList.remove('shake');
+      // tvinger reflow slik at risteanimasjonen kan spilles på nytt
+      void wordInput.offsetWidth;
+      wordInput.classList.add('shake');
+    }
+
+    wordInput.value = '';
+    wordInput.focus();
+  }
+
+  wordForm.addEventListener('submit', function(e){
+    e.preventDefault();
+    submitWord();
+  });
+
+  startBtn.addEventListener('click', startRound);
+  restartBtn.addEventListener('click', startRound);
+
+})();
+</script>
+</body>
+</html>
