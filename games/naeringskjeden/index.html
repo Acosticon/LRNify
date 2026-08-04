@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Næringskjeden — LRNify</title>
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #2b2118;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #4ea672;
+    --green-bg:#e6f6ec;
+    --red:   #d4483c;
+    --red-bg:#fbe9e7;
+    --border:#2b2118;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    overflow-x: hidden;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; min-height: 100%; display: flex; flex-direction: column; }
+
+  header.top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .logo { font-weight: 900; font-size: 1.3rem; letter-spacing: -0.02em; }
+  .logo b { color: #b45309; }
+  .back-link { font-size: .85rem; font-weight: 700; color: var(--ink); text-decoration: none; border: 2px solid var(--ink); padding: 8px 12px; min-height: 44px; display: inline-flex; align-items: center; background: var(--card); }
+  .back-link:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+
+  h1 { font-size: clamp(1.6rem, 5vw, 2.2rem); margin-bottom: 8px; }
+  p.lede { color: var(--muted); font-size: 1rem; margin-bottom: 20px; line-height: 1.5; }
+
+  button { font-family: inherit; cursor: pointer; }
+  button:disabled { cursor: not-allowed; opacity: .45; }
+
+  .btn {
+    font-weight: 800; font-size: 1rem; color: var(--ink);
+    background: var(--yellow); border: 3px solid var(--border);
+    box-shadow: 0 4px 0 var(--border);
+    padding: 12px 22px; min-height: 44px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--border); }
+  .btn:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 3px; }
+  .btn.secondary { background: var(--card); }
+  .btn.help { background: #ffe4c4; }
+
+  /* ===== Startskjerm ===== */
+  #startScreen .example {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: 18px 0 26px; padding: 16px; background: var(--card);
+    border: 2px solid var(--border);
+  }
+  .example .mini-card {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 12px; border: 2px solid var(--border); background: #fff;
+    font-weight: 700; font-size: .85rem; min-width: 70px;
+  }
+  .example .mini-card .emoji { font-size: 1.6rem; }
+  .example .arrow { font-size: 1.3rem; font-weight: 900; color: #b45309; }
+
+  /* ===== Spillskjerm ===== */
+  .hud { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-weight: 800; }
+  .hud .task-count { font-size: 1rem; }
+  .hud .score { font-size: 1rem; color: #16794a; }
+
+  .energy-note { text-align: center; color: var(--muted); font-weight: 700; font-size: .9rem; margin-bottom: 14px; }
+
+  .tray {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+    margin-bottom: 22px;
+  }
+  @media (max-width: 560px) {
+    .tray { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .card-tile {
+    border: 3px solid var(--border); background: var(--card);
+    padding: 10px 6px; min-height: 78px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    font-weight: 800; font-size: .82rem; text-align: center;
+    transition: transform .12s ease;
+    user-select: none;
+  }
+  .card-tile .emoji { font-size: 1.8rem; line-height: 1; }
+  .card-tile:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+  .card-tile.selected { transform: translateY(-6px); box-shadow: 0 6px 0 var(--border); background: #fff7d6; }
+  .card-tile.locked { background: #f0ebe0; opacity: .9; }
+  .card-tile.locked .lock-badge { font-size: .95rem; }
+  .card-tile[draggable="true"] { cursor: grab; }
+
+  .chain-row {
+    display: flex; align-items: stretch; gap: 6px; margin-bottom: 20px;
+  }
+  @media (max-width: 560px) {
+    .chain-row { flex-direction: column; }
+  }
+
+  .slot {
+    flex: 1; min-height: 78px; border: 3px dashed var(--muted); background: #fffdf7;
+    display: flex; align-items: center; justify-content: center; padding: 6px;
+    position: relative;
+  }
+  .slot.filled { border-style: solid; border-color: var(--border); background: var(--card); }
+  .slot.correct { border-color: var(--green); background: var(--green-bg); }
+  .slot.incorrect { border-color: var(--red); background: var(--red-bg); }
+  .slot:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+  .slot .slot-index { position: absolute; top: 3px; left: 5px; font-size: .65rem; font-weight: 900; color: var(--muted); }
+
+  .status-icon { position: absolute; top: 2px; right: 4px; font-size: 1rem; }
+
+  .arrow-between { font-size: 1.4rem; font-weight: 900; color: #b45309; flex: 0 0 auto; }
+  @media (max-width: 560px) { .arrow-between { transform: rotate(90deg); } }
+
+  .shake { animation: shakeAnim .3s ease; }
+  @keyframes shakeAnim {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+  .flash-correct { animation: flashCorrect .3s ease; }
+  @keyframes flashCorrect {
+    0% { background: #fff; }
+    100% { background: var(--green-bg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .shake, .flash-correct { animation: none !important; }
+    .card-tile, .slot { transition: none !important; }
+  }
+
+  .controls-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .feedback { min-height: 28px; font-weight: 800; font-size: .95rem; margin-bottom: 10px; }
+  .feedback.ok { color: #16794a; }
+  .feedback.bad { color: #b3261e; }
+
+  /* ===== Resultatskjerm ===== */
+  .result-box { background: var(--card); border: 3px solid var(--border); padding: 24px; text-align: center; margin: 16px 0; }
+  .result-box .big { font-size: 2.4rem; font-weight: 900; margin-bottom: 6px; }
+  .result-box .line { font-size: 1rem; margin: 6px 0; }
+  .result-box .feedback-text { margin-top: 14px; font-weight: 700; color: #b45309; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="logo">Nærings<b>kjeden</b></div>
+    <a class="back-link" href="../../index.html">&larr; Tilbake</a>
+  </header>
+
+  <!-- ===================== START ===================== -->
+  <section id="startScreen">
+    <h1>Næringskjeden</h1>
+    <p class="lede">Plasser organismene fra den som lager energien, til den som står øverst i næringskjeden.</p>
+
+    <div class="example" aria-label="Eksempel på en riktig næringskjede">
+      <div class="mini-card"><span class="emoji" aria-hidden="true">🌾</span><span>Gress</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="mini-card"><span class="emoji" aria-hidden="true">🦗</span><span>Gresshoppe</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div class="mini-card"><span class="emoji" aria-hidden="true">🐸</span><span>Frosk</span></div>
+    </div>
+
+    <button class="btn" id="startBtn">Start</button>
+  </section>
+
+  <!-- ===================== SPILL ===================== -->
+  <section id="gameScreen" class="hidden">
+    <div class="hud">
+      <div class="task-count" id="taskCount">Oppgave 1 av 10</div>
+      <div class="score" id="scoreDisplay">Poeng: 0</div>
+    </div>
+
+    <p class="energy-note">Energi går denne veien →</p>
+
+    <div class="tray" id="tray" role="group" aria-label="Organismer å plassere"></div>
+
+    <div class="chain-row" id="chainRow" role="group" aria-label="Næringskjede-plasser"></div>
+
+    <div class="controls-row">
+      <button class="btn" id="checkBtn" disabled>Sjekk</button>
+      <button class="btn help hidden" id="helpBtn">Vis hjelp</button>
+    </div>
+    <div class="feedback" id="feedback" role="status" aria-live="polite"></div>
+  </section>
+
+  <!-- ===================== RESULTAT ===================== -->
+  <section id="resultScreen" class="hidden">
+    <h1>Resultat</h1>
+    <div class="result-box">
+      <div class="big" id="resultScore">0 / 10</div>
+      <p class="line" id="resultNoHelp">0 av 10 løst uten hjelp</p>
+      <p class="feedback-text" id="resultFeedback"></p>
+    </div>
+    <button class="btn" id="playAgainBtn">Spill igjen</button>
+  </section>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* =========================================================
+     DATASETT — næringskjeder, hver med nøyaktig 4 organismer
+     i riktig rekkefølge: [produsent, planteeter, rovdyr, toppredator].
+     level: 1 = svært kjente organismer, 2 = ulike økosystemer,
+     3 = organismer som er lettere å forveksle.
+     ========================================================= */
+  const CHAINS = [
+    { id: "eng", level: 1, ecosystem: "Eng", organisms: [
+      { name: "Gress", emoji: "🌾" },
+      { name: "Gresshoppe", emoji: "🦗" },
+      { name: "Frosk", emoji: "🐸" },
+      { name: "Hauk", emoji: "🦅" },
+    ]},
+    { id: "hav", level: 1, ecosystem: "Havet", organisms: [
+      { name: "Planteplankton", emoji: "🦠" },
+      { name: "Dyreplankton", emoji: "🍤" },
+      { name: "Sild", emoji: "🐟" },
+      { name: "Torsk", emoji: "🐠" },
+    ]},
+    { id: "hage-fugl", level: 1, ecosystem: "Skogen", organisms: [
+      { name: "Blader", emoji: "🍃" },
+      { name: "Larve", emoji: "🐛" },
+      { name: "Kjøttmeis", emoji: "🐦" },
+      { name: "Spurvehauk", emoji: "🦅" },
+    ]},
+    { id: "aker", level: 1, ecosystem: "Åkeren", organisms: [
+      { name: "Frø", emoji: "🌰" },
+      { name: "Mus", emoji: "🐭" },
+      { name: "Slange", emoji: "🐍" },
+      { name: "Ørn", emoji: "🦅" },
+    ]},
+    { id: "hage-ugle", level: 1, ecosystem: "Hagen", organisms: [
+      { name: "Blader", emoji: "🍃" },
+      { name: "Snegle", emoji: "🐌" },
+      { name: "Trost", emoji: "🐦" },
+      { name: "Kattugle", emoji: "🦉" },
+    ]},
+    { id: "innsjo", level: 2, ecosystem: "Innsjøen", organisms: [
+      { name: "Alger", emoji: "🌿" },
+      { name: "Småfisk", emoji: "🐟" },
+      { name: "Abbor", emoji: "🐠" },
+      { name: "Gjedde", emoji: "🐡" },
+    ]},
+    { id: "skog-ekorn", level: 2, ecosystem: "Barskogen", organisms: [
+      { name: "Nøtter", emoji: "🌰" },
+      { name: "Ekorn", emoji: "🐿️" },
+      { name: "Mår", emoji: "🦦" },
+      { name: "Gaupe", emoji: "🐆" },
+    ]},
+    { id: "fjell", level: 2, ecosystem: "Fjellet", organisms: [
+      { name: "Lav", emoji: "🍂" },
+      { name: "Lemen", emoji: "🐭" },
+      { name: "Fjellrev", emoji: "🦊" },
+      { name: "Kongeørn", emoji: "🦅" },
+    ]},
+    { id: "regnskog", level: 2, ecosystem: "Regnskogen", organisms: [
+      { name: "Blader", emoji: "🍃" },
+      { name: "Sommerfugllarve", emoji: "🐛" },
+      { name: "Firfisle", emoji: "🦎" },
+      { name: "Slange", emoji: "🐍" },
+    ]},
+    { id: "elv", level: 2, ecosystem: "Elven", organisms: [
+      { name: "Alger", emoji: "🌿" },
+      { name: "Døgnfluelarve", emoji: "🦟" },
+      { name: "Ørret", emoji: "🐟" },
+      { name: "Oter", emoji: "🦦" },
+    ]},
+    { id: "orken", level: 2, ecosystem: "Ørkenen", organisms: [
+      { name: "Kaktus", emoji: "🌵" },
+      { name: "Ørkenrotte", emoji: "🐀" },
+      { name: "Slange", emoji: "🐍" },
+      { name: "Ørn", emoji: "🦅" },
+    ]},
+    { id: "arktis", level: 2, ecosystem: "Polhavet", organisms: [
+      { name: "Planteplankton", emoji: "🦠" },
+      { name: "Krill", emoji: "🦐" },
+      { name: "Sild", emoji: "🐟" },
+      { name: "Sel", emoji: "🦭" },
+    ]},
+    { id: "myr", level: 3, ecosystem: "Myra", organisms: [
+      { name: "Starr", emoji: "🌾" },
+      { name: "Mygglarve", emoji: "🦟" },
+      { name: "Frosk", emoji: "🐸" },
+      { name: "Gråhegre", emoji: "🦩" },
+    ]},
+    { id: "bekk", level: 3, ecosystem: "Bekken", organisms: [
+      { name: "Alger", emoji: "🌿" },
+      { name: "Øyenstikkerlarve", emoji: "🦟" },
+      { name: "Stingsild", emoji: "🐟" },
+      { name: "Isfugl", emoji: "🐦" },
+    ]},
+  ];
+
+  const TOTAL_ROUNDS = 10;
+  const WRONG_ATTEMPTS_BEFORE_HELP = 3;
+  const NEXT_ROUND_DELAY = 1000;
+
+  /* ---------- Hjelpefunksjoner ---------- */
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildSession() {
+    const byLevel = { 1: [], 2: [], 3: [] };
+    CHAINS.forEach(c => byLevel[c.level].push(c));
+    const ordered = shuffle(byLevel[1]).concat(shuffle(byLevel[2])).concat(shuffle(byLevel[3]));
+    return ordered.slice(0, TOTAL_ROUNDS);
+  }
+
+  /* ---------- Tilstand ---------- */
+  let session = [];
+  let roundIndex = 0;
+  let score = 0;
+  let noHelpCount = 0;
+
+  let cards = [];        // {name, emoji, correctSlot, slot(null|0-3), locked}
+  let selected = null;   // index into cards
+  let wrongAttempts = 0;
+  let helpUsedThisRound = false;
+  let roundSolved = false;
+  let busy = false;      // hindrer dobbeltklikk / overlappende overganger
+
+  /* ---------- DOM-referanser ---------- */
+  const startScreen = document.getElementById("startScreen");
+  const gameScreen = document.getElementById("gameScreen");
+  const resultScreen = document.getElementById("resultScreen");
+  const startBtn = document.getElementById("startBtn");
+  const taskCount = document.getElementById("taskCount");
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const trayEl = document.getElementById("tray");
+  const chainRowEl = document.getElementById("chainRow");
+  const checkBtn = document.getElementById("checkBtn");
+  const helpBtn = document.getElementById("helpBtn");
+  const feedbackEl = document.getElementById("feedback");
+  const playAgainBtn = document.getElementById("playAgainBtn");
+  const resultScore = document.getElementById("resultScore");
+  const resultNoHelp = document.getElementById("resultNoHelp");
+  const resultFeedback = document.getElementById("resultFeedback");
+
+  /* ---------- Spilloppsett ---------- */
+  function startSession() {
+    session = buildSession();
+    roundIndex = 0;
+    score = 0;
+    noHelpCount = 0;
+    startScreen.classList.add("hidden");
+    resultScreen.classList.add("hidden");
+    gameScreen.classList.remove("hidden");
+    loadRound();
+  }
+
+  function loadRound() {
+    busy = false;
+    roundSolved = false;
+    wrongAttempts = 0;
+    helpUsedThisRound = false;
+    selected = null;
+    feedbackEl.textContent = "";
+    feedbackEl.className = "feedback";
+    helpBtn.classList.add("hidden");
+
+    const chain = session[roundIndex];
+    const shuffledOrder = shuffle(chain.organisms.map((org, idx) => ({ ...org, correctSlot: idx })));
+    cards = shuffledOrder.map(o => ({ name: o.name, emoji: o.emoji, correctSlot: o.correctSlot, slot: null, locked: false }));
+
+    taskCount.textContent = "Oppgave " + (roundIndex + 1) + " av " + TOTAL_ROUNDS;
+    scoreDisplay.textContent = "Poeng: " + score;
+
+    render();
+  }
+
+  /* ---------- Rendring ---------- */
+  function render() {
+    // Bane / slots
+    chainRowEl.innerHTML = "";
+    for (let s = 0; s < 4; s++) {
+      if (s > 0) {
+        const arrow = document.createElement("span");
+        arrow.className = "arrow-between";
+        arrow.setAttribute("aria-hidden", "true");
+        arrow.textContent = "→";
+        chainRowEl.appendChild(arrow);
+      }
+      const slotEl = document.createElement("div");
+      slotEl.className = "slot";
+      slotEl.dataset.slot = s;
+      slotEl.tabIndex = 0;
+      slotEl.setAttribute("role", "button");
+      const occupant = cards.findIndex(c => c.slot === s);
+      slotEl.setAttribute("aria-label", "Plass " + (s + 1) + (occupant !== -1 ? ": " + cards[occupant].name : " (tom)"));
+
+      const indexTag = document.createElement("span");
+      indexTag.className = "slot-index";
+      indexTag.textContent = String(s + 1);
+      indexTag.setAttribute("aria-hidden", "true");
+      slotEl.appendChild(indexTag);
+
+      if (occupant !== -1) {
+        slotEl.classList.add("filled");
+        slotEl.appendChild(renderCardTile(occupant));
+      }
+
+      slotEl.addEventListener("click", () => onSlotClick(s));
+      slotEl.addEventListener("keydown", e => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSlotClick(s);
+        }
+      });
+      slotEl.addEventListener("dragover", e => { e.preventDefault(); });
+      slotEl.addEventListener("drop", e => {
+        e.preventDefault();
+        const from = parseInt(e.dataTransfer.getData("text/plain"), 10);
+        if (!isNaN(from)) moveCardToSlot(from, s);
+      });
+
+      chainRowEl.appendChild(slotEl);
+    }
+
+    // Kortbrett (uplasserte kort)
+    trayEl.innerHTML = "";
+    trayEl.addEventListener("dragover", e => { e.preventDefault(); });
+    cards.forEach((c, i) => {
+      if (c.slot !== null) return;
+      trayEl.appendChild(renderCardTile(i));
+    });
+
+    checkBtn.disabled = busy || roundSolved || cards.some(c => c.slot === null);
+  }
+
+  function renderCardTile(i) {
+    const c = cards[i];
+    const el = document.createElement("button");
+    el.type = "button";
+    el.className = "card-tile";
+    if (selected === i) el.classList.add("selected");
+    if (c.locked) el.classList.add("locked");
+    if (c._flashCorrect) el.classList.add("flash-correct");
+    if (c._shake) el.classList.add("shake");
+    el.setAttribute("aria-pressed", selected === i ? "true" : "false");
+    el.setAttribute("aria-label", c.name + (c.locked ? " (låst på riktig plass)" : ""));
+    el.draggable = !c.locked && !busy;
+
+    const emojiSpan = document.createElement("span");
+    emojiSpan.className = "emoji";
+    emojiSpan.setAttribute("aria-hidden", "true");
+    emojiSpan.textContent = c.emoji;
+    el.appendChild(emojiSpan);
+
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = c.name;
+    el.appendChild(nameSpan);
+
+    if (c.locked) {
+      const lock = document.createElement("span");
+      lock.className = "lock-badge";
+      lock.setAttribute("aria-hidden", "true");
+      lock.textContent = "🔒";
+      el.appendChild(lock);
+    }
+
+    el.addEventListener("click", (e) => {
+      e.stopPropagation();
+      onCardClick(i);
+    });
+    el.addEventListener("dragstart", e => {
+      if (c.locked || busy) { e.preventDefault(); return; }
+      e.dataTransfer.setData("text/plain", String(i));
+    });
+    el.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onCardClick(i);
+      }
+    });
+
+    return el;
+  }
+
+  /* ---------- Interaksjon ---------- */
+  function onCardClick(i) {
+    if (busy || roundSolved || cards[i].locked) return;
+    clearMarkers();
+    if (selected === i) {
+      selected = null;
+    } else if (selected === null) {
+      selected = i;
+    } else {
+      swapCards(selected, i);
+      selected = null;
+    }
+    render();
+  }
+
+  function onSlotClick(s) {
+    if (busy || roundSolved) return;
+    clearMarkers();
+    if (selected === null) {
+      const occupant = cards.findIndex(c => c.slot === s);
+      if (occupant !== -1 && !cards[occupant].locked) {
+        selected = occupant;
+      }
+      render();
+      return;
+    }
+    moveCardToSlot(selected, s);
+    selected = null;
+  }
+
+  function moveCardToSlot(cardIdx, slotIdx) {
+    if (cards[cardIdx].locked) return;
+    const occupant = cards.findIndex(c => c.slot === slotIdx);
+    if (occupant !== -1 && occupant !== cardIdx) {
+      if (cards[occupant].locked) return;
+      const temp = cards[cardIdx].slot;
+      cards[occupant].slot = temp;
+      cards[cardIdx].slot = slotIdx;
+    } else {
+      cards[cardIdx].slot = slotIdx;
+    }
+    selected = null;
+    render();
+  }
+
+  function swapCards(a, b) {
+    if (cards[a].locked || cards[b].locked) return;
+    const temp = cards[a].slot;
+    cards[a].slot = cards[b].slot;
+    cards[b].slot = temp;
+  }
+
+  function clearMarkers() {
+    cards.forEach(c => { c._shake = false; c._flashCorrect = false; });
+  }
+
+  /* ---------- Sjekk ---------- */
+  checkBtn.addEventListener("click", () => {
+    if (busy || roundSolved || cards.some(c => c.slot === null)) return;
+    busy = true;
+    const allCorrect = cards.every(c => c.slot === c.correctSlot);
+
+    if (allCorrect) {
+      roundSolved = true;
+      score += 1;
+      if (!helpUsedThisRound) noHelpCount += 1;
+      cards.forEach(c => { c._flashCorrect = true; });
+      feedbackEl.textContent = "Riktig næringskjede!";
+      feedbackEl.className = "feedback ok";
+      scoreDisplay.textContent = "Poeng: " + score;
+      render();
+      markSlotStates(true);
+      setTimeout(() => {
+        roundIndex += 1;
+        if (roundIndex >= TOTAL_ROUNDS) {
+          showResults();
+        } else {
+          loadRound();
+        }
+      }, NEXT_ROUND_DELAY);
+    } else {
+      wrongAttempts += 1;
+      cards.forEach(c => { c._shake = (c.slot !== c.correctSlot); });
+      feedbackEl.textContent = "Se på hvem som spiser hvem, og prøv igjen";
+      feedbackEl.className = "feedback bad";
+      render();
+      markSlotStates(false);
+      if (wrongAttempts >= WRONG_ATTEMPTS_BEFORE_HELP) {
+        helpBtn.classList.remove("hidden");
+      }
+      setTimeout(() => {
+        clearMarkers();
+        busy = false;
+        render();
+      }, 350);
+    }
+  });
+
+  function markSlotStates(correctRound) {
+    const slotEls = chainRowEl.querySelectorAll(".slot");
+    slotEls.forEach(slotEl => {
+      const s = parseInt(slotEl.dataset.slot, 10);
+      const occupant = cards.find(c => c.slot === s);
+      slotEl.querySelector(".status-icon")?.remove();
+      if (!occupant) return;
+      const icon = document.createElement("span");
+      icon.className = "status-icon";
+      icon.setAttribute("aria-hidden", "true");
+      if (occupant.correctSlot === s) {
+        slotEl.classList.add("correct");
+        icon.textContent = "✓";
+      } else {
+        slotEl.classList.add("incorrect");
+        icon.textContent = "✕";
+      }
+      slotEl.appendChild(icon);
+      setTimeout(() => {
+        slotEl.classList.remove("correct", "incorrect");
+        icon.remove();
+      }, correctRound ? NEXT_ROUND_DELAY : 350);
+    });
+  }
+
+  /* ---------- Hjelp ---------- */
+  helpBtn.addEventListener("click", () => {
+    if (busy || roundSolved) return;
+    const candidate = cards.find(c => !c.locked);
+    if (!candidate) return;
+    helpUsedThisRound = true;
+
+    const occupant = cards.find(c => c.slot === candidate.correctSlot && c !== candidate);
+    if (occupant) occupant.slot = candidate.slot;
+    candidate.slot = candidate.correctSlot;
+    candidate.locked = true;
+
+    if (cards.every(c => c.locked)) helpBtn.classList.add("hidden");
+    render();
+  });
+
+  /* ---------- Resultat ---------- */
+  function showResults() {
+    gameScreen.classList.add("hidden");
+    resultScreen.classList.remove("hidden");
+    resultScore.textContent = score + " / " + TOTAL_ROUNDS;
+    resultNoHelp.textContent = noHelpCount + " av " + TOTAL_ROUNDS + " løst uten hjelp";
+    let msg;
+    if (score >= 9) msg = "Fantastisk! Du kan næringskjeder som en ekte økolog.";
+    else if (score >= 6) msg = "Bra jobbet! Du forstår hvem som spiser hvem.";
+    else msg = "Godt forsøk! Øv litt mer på rekkefølgen fra produsent til toppredator.";
+    resultFeedback.textContent = msg;
+  }
+
+  /* ---------- Knapper ---------- */
+  startBtn.addEventListener("click", () => {
+    if (busy) return;
+    startSession();
+  });
+  playAgainBtn.addEventListener("click", () => {
+    startSession();
+  });
+
+})();
+</script>
+</body>
+</html>
