@@ -1,0 +1,97 @@
+<!--
+  MAL FOR NYTT BLOGGINNLEGG (ukentlig)
+  =====================================
+  Slik legger du til et nytt innlegg:
+
+  1. Kopiér denne filen til blog/<url-vennlig-slug>/index.html
+     (kun små bokstaver, bindestrek i stedet for mellomrom, ingen æøå).
+  2. Fyll ut <title>, meta description, canonical, og JSON-LD-blokken under.
+  3. Skriv innholdet i <article class="post-article">. Bruk gjerne:
+     - lenker til relevante spill/verktøy (økt SEO + hjelper leseren videre)
+     - en <div class="cta-box"> mot slutten som lenker videre inn på siden
+  4. Legg innlegget øverst i post-list i blog/index.html.
+  5. Legg til URL-en i /sitemap.xml.
+  6. Oppdater post-nav-lenkene i dette og forrige innlegg, så de peker riktig vei.
+  7. (Valgfritt, men anbefalt) Legg til innlegget i /blog/feed.xml.
+
+  Denne filen (_mal.html) er ikke lenket fra menyen eller sitemap – ren mal.
+-->
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TITTEL PÅ INNLEGGET | LRNify</title>
+<meta name="description" content="Kort, konkret beskrivelse av innlegget (maks ~155 tegn).">
+<link rel="canonical" href="https://lrnify.no/blog/SLUG/">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TITTEL PÅ INNLEGGET">
+<meta property="og:description" content="Kort beskrivelse.">
+<meta property="og:url" content="https://lrnify.no/blog/SLUG/">
+<meta property="og:locale" content="nb_NO">
+<meta property="article:published_time" content="YYYY-MM-DD">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "TITTEL PÅ INNLEGGET",
+  "datePublished": "YYYY-MM-DD",
+  "dateModified": "YYYY-MM-DD",
+  "inLanguage": "nb-NO",
+  "author": { "@type": "Organization", "name": "LRNify" },
+  "publisher": { "@type": "Organization", "name": "LRNify", "url": "https://lrnify.no/" },
+  "mainEntityOfPage": "https://lrnify.no/blog/SLUG/"
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/blog/assets/blog.css">
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="/">LRN<b>ify</b></a>
+    <button class="menu-btn" id="menuBtn" aria-label="Åpne meny" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <div class="scrim" id="scrim"></div>
+  <nav class="drawer" id="drawer" aria-label="Hovedmeny">
+    <button class="drawer-close" id="drawerClose" aria-label="Lukk meny">✕</button>
+    <h2>Meny</h2>
+    <a href="/">Forside</a>
+    <a href="/blog/">Blogg</a>
+    <a href="/#laereplan">Læreplan (LK20)</a>
+    <a href="/#kontakt">Kontakt</a>
+  </nav>
+
+  <div class="breadcrumb"><a href="/blog/">← Alle innlegg</a></div>
+
+  <article class="post-article">
+    <div class="meta">DATO · KATEGORI</div>
+    <h1>TITTEL PÅ INNLEGGET</h1>
+    <p class="lead">Én til to setninger som oppsummerer hvorfor innlegget er relevant for en lærer.</p>
+
+    <p>Brødtekst …</p>
+
+    <h2>Undertittel</h2>
+    <p>Brødtekst …</p>
+
+    <div class="cta-box">
+      <p><strong>Kort oppfordring til å prøve et relevant verktøy/spill.</strong></p>
+      <a class="btn" href="/">Lenke</a>
+    </div>
+  </article>
+
+  <nav class="post-nav">
+    <a href="/blog/FORRIGE-SLUG/">← Forrige innlegg</a>
+    <a href="/blog/">Alle innlegg →</a>
+  </nav>
+
+  <footer>LRNify · lær gjennom lek · © 2026</footer>
+
+  <script src="/blog/assets/blog.js"></script>
+</body>
+</html>

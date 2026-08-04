@@ -2,6 +2,12 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://lrnify.no/</loc><priority>1.0</priority></url>
 
+  <!-- Blogg -->
+  <url><loc>https://lrnify.no/blog/</loc><priority>0.8</priority></url>
+  <url><loc>https://lrnify.no/blog/laeringsspill-i-undervisningen/</loc><lastmod>2026-08-04</lastmod></url>
+  <url><loc>https://lrnify.no/blog/digital-elevvelger/</loc><lastmod>2026-07-28</lastmod></url>
+  <url><loc>https://lrnify.no/blog/gratis-klasseromsverktoy/</loc><lastmod>2026-07-21</lastmod></url>
+
   <!-- Læringsspill -->
   <url><loc>https://lrnify.no/games/geografi/europa_land/index.html</loc></url>
   <url><loc>https://lrnify.no/games/straffekonk/index.html</loc></url>
