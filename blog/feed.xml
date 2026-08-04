@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>LRNify-bloggen</title>
+    <link>https://lrnify.no/blog/</link>
+    <description>Praktiske tips, digitale klasseromsverktøy og læringsspill for lærere i norsk skole.</description>
+    <language>nb-NO</language>
+    <atom:link href="https://lrnify.no/blog/feed.xml" rel="self" type="application/rss+xml"/>
+
+    <item>
+      <title>Læringsspill i undervisningen: derfor fungerer det bedre enn arbeidsark</title>
+      <link>https://lrnify.no/blog/laeringsspill-i-undervisningen/</link>
+      <guid>https://lrnify.no/blog/laeringsspill-i-undervisningen/</guid>
+      <pubDate>Tue, 04 Aug 2026 08:00:00 GMT</pubDate>
+      <description>Hvorfor læringsspill holder på oppmerksomheten arbeidsark mister, og hvordan du velger spill som faktisk treffer kompetansemål i LK20.</description>
+    </item>
+
+    <item>
+      <title>Digital elevvelger: en enkel erstatning for kortstokken</title>
+      <link>https://lrnify.no/blog/digital-elevvelger/</link>
+      <guid>https://lrnify.no/blog/digital-elevvelger/</guid>
+      <pubDate>Tue, 28 Jul 2026 08:00:00 GMT</pubDate>
+      <description>Hvorfor tilfeldig, synlig elevutvelgelse gir roligere klasseromsdiskusjoner enn håndsopprekning – og hvordan du setter i gang på ti sekunder.</description>
+    </item>
+
+    <item>
+      <title>6 gratis digitale verktøy som sparer deg tid i klasserommet</title>
+      <link>https://lrnify.no/blog/gratis-klasseromsverktoy/</link>
+      <guid>https://lrnify.no/blog/gratis-klasseromsverktoy/</guid>
+      <pubDate>Tue, 21 Jul 2026 08:00:00 GMT</pubDate>
+      <description>Klassekart, elevvelger, nedtelling og mer – enkle verktøy uten pålogging som tar bort de små, tidkrevende oppgavene i hverdagen.</description>
+    </item>
+
+  </channel>
+</rss>
