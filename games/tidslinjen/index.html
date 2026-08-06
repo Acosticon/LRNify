@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tidslinjen – Andre verdenskrig</title>
+<meta name="description" content="Bygg en historisk tidslinje én hendelse om gangen. Plasser kort fra andre verdenskrig i riktig rekkefølge.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#12151c;--bg2:#1a1e28;
+  --panel:#1e2330;--panel2:#242a3a;
+  --border:rgba(255,255,255,0.10);
+  --border-strong:rgba(255,255,255,0.22);
+  --gold:#d4a94c;--gold-bright:#e9c877;
+  --ink:#eef0f4;--muted:#8b93a7;
+  --good:#4caf7d;--good-bg:rgba(76,175,125,0.15);
+  --bad:#e0605a;--bad-bg:rgba(224,96,90,0.15);
+  --focus:#7ec4ff;
+}
+html,body{height:100%;}
+body{
+  background:radial-gradient(ellipse at 50% -10%,#232a3d 0%,var(--bg) 55%);
+  color:var(--ink);font-family:'Inter',sans-serif;min-height:100vh;line-height:1.5;
+}
+h1,h2,h3,.serif{font-family:'Libre Baskerville',serif;}
+#app{max-width:920px;margin:0 auto;padding:18px 16px 60px;}
+.screen{display:none;}
+.screen.active{display:block;animation:fadeIn 0.35s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+a{color:var(--gold);}
+
+button{font-family:inherit;}
+button:focus-visible,[tabindex]:focus-visible,a:focus-visible{
+  outline:3px solid var(--focus);outline-offset:2px;border-radius:6px;
+}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  border:none;border-radius:10px;cursor:pointer;font-weight:700;letter-spacing:0.3px;
+  transition:transform 0.12s ease,box-shadow 0.12s ease,opacity 0.12s ease;
+}
+.btn:active{transform:translateY(1px);}
+.btn-primary{
+  background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+  color:#241a05;padding:14px 30px;font-size:16px;box-shadow:0 8px 22px rgba(212,169,76,0.28);
+}
+.btn-primary:hover{box-shadow:0 10px 26px rgba(212,169,76,0.4);}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;box-shadow:none;transform:none;}
+.btn-secondary{
+  background:var(--panel2);color:var(--ink);border:1px solid var(--border-strong);
+  padding:12px 26px;font-size:15px;
+}
+.btn-secondary:hover{border-color:var(--gold);}
+
+/* ============ INTRO ============ */
+#introScreen{text-align:center;padding:30px 0 10px;}
+.intro-badge{
+  display:inline-flex;align-items:center;gap:8px;background:var(--panel2);
+  border:1px solid var(--border-strong);color:var(--gold);font-size:12px;font-weight:700;
+  letter-spacing:2px;padding:6px 16px;border-radius:20px;text-transform:uppercase;
+}
+.intro-title{font-size:clamp(38px,8vw,62px);font-weight:700;margin:18px 0 2px;letter-spacing:0.5px;}
+.intro-sub{font-size:clamp(15px,3vw,19px);color:var(--gold);letter-spacing:4px;text-transform:uppercase;font-weight:700;}
+.intro-text{max-width:560px;margin:20px auto;color:var(--muted);font-size:15px;}
+.rules{
+  max-width:560px;margin:22px auto;text-align:left;background:var(--panel);
+  border:1px solid var(--border);border-radius:14px;padding:18px 20px;
+}
+.rules h2{font-size:16px;margin-bottom:12px;color:var(--gold);}
+.rules ol{list-style:none;counter-reset:step;display:flex;flex-direction:column;gap:10px;}
+.rules li{counter-increment:step;display:flex;gap:12px;font-size:14px;color:var(--ink);}
+.rules li::before{
+  content:counter(step);flex:none;width:22px;height:22px;border-radius:50%;
+  background:var(--panel2);border:1px solid var(--border-strong);color:var(--gold);
+  font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;
+}
+
+/* ============ TOPBAR ============ */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border);
+}
+.topbar .theme-label{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.topbar .theme-label b{color:var(--ink);}
+.stat-row{display:flex;gap:10px;}
+.stat-chip{
+  background:var(--panel);border:1px solid var(--border-strong);border-radius:10px;
+  padding:7px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;
+}
+.stat-chip .num{color:var(--gold);font-family:'Libre Baskerville',serif;font-size:16px;}
+
+/* ============ TIMELINE ============ */
+.timeline-wrap{
+  background:var(--panel);border:1px solid var(--border);border-radius:16px;
+  padding:18px 14px;margin-bottom:18px;
+}
+.timeline-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.timeline-track{display:flex;align-items:stretch;gap:6px;overflow-x:auto;padding:4px 2px 10px;scroll-behavior:smooth;}
+.timeline-track::-webkit-scrollbar{height:8px;}
+.timeline-track::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px;}
+
+.tl-card{
+  flex:none;width:150px;background:var(--panel2);border:1px solid var(--border-strong);
+  border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;
+}
+.tl-card .tl-year{font-family:'Libre Baskerville',serif;font-size:22px;color:var(--gold);font-weight:700;}
+.tl-card .tl-date{font-size:10px;color:var(--muted);}
+.tl-card .tl-title{font-size:12.5px;font-weight:600;line-height:1.3;}
+.tl-card .tl-tag{
+  align-self:flex-start;margin-top:2px;font-size:9px;letter-spacing:0.5px;text-transform:uppercase;
+  padding:2px 7px;border-radius:8px;font-weight:700;
+}
+.tl-card.new-correct{animation:popIn 0.4s ease;}
+@keyframes popIn{from{transform:scale(0.85);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+.tl-gap{
+  flex:none;width:34px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;background:transparent;border:2px dashed var(--border-strong);border-radius:8px;
+  color:var(--muted);cursor:pointer;font-size:16px;font-weight:800;min-height:60px;align-self:center;
+  transition:all 0.15s ease;
+}
+.tl-gap:hover{border-color:var(--gold);color:var(--gold);}
+.tl-gap.selected{border-style:solid;border-color:var(--gold);background:rgba(212,169,76,0.14);color:var(--gold-bright);}
+.tl-gap .gap-hint{display:none;}
+.tl-gap:disabled{opacity:0.3;cursor:not-allowed;pointer-events:none;}
+
+/* ============ DRAW CARD ============ */
+.draw-panel{
+  background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:22px;text-align:center;
+}
+.draw-panel-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.draw-card{
+  max-width:340px;margin:0 auto;background:var(--panel2);border:1px solid var(--border-strong);
+  border-radius:14px;padding:26px 20px;position:relative;transition:border-color 0.2s ease,box-shadow 0.2s ease;
+}
+.draw-card.state-correct{border-color:var(--good);box-shadow:0 0 0 3px var(--good-bg);}
+.draw-card.state-wrong{border-color:var(--bad);box-shadow:0 0 0 3px var(--bad-bg);}
+.draw-card .dc-tag{
+  display:inline-block;font-size:10px;letter-spacing:0.5px;text-transform:uppercase;
+  padding:3px 9px;border-radius:8px;font-weight:700;margin-bottom:10px;
+}
+.draw-card .dc-title{font-family:'Libre Baskerville',serif;font-size:20px;font-weight:700;margin-bottom:8px;}
+.draw-card .dc-mystery{font-size:34px;color:var(--muted);letter-spacing:6px;}
+.draw-card .dc-date{font-size:15px;color:var(--gold);font-weight:700;display:none;margin-top:4px;}
+.draw-card .dc-explain{font-size:13.5px;color:var(--muted);margin-top:10px;display:none;text-align:left;}
+.draw-card.revealed .dc-mystery{display:none;}
+.draw-card.revealed .dc-date{display:block;}
+.draw-card.revealed .dc-explain{display:block;}
+
+.result-banner{
+  display:none;align-items:center;justify-content:center;gap:8px;margin-top:14px;
+  font-weight:800;font-size:15px;padding:9px;border-radius:10px;letter-spacing:0.3px;
+}
+.result-banner.show{display:flex;}
+.result-banner.correct{background:var(--good-bg);color:#8be6b6;}
+.result-banner.wrong{background:var(--bad-bg);color:#ff9d97;}
+
+.controls-row{display:flex;justify-content:center;gap:12px;margin-top:20px;flex-wrap:wrap;}
+#nextBtn{display:none;}
+#nextBtn.show{display:inline-flex;}
+
+.help-text{text-align:center;font-size:12.5px;color:var(--muted);margin-top:10px;}
+
+/* ============ RESULT ============ */
+#resultScreen{text-align:center;padding:30px 0;}
+.result-title{font-size:clamp(30px,6vw,44px);margin-bottom:6px;}
+.result-sub{color:var(--muted);font-size:14px;margin-bottom:26px;}
+.result-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:520px;margin:0 auto 24px;}
+.result-tile{background:var(--panel);border:1px solid var(--border-strong);border-radius:14px;padding:16px 8px;}
+.result-tile .rt-num{font-family:'Libre Baskerville',serif;font-size:28px;color:var(--gold);}
+.result-tile .rt-label{font-size:11px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;margin-top:4px;}
+.result-message{max-width:480px;margin:0 auto 26px;color:var(--ink);font-size:15px;}
+
+@media (max-width:680px){
+  .timeline-track{flex-direction:column;overflow-x:visible;overflow-y:visible;}
+  .tl-card{width:100%;flex-direction:row;align-items:center;gap:12px;}
+  .tl-card .tl-year{min-width:60px;}
+  .tl-gap{width:100%;min-height:38px;flex-direction:row;}
+  .result-stats{grid-template-columns:1fr;}
+}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:0.01ms !important;animation-iteration-count:1 !important;transition-duration:0.01ms !important;scroll-behavior:auto !important;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="introScreen" class="screen active">
+    <div class="intro-badge">🕰️ Tidslinjen</div>
+    <h1 class="intro-title">Tidslinjen</h1>
+    <div class="intro-sub">Andre verdenskrig</div>
+    <p class="intro-text">Bygg en historisk tidslinje – én hendelse om gangen. Du får et kort uten årstall og må plassere det riktig blant hendelsene som allerede ligger på tidslinjen. Ligger det riktig, blir det liggende. Hvor lang tidslinje klarer du å bygge?</p>
+
+    <div class="rules">
+      <h2>Slik spiller du</h2>
+      <ol>
+        <li>Et nytt kort trekkes – uten årstall.</li>
+        <li>Velg om det skal plasseres før, mellom eller etter kortene som allerede ligger der.</li>
+        <li>Trykk «Sjekk plassering» for å avsløre datoen.</li>
+        <li>Riktig? Kortet blir liggende og du får poeng. Feil? Kortet forsvinner.</li>
+        <li>Spillet slutter når du har 15 riktige kort, eller når alle kortene er brukt.</li>
+      </ol>
+    </div>
+
+    <button class="btn btn-primary" id="startBtn" onclick="startGame()">Start spillet</button>
+  </div>
+
+  <div id="gameScreen" class="screen">
+    <div class="topbar">
+      <div class="theme-label">Tema: <b>Andre verdenskrig</b></div>
+      <div class="stat-row">
+        <div class="stat-chip">Poeng <span class="num" id="scoreVal">0</span></div>
+        <div class="stat-chip">Kort igjen <span class="num" id="cardsLeftVal">0</span></div>
+      </div>
+    </div>
+
+    <div class="timeline-wrap">
+      <div class="timeline-label">Tidslinjen din</div>
+      <div class="timeline-track" id="timelineTrack" role="list" aria-label="Tidslinjen"></div>
+    </div>
+
+    <div class="draw-panel">
+      <div class="draw-panel-label">Nytt kort</div>
+      <div class="draw-card" id="drawCard">
+        <span class="dc-tag" id="dcTag"></span>
+        <div class="dc-title" id="dcTitle"></div>
+        <div class="dc-mystery" id="dcMystery">?</div>
+        <div class="dc-date" id="dcDate"></div>
+        <div class="dc-explain" id="dcExplain"></div>
+      </div>
+      <div class="result-banner" id="resultBanner"></div>
+      <div class="controls-row">
+        <button class="btn btn-primary" id="checkBtn" onclick="checkPlacement()" disabled>Sjekk plassering</button>
+        <button class="btn btn-primary" id="nextBtn" onclick="nextCard()">Neste →</button>
+      </div>
+      <p class="help-text" id="helpText">Velg en plass på tidslinjen ovenfor, trykk deretter «Sjekk plassering».</p>
+    </div>
+  </div>
+
+  <div id="resultScreen" class="screen">
+    <h1 class="result-title">Spillet er over!</h1>
+    <p class="result-sub" id="resultSub"></p>
+    <div class="result-stats">
+      <div class="result-tile"><div class="rt-num" id="rtCorrect">0</div><div class="rt-label">Riktige</div></div>
+      <div class="result-tile"><div class="rt-num" id="rtLongest">0</div><div class="rt-label">Lengste tidslinje</div></div>
+      <div class="result-tile"><div class="rt-num" id="rtPercent">0%</div><div class="rt-label">Prosent riktig</div></div>
+    </div>
+    <p class="result-message" id="resultMessage"></p>
+    <button class="btn btn-primary" onclick="location.reload()">Spill igjen</button>
+  </div>
+
+</div>
+
+<script>
+/* =========================================================
+   SPILLMOTOR — generisk, temaet ligger i EVENT_PACKS.
+   For å legge til en ny pakke (Vikingtiden, Kald krig osv.):
+   lag et nytt array med samme feltnavn (id, title, date,
+   category, explanation) og pek ACTIVE_PACK på den.
+   ========================================================= */
+const EVENT_PACKS = {
+  ww2: {
+    label: "Andre verdenskrig",
+    events: [
+      {id:1,title:"Hitler blir rikskansler i Tyskland",date:"1933-01-30",category:"Opptakten",explanation:"Adolf Hitler ble utnevnt til rikskansler, og nazistene startet veien mot total makt i Tyskland."},
+      {id:2,title:"Nürnberglovene innføres",date:"1935-09-15",category:"Opptakten",explanation:"Nazi-Tyskland innførte lover som fratok jøder tyske borgerrettigheter."},
+      {id:3,title:"Tyskland reokkuperer Rhinland",date:"1936-03-07",category:"Opptakten",explanation:"Tyske tropper marsjerte inn i det demilitariserte Rhinland, i strid med Versailles-traktaten."},
+      {id:4,title:"Østerrike innlemmes i Tyskland",date:"1938-03-12",category:"Opptakten",explanation:"Gjennom «Anschluss» annekterte Tyskland Østerrike uten motstand."},
+      {id:5,title:"München-avtalen",date:"1938-09-30",category:"Opptakten",explanation:"Storbritannia og Frankrike godtok at Tyskland fikk Sudetenland i Tsjekkoslovakia mot løfte om fred."},
+      {id:6,title:"Krystallnatten",date:"1938-11-09",category:"Opptakten",explanation:"Nazister angrep jødiske butikker, synagoger og hjem over hele Tyskland i en koordinert voldsbølge."},
+      {id:7,title:"Tyskland invaderer resten av Tsjekkoslovakia",date:"1939-03-15",category:"Opptakten",explanation:"Hitler brøt München-avtalen og okkuperte det som var igjen av Tsjekkoslovakia."},
+      {id:8,title:"Molotov-Ribbentrop-pakten signeres",date:"1939-08-23",category:"Opptakten",explanation:"Tyskland og Sovjetunionen inngikk en ikke-angrepspakt med hemmelige planer om å dele Polen."},
+      {id:9,title:"Tyskland invaderer Polen",date:"1939-09-01",category:"Krigsutbrudd",explanation:"Det tyske angrepet på Polen regnes som starten på andre verdenskrig."},
+      {id:10,title:"Storbritannia og Frankrike erklærer krig",date:"1939-09-03",category:"Krigsutbrudd",explanation:"To dager etter angrepet på Polen erklærte de vestallierte krig mot Tyskland."},
+      {id:11,title:"Sovjetunionen invaderer Polen fra øst",date:"1939-09-17",category:"Krigsutbrudd",explanation:"I tråd med pakten med Tyskland angrep Sovjetunionen Polen fra øst."},
+      {id:12,title:"Vinterkrigen starter",date:"1939-11-30",category:"Krigsutbrudd",explanation:"Sovjetunionen angrep Finland, som gjorde hardnakket motstand mot overmakten."},
+      {id:13,title:"Vinterkrigen slutter",date:"1940-03-13",category:"Krigsutbrudd",explanation:"Finland måtte avstå landområder til Sovjetunionen, men beholdt sin selvstendighet."},
+      {id:14,title:"Tyskland invaderer Danmark",date:"1940-04-09",category:"Vestfronten",explanation:"Danmark overga seg samme dag etter et lynraskt tysk angrep."},
+      {id:15,title:"Norge invaderes",date:"1940-04-09",category:"Vestfronten",explanation:"Tyske styrker angrep norske byer og havner samtidig, og felttoget i Norge startet."},
+      {id:16,title:"Tyskland invaderer Frankrike, Belgia og Nederland",date:"1940-05-10",category:"Vestfronten",explanation:"Det tyske blitzkrig-angrepet i vest startet, og førte raskt til sammenbrudd hos motstanderne."},
+      {id:17,title:"Evakueringen fra Dunkerque starter",date:"1940-05-26",category:"Vestfronten",explanation:"Over 300 000 allierte soldater ble evakuert over kanalen fra den franske kysten."},
+      {id:18,title:"Kong Haakon og regjeringen forlater Norge",date:"1940-06-07",category:"Vestfronten",explanation:"Kongefamilien og regjeringen dro i eksil til London for å fortsette kampen derfra."},
+      {id:19,title:"Norge kapitulerer",date:"1940-06-10",category:"Vestfronten",explanation:"Etter to måneders kamp overga de norske styrkene seg, og okkupasjonen startet for alvor."},
+      {id:20,title:"Frankrike kapitulerer",date:"1940-06-22",category:"Vestfronten",explanation:"Frankrike inngikk våpenhvile med Tyskland etter et raskt sammenbrudd."},
+      {id:21,title:"Slaget om Storbritannia starter",date:"1940-07-10",category:"Vestfronten",explanation:"Det tyske luftvåpenet innledet en luftoffensiv mot Storbritannia for å forberede en invasjon."},
+      {id:22,title:"Trepaktsavtalen signeres",date:"1940-09-27",category:"Aksemaktene",explanation:"Tyskland, Italia og Japan formaliserte alliansen sin som aksemaktene."},
+      {id:23,title:"Operasjon Barbarossa",date:"1941-06-22",category:"Østfronten",explanation:"Hitler brøt ikke-angrepspakten og innledet et massivt angrep mot Sovjetunionen."},
+      {id:24,title:"Atlanterhavserklæringen",date:"1941-08-14",category:"Diplomati",explanation:"USA og Storbritannia formulerte felles mål for en fredelig verden etter krigen."},
+      {id:25,title:"Beleiringen av Leningrad starter",date:"1941-09-08",category:"Østfronten",explanation:"Tyske styrker omringet byen i en beleiring som skulle vare i nesten 900 dager."},
+      {id:26,title:"Angrepet på Pearl Harbor",date:"1941-12-07",category:"Stillehavet",explanation:"Japan angrep den amerikanske marinebasen på Hawaii uten forvarsel."},
+      {id:27,title:"USA går inn i krigen",date:"1941-12-08",category:"Stillehavet",explanation:"Dagen etter Pearl Harbor erklærte USA krig mot Japan, og krigen ble global."},
+      {id:28,title:"Wannsee-konferansen",date:"1942-01-20",category:"Holocaust",explanation:"Høytstående naziledere planla den systematiske utryddelsen av Europas jøder."},
+      {id:29,title:"Slaget om Midway",date:"1942-06-04",category:"Stillehavet",explanation:"USA vant et avgjørende sjøslag som snudde krigslykken i Stillehavet."},
+      {id:30,title:"Slaget ved Stalingrad starter",date:"1942-08-23",category:"Østfronten",explanation:"En brutal kamp om byen Stalingrad startet, og skulle bli et vendepunkt i krigen."},
+      {id:31,title:"Andre slaget ved El Alamein",date:"1942-10-23",category:"Nord-Afrika",explanation:"Britiske styrker slo tilbake Rommels tropper i en avgjørende seier i den nordafrikanske ørkenen."},
+      {id:32,title:"Operasjon Torch",date:"1942-11-08",category:"Nord-Afrika",explanation:"Amerikanske og britiske styrker gikk i land i Nord-Afrika for å presse aksemaktene tilbake."},
+      {id:33,title:"Tyske styrker kapitulerer ved Stalingrad",date:"1943-02-02",category:"Østfronten",explanation:"Den tyske 6. armé overga seg, og tapet regnes som et vendepunkt på østfronten."},
+      {id:34,title:"Oppstanden i Warszawa-gettoen",date:"1943-04-19",category:"Holocaust",explanation:"Jøder i Warszawa-gettoen gjorde væpnet motstand mot deportasjonene til dødsleirene."},
+      {id:35,title:"Slaget ved Kursk",date:"1943-07-05",category:"Østfronten",explanation:"Historiens største panserslag endte med sovjetisk seier og tysk tilbaketog."},
+      {id:36,title:"Allierte invaderer Sicilia",date:"1943-07-10",category:"Middelhavet",explanation:"Invasjonen av Sicilia åpnet veien for det allierte felttoget i Italia."},
+      {id:37,title:"Italia kapitulerer",date:"1943-09-08",category:"Middelhavet",explanation:"Italia inngikk våpenhvile med de allierte, men tyske styrker fortsatte å kjempe i landet."},
+      {id:38,title:"Teheran-konferansen",date:"1943-11-28",category:"Diplomati",explanation:"Churchill, Roosevelt og Stalin møttes for første gang for å planlegge krigens videre forløp."},
+      {id:39,title:"D-dagen",date:"1944-06-06",category:"Vestfronten",explanation:"De allierte gikk i land i Normandie og åpnet en ny front i Vest-Europa."},
+      {id:40,title:"Operasjon Bagration",date:"1944-06-22",category:"Østfronten",explanation:"En massiv sovjetisk offensiv knuste den tyske armégruppen Sentrum og frigjorde Hviterussland."},
+      {id:41,title:"Oppstanden i Warszawa",date:"1944-08-01",category:"Østfronten",explanation:"Den polske hjemmearmeen gjorde opprør mot den tyske okkupasjonen av Warszawa."},
+      {id:42,title:"Paris frigjøres",date:"1944-08-25",category:"Vestfronten",explanation:"Allierte og franske motstandsstyrker frigjorde den franske hovedstaden fra tysk okkupasjon."},
+      {id:43,title:"Slaget om Ardennene starter",date:"1944-12-16",category:"Vestfronten",explanation:"Tyskland satte inn en overraskende motoffensiv i Ardennene, kjent som «Slaget om bulken»."},
+      {id:44,title:"Auschwitz frigjøres",date:"1945-01-27",category:"Holocaust",explanation:"Sovjetiske styrker frigjorde konsentrasjons- og utryddelsesleiren Auschwitz-Birkenau."},
+      {id:45,title:"Jalta-konferansen",date:"1945-02-04",category:"Diplomati",explanation:"De allierte lederne planla hvordan Europa skulle deles etter krigen."},
+      {id:46,title:"Amerikanske og sovjetiske styrker møtes ved Elben",date:"1945-04-25",category:"Østfronten",explanation:"De to alliertes hærer møttes i Tyskland, og landet ble delt fra øst og vest."},
+      {id:47,title:"Hitler begår selvmord",date:"1945-04-30",category:"Krigens slutt",explanation:"Med sovjetiske styrker like utenfor bunkeren tok Hitler sitt eget liv i Berlin."},
+      {id:48,title:"Tyskland kapitulerer",date:"1945-05-08",category:"Krigens slutt",explanation:"Den tyske kapitulasjonen trådte i kraft, og krigen i Europa var over."},
+      {id:49,title:"Frigjøringen av Norge",date:"1945-05-08",category:"Krigens slutt",explanation:"Samtidig med den tyske kapitulasjonen ble Norge frigjort etter fem år med okkupasjon."},
+      {id:50,title:"Potsdam-konferansen",date:"1945-07-17",category:"Diplomati",explanation:"De allierte lederne møttes for å avgjøre Tysklands og Europas skjebne etter krigen."},
+      {id:51,title:"Atombomben over Hiroshima",date:"1945-08-06",category:"Krigens slutt",explanation:"USA slapp verdens første atombombe brukt i krig over den japanske byen Hiroshima."},
+      {id:52,title:"Sovjetunionen erklærer krig mot Japan",date:"1945-08-08",category:"Krigens slutt",explanation:"Sovjetunionen angrep japanske styrker i Manchuria, og økte presset mot Japan."},
+      {id:53,title:"Atombomben over Nagasaki",date:"1945-08-09",category:"Krigens slutt",explanation:"En andre atombombe ble sluppet over byen Nagasaki, tre dager etter Hiroshima."},
+      {id:54,title:"Japan kapitulerer",date:"1945-08-15",category:"Krigens slutt",explanation:"Keiser Hirohito kunngjorde Japans kapitulasjon, og andre verdenskrig var over."},
+      {id:55,title:"Japan signerer den offisielle kapitulasjonen",date:"1945-09-02",category:"Krigens slutt",explanation:"Den formelle overgivelsen ble signert om bord på slagskipet USS Missouri."},
+      {id:56,title:"Nürnbergprosessene starter",date:"1945-11-20",category:"Etterspill",explanation:"Ledende nazister ble stilt for retten for krigsforbrytelser og forbrytelser mot menneskeheten."},
+    ]
+  }
+};
+const ACTIVE_PACK = "ww2";
+const MAX_CARDS = 15;
+
+const MONTHS = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function yearOf(iso){ return iso.slice(0,4); }
+function formatDateNO(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  return `${d}. ${MONTHS[m-1]} ${y}`;
+}
+/* stabil, myk farge basert på kategori-tekst */
+function tagColor(category){
+  let hash = 0;
+  for(let i=0;i<category.length;i++) hash = category.charCodeAt(i) + ((hash<<5)-hash);
+  const hue = Math.abs(hash) % 360;
+  return `hsla(${hue},55%,55%,0.22)`;
+}
+function tagTextColor(category){
+  let hash = 0;
+  for(let i=0;i<category.length;i++) hash = category.charCodeAt(i) + ((hash<<5)-hash);
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue},70%,75%)`;
+}
+
+let G = null;
+
+function startGame(){
+  const pack = EVENT_PACKS[ACTIVE_PACK];
+  const pool = shuffle(pack.events);
+  const startEvent = pool.shift();
+  G = {
+    timeline: [startEvent],
+    deck: pool,
+    current: null,
+    selectedGap: null,
+    score: 0,
+    attempts: 0,
+    checked: false,
+    finished: false,
+  };
+  showScreen('gameScreen');
+  renderTimeline();
+  updateTopbar();
+  drawNext();
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function updateTopbar(){
+  document.getElementById('scoreVal').textContent = G.score;
+  document.getElementById('cardsLeftVal').textContent = G.deck.length + (G.current ? 1 : 0);
+}
+
+function gapLabel(g){
+  const tl = G.timeline;
+  if(g === 0) return `Plasser før ${yearOf(tl[0].date)}`;
+  if(g === tl.length) return `Plasser etter ${yearOf(tl[tl.length-1].date)}`;
+  const a = yearOf(tl[g-1].date), b = yearOf(tl[g].date);
+  return a === b ? `Plasser ved ${a}` : `Plasser mellom ${a} og ${b}`;
+}
+
+function renderTimeline(){
+  const track = document.getElementById('timelineTrack');
+  track.innerHTML = '';
+  const tl = G.timeline;
+
+  const addGap = (g) => {
+    const btn = document.createElement('button');
+    btn.className = 'tl-gap' + (G.selectedGap === g ? ' selected' : '');
+    btn.textContent = '+';
+    btn.setAttribute('aria-pressed', G.selectedGap === g ? 'true' : 'false');
+    btn.setAttribute('aria-label', gapLabel(g));
+    btn.title = gapLabel(g);
+    btn.disabled = G.checked;
+    btn.onclick = () => selectGap(g);
+    track.appendChild(btn);
+  };
+
+  addGap(0);
+  tl.forEach((ev, i) => {
+    const card = document.createElement('div');
+    card.className = 'tl-card' + (ev._justAdded ? ' new-correct' : '');
+    card.setAttribute('role','listitem');
+    card.innerHTML = `
+      <span class="tl-tag" style="background:${tagColor(ev.category)};color:${tagTextColor(ev.category)}">${ev.category}</span>
+      <div class="tl-year">${yearOf(ev.date)}</div>
+      <div class="tl-date">${formatDateNO(ev.date)}</div>
+      <div class="tl-title">${ev.title}</div>
+    `;
+    track.appendChild(card);
+    delete ev._justAdded;
+    addGap(i+1);
+  });
+}
+
+function drawNext(){
+  if(G.score >= MAX_CARDS || G.deck.length === 0){
+    endGame();
+    return;
+  }
+  G.current = G.deck.shift();
+  G.selectedGap = null;
+  G.checked = false;
+
+  const dc = document.getElementById('drawCard');
+  dc.classList.remove('revealed','state-correct','state-wrong');
+  document.getElementById('dcTag').textContent = G.current.category;
+  document.getElementById('dcTag').style.background = tagColor(G.current.category);
+  document.getElementById('dcTag').style.color = tagTextColor(G.current.category);
+  document.getElementById('dcTitle').textContent = G.current.title;
+  document.getElementById('dcDate').textContent = '';
+  document.getElementById('dcExplain').textContent = '';
+
+  const banner = document.getElementById('resultBanner');
+  banner.className = 'result-banner';
+  banner.textContent = '';
+
+  document.getElementById('checkBtn').disabled = true;
+  document.getElementById('checkBtn').style.display = 'inline-flex';
+  document.getElementById('nextBtn').classList.remove('show');
+  document.getElementById('helpText').textContent = 'Velg en plass på tidslinjen ovenfor, trykk deretter «Sjekk plassering».';
+
+  renderTimeline();
+  updateTopbar();
+}
+
+function selectGap(g){
+  if(G.checked) return;
+  G.selectedGap = g;
+  renderTimeline();
+  document.getElementById('checkBtn').disabled = false;
+}
+
+function isCorrectPlacement(g){
+  const tl = G.timeline;
+  const d = G.current.date;
+  const leftOk = g === 0 || tl[g-1].date <= d;
+  const rightOk = g === tl.length || tl[g].date >= d;
+  return leftOk && rightOk;
+}
+
+function checkPlacement(){
+  if(G.selectedGap === null || G.checked) return;
+  G.checked = true;
+  G.attempts++;
+
+  const correct = isCorrectPlacement(G.selectedGap);
+  const dc = document.getElementById('drawCard');
+  dc.classList.add('revealed');
+  document.getElementById('dcDate').textContent = formatDateNO(G.current.date);
+  document.getElementById('dcExplain').textContent = G.current.explanation;
+
+  const banner = document.getElementById('resultBanner');
+  banner.classList.add('show');
+
+  if(correct){
+    G.score++;
+    G.current._justAdded = true;
+    G.timeline.splice(G.selectedGap, 0, G.current);
+    dc.classList.add('state-correct');
+    banner.classList.add('correct');
+    banner.innerHTML = '✓ Riktig plassering!';
+  } else {
+    dc.classList.add('state-wrong');
+    banner.classList.add('wrong');
+    banner.innerHTML = '✗ Feil plassering — kortet forsvinner.';
+  }
+
+  renderTimeline();
+  updateTopbar();
+
+  document.getElementById('checkBtn').style.display = 'none';
+  document.getElementById('nextBtn').classList.add('show');
+  document.getElementById('helpText').textContent = correct
+    ? 'Bra jobbet! Trykk «Neste» for å fortsette.'
+    : 'Riktig dato er nå vist på kortet. Trykk «Neste» for å fortsette.';
+}
+
+function nextCard(){
+  drawNext();
+}
+
+function endGame(){
+  showScreen('resultScreen');
+  const correct = G.score;
+  const attempts = G.attempts;
+  const percent = attempts > 0 ? Math.round((correct/attempts)*100) : 100;
+  const longest = G.timeline.length;
+
+  document.getElementById('rtCorrect').textContent = `${correct} av ${attempts}`;
+  document.getElementById('rtLongest').textContent = longest;
+  document.getElementById('rtPercent').textContent = `${percent}%`;
+
+  document.getElementById('resultSub').textContent =
+    attempts === 0 ? 'Spillet ble avsluttet.' : `Du plasserte ${correct} av ${attempts} hendelser riktig.`;
+
+  let message;
+  if(percent >= 90) message = "Enestående! Du har et skarpt historikerblikk.";
+  else if(percent >= 70) message = "Solid innsats! Du kjenner andre verdenskrig godt.";
+  else if(percent >= 50) message = "Bra jobbet! Litt mer trening, og du blir enda skarpere.";
+  else message = "Godt forsøk! Prøv igjen for å bygge en enda lengre tidslinje.";
+  document.getElementById('resultMessage').textContent = message;
+}
+</script>
+</body>
+</html>
