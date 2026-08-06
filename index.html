@@ -420,6 +420,7 @@ const GAMES = [
   { title:"Balloon Words",         file:"balloon-words/index.html",      category:"Engelsk",      icon:"balloon", color:"#0891b2", size: "S", locked:true },
   { title:"Beinjakten",            file:"beinjakten/index.html",         category:"Matematikk",   icon:"paw",     color:"#16a34a", size: "S", locked:false },
   { title:"Ordkjedeverkstedet",    file:"ordkjedeverkstedet/index.html", category:"Norsk",        icon:"book",    color:"#0f766e", size: "S", locked:false },
+  { title:"Tidslinjen",            file:"tidslinjen/index.html",         category:"Historie",     icon:"clock",   color:"#d4a94c", size: "M", locked:false },
 ];
 
 /* enkle, selvinneholdte SVG-ikoner (game-icons.net-stil) */
@@ -481,7 +482,8 @@ Object.assign(ICONS, {
   cards:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="12" height="16" rx="2"/><path d="M8 3h10a2 2 0 0 1 2 2v14"/></svg>',
   screen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 21h8"/><path d="M12 16v5"/></svg>',
   activity:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>',
-  dna:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3c0 6 10 12 10 18"/><path d="M17 3c0 6-10 12-10 18"/><path d="M8.5 7h7"/><path d="M7.5 11h9"/><path d="M8.5 15h7"/></svg>'
+  dna:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3c0 6 10 12 10 18"/><path d="M17 3c0 6-10 12-10 18"/><path d="M8.5 7h7"/><path d="M7.5 11h9"/><path d="M8.5 15h7"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>'
 });
 
 const grid = document.getElementById('grid');
