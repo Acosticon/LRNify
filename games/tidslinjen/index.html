@@ -78,6 +78,24 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{
   font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;
 }
 
+/* ============ NIVÅVALG ============ */
+.level-select{max-width:560px;margin:26px auto 0;}
+.level-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;text-align:left;}
+.level-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.level-card{
+  text-align:left;background:var(--panel);border:1px solid var(--border-strong);border-radius:14px;
+  padding:16px 16px 14px;cursor:pointer;transition:transform 0.12s ease,border-color 0.12s ease;
+  border-left:4px solid var(--accent,var(--gold));
+}
+.level-card:hover{transform:translateY(-2px);border-color:var(--accent,var(--gold));}
+.level-name{font-family:'Libre Baskerville',serif;font-size:19px;font-weight:700;color:var(--ink);}
+.level-count{font-size:11px;letter-spacing:0.5px;text-transform:uppercase;color:var(--accent,var(--gold));font-weight:700;margin:2px 0 8px;}
+.level-desc{font-size:12.5px;color:var(--muted);line-height:1.4;}
+.level-easy{--accent:var(--good);}
+.level-medium{--accent:var(--gold);}
+.level-hard{--accent:var(--bad);}
+.level-random{--accent:var(--focus);}
+
 /* ============ TOPBAR ============ */
 .topbar{
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
@@ -175,6 +193,7 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{
 .result-message{max-width:480px;margin:0 auto 26px;color:var(--ink);font-size:15px;}
 
 @media (max-width:680px){
+  .level-grid{grid-template-columns:1fr;}
   .timeline-track{flex-direction:column;overflow-x:visible;overflow-y:visible;}
   .tl-card{width:100%;flex-direction:row;align-items:center;gap:12px;}
   .tl-card .tl-year{min-width:60px;}
@@ -204,16 +223,40 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{
         <li>Velg om det skal plasseres før, mellom eller etter kortene som allerede ligger der.</li>
         <li>Trykk «Sjekk plassering» for å avsløre datoen.</li>
         <li>Riktig? Kortet blir liggende og du får poeng. Feil? Kortet forsvinner.</li>
-        <li>Spillet slutter når du har 15 riktige kort, eller når alle kortene er brukt.</li>
+        <li>Spillet slutter når du har 15 riktige kort, eller når kortstokken er tom.</li>
       </ol>
     </div>
 
-    <button class="btn btn-primary" id="startBtn" onclick="startGame()">Start spillet</button>
+    <div class="level-select">
+      <div class="level-label">Velg nivå</div>
+      <div class="level-grid">
+        <button class="level-card level-easy" onclick="startGame('easy')">
+          <div class="level-name">Lett</div>
+          <div class="level-count">10 hendelser</div>
+          <div class="level-desc">De mest kjente hendelsene — perfekt for å komme i gang.</div>
+        </button>
+        <button class="level-card level-medium" onclick="startGame('medium')">
+          <div class="level-name">Middels</div>
+          <div class="level-count">20 hendelser</div>
+          <div class="level-desc">Flere sentrale hendelser fra alle krigens fronter.</div>
+        </button>
+        <button class="level-card level-hard" onclick="startGame('hard')">
+          <div class="level-name">Vanskelig</div>
+          <div class="level-count">58 hendelser</div>
+          <div class="level-desc">Hele pakken — også de mindre kjente hendelsene.</div>
+        </button>
+        <button class="level-card level-random" onclick="startGame('random15')">
+          <div class="level-name">15 tilfeldige</div>
+          <div class="level-count">15 hendelser</div>
+          <div class="level-desc">Et tilfeldig utvalg, uansett hvor kjent hendelsen er.</div>
+        </button>
+      </div>
+    </div>
   </div>
 
   <div id="gameScreen" class="screen">
     <div class="topbar">
-      <div class="theme-label">Tema: <b>Andre verdenskrig</b></div>
+      <div class="theme-label">Tema: <b>Andre verdenskrig</b> · Nivå: <b id="levelLabelVal"></b></div>
       <div class="stat-row">
         <div class="stat-chip">Poeng <span class="num" id="scoreVal">0</span></div>
         <div class="stat-chip">Kort igjen <span class="num" id="cardsLeftVal">0</span></div>
@@ -252,7 +295,10 @@ button:focus-visible,[tabindex]:focus-visible,a:focus-visible{
       <div class="result-tile"><div class="rt-num" id="rtPercent">0%</div><div class="rt-label">Prosent riktig</div></div>
     </div>
     <p class="result-message" id="resultMessage"></p>
-    <button class="btn btn-primary" onclick="location.reload()">Spill igjen</button>
+    <div class="controls-row" style="margin-top:0;">
+      <button class="btn btn-primary" id="playAgainBtn" onclick="startGame(G.levelKey)">Spill igjen</button>
+      <button class="btn btn-secondary" onclick="showScreen('introScreen')">Velg nytt nivå</button>
+    </div>
   </div>
 
 </div>
@@ -283,6 +329,7 @@ const EVENT_PACKS = {
       {id:13,title:"Vinterkrigen slutter",date:"1940-03-13",category:"Krigsutbrudd",explanation:"Finland måtte avstå landområder til Sovjetunionen, men beholdt sin selvstendighet."},
       {id:14,title:"Tyskland invaderer Danmark",date:"1940-04-09",category:"Vestfronten",explanation:"Danmark overga seg samme dag etter et lynraskt tysk angrep."},
       {id:15,title:"Norge invaderes",date:"1940-04-09",category:"Vestfronten",explanation:"Tyske styrker angrep norske byer og havner samtidig, og felttoget i Norge startet."},
+      {id:57,title:"Den tyske krysseren Blücher senkes i Oslofjorden",date:"1940-04-09",category:"Vestfronten",explanation:"Kanonene på Oscarsborg festning senket det tyske krigsskipet Blücher, og forsinkelsen ga kongefamilien og regjeringen tid til å flykte fra Oslo."},
       {id:16,title:"Tyskland invaderer Frankrike, Belgia og Nederland",date:"1940-05-10",category:"Vestfronten",explanation:"Det tyske blitzkrig-angrepet i vest startet, og førte raskt til sammenbrudd hos motstanderne."},
       {id:17,title:"Evakueringen fra Dunkerque starter",date:"1940-05-26",category:"Vestfronten",explanation:"Over 300 000 allierte soldater ble evakuert over kanalen fra den franske kysten."},
       {id:18,title:"Kong Haakon og regjeringen forlater Norge",date:"1940-06-07",category:"Vestfronten",explanation:"Kongefamilien og regjeringen dro i eksil til London for å fortsette kampen derfra."},
@@ -301,6 +348,7 @@ const EVENT_PACKS = {
       {id:31,title:"Andre slaget ved El Alamein",date:"1942-10-23",category:"Nord-Afrika",explanation:"Britiske styrker slo tilbake Rommels tropper i en avgjørende seier i den nordafrikanske ørkenen."},
       {id:32,title:"Operasjon Torch",date:"1942-11-08",category:"Nord-Afrika",explanation:"Amerikanske og britiske styrker gikk i land i Nord-Afrika for å presse aksemaktene tilbake."},
       {id:33,title:"Tyske styrker kapitulerer ved Stalingrad",date:"1943-02-02",category:"Østfronten",explanation:"Den tyske 6. armé overga seg, og tapet regnes som et vendepunkt på østfronten."},
+      {id:58,title:"Tungtvannsaksjonen på Vemork",date:"1943-02-28",category:"Motstandskamp",explanation:"Norske sabotører fra Kompani Linge sprengte tungtvannsanlegget på Vemork og satte tilbake det tyske atomvåpenprogrammet."},
       {id:34,title:"Oppstanden i Warszawa-gettoen",date:"1943-04-19",category:"Holocaust",explanation:"Jøder i Warszawa-gettoen gjorde væpnet motstand mot deportasjonene til dødsleirene."},
       {id:35,title:"Slaget ved Kursk",date:"1943-07-05",category:"Østfronten",explanation:"Historiens største panserslag endte med sovjetisk seier og tysk tilbaketog."},
       {id:36,title:"Allierte invaderer Sicilia",date:"1943-07-10",category:"Middelhavet",explanation:"Invasjonen av Sicilia åpnet veien for det allierte felttoget i Italia."},
@@ -329,6 +377,29 @@ const EVENT_PACKS = {
 };
 const ACTIVE_PACK = "ww2";
 const MAX_CARDS = 15;
+
+/* =========================================================
+   NIVÅER — hvert nivå plukker et utvalg fra den aktive pakken.
+   "ids": fast, kuratert utvalg. "random": N tilfeldige hendelser
+   uansett kjennskapsgrad. Ingen "ids"/"random" = hele pakken.
+   ========================================================= */
+const LEVELS = {
+  easy: {
+    label: "Lett",
+    ids: [9,26,57,15,58,39,47,49,51,53],
+  },
+  medium: {
+    label: "Middels",
+    ids: [9,26,57,15,58,39,47,49,51,53, 1,6,10,19,23,27,33,42,48,54],
+  },
+  hard: {
+    label: "Vanskelig",
+  },
+  random15: {
+    label: "15 tilfeldige",
+    random: 15,
+  },
+};
 
 const MONTHS = ["januar","februar","mars","april","mai","juni","juli","august","september","oktober","november","desember"];
 
@@ -361,11 +432,24 @@ function tagTextColor(category){
 
 let G = null;
 
-function startGame(){
+function startGame(levelKey){
   const pack = EVENT_PACKS[ACTIVE_PACK];
-  const pool = shuffle(pack.events);
+  const level = LEVELS[levelKey];
+  let selected;
+  if(level.random){
+    selected = shuffle(pack.events).slice(0, level.random);
+  } else if(level.ids){
+    const idSet = new Set(level.ids);
+    selected = pack.events.filter(e => idSet.has(e.id));
+  } else {
+    selected = pack.events;
+  }
+
+  const pool = shuffle(selected);
   const startEvent = pool.shift();
   G = {
+    levelKey,
+    levelLabel: level.label,
     timeline: [startEvent],
     deck: pool,
     current: null,
@@ -387,6 +471,7 @@ function showScreen(id){
 }
 
 function updateTopbar(){
+  document.getElementById('levelLabelVal').textContent = G.levelLabel;
   document.getElementById('scoreVal').textContent = G.score;
   document.getElementById('cardsLeftVal').textContent = G.deck.length + (G.current ? 1 : 0);
 }
