@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Vinkelspillet — LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky1: #63c7ff;
+    --sky2: #1d4d8f;
+    --night: #10264f;
+    --surface: #14213d;
+    --surface2: #243b66;
+    --ink: #fff8d6;
+    --snow: #f4fbff;
+    --muted: #b7d8ff;
+    --line: #08152b;
+    --green: #34e27a;
+    --red: #ff4b4b;
+    --amber: #ffd166;
+    --gold: #ffd166;
+    --stone: #7f8da3;
+    --stone2: #aeb9c8;
+    --stone3: #45546d;
+    --mortar: #1b263b;
+    --magic: #9b5cff;
+    --magic-glow: #d9c2ff;
+    --fire: #ff8b2b;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { image-rendering: pixelated; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 14% 14%, rgba(255,255,255,.85) 0 2px, transparent 3px),
+      radial-gradient(circle at 78% 20%, rgba(255,255,255,.7) 0 2px, transparent 3px),
+      radial-gradient(circle at 40% 8%, rgba(255,255,255,.6) 0 2px, transparent 3px),
+      linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 55%, var(--night) 100%);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ TOPPLINJE ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px;
+  }
+  .back-link {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: .75rem;
+    color: var(--muted); text-decoration: none; letter-spacing: .04em;
+    background: rgba(8,21,43,.55); border: 3px solid var(--line);
+    padding: 6px 10px; box-shadow: 0 4px 0 var(--line);
+  }
+  .back-link:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+
+  /* ══ SKJERMER ══ */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    width: min(600px, 100%); margin: 0 auto; padding: 0 18px 50px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 4px; }
+  .logo {
+    font-family: 'Fraunces', serif; font-weight: 700; letter-spacing: -.03em;
+    font-size: clamp(2rem,7.5vw,3.2rem); line-height: .95; transform: rotate(-1deg);
+    text-shadow: 3px 3px 0 var(--line);
+  }
+  .logo .a { font-style: italic; color: var(--amber); }
+  .logo .b { color: var(--snow); }
+  .tagline {
+    font-weight: 700; color: var(--muted); font-size: clamp(.85rem,2.3vw,1rem);
+    max-width: 440px; line-height: 1.5;
+  }
+
+  .panel {
+    width: 100%; background: rgba(20,33,61,.92); border: 4px solid var(--line);
+    box-shadow: 0 6px 0 var(--line), inset 0 0 0 2px rgba(255,255,255,.08);
+    padding: 18px 20px;
+  }
+  .panel h2 {
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.2rem;
+    color: var(--gold); margin-bottom: 10px; text-shadow: 2px 2px 0 var(--line);
+  }
+  .panel p { font-size: .85rem; color: var(--muted); line-height: 1.7; font-weight: 500; }
+
+  .example-label { font-weight: 700; font-size: .75rem; color: var(--amber); margin-bottom: 8px; letter-spacing: .04em; text-transform: uppercase; }
+  .example-wrap { width: min(58vw, 230px); margin: 0 auto; aspect-ratio: 440/250; position: relative; border: 4px solid var(--line); box-shadow: 0 5px 0 var(--line); overflow: hidden; }
+  .example-wrap svg { width: 100%; height: 100%; display: block; }
+
+  button, .btn-primary { font-family: 'IBM Plex Mono', monospace; cursor: pointer; }
+  .btn-primary {
+    font-weight: 700; background: var(--amber); color: #2a1700;
+    border: 4px solid var(--line); box-shadow: 0 6px 0 var(--line), inset 0 0 0 2px rgba(255,255,255,.25);
+    padding: 15px 26px; font-size: 1.05rem; width: 100%; max-width: 320px;
+    transition: transform .1s, box-shadow .1s; letter-spacing: .02em;
+  }
+  .btn-primary:hover  { filter: brightness(1.07); transform: translateY(-2px); }
+  .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--line), inset 0 0 0 2px rgba(255,255,255,.25); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .btn-primary:focus-visible { outline: 3px solid var(--snow); outline-offset: 3px; }
+  .btn-back {
+    font-weight: 700; color: var(--muted); text-decoration: none; font-size: .8rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--snow); }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 40px; }
+  .game-wrap { width: min(640px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 14px; align-items: center; animation: fadeIn .3s ease; }
+
+  .hud {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .hud-target {
+    background: var(--amber); border: 4px solid var(--line); box-shadow: 0 6px 0 var(--line);
+    padding: 8px 16px; transform: rotate(-1deg); flex: 1 1 auto; min-width: 190px; color: #2a1700;
+  }
+  .hud-label { display:block; font-weight:700; font-size:.62rem; text-transform:uppercase; letter-spacing:.08em; opacity:.75; }
+  .hud-coord { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(1.4rem,5.6vw,1.9rem); display: block; }
+  .hud-right { display: flex; gap: 8px; }
+  .hud-stat {
+    background: var(--surface); border: 3px solid var(--line); box-shadow: 0 4px 0 var(--line);
+    padding: 6px 12px; text-align: center; min-width: 70px;
+  }
+  .hud-stat-label { display:block; font-weight:700; font-size:.58rem; text-transform:uppercase; letter-spacing:.05em; color: var(--muted); }
+  .hud-stat-val { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.1rem; color: var(--gold); }
+
+  /* ══ BORGSCENEN ══ */
+  .scene-wrap { width: min(94vw, 560px); margin: 0 auto; }
+  .scene-frame {
+    position: relative; width: 100%; aspect-ratio: 440 / 260;
+    background:
+      radial-gradient(circle at 20% 12%, rgba(255,255,255,.6) 0 2px, transparent 3px),
+      radial-gradient(circle at 70% 18%, rgba(255,255,255,.5) 0 2px, transparent 3px),
+      linear-gradient(180deg, #274d86 0%, #142a54 60%, #0a1530 100%);
+    border: 4px solid var(--line); box-shadow: 0 7px 0 var(--line);
+    overflow: hidden;
+  }
+
+  .king-tower {
+    position: absolute; top: 4px; right: 4px; z-index: 6;
+    display: flex; flex-direction: column; align-items: center;
+    pointer-events: none;
+  }
+  .king-face {
+    display: block; font-size: clamp(1.9rem, 7vw, 2.6rem);
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.5));
+    transform-origin: bottom center;
+    animation: king-idle 2.4s steps(2,end) infinite;
+  }
+  @keyframes king-idle { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-2px); } }
+  .king.cheer .king-face { animation: king-cheer .9s steps(5,end); }
+  .king.nod .king-face   { animation: king-nod .7s steps(4,end); }
+  .king.wince .king-face { animation: king-wince .7s steps(4,end); }
+  .king.panic .king-face { animation: king-panic .9s steps(6,end); }
+  @keyframes king-cheer { 0%,100%{ transform: translateY(0) rotate(0) scale(1); } 25%{ transform: translateY(-9px) rotate(-10deg) scale(1.1); } 55%{ transform: translateY(-2px) rotate(9deg) scale(1.05); } 80%{ transform: translateY(-6px) rotate(-5deg) scale(1.08); } }
+  @keyframes king-nod { 0%,100%{ transform: rotate(0); } 50%{ transform: rotate(8deg) translateY(2px); } }
+  @keyframes king-wince { 0%,100%{ transform: translateX(0) rotate(0); } 25%{ transform: translateX(-4px) rotate(-6deg); } 75%{ transform: translateX(4px) rotate(6deg); } }
+  @keyframes king-panic { 0%,100%{ transform: translate(0,0) rotate(0); } 16%{ transform: translate(-5px,0) rotate(-9deg); } 33%{ transform: translate(5px,-2px) rotate(9deg); } 50%{ transform: translate(-4px,0) rotate(-6deg); } 66%{ transform: translate(4px,-2px) rotate(6deg); } }
+
+  .king-bubble {
+    position: absolute; top: -6px; right: 46px; min-width: 90px; max-width: 130px;
+    padding: 5px 8px; background: var(--ink); color: #151515;
+    border: 3px solid var(--line); font-size: 10px; font-weight: 700; text-align: center;
+    box-shadow: 3px 3px 0 var(--line);
+    opacity: 0; transform: scale(.7) rotate(-4deg);
+    pointer-events: none; z-index: 7;
+  }
+  .king-bubble.show { animation: bubble-pop .95s ease forwards; }
+  @keyframes bubble-pop {
+    0%   { opacity: 0; transform: scale(.5) rotate(-8deg); }
+    18%  { opacity: 1; transform: scale(1.12) rotate(-2deg); }
+    30%,78% { opacity: 1; transform: scale(1) rotate(-2deg); }
+    100% { opacity: 0; transform: scale(.8) translateY(-8px) rotate(3deg); }
+  }
+
+  .starfield { position: absolute; inset: 0; pointer-events: none; }
+  .star { position: absolute; background: #fff; border-radius: 50%; }
+  .star.twinkle { animation: twinkle 2.6s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100% { opacity: .25; } 50% { opacity: .9; } }
+
+  .cannon-slider {
+    position: absolute; inset: 0;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    cursor: grab;
+  }
+  .cannon-slider:active { cursor: grabbing; }
+  .cannon-slider.locked { cursor: default; }
+  .cannon-slider svg { width: 100%; height: 100%; display: block; }
+  .cannon-slider:focus-visible {
+    outline: 3px solid var(--amber); outline-offset: -4px;
+  }
+
+  .c-wallblock { fill: var(--stone3); stroke: var(--line); stroke-width: 2; }
+  .c-merlon    { fill: var(--stone2); stroke: var(--line); stroke-width: 2; }
+  .c-dome      { fill: rgba(217,194,255,.05); stroke: var(--magic-glow); stroke-width: 2.5; stroke-dasharray: 5 6; }
+  .c-tick      { stroke: var(--magic-glow); stroke-width: 4; stroke-linecap: round; }
+  .c-label     { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 15px; fill: var(--snow); }
+  .c-horizon   { stroke: var(--magic-glow); stroke-width: 2.5; opacity: .4; }
+  .c-pivot     { fill: var(--stone3); stroke: var(--line); stroke-width: 3; }
+
+  .c-wand {
+    stroke: #7a4a26; stroke-width: 9; stroke-linecap: round;
+    transition: stroke .12s ease;
+  }
+  .c-wand.firing { stroke: var(--magic-glow); filter: drop-shadow(0 0 10px rgba(217,194,255,.9)); }
+  .c-wand-gem { fill: var(--magic); stroke: var(--line); stroke-width: 3; filter: drop-shadow(0 0 5px rgba(155,92,255,.8)); }
+
+  .c-sight {
+    stroke: var(--magic); stroke-width: 4; stroke-linecap: round;
+    filter: drop-shadow(0 0 3px rgba(155,92,255,.7));
+    opacity: 1; transition: opacity .15s ease;
+  }
+  .c-reference {
+    stroke: var(--green); stroke-width: 5; stroke-linecap: round;
+    stroke-dasharray: 10 8; opacity: 0; transition: opacity .5s ease;
+  }
+  .c-reference.show { opacity: 1; }
+  .c-orb-hit { fill: transparent; }
+  .c-orb {
+    fill: var(--amber); stroke: var(--line); stroke-width: 3.5;
+    filter: drop-shadow(0 0 4px rgba(255,209,102,.8));
+    opacity: 1; transition: opacity .15s ease;
+  }
+  .hidden-aim { opacity: 0; }
+
+  .projectile {
+    position: absolute; width: 13px; height: 13px; border-radius: 50%;
+    background: var(--magic-glow);
+    box-shadow: 0 0 10px 3px rgba(217,194,255,.85), 0 0 4px rgba(255,255,255,.9);
+    transform: translate(-50%,-50%); opacity: 0; pointer-events: none;
+  }
+
+  .dragon-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .dragon-sprite {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%,-50%) scaleX(-1);
+    font-size: clamp(2.1rem, 9.5vw, 3.3rem);
+    filter: drop-shadow(0 0 8px rgba(255,139,43,.5));
+    transition: opacity .3s ease, transform .3s ease;
+    opacity: 0;
+  }
+  .dragon-sprite.visible { opacity: 1; }
+  .dragon-sprite.banished { transform: translate(-50%,-50%) scaleX(-1) scale(1.6); opacity: 0; }
+  .dragon-sprite.fled { transform: translate(-50%,-50%) scaleX(-1) scale(.6); opacity: 0; }
+
+  .fx-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .fx-burst {
+    position: absolute; font-size: clamp(3rem, 14vw, 5rem);
+    transform: translate(-50%,-50%) scale(0);
+  }
+  .fx-burst.pop { animation: burstPop .65s cubic-bezier(.2,.9,.3,1.4) forwards; }
+  @keyframes burstPop {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+    40%  { transform: translate(-50%,-50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.05); opacity: 0; }
+  }
+  .fx-shard {
+    position: absolute; width: 8px; height: 8px; border-radius: 1px;
+    animation: shardFly .75s ease-out forwards;
+  }
+  @keyframes shardFly {
+    0%   { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(.2); opacity: 0; }
+  }
+  .fx-ring {
+    position: absolute; width: 14px; height: 14px;
+    border-radius: 50%; border: 5px solid rgba(217,194,255,.9);
+    transform: translate(-50%,-50%) scale(0); opacity: 1;
+  }
+  .fx-ring.expand { animation: ringExpand .55s ease-out forwards; }
+  @keyframes ringExpand {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: .9; }
+    100% { transform: translate(-50%,-50%) scale(11); opacity: 0; }
+  }
+
+  .fx-mini {
+    position: absolute; font-size: 1.1rem; transform: translate(-50%,-50%);
+    opacity: 0; pointer-events: none;
+  }
+  .fx-mini.pop { animation: miniPop .9s ease forwards; }
+  @keyframes miniPop {
+    0%   { opacity: 0; transform: translate(-50%,-50%) translateY(0) scale(.5); }
+    20%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%,-50%) translateY(-30px) scale(1.1); }
+  }
+
+  .lock-actions { width: 100%; display: flex; justify-content: center; }
+
+  .result-panel {
+    width: 100%; background: rgba(20,33,61,.94); border: 4px solid var(--line);
+    box-shadow: 0 6px 0 var(--line), inset 0 0 0 2px rgba(255,255,255,.08);
+    padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .result-panel[hidden] { display: none; }
+  .result-panel.show { opacity: 1; transform: translateY(0); }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; font-size: .88rem; color: var(--muted); }
+  .result-row strong { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.25rem; color: var(--snow); }
+  .result-message {
+    font-weight: 700; font-size: .95rem; padding-top: 4px; border-top: 3px solid var(--surface2);
+    display: flex; align-items: center; gap: 8px; justify-content: center; text-align: center;
+    color: var(--gold);
+  }
+  .precision-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); color: #08152b; font-size: .8rem; font-weight: 900;
+    transform: scale(0);
+  }
+  .precision-badge[hidden] { display: none; }
+  .precision-badge.show { animation: badgePop .35s ease forwards; }
+  @keyframes badgePop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .result-points {
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.35rem; text-align: center; color: var(--amber);
+  }
+
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+
+  footer {
+    text-align: center; padding: 22px; color: var(--muted);
+    font-weight: 700; font-size: .78rem; opacity: .8;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .result-panel, .precision-badge, .c-reference, .star.twinkle,
+    .dragon-sprite, .fx-burst, .fx-shard, .fx-ring, .fx-mini,
+    .c-wand, .c-sight, .c-orb, .projectile, .king-face, .king-bubble {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span></span>
+  <a class="back-link" href="../../index.html#grid">← LRNify</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="hero-emoji">🏰🐉</div>
+    <div class="logo"><span class="a">Vinkel</span><span class="b">spillet</span></div>
+    <p class="tagline">Drager angriper borgen! Du er hofftrollmannen. Kongen roper ut hvilken vinkel dragen kommer fra — sikt staven dit og kast en trylleform, uten å se tallet mens du sikter.</p>
+
+    <div class="panel">
+      <h2>Slik spiller du</h2>
+      <div class="example-label">Eksempel: staven sikter på 90°</div>
+      <div class="example-wrap">
+        <svg id="exampleSvg" viewBox="0 0 440 250" role="img" aria-label="Eksempel: staven sikter rett opp fra dreiepunktet, altså 90 grader."></svg>
+      </div>
+      <p style="margin-top:10px;">
+        10 drager. Du sikter staven med finger, mus eller piltaster og trykker «Kast!» når du er fornøyd. Kongen følger med fra tårnet og har meninger om alt du gjør.
+      </p>
+    </div>
+
+    <button class="btn-primary" id="btn-start">Forsvar borgen</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="hud">
+      <div class="hud-target">
+        <span class="hud-label" id="hudTaskLabel">Drage 1 av 10</span>
+        <span class="hud-coord">Sikt: <span id="targetDisplay">70°</span></span>
+      </div>
+      <div class="hud-right">
+        <div class="hud-stat">
+          <span class="hud-stat-label">Poeng</span>
+          <span class="hud-stat-val" id="hudScore">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene-wrap">
+      <div class="scene-frame" id="sceneFrame">
+        <div class="starfield" id="starfield"></div>
+
+        <div class="king-tower">
+          <div class="king" id="king">
+            <span class="king-bubble" id="kingBubble"></span>
+            <span class="king-face">🤴</span>
+          </div>
+        </div>
+
+        <div class="cannon-slider"
+             id="angleSlider"
+             tabindex="0"
+             role="slider"
+             aria-orientation="horizontal"
+             aria-valuemin="0"
+             aria-valuemax="180"
+             aria-valuenow="0"
+             aria-label="Roterbar trollmannsstav. Dra med finger eller mus, eller bruk venstre og høyre piltast (Shift for 5 grader av gangen). Trykk Enter for å kaste.">
+          <svg id="cannonSvg" viewBox="0 0 440 250" aria-hidden="true"></svg>
+        </div>
+
+        <div class="projectile" id="projectile" aria-hidden="true"></div>
+        <div class="dragon-layer">
+          <div class="dragon-sprite" id="dragon" aria-hidden="true">🐉</div>
+        </div>
+        <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="lock-actions">
+      <button class="btn-primary" id="btnLock">Kast!</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel" hidden>
+      <div class="result-row"><span>Riktig vinkel</span><strong id="resTarget">70°</strong></div>
+      <div class="result-row"><span>Du siktet på</span><strong id="resPlayer">68°</strong></div>
+      <div class="result-row"><span>Avvik</span><strong id="resDeviation">2°</strong></div>
+      <div class="result-message">
+        <span id="resMessage">Rent trylleri!</span>
+        <span class="precision-badge" id="precisionBadge" hidden aria-hidden="true">✓</span>
+      </div>
+      <div class="result-points" id="resPoints">+3 poeng</div>
+      <button class="btn-primary" id="btnNext">Neste drage!</button>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="hero-emoji">🏰👑</div>
+    <div class="logo" style="font-size:clamp(1.7rem,6.5vw,2.6rem);"><span class="a">Borgen</span> <span class="b">står støtt!</span></div>
+    <p class="tagline">Her er resultatet ditt etter 10 drager.</p>
+    <div class="panel result-card">
+      <div class="result-row"><span>Totalpoeng</span><strong id="endScore">0 av 30</strong></div>
+      <div class="result-row"><span>Gjennomsnittlig avvik</span><strong id="endAvg">0°</strong></div>
+      <div class="result-row"><span>Beste forsøk</span><strong id="endBest">0°</strong></div>
+    </div>
+    <button class="btn-primary" id="btn-again">Spill igjen</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const pickFrom = arr => arr[Math.floor(Math.random() * arr.length)];
+
+/* ── SCENEGEOMETRI (delt mellom eksempel og interaktivt verktøy) ── */
+const PIVOT = { x: 220, y: 220 };
+const ARC_R = 172;
+const ARM_LEN = 152;
+const TICK_IN = 160;
+const TICK_OUT = 186;
+const LABEL_R = 202;
+const HANDLE_R = 11;
+const HANDLE_HIT_R = 28;
+const ENTRY_R = 340; /* langt nok utenfor lerretet (440×250) på enhver vinkel */
+const WAND_LEN = 46;
+const SHOT_R = 250;
+
+function pctX(x) { return (x / 440) * 100; }
+function pctY(y) { return (y / 250) * 100; }
+
+function pt(angleDeg, radius) {
+  const rad = angleDeg * Math.PI / 180;
+  return { x: PIVOT.x + radius * Math.cos(rad), y: PIVOT.y - radius * Math.sin(rad) };
+}
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(NS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function buildStaticBase(svg) {
+  svg.appendChild(svgEl('rect', { x: 0, y: PIVOT.y, width: 440, height: 250 - PIVOT.y, class: 'c-wallblock' }));
+
+  /* Murkrone (krenelering) langs toppen av veggen */
+  const merlonW = 26, gap = 12, count = Math.ceil(440 / (merlonW + gap)) + 1;
+  for (let i = 0; i < count; i++) {
+    const x = i * (merlonW + gap) - 8;
+    svg.appendChild(svgEl('rect', { x, y: PIVOT.y - 14, width: merlonW, height: 16, class: 'c-merlon' }));
+  }
+
+  const domeStart = pt(180, ARC_R);
+  const domeEnd = pt(0, ARC_R);
+  svg.appendChild(svgEl('path', {
+    d: `M ${domeStart.x} ${domeStart.y} A ${ARC_R} ${ARC_R} 0 0 1 ${domeEnd.x} ${domeEnd.y}`,
+    class: 'c-dome'
+  }));
+
+  svg.appendChild(svgEl('line', { x1: 0, y1: PIVOT.y, x2: 440, y2: PIVOT.y, class: 'c-horizon' }));
+
+  [0, 90, 180].forEach(a => {
+    const inner = pt(a, TICK_IN), outer = pt(a, TICK_OUT), lp = pt(a, LABEL_R);
+    svg.appendChild(svgEl('line', { x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y, class: 'c-tick' }));
+    const label = svgEl('text', { x: lp.x, y: lp.y, class: 'c-label', 'text-anchor': 'middle', 'dominant-baseline': 'middle' });
+    label.textContent = a + '°';
+    svg.appendChild(label);
+  });
+}
+
+/* Trollmannsstaven: en rund, trestamme-lignende stav med en glødende
+   magisk edelsten i tuppen, rotert med et SVG-transform. */
+function makeWand(angleDeg) {
+  const g = svgEl('g', { class: 'c-wand-group' });
+  const shaft = svgEl('line', { x1: PIVOT.x - 4, y1: PIVOT.y, x2: PIVOT.x + WAND_LEN, y2: PIVOT.y, class: 'c-wand' });
+  const gemPos = pt(0, WAND_LEN);
+  const gem = svgEl('circle', { cx: gemPos.x, cy: gemPos.y, r: 6, class: 'c-wand-gem' });
+  g.appendChild(shaft);
+  g.appendChild(gem);
+  g.setAttribute('transform', `rotate(${-angleDeg} ${PIVOT.x} ${PIVOT.y})`);
+  return { g, shaft };
+}
+
+/* ── STATISK EKSEMPEL (90°) på startskjermen ── */
+(function buildExample() {
+  const svg = $('exampleSvg');
+  buildStaticBase(svg);
+  const wand = makeWand(90);
+  svg.appendChild(wand.g);
+  svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 9, class: 'c-pivot' }));
+  const wandTip = pt(90, WAND_LEN);
+  const sightTip = pt(90, ARM_LEN);
+  svg.appendChild(svgEl('line', { x1: wandTip.x, y1: wandTip.y, x2: sightTip.x, y2: sightTip.y, class: 'c-sight' }));
+  svg.appendChild(svgEl('circle', { cx: sightTip.x, cy: sightTip.y, r: HANDLE_R, class: 'c-orb' }));
+})();
+
+/* ── STJERNER (dekorativt, statisk per sideinnlasting) ── */
+(function buildStars() {
+  const field = $('starfield');
+  if (!field) return;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('div');
+    s.className = 'star' + (Math.random() < 0.4 && !REDUCED_MOTION ? ' twinkle' : '');
+    const size = 1 + Math.random() * 2;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = (Math.random() * 72) + '%';
+    s.style.opacity = String(0.3 + Math.random() * 0.6);
+    if (s.className.includes('twinkle')) s.style.animationDelay = (Math.random() * 2.6) + 's';
+    frag.appendChild(s);
+  }
+  field.appendChild(frag);
+})();
+
+/* ── INTERAKTIVT VERKTØY ── */
+const slider = $('angleSlider');
+const svg = $('cannonSvg');
+buildStaticBase(svg);
+
+const wand = makeWand(0);
+svg.appendChild(wand.g);
+svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 9, class: 'c-pivot' }));
+
+const refArm = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x, y2: PIVOT.y, class: 'c-reference' });
+svg.appendChild(refArm);
+/* Siktelinjen + kula: den delen spilleren drar i. Forsvinner idet
+   trylleformen kastes — se lockAngle(). */
+const sightLine = svgEl('line', { x1: PIVOT.x + WAND_LEN, y1: PIVOT.y, x2: PIVOT.x + ARM_LEN, y2: PIVOT.y, class: 'c-sight' });
+svg.appendChild(sightLine);
+const orbHit = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_HIT_R, class: 'c-orb-hit' });
+svg.appendChild(orbHit);
+const orbDot = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_R, class: 'c-orb' });
+svg.appendChild(orbDot);
+
+const dragonEl = $('dragon');
+const fxLayer = $('fxLayer');
+const projectileEl = $('projectile');
+const kingEl = $('king');
+const kingBubble = $('kingBubble');
+
+/* ── LYD (Web Audio API, enkle og diskrete effekter — ingen filer) ── */
+let audioCtx = null;
+function initAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!audioCtx) audioCtx = new AC();
+  else if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function tone(freq, ms, type, vol, delay = 0, freqEnd = null) {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t0);
+  if (freqEnd !== null) o.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), t0 + ms / 1000);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
+}
+function castSound() { tone(700, 90, 'sine', 0.06, 0, 1200); tone(900, 120, 'triangle', 0.05, 0.05, 1500); }
+function fleeSound() { tone(600, 170, 'triangle', 0.07, 0, 260); }
+function poofSound() {
+  if (!audioCtx) return;
+  const dur = 0.3;
+  const n = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.7) * 0.5;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 1200;
+  const g = audioCtx.createGain(); g.gain.value = 0.16;
+  src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+  src.start();
+  tone(500, 160, 'sine', 0.08, 0.02, 900);
+}
+function crashSound() {
+  if (!audioCtx) return;
+  const dur = 0.35;
+  const n = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.5) * 0.6;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 700;
+  const g = audioCtx.createGain(); g.gain.value = 0.2;
+  src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+  src.start();
+  tone(80, 240, 'sine', 0.12, 0.01);
+}
+
+let angleDeg = 0;
+let dragging = false;
+let locked = false;
+
+function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+function clampPct(v) { return clamp(v, 6, 94); }
+
+function renderArm() {
+  const wandTip = pt(angleDeg, WAND_LEN);
+  const sightTip = pt(angleDeg, ARM_LEN);
+  wand.g.setAttribute('transform', `rotate(${-angleDeg} ${PIVOT.x} ${PIVOT.y})`);
+  sightLine.setAttribute('x1', wandTip.x); sightLine.setAttribute('y1', wandTip.y);
+  sightLine.setAttribute('x2', sightTip.x); sightLine.setAttribute('y2', sightTip.y);
+  orbHit.setAttribute('cx', sightTip.x); orbHit.setAttribute('cy', sightTip.y);
+  orbDot.setAttribute('cx', sightTip.x); orbDot.setAttribute('cy', sightTip.y);
+  slider.setAttribute('aria-valuenow', String(Math.round(angleDeg)));
+}
+
+function pointerAngle(evt) {
+  const rect = svg.getBoundingClientRect();
+  const scaleX = 440 / rect.width, scaleY = 250 / rect.height;
+  const x = (evt.clientX - rect.left) * scaleX;
+  const y = (evt.clientY - rect.top) * scaleY;
+  const dx = x - PIVOT.x, dy = PIVOT.y - y;
+  let ang = Math.atan2(dy, dx) * 180 / Math.PI;
+  if (ang < 0) ang = dx >= 0 ? 0 : 180;
+  return clamp(ang, 0, 180);
+}
+
+slider.addEventListener('pointerdown', e => {
+  if (locked) return;
+  dragging = true;
+  slider.setPointerCapture(e.pointerId);
+  angleDeg = pointerAngle(e);
+  renderArm();
+  e.preventDefault();
+});
+slider.addEventListener('pointermove', e => {
+  if (!dragging || locked) return;
+  angleDeg = pointerAngle(e);
+  renderArm();
+});
+function endDrag() { dragging = false; }
+slider.addEventListener('pointerup', endDrag);
+slider.addEventListener('pointercancel', endDrag);
+
+slider.addEventListener('keydown', e => {
+  if (locked) return;
+  const step = e.shiftKey ? 5 : 1;
+  if (e.key === 'ArrowRight') { angleDeg = clamp(angleDeg + step, 0, 180); renderArm(); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft') { angleDeg = clamp(angleDeg - step, 0, 180); renderArm(); e.preventDefault(); }
+  else if (e.key === 'Enter') { e.preventDefault(); lockAngle(); }
+});
+
+/* ── OPPGAVEGENERERING ──
+   1–3: kjente referansevinkler, 4–7: multipler av 5°, 8–10: vilkårlige
+   hele grader. Ingen målvinkel gjentas i samme runde. Identisk med
+   Vinkeljakten og Vinkelforsvarer — kun presentasjonen er endret. */
+const REFERENCE_ANGLES = [30, 45, 60, 90, 120, 135, 150];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildRound() {
+  const used = new Set();
+  const round = [];
+
+  shuffle(REFERENCE_ANGLES).slice(0, 3).forEach(a => { round.push(a); used.add(a); });
+
+  const multiplesPool = [];
+  for (let a = 5; a < 180; a += 5) if (!used.has(a)) multiplesPool.push(a);
+  shuffle(multiplesPool).slice(0, 4).forEach(a => { round.push(a); used.add(a); });
+
+  while (round.length < 10) {
+    const candidate = 1 + Math.floor(Math.random() * 179);
+    if (!used.has(candidate)) { round.push(candidate); used.add(candidate); }
+  }
+
+  return round;
+}
+
+function scoreFor(deviation) {
+  if (deviation <= 2) return { points: 3, message: 'Rent trylleri!' };
+  if (deviation <= 5) return { points: 2, message: 'Kongelig godt kastet!' };
+  if (deviation <= 10) return { points: 1, message: 'Streiftreff — dragen snudde i siste sekund.' };
+  return { points: 0, message: 'Bom! Dragen brøt gjennom muren.' };
+}
+
+const KING_LINES = {
+  3: ['KONGELIG BRA!', 'Ridder-verdig treff!', 'Rent trylleri, sier jeg!', 'Slottet takker deg!'],
+  2: ['Godt jobbet, trollmann!', 'Nesten kongelig presist!', 'Bra kastet!'],
+  1: ['Uff, den var nære!', 'Slapp unna med et nødskrik!', 'Skjerp sansene, magiker!'],
+  0: ['VAKTER! VAKTER!', 'Min krone ristet av DET der!', 'Trollmann... vi må snakke.', 'Muren tok en ny skramme!']
+};
+const KING_ANIM = { 3: 'cheer', 2: 'nod', 1: 'wince', 0: 'panic' };
+
+/* ── SPILLTILSTAND ── */
+let round = [];
+let taskIndex = 0;
+let totalScore = 0;
+let deviations = [];
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+
+function startGame() {
+  initAudio();
+  round = buildRound();
+  taskIndex = 0;
+  totalScore = 0;
+  deviations = [];
+  $('hudScore').textContent = '0';
+  showScreen('screen-game');
+  loadTask();
+}
+
+function resetDragon() {
+  dragonEl.style.transition = 'none';
+  dragonEl.classList.remove('visible', 'banished', 'fled');
+  dragonEl.style.left = '50%';
+  dragonEl.style.top = '50%';
+  dragonEl.textContent = '🐉';
+  void dragonEl.offsetWidth;
+  dragonEl.style.transition = '';
+}
+
+function resetProjectile() {
+  projectileEl.style.transition = 'none';
+  projectileEl.style.opacity = '0';
+  projectileEl.style.left = '50%';
+  projectileEl.style.top = '50%';
+  void projectileEl.offsetWidth;
+  projectileEl.style.transition = '';
+}
+
+function loadTask() {
+  if (taskIndex >= round.length) { endGame(); return; }
+  locked = false;
+  angleDeg = 0;
+  dragging = false;
+  slider.classList.remove('locked');
+  slider.removeAttribute('aria-disabled');
+  refArm.classList.remove('show');
+  wand.shaft.classList.remove('firing');
+  sightLine.classList.remove('hidden-aim');
+  orbDot.classList.remove('hidden-aim');
+  resetProjectile();
+  renderArm();
+  resetDragon();
+
+  const target = round[taskIndex];
+  $('hudTaskLabel').textContent = 'Drage ' + (taskIndex + 1) + ' av ' + round.length;
+  $('targetDisplay').textContent = target + '°';
+
+  $('btnLock').hidden = false;
+  $('btnLock').disabled = false;
+  $('resultPanel').hidden = true;
+  $('resultPanel').classList.remove('show');
+  $('precisionBadge').hidden = true;
+  $('precisionBadge').classList.remove('show');
+  $('srAnnounce').textContent = '';
+}
+
+function spawnShards(leftPct, topPct) {
+  const cols = ['#d9c2ff', '#9b5cff', '#ffd166', '#fde68a'];
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('div');
+    s.className = 'fx-shard';
+    s.style.left = leftPct + '%';
+    s.style.top = topPct + '%';
+    s.style.background = cols[i % cols.length];
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 40 + Math.random() * 48;
+    s.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
+    s.style.setProperty('--dy', (Math.sin(angle) * dist) + 'px');
+    fxLayer.appendChild(s);
+    setTimeout(() => s.remove(), 800);
+  }
+}
+
+function spawnRing(leftPct, topPct) {
+  const r = document.createElement('div');
+  r.className = 'fx-ring';
+  r.style.left = leftPct + '%';
+  r.style.top = topPct + '%';
+  fxLayer.appendChild(r);
+  requestAnimationFrame(() => r.classList.add('expand'));
+  setTimeout(() => r.remove(), 600);
+}
+
+function spawnBurst(leftPct, topPct, emoji) {
+  const b = document.createElement('div');
+  b.className = 'fx-burst';
+  b.textContent = emoji;
+  b.style.left = leftPct + '%';
+  b.style.top = topPct + '%';
+  fxLayer.appendChild(b);
+  requestAnimationFrame(() => b.classList.add('pop'));
+  setTimeout(() => b.remove(), 750);
+}
+
+function banish(leftPct, topPct) {
+  dragonEl.classList.add('banished');
+  spawnBurst(leftPct, topPct, '✨');
+  spawnShards(leftPct, topPct);
+  spawnRing(leftPct, topPct);
+  poofSound();
+}
+
+function crashIntoWall(leftPct, topPct) {
+  dragonEl.classList.add('banished');
+  spawnBurst(leftPct, topPct, '💥');
+  spawnShards(leftPct, topPct);
+  spawnRing(leftPct, topPct);
+  crashSound();
+}
+
+/* Trylleformkulen: en liten lysende kule som skytes ut fra stavens
+   tupp og flyr rett fram langs den låste vinkelen. */
+function fireProjectile(angleDeg) {
+  const start = pt(angleDeg, WAND_LEN);
+  const end = pt(angleDeg, SHOT_R);
+  const shotMs = REDUCED_MOTION ? 0 : 240;
+
+  projectileEl.style.transition = 'none';
+  projectileEl.style.left = pctX(start.x) + '%';
+  projectileEl.style.top = pctY(start.y) + '%';
+  projectileEl.style.opacity = '1';
+  void projectileEl.offsetWidth;
+  projectileEl.style.transition = `left ${shotMs}ms linear, top ${shotMs}ms linear, opacity ${shotMs}ms ease`;
+
+  requestAnimationFrame(() => {
+    projectileEl.style.left = pctX(end.x) + '%';
+    projectileEl.style.top = pctY(end.y) + '%';
+    projectileEl.style.opacity = '0';
+  });
+}
+
+function showKingReaction(points) {
+  const anim = KING_ANIM[points];
+  const line = pickFrom(KING_LINES[points]);
+  kingEl.classList.remove('cheer', 'nod', 'wince', 'panic');
+  kingBubble.classList.remove('show');
+  void kingEl.offsetWidth;
+  kingBubble.textContent = line;
+  kingEl.classList.add(anim);
+  kingBubble.classList.add('show');
+
+  const icons = points >= 2 ? ['👑', '✨', '🎉'] : points === 1 ? ['😅', '💨'] : ['💢', '🔥', '😱'];
+  const tower = document.querySelector('.king-tower');
+  if (tower) {
+    for (let i = 0; i < 6; i++) {
+      const fx = document.createElement('span');
+      fx.className = 'fx-mini';
+      fx.textContent = icons[i % icons.length];
+      fx.style.left = (18 + (Math.random() * 30 - 15)) + 'px';
+      fx.style.top = (30 + (Math.random() * 16 - 8)) + 'px';
+      fx.style.animationDelay = (i * 40) + 'ms';
+      tower.appendChild(fx);
+      requestAnimationFrame(() => fx.classList.add('pop'));
+      setTimeout(() => fx.remove(), 1000);
+    }
+  }
+  setTimeout(() => kingEl.classList.remove(anim), REDUCED_MOTION ? 0 : 950);
+}
+
+function lockAngle() {
+  if (locked) return;
+  locked = true;
+  slider.classList.add('locked');
+  slider.setAttribute('aria-disabled', 'true');
+
+  const rounded = Math.round(angleDeg);
+  angleDeg = rounded;
+  renderArm();
+
+  /* Siktelinjen og kula forsvinner idet trylleformen kastes, og en
+     lysende kule skytes ut fra staven — det skal se ut som et
+     virkelig kast. */
+  sightLine.classList.add('hidden-aim');
+  orbDot.classList.add('hidden-aim');
+  wand.shaft.classList.add('firing');
+  setTimeout(() => wand.shaft.classList.remove('firing'), REDUCED_MOTION ? 0 : 220);
+  fireProjectile(rounded);
+  castSound();
+
+  const target = round[taskIndex];
+  const deviation = Math.abs(target - rounded);
+  const { points, message } = scoreFor(deviation);
+  totalScore += points;
+  deviations.push(deviation);
+  $('hudScore').textContent = String(totalScore);
+
+  const refPt = pt(target, ARM_LEN);
+  refArm.setAttribute('x2', refPt.x);
+  refArm.setAttribute('y2', refPt.y);
+  requestAnimationFrame(() => refArm.classList.add('show'));
+
+  /* Dragen er usynlig helt til trylleformen er kastet. Først da kommer
+     den inn i bildet utenfra, langs den rette banen som målvinkelen
+     angir — slik at vinkelen aldri lekker fasiten på forhånd, men
+     tydelig vises som en flygebane. Deretter reagerer den ut fra
+     treffsikkerheten:
+       – 2–3 poeng (godt/direkte treff): forvises der den blir truffet
+       – 1 poeng (streiftreff): snur og flykter, urørt
+       – 0 poeng (bom): fortsetter uhindret inn og bryter gjennom muren */
+  const entryPt = pt(target, ENTRY_R);
+  const rimPt = pt(target, ARC_R);
+  const entryLeftPct = pctX(entryPt.x), entryTopPct = pctY(entryPt.y);
+  const rimLeftPct = pctX(rimPt.x), rimTopPct = pctY(rimPt.y);
+  const baseLeftPct = pctX(PIVOT.x), baseTopPct = pctY(PIVOT.y);
+
+  const flightMs = REDUCED_MOTION ? 0 : 950;
+  const resolveMs = REDUCED_MOTION ? 0 : 500;
+
+  dragonEl.style.transition = 'none';
+  dragonEl.style.left = entryLeftPct + '%';
+  dragonEl.style.top = entryTopPct + '%';
+  dragonEl.textContent = '🐉';
+  dragonEl.classList.remove('banished', 'fled');
+  dragonEl.classList.add('visible');
+  void dragonEl.offsetWidth;
+  dragonEl.style.transition = `left ${flightMs}ms linear, top ${flightMs}ms linear, opacity .3s ease, transform .3s ease`;
+
+  requestAnimationFrame(() => {
+    dragonEl.style.left = rimLeftPct + '%';
+    dragonEl.style.top = rimTopPct + '%';
+  });
+
+  setTimeout(() => {
+    if (points >= 2) {
+      banish(rimLeftPct, rimTopPct);
+    } else if (points === 1) {
+      const side = target < 90 ? -1 : 1;
+      dragonEl.style.transition = `left ${resolveMs}ms ease, top ${resolveMs}ms ease, opacity .3s ease, transform .3s ease`;
+      dragonEl.style.left = clampPct(rimLeftPct + side * 16) + '%';
+      dragonEl.style.top = clampPct(rimTopPct - 12) + '%';
+      fleeSound();
+      setTimeout(() => dragonEl.classList.add('fled'), resolveMs);
+    } else {
+      dragonEl.style.transition = `left ${resolveMs}ms linear, top ${resolveMs}ms linear, opacity .3s ease, transform .3s ease`;
+      dragonEl.style.left = baseLeftPct + '%';
+      dragonEl.style.top = baseTopPct + '%';
+      setTimeout(() => crashIntoWall(baseLeftPct, baseTopPct), resolveMs);
+    }
+  }, flightMs);
+
+  showKingReaction(points);
+
+  $('resTarget').textContent = target + '°';
+  $('resPlayer').textContent = rounded + '°';
+  $('resDeviation').textContent = deviation + '°';
+  $('resMessage').textContent = message;
+  $('resPoints').textContent = '+' + points + ' poeng';
+
+  const badge = $('precisionBadge');
+  if (deviation <= 2) { badge.hidden = false; requestAnimationFrame(() => badge.classList.add('show')); }
+  else { badge.hidden = true; badge.classList.remove('show'); }
+
+  $('resultPanel').hidden = false;
+  requestAnimationFrame(() => $('resultPanel').classList.add('show'));
+  $('btnLock').hidden = true;
+
+  $('srAnnounce').textContent =
+    'Riktig vinkel ' + target + ' grader. Du siktet på ' + rounded + ' grader. Avvik ' + deviation + ' grader. ' + message + ' ' + points + ' poeng.';
+}
+
+function endGame() {
+  const avg = deviations.reduce((s, d) => s + d, 0) / deviations.length;
+  const best = Math.min(...deviations);
+  $('endScore').textContent = totalScore + ' av ' + (round.length * 3);
+  $('endAvg').textContent = (Math.round(avg * 10) / 10) + '°';
+  $('endBest').textContent = best + '°';
+  showScreen('screen-end');
+}
+
+$('btn-start').addEventListener('click', startGame);
+$('btnLock').addEventListener('click', lockAngle);
+$('btnNext').addEventListener('click', () => { taskIndex++; loadTask(); });
+$('btn-again').addEventListener('click', startGame);
+
+renderArm();
+</script>
+</body>
+</html>
