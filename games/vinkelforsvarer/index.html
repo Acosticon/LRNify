@@ -22,7 +22,7 @@
     --space-ink: #eef0fa;
     --ground: #171b3f;
     --turret: #545a86;
-    --barrel: #38bdf8;
+    --sight: #38bdf8;
     --laser-flash: #cffafe;
     --correct: #4ade80;
     --explosion: #fb923c;
@@ -167,12 +167,20 @@
   .c-horizon  { stroke: var(--space-ink); stroke-width: 3; opacity: .55; }
   .c-turret-base { fill: var(--turret); stroke: var(--ink); stroke-width: 3; }
   .c-pivot    { fill: var(--turret); stroke: var(--ink); stroke-width: 3; }
-  .c-barrel   {
-    stroke: var(--barrel); stroke-width: 9; stroke-linecap: round;
-    filter: drop-shadow(0 0 3px rgba(56,189,248,.7));
-    transition: stroke .15s ease;
+  /* Det fysiske kanonløpet — sitter fast på basen og følger siktet,
+     men blir stående (fryst) etter avfyring. */
+  .c-gun-barrel {
+    fill: var(--turret); stroke: var(--ink); stroke-width: 3;
+    transition: fill .12s ease;
   }
-  .c-barrel.firing { stroke: var(--laser-flash); filter: drop-shadow(0 0 8px rgba(207,250,254,.95)); }
+  .c-gun-barrel.firing { fill: var(--laser-flash); filter: drop-shadow(0 0 10px rgba(207,250,254,.9)); }
+  /* Siktelinjen + kula — kun synlig mens spilleren sikter, forsvinner
+     idet «Fyr!» trykkes. */
+  .c-sight {
+    stroke: var(--sight); stroke-width: 4; stroke-linecap: round;
+    filter: drop-shadow(0 0 3px rgba(56,189,248,.7));
+    opacity: 1; transition: opacity .15s ease;
+  }
   .c-reference {
     stroke: var(--correct); stroke-width: 5; stroke-linecap: round;
     stroke-dasharray: 10 8; opacity: 0; transition: opacity .5s ease;
@@ -182,6 +190,15 @@
   .c-muzzle {
     fill: var(--yellow); stroke: var(--ink); stroke-width: 3.5;
     filter: drop-shadow(0 0 4px rgba(250,204,21,.8));
+    opacity: 1; transition: opacity .15s ease;
+  }
+  .hidden-aim { opacity: 0; }
+
+  .projectile {
+    position: absolute; width: 13px; height: 13px; border-radius: 50%;
+    background: var(--laser-flash);
+    box-shadow: 0 0 10px 3px rgba(207,250,254,.85), 0 0 4px rgba(255,255,255,.9);
+    transform: translate(-50%,-50%); opacity: 0; pointer-events: none;
   }
 
   .asteroid-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
@@ -266,7 +283,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     *, .result-panel, .precision-badge, .c-reference, .star.twinkle,
-    .asteroid-sprite, .fx-burst, .fx-shard, .c-barrel {
+    .asteroid-sprite, .fx-burst, .fx-shard, .c-gun-barrel, .c-sight,
+    .c-muzzle, .projectile {
       animation-duration: .01ms !important; transition-duration: .01ms !important;
     }
   }
@@ -334,6 +352,7 @@
           <svg id="cannonSvg" viewBox="0 0 440 250" aria-hidden="true"></svg>
         </div>
 
+        <div class="projectile" id="projectile" aria-hidden="true"></div>
         <div class="asteroid-layer">
           <div class="asteroid-sprite" id="asteroid" aria-hidden="true">☄️</div>
         </div>
@@ -397,6 +416,9 @@ const LABEL_R = 202;
 const HANDLE_R = 11;
 const HANDLE_HIT_R = 28;
 const ENTRY_R = 340; /* langt nok utenfor lerretet (440×250) på enhver vinkel */
+const BARREL_LEN = 50; /* det fysiske kanonløpet */
+const BARREL_W = 16;
+const SHOT_R = 250; /* hvor langt prosjektilet flyr ut før det forsvinner */
 
 function pctX(x) { return (x / 440) * 100; }
 function pctY(y) { return (y / 250) * 100; }
@@ -439,14 +461,28 @@ function buildStaticBase(svg) {
   }));
 }
 
+/* Det fysiske kanonløpet: et rektangel som stikker ut fra dreiepunktet,
+   rotert med et SVG-transform slik at det følger siktevinkelen. */
+function makeGunBarrel(angleDeg) {
+  const gb = svgEl('rect', {
+    x: PIVOT.x - 6, y: PIVOT.y - BARREL_W / 2,
+    width: BARREL_LEN + 6, height: BARREL_W,
+    class: 'c-gun-barrel'
+  });
+  gb.setAttribute('transform', `rotate(${-angleDeg} ${PIVOT.x} ${PIVOT.y})`);
+  return gb;
+}
+
 /* ── STATISK EKSEMPEL (90°) på startskjermen ── */
 (function buildExample() {
   const svg = $('exampleSvg');
   buildStaticBase(svg);
-  const p = pt(90, ARM_LEN);
-  svg.appendChild(svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: p.x, y2: p.y, class: 'c-barrel' }));
+  const barrelTip = pt(90, BARREL_LEN);
+  const sightTip = pt(90, ARM_LEN);
+  svg.appendChild(makeGunBarrel(90));
   svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 9, class: 'c-pivot' }));
-  svg.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: HANDLE_R, class: 'c-muzzle' }));
+  svg.appendChild(svgEl('line', { x1: barrelTip.x, y1: barrelTip.y, x2: sightTip.x, y2: sightTip.y, class: 'c-sight' }));
+  svg.appendChild(svgEl('circle', { cx: sightTip.x, cy: sightTip.y, r: HANDLE_R, class: 'c-muzzle' }));
 })();
 
 /* ── STJERNER (dekorativt, statisk per sideinnlasting) ── */
@@ -472,12 +508,17 @@ function buildStaticBase(svg) {
 const slider = $('angleSlider');
 const svg = $('cannonSvg');
 buildStaticBase(svg);
+
+const gunBarrel = makeGunBarrel(0);
+svg.appendChild(gunBarrel);
 svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 9, class: 'c-pivot' }));
 
 const refArm = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x, y2: PIVOT.y, class: 'c-reference' });
 svg.appendChild(refArm);
-const barrel = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x + ARM_LEN, y2: PIVOT.y, class: 'c-barrel' });
-svg.appendChild(barrel);
+/* Siktelinjen + kula: den delen spilleren drar i. Forsvinner idet
+   skuddet avfyres — se lockAngle(). */
+const sightLine = svgEl('line', { x1: PIVOT.x + BARREL_LEN, y1: PIVOT.y, x2: PIVOT.x + ARM_LEN, y2: PIVOT.y, class: 'c-sight' });
+svg.appendChild(sightLine);
 const muzzleHit = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_HIT_R, class: 'c-muzzle-hit' });
 svg.appendChild(muzzleHit);
 const muzzleDot = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_R, class: 'c-muzzle' });
@@ -485,6 +526,7 @@ svg.appendChild(muzzleDot);
 
 const asteroidEl = $('asteroid');
 const fxLayer = $('fxLayer');
+const projectileEl = $('projectile');
 
 /* ── LYD (Web Audio API, enkle og diskrete effekter — ingen filer) ── */
 let audioCtx = null;
@@ -533,10 +575,13 @@ function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
 function clampPct(v) { return clamp(v, 6, 94); }
 
 function renderArm() {
-  const p = pt(angleDeg, ARM_LEN);
-  barrel.setAttribute('x2', p.x); barrel.setAttribute('y2', p.y);
-  muzzleHit.setAttribute('cx', p.x); muzzleHit.setAttribute('cy', p.y);
-  muzzleDot.setAttribute('cx', p.x); muzzleDot.setAttribute('cy', p.y);
+  const barrelTip = pt(angleDeg, BARREL_LEN);
+  const sightTip = pt(angleDeg, ARM_LEN);
+  gunBarrel.setAttribute('transform', `rotate(${-angleDeg} ${PIVOT.x} ${PIVOT.y})`);
+  sightLine.setAttribute('x1', barrelTip.x); sightLine.setAttribute('y1', barrelTip.y);
+  sightLine.setAttribute('x2', sightTip.x); sightLine.setAttribute('y2', sightTip.y);
+  muzzleHit.setAttribute('cx', sightTip.x); muzzleHit.setAttribute('cy', sightTip.y);
+  muzzleDot.setAttribute('cx', sightTip.x); muzzleDot.setAttribute('cy', sightTip.y);
   slider.setAttribute('aria-valuenow', String(Math.round(angleDeg)));
 }
 
@@ -648,6 +693,15 @@ function resetAsteroid() {
   asteroidEl.style.transition = '';
 }
 
+function resetProjectile() {
+  projectileEl.style.transition = 'none';
+  projectileEl.style.opacity = '0';
+  projectileEl.style.left = '50%';
+  projectileEl.style.top = '50%';
+  void projectileEl.offsetWidth;
+  projectileEl.style.transition = '';
+}
+
 function loadTask() {
   if (taskIndex >= round.length) { endGame(); return; }
   locked = false;
@@ -656,7 +710,10 @@ function loadTask() {
   slider.classList.remove('locked');
   slider.removeAttribute('aria-disabled');
   refArm.classList.remove('show');
-  barrel.classList.remove('firing');
+  gunBarrel.classList.remove('firing');
+  sightLine.classList.remove('hidden-aim');
+  muzzleDot.classList.remove('hidden-aim');
+  resetProjectile();
   renderArm();
   resetAsteroid();
 
@@ -719,6 +776,27 @@ function explode(leftPct, topPct) {
   explosionSound();
 }
 
+/* Prosjektilet: en liten lysende kule som skytes ut fra kanonløpets
+   munning og flyr rett fram langs den låste vinkelen. */
+function fireProjectile(angleDeg) {
+  const start = pt(angleDeg, BARREL_LEN);
+  const end = pt(angleDeg, SHOT_R);
+  const shotMs = REDUCED_MOTION ? 0 : 240;
+
+  projectileEl.style.transition = 'none';
+  projectileEl.style.left = pctX(start.x) + '%';
+  projectileEl.style.top = pctY(start.y) + '%';
+  projectileEl.style.opacity = '1';
+  void projectileEl.offsetWidth;
+  projectileEl.style.transition = `left ${shotMs}ms linear, top ${shotMs}ms linear, opacity ${shotMs}ms ease`;
+
+  requestAnimationFrame(() => {
+    projectileEl.style.left = pctX(end.x) + '%';
+    projectileEl.style.top = pctY(end.y) + '%';
+    projectileEl.style.opacity = '0';
+  });
+}
+
 function lockAngle() {
   if (locked) return;
   locked = true;
@@ -729,8 +807,13 @@ function lockAngle() {
   angleDeg = rounded;
   renderArm();
 
-  barrel.classList.add('firing');
-  setTimeout(() => barrel.classList.remove('firing'), REDUCED_MOTION ? 0 : 260);
+  /* Siktelinjen og kula forsvinner idet skuddet går, og et prosjektil
+     skytes ut fra kanonløpet — det skal se ut som et reelt skudd. */
+  sightLine.classList.add('hidden-aim');
+  muzzleDot.classList.add('hidden-aim');
+  gunBarrel.classList.add('firing');
+  setTimeout(() => gunBarrel.classList.remove('firing'), REDUCED_MOTION ? 0 : 220);
+  fireProjectile(rounded);
   fireSound();
 
   const target = round[taskIndex];
