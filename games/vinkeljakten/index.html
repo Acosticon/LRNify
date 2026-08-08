@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Vinkeljakten — LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #2b2118;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+    --gridline:#e8dfc9;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SCREENS ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .screen-hero { padding: 4px 0 4px; }
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 6px; }
+  .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.9rem,7vw,3rem); }
+  .screen-hero p  {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.9rem,2.4vw,1.05rem); margin-top: 8px; max-width: 440px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; width: 100%;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 10px; }
+
+  .example-label { font-weight: 800; font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
+  .example-wrap { width: min(60vw, 240px); margin: 0 auto; }
+  .example-wrap svg { width: 100%; height: auto; display: block; }
+
+  button, .btn-primary { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+  .btn-primary:focus-visible {
+    outline: 3px solid var(--ink); outline-offset: 3px;
+  }
+  .btn-back {
+    font-weight: 800; color: var(--muted); text-decoration: none; font-size: .9rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 40px; }
+  .game-wrap { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; align-items: center; animation: fadeIn .3s ease; }
+
+  .hud {
+    width: 100%;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap; padding-top: 6px;
+  }
+  .hud-target {
+    background: var(--yellow); border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 8px 16px; transform: rotate(-1deg); flex: 1 1 auto; min-width: 200px;
+  }
+  .hud-label { display:block; font-weight:900; font-size:.65rem; text-transform:uppercase; letter-spacing:.06em; opacity:.7; }
+  .hud-coord { font-family: 'Chewy', cursive; font-size: clamp(1.5rem,6vw,2rem); display: block; }
+  .hud-right { display: flex; gap: 8px; }
+  .hud-stat {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 6px 12px; text-align: center; min-width: 74px;
+  }
+  .hud-stat-label { display:block; font-weight:900; font-size:.6rem; text-transform:uppercase; letter-spacing:.05em; color: var(--muted); }
+  .hud-stat-val { font-family: 'Chewy', cursive; font-size: 1.1rem; }
+
+  /* ══ VINKELVERKTØY ══ */
+  .protractor-wrap { width: min(94vw, 560px); margin: 0 auto; }
+  .protractor-slider {
+    display: block; width: 100%; aspect-ratio: 440 / 250;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    cursor: grab;
+  }
+  .protractor-slider:active { cursor: grabbing; }
+  .protractor-slider.locked { cursor: default; }
+  .protractor-slider svg { width: 100%; height: 100%; display: block; }
+  .protractor-slider:focus-visible {
+    outline: 3px solid var(--ink); outline-offset: 6px;
+  }
+
+  .p-body   { fill: var(--card); stroke: var(--ink); stroke-width: 4; }
+  .p-tick   { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; }
+  .p-label  { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 17px; fill: var(--ink); }
+  .p-fixed-arm { stroke: var(--ink); stroke-width: 8; stroke-linecap: round; }
+  .p-movable-arm { stroke: var(--ink); stroke-width: 8; stroke-linecap: round; }
+  .p-reference-arm {
+    stroke: var(--green); stroke-width: 6; stroke-linecap: round;
+    stroke-dasharray: 11 9; opacity: 0; transition: opacity .5s ease;
+  }
+  .p-reference-arm.show { opacity: 1; }
+  .p-pivot  { fill: var(--ink); }
+  .p-handle-hit { fill: transparent; }
+  .p-handle { fill: var(--yellow); stroke: var(--ink); stroke-width: 4; }
+
+  .lock-actions { width: 100%; display: flex; justify-content: center; }
+
+  .result-panel {
+    width: 100%; background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; display: flex; flex-direction: column; gap: 10px;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .result-panel[hidden] { display: none; }
+  .result-panel.show { opacity: 1; transform: translateY(0); }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: .95rem; }
+  .result-row strong { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+  .result-message {
+    font-weight: 800; font-size: 1rem; padding-top: 4px; border-top: 3px solid var(--gridline);
+    display: flex; align-items: center; gap: 8px; justify-content: center; text-align: center;
+  }
+  .precision-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); color: #fff; font-size: .8rem; font-weight: 900;
+    transform: scale(0);
+  }
+  .precision-badge[hidden] { display: none; }
+  .precision-badge.show { animation: badgePop .35s ease forwards; }
+  @keyframes badgePop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .result-points {
+    font-family: 'Chewy', cursive; font-size: 1.4rem; text-align: center;
+  }
+
+  .example-line { display: flex; align-items: center; gap: 6px; justify-content: center; }
+
+  /* ══ SLUTTSKJERM ══ */
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+
+  footer {
+    text-align: center; padding: 24px; color: var(--muted);
+    font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(43,33,24,.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .result-panel, .precision-badge, .p-reference-arm {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">📐</div>
+      <h1>Vinkeljakten</h1>
+      <p>Dra armen til riktig vinkel. Du får en målvinkel, og skal anslå den så presist du kan — uten å se tallet mens du drar.</p>
+    </div>
+    <div class="card">
+      <h2>Slik spiller du</h2>
+      <div class="example-line">
+        <div class="example-wrap">
+          <div class="example-label">Eksempel: 90°</div>
+          <svg id="exampleSvg" viewBox="0 0 440 250" role="img" aria-label="Eksempel på en rett vinkel: armen peker rett opp fra dreiepunktet, altså 90 grader."></svg>
+        </div>
+      </div>
+      <p style="font-weight:700; font-size:.9rem; color:var(--muted); margin-top:10px;">
+        10 oppgaver. Du roterer den bevegelige armen med finger, mus eller piltaster og trykker «Lås vinkelen» når du er fornøyd.
+      </p>
+    </div>
+    <button class="btn-primary" id="btn-start">Start</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="hud">
+      <div class="hud-target">
+        <span class="hud-label" id="hudTaskLabel">Oppgave 1 av 10</span>
+        <span class="hud-coord">Lag <span id="targetDisplay">70°</span></span>
+      </div>
+      <div class="hud-right">
+        <div class="hud-stat">
+          <span class="hud-stat-label">Poeng</span>
+          <span class="hud-stat-val" id="hudScore">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="protractor-wrap">
+      <div class="protractor-slider"
+           id="angleSlider"
+           tabindex="0"
+           role="slider"
+           aria-orientation="horizontal"
+           aria-valuemin="0"
+           aria-valuemax="180"
+           aria-valuenow="0"
+           aria-label="Roterbar vinkelarm. Dra med finger eller mus, eller bruk venstre og høyre piltast (Shift for 5 grader av gangen). Trykk Enter for å låse svaret.">
+        <svg id="protractorSvg" viewBox="0 0 440 250" aria-hidden="true"></svg>
+      </div>
+    </div>
+
+    <div class="lock-actions">
+      <button class="btn-primary" id="btnLock">Lås vinkelen</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel" hidden>
+      <div class="result-row"><span>Målvinkel</span><strong id="resTarget">70°</strong></div>
+      <div class="result-row"><span>Din vinkel</span><strong id="resPlayer">68°</strong></div>
+      <div class="result-row"><span>Avvik</span><strong id="resDeviation">2°</strong></div>
+      <div class="result-message">
+        <span id="resMessage">Perfekt!</span>
+        <span class="precision-badge" id="precisionBadge" hidden aria-hidden="true">✓</span>
+      </div>
+      <div class="result-points" id="resPoints">+3 poeng</div>
+      <button class="btn-primary" id="btnNext">Neste oppgave</button>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">📐🏁</div>
+      <h1>Runden er ferdig!</h1>
+      <p>Her er resultatet ditt fra 10 oppgaver.</p>
+    </div>
+    <div class="card result-card">
+      <div class="result-row"><span>Totalpoeng</span><strong id="endScore">0 av 30</strong></div>
+      <div class="result-row"><span>Gjennomsnittlig avvik</span><strong id="endAvg">0°</strong></div>
+      <div class="result-row"><span>Beste forsøk</span><strong id="endBest">0°</strong></div>
+    </div>
+    <button class="btn-primary" id="btn-again">Spill igjen</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+
+/* ── PROTRAKTORGEOMETRI (delt mellom eksempel og interaktivt verktøy) ── */
+const PIVOT = { x: 220, y: 220 };
+const ARC_R = 172;
+const ARM_LEN = 152;
+const TICK_IN = 160;
+const TICK_OUT = 186;
+const LABEL_R = 202;
+const HANDLE_R = 11;
+const HANDLE_HIT_R = 28;
+
+function pt(angleDeg, radius) {
+  const rad = angleDeg * Math.PI / 180;
+  return { x: PIVOT.x + radius * Math.cos(rad), y: PIVOT.y - radius * Math.sin(rad) };
+}
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(NS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function buildStaticBase(svg) {
+  const body = pt(180, ARC_R);
+  const bodyEnd = pt(0, ARC_R);
+  svg.appendChild(svgEl('path', {
+    d: `M ${body.x} ${body.y} A ${ARC_R} ${ARC_R} 0 0 1 ${bodyEnd.x} ${bodyEnd.y} L ${PIVOT.x} ${PIVOT.y} Z`,
+    class: 'p-body'
+  }));
+  [0, 90, 180].forEach(a => {
+    const inner = pt(a, TICK_IN), outer = pt(a, TICK_OUT), lp = pt(a, LABEL_R);
+    svg.appendChild(svgEl('line', { x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y, class: 'p-tick' }));
+    const label = svgEl('text', { x: lp.x, y: lp.y, class: 'p-label', 'text-anchor': 'middle', 'dominant-baseline': 'middle' });
+    label.textContent = a + '°';
+    svg.appendChild(label);
+  });
+  const fixedEnd = pt(0, ARM_LEN);
+  svg.appendChild(svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: fixedEnd.x, y2: fixedEnd.y, class: 'p-fixed-arm' }));
+}
+
+/* ── STATISK EKSEMPEL (90°) på startskjermen ── */
+(function buildExample() {
+  const svg = $('exampleSvg');
+  buildStaticBase(svg);
+  const p = pt(90, ARM_LEN);
+  svg.appendChild(svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: p.x, y2: p.y, class: 'p-movable-arm' }));
+  svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 7, class: 'p-pivot' }));
+  svg.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: HANDLE_R, class: 'p-handle' }));
+})();
+
+/* ── INTERAKTIVT VERKTØY ── */
+const slider = $('angleSlider');
+const svg = $('protractorSvg');
+buildStaticBase(svg);
+svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 7, class: 'p-pivot' }));
+
+const refArm = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x, y2: PIVOT.y, class: 'p-reference-arm' });
+svg.appendChild(refArm);
+const movArm = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x + ARM_LEN, y2: PIVOT.y, class: 'p-movable-arm' });
+svg.appendChild(movArm);
+const handleHit = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_HIT_R, class: 'p-handle-hit' });
+svg.appendChild(handleHit);
+const handleDot = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_R, class: 'p-handle' });
+svg.appendChild(handleDot);
+
+let angleDeg = 0;
+let dragging = false;
+let locked = false;
+
+function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+function renderArm() {
+  const p = pt(angleDeg, ARM_LEN);
+  movArm.setAttribute('x2', p.x); movArm.setAttribute('y2', p.y);
+  handleHit.setAttribute('cx', p.x); handleHit.setAttribute('cy', p.y);
+  handleDot.setAttribute('cx', p.x); handleDot.setAttribute('cy', p.y);
+  slider.setAttribute('aria-valuenow', String(Math.round(angleDeg)));
+}
+
+function pointerAngle(evt) {
+  const rect = svg.getBoundingClientRect();
+  const scaleX = 440 / rect.width, scaleY = 250 / rect.height;
+  const x = (evt.clientX - rect.left) * scaleX;
+  const y = (evt.clientY - rect.top) * scaleY;
+  const dx = x - PIVOT.x, dy = PIVOT.y - y;
+  let ang = Math.atan2(dy, dx) * 180 / Math.PI;
+  if (ang < 0) ang = dx >= 0 ? 0 : 180;
+  return clamp(ang, 0, 180);
+}
+
+slider.addEventListener('pointerdown', e => {
+  if (locked) return;
+  dragging = true;
+  slider.setPointerCapture(e.pointerId);
+  angleDeg = pointerAngle(e);
+  renderArm();
+  e.preventDefault();
+});
+slider.addEventListener('pointermove', e => {
+  if (!dragging || locked) return;
+  angleDeg = pointerAngle(e);
+  renderArm();
+});
+function endDrag() { dragging = false; }
+slider.addEventListener('pointerup', endDrag);
+slider.addEventListener('pointercancel', endDrag);
+
+slider.addEventListener('keydown', e => {
+  if (locked) return;
+  const step = e.shiftKey ? 5 : 1;
+  if (e.key === 'ArrowRight') { angleDeg = clamp(angleDeg + step, 0, 180); renderArm(); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft') { angleDeg = clamp(angleDeg - step, 0, 180); renderArm(); e.preventDefault(); }
+  else if (e.key === 'Enter') { e.preventDefault(); lockAngle(); }
+});
+
+/* ── OPPGAVEGENERERING ──
+   1–3: kjente referansevinkler, 4–7: multipler av 5°, 8–10: vilkårlige
+   hele grader. Ingen målvinkel gjentas i samme runde. */
+const REFERENCE_ANGLES = [30, 45, 60, 90, 120, 135, 150];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildRound() {
+  const used = new Set();
+  const round = [];
+
+  shuffle(REFERENCE_ANGLES).slice(0, 3).forEach(a => { round.push(a); used.add(a); });
+
+  const multiplesPool = [];
+  for (let a = 5; a < 180; a += 5) if (!used.has(a)) multiplesPool.push(a);
+  shuffle(multiplesPool).slice(0, 4).forEach(a => { round.push(a); used.add(a); });
+
+  while (round.length < 10) {
+    const candidate = 1 + Math.floor(Math.random() * 179);
+    if (!used.has(candidate)) { round.push(candidate); used.add(candidate); }
+  }
+
+  return round;
+}
+
+function scoreFor(deviation) {
+  if (deviation <= 2) return { points: 3, message: 'Perfekt!' };
+  if (deviation <= 5) return { points: 2, message: 'Veldig nær!' };
+  if (deviation <= 10) return { points: 1, message: 'Nesten!' };
+  return { points: 0, message: 'Prøv å se hvor den riktige vinkelen ligger.' };
+}
+
+/* ── SPILLTILSTAND ── */
+let round = [];
+let taskIndex = 0;
+let totalScore = 0;
+let deviations = [];
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+
+function startGame() {
+  round = buildRound();
+  taskIndex = 0;
+  totalScore = 0;
+  deviations = [];
+  $('hudScore').textContent = '0';
+  showScreen('screen-game');
+  loadTask();
+}
+
+function loadTask() {
+  if (taskIndex >= round.length) { endGame(); return; }
+  locked = false;
+  angleDeg = 0;
+  dragging = false;
+  slider.classList.remove('locked');
+  slider.removeAttribute('aria-disabled');
+  refArm.classList.remove('show');
+  renderArm();
+
+  const target = round[taskIndex];
+  $('hudTaskLabel').textContent = 'Oppgave ' + (taskIndex + 1) + ' av ' + round.length;
+  $('targetDisplay').textContent = target + '°';
+
+  $('btnLock').hidden = false;
+  $('btnLock').disabled = false;
+  $('resultPanel').hidden = true;
+  $('resultPanel').classList.remove('show');
+  $('precisionBadge').hidden = true;
+  $('precisionBadge').classList.remove('show');
+  $('srAnnounce').textContent = '';
+}
+
+function lockAngle() {
+  if (locked) return;
+  locked = true;
+  slider.classList.add('locked');
+  slider.setAttribute('aria-disabled', 'true');
+
+  const rounded = Math.round(angleDeg);
+  angleDeg = rounded;
+  renderArm();
+
+  const target = round[taskIndex];
+  const deviation = Math.abs(target - rounded);
+  const { points, message } = scoreFor(deviation);
+  totalScore += points;
+  deviations.push(deviation);
+  $('hudScore').textContent = String(totalScore);
+
+  const refPt = pt(target, ARM_LEN);
+  refArm.setAttribute('x2', refPt.x);
+  refArm.setAttribute('y2', refPt.y);
+  requestAnimationFrame(() => refArm.classList.add('show'));
+
+  $('resTarget').textContent = target + '°';
+  $('resPlayer').textContent = rounded + '°';
+  $('resDeviation').textContent = deviation + '°';
+  $('resMessage').textContent = message;
+  $('resPoints').textContent = '+' + points + ' poeng';
+
+  const badge = $('precisionBadge');
+  if (deviation <= 2) { badge.hidden = false; requestAnimationFrame(() => badge.classList.add('show')); }
+  else { badge.hidden = true; badge.classList.remove('show'); }
+
+  $('resultPanel').hidden = false;
+  requestAnimationFrame(() => $('resultPanel').classList.add('show'));
+  $('btnLock').hidden = true;
+
+  $('srAnnounce').textContent =
+    'Målvinkel ' + target + ' grader. Din vinkel ' + rounded + ' grader. Avvik ' + deviation + ' grader. ' + message + ' ' + points + ' poeng.';
+}
+
+function endGame() {
+  const avg = deviations.reduce((s, d) => s + d, 0) / deviations.length;
+  const best = Math.min(...deviations);
+  $('endScore').textContent = totalScore + ' av ' + (round.length * 3);
+  $('endAvg').textContent = (Math.round(avg * 10) / 10) + '°';
+  $('endBest').textContent = best + '°';
+  showScreen('screen-end');
+}
+
+$('btn-start').addEventListener('click', startGame);
+$('btnLock').addEventListener('click', lockAngle);
+$('btnNext').addEventListener('click', () => { taskIndex++; loadTask(); });
+$('btn-again').addEventListener('click', startGame);
+
+renderArm();
+</script>
+</body>
+</html>
