@@ -146,7 +146,7 @@
   /* ══ BORGSCENEN ══ */
   .scene-wrap { width: min(94vw, 560px); margin: 0 auto; }
   .scene-frame {
-    position: relative; width: 100%; aspect-ratio: 440 / 260;
+    position: relative; width: 100%; aspect-ratio: 440 / 250;
     background:
       radial-gradient(circle at 20% 12%, rgba(255,255,255,.6) 0 2px, transparent 3px),
       radial-gradient(circle at 70% 18%, rgba(255,255,255,.5) 0 2px, transparent 3px),
@@ -156,41 +156,168 @@
   }
 
   .king-tower {
-    position: absolute; top: 4px; right: 4px; z-index: 6;
-    display: flex; flex-direction: column; align-items: center;
+    position: absolute; top: 6px; right: 8px; z-index: 6;
     pointer-events: none;
   }
-  .king-face {
-    display: block; font-size: clamp(1.9rem, 7vw, 2.6rem);
-    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.5));
+
+  /* ── KONGEN (pixelfigur) ── */
+  .king {
+    position: relative; display: block;
+    font-size: clamp(8px, 2.7vw, 13px);
+    width: 4.6em; height: 5.6em;
     transform-origin: bottom center;
-    animation: king-idle 2.4s steps(2,end) infinite;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.5));
+    animation: king-idle 2.8s steps(2,end) infinite;
   }
-  @keyframes king-idle { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-2px); } }
-  .king.cheer .king-face { animation: king-cheer .9s steps(5,end); }
-  .king.nod .king-face   { animation: king-nod .7s steps(4,end); }
-  .king.wince .king-face { animation: king-wince .7s steps(4,end); }
-  .king.panic .king-face { animation: king-panic .9s steps(6,end); }
-  @keyframes king-cheer { 0%,100%{ transform: translateY(0) rotate(0) scale(1); } 25%{ transform: translateY(-9px) rotate(-10deg) scale(1.1); } 55%{ transform: translateY(-2px) rotate(9deg) scale(1.05); } 80%{ transform: translateY(-6px) rotate(-5deg) scale(1.08); } }
-  @keyframes king-nod { 0%,100%{ transform: rotate(0); } 50%{ transform: rotate(8deg) translateY(2px); } }
-  @keyframes king-wince { 0%,100%{ transform: translateX(0) rotate(0); } 25%{ transform: translateX(-4px) rotate(-6deg); } 75%{ transform: translateX(4px) rotate(6deg); } }
-  @keyframes king-panic { 0%,100%{ transform: translate(0,0) rotate(0); } 16%{ transform: translate(-5px,0) rotate(-9deg); } 33%{ transform: translate(5px,-2px) rotate(9deg); } 50%{ transform: translate(-4px,0) rotate(-6deg); } 66%{ transform: translate(4px,-2px) rotate(6deg); } }
+  @keyframes king-idle { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-3px); } }
+  .king-body {
+    position: absolute; left: .5em; bottom: 0; width: 3.6em; height: 2.6em;
+    background: #b91c1c; border: .15em solid var(--line);
+    clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
+  }
+  .king-body::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: .5em;
+    background: var(--gold); border-bottom: .15em solid var(--line);
+  }
+  .king-head {
+    position: absolute; left: 1.3em; bottom: 2.3em; width: 2em; height: 1.7em;
+    background: #ffd6a5; border: .15em solid var(--line);
+  }
+  .king-beard {
+    position: absolute; left: 1.3em; bottom: 2.2em; width: 2em; height: .9em;
+    background: #e9e9e9; border: .15em solid var(--line); border-top: none;
+    clip-path: polygon(0 0, 100% 0, 82% 100%, 18% 100%);
+  }
+  .king-face { position: absolute; left: 1.75em; bottom: 2.95em; width: 1.1em; height: .5em; }
+  .king-face::before { content: ''; position: absolute; left: 0; top: 0; width: .26em; height: .26em; background: #16121a; box-shadow: .56em 0 0 #16121a; }
+  .king-face::after { content: ''; position: absolute; left: .18em; top: .38em; width: .55em; height: .2em; background: #8a3030; border-radius: 0 0 .3em .3em; }
+  .king-crown {
+    position: absolute; left: 1.1em; bottom: 3.7em; width: 2.4em; height: 1em;
+    background: var(--gold); border: .15em solid var(--line);
+    clip-path: polygon(0 100%, 0 40%, 18% 100%, 30% 15%, 50% 100%, 70% 15%, 82% 100%, 100% 40%, 100% 100%);
+  }
+  .king-crown::after {
+    content: ''; position: absolute; left: 50%; top: -.28em; width: .34em; height: .34em;
+    background: #ff4b4b; border: .1em solid var(--line); border-radius: 50%; transform: translateX(-50%);
+  }
+  .king-arm {
+    position: absolute; left: 3.5em; bottom: 1.55em; width: 1.4em; height: .5em;
+    background: #b91c1c; border: .14em solid var(--line);
+    transform-origin: left center; transform: rotate(-12deg);
+    transition: transform .25s ease;
+  }
+  .king.cheer  { animation: king-cheer 1.3s steps(5,end); }
+  .king.nod    { animation: king-nod 1s steps(4,end); }
+  .king.wince  { animation: king-wince 1s steps(4,end); }
+  .king.panic  { animation: king-panic 1.3s steps(6,end); }
+  .king.cheer .king-arm { transform: rotate(-105deg); }
+  .king.nod   .king-arm { transform: rotate(-45deg); }
+  .king.wince .king-arm { transform: rotate(12deg); }
+  .king.panic .king-arm { transform: rotate(-125deg); }
+  .king.wince .king-face::after, .king.panic .king-face::after {
+    border-radius: .3em .3em 0 0; background: #16121a;
+  }
+  @keyframes king-cheer { 0%,100%{ transform: translateY(0) rotate(0) scale(1); } 25%{ transform: translateY(-12px) rotate(-9deg) scale(1.08); } 55%{ transform: translateY(-3px) rotate(8deg) scale(1.04); } 80%{ transform: translateY(-8px) rotate(-5deg) scale(1.06); } }
+  @keyframes king-nod   { 0%,100%{ transform: rotate(0); } 50%{ transform: rotate(9deg) translateY(3px); } }
+  @keyframes king-wince { 0%,100%{ transform: translateX(0) rotate(0); } 25%{ transform: translateX(-5px) rotate(-6deg); } 75%{ transform: translateX(5px) rotate(6deg); } }
+  @keyframes king-panic { 0%,100%{ transform: translate(0,0) rotate(0); } 16%{ transform: translate(-6px,0) rotate(-9deg); } 33%{ transform: translate(6px,-3px) rotate(9deg); } 50%{ transform: translate(-5px,0) rotate(-6deg); } 66%{ transform: translate(5px,-3px) rotate(6deg); } }
 
   .king-bubble {
-    position: absolute; top: -6px; right: 46px; min-width: 90px; max-width: 130px;
+    position: absolute; top: -.6em; right: 4.4em; min-width: 90px; max-width: 130px;
     padding: 5px 8px; background: var(--ink); color: #151515;
     border: 3px solid var(--line); font-size: 10px; font-weight: 700; text-align: center;
     box-shadow: 3px 3px 0 var(--line);
     opacity: 0; transform: scale(.7) rotate(-4deg);
     pointer-events: none; z-index: 7;
   }
-  .king-bubble.show { animation: bubble-pop .95s ease forwards; }
+  .king-bubble.show { animation: bubble-pop 1.3s ease forwards; }
   @keyframes bubble-pop {
     0%   { opacity: 0; transform: scale(.5) rotate(-8deg); }
-    18%  { opacity: 1; transform: scale(1.12) rotate(-2deg); }
-    30%,78% { opacity: 1; transform: scale(1) rotate(-2deg); }
+    16%  { opacity: 1; transform: scale(1.12) rotate(-2deg); }
+    26%,80% { opacity: 1; transform: scale(1) rotate(-2deg); }
     100% { opacity: 0; transform: scale(.8) translateY(-8px) rotate(3deg); }
   }
+
+  /* ── TROLLMANNEN (pixelfigur, står ved dreiepunktet) ── */
+  .wizard {
+    position: absolute; left: 50%; top: 88%;
+    transform: translate(-50%, -100%);
+    font-size: clamp(8px, 2.8vw, 13px);
+    width: 4.4em; height: 5.2em;
+    z-index: 3; pointer-events: none;
+    transform-origin: bottom center;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.45));
+    animation: wiz-idle 3s steps(2,end) infinite;
+  }
+  @keyframes wiz-idle { 0%,100%{ transform: translate(-50%,-100%) rotate(0); } 50%{ transform: translate(-50%,-100%) rotate(-1deg); } }
+  .wiz-body {
+    position: absolute; left: .6em; bottom: 0; width: 3.2em; height: 2.5em;
+    background: #2c3e78; border: .15em solid var(--line);
+    clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
+  }
+  .wiz-body::after {
+    content: ''; position: absolute; left: 0; right: 0; top: .3em; height: .32em;
+    background: var(--gold); opacity: .85;
+  }
+  .wiz-head {
+    position: absolute; left: 1.5em; bottom: 2.2em; width: 1.6em; height: 1.4em;
+    background: #f0c39a; border: .15em solid var(--line);
+  }
+  .wiz-beard {
+    position: absolute; left: 1.4em; bottom: 2.05em; width: 1.8em; height: 1em;
+    background: #e9e9e9; border: .15em solid var(--line); border-top: none;
+    clip-path: polygon(0 0, 100% 0, 68% 100%, 32% 100%);
+  }
+  .wiz-hat {
+    position: absolute; left: .9em; bottom: 3.35em; width: 2.6em; height: 1.85em;
+    background: #2c3e78; border: .15em solid var(--line);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+  }
+  .wiz-hat::before {
+    content: ''; position: absolute; left: -.35em; right: -.35em; bottom: -.2em; height: .4em;
+    background: #2c3e78; border: .14em solid var(--line);
+  }
+  .wiz-hat::after {
+    content: ''; position: absolute; left: 1.05em; top: .3em; width: .32em; height: .32em;
+    background: var(--gold); border: .08em solid var(--line); border-radius: 50%;
+  }
+  .wizard.casting { animation: wiz-cast .9s steps(4,end); }
+  @keyframes wiz-cast {
+    0%,100% { transform: translate(-50%,-100%) rotate(0) scale(1); }
+    30% { transform: translate(-50%,-100%) rotate(-5deg) scale(1.05); }
+    60% { transform: translate(-50%,-100%) rotate(4deg) scale(1.02); }
+  }
+
+  /* ── DRAGEN (pixelfigur) ── */
+  .dg-body {
+    position: absolute; left: .9em; top: .9em; width: 2.6em; height: 1.5em;
+    background: #2f9e5c; border: .14em solid var(--line);
+    clip-path: polygon(0 30%, 15% 0, 85% 0, 100% 30%, 100% 100%, 0 100%);
+  }
+  .dg-belly { position: absolute; left: 1.1em; top: 1.55em; width: 2.2em; height: .65em; background: #cdf3da; }
+  .dg-head { position: absolute; left: 3em; top: .6em; width: 1.3em; height: 1.1em; background: #2f9e5c; border: .14em solid var(--line); }
+  .dg-snout { position: absolute; left: 4.1em; top: 1em; width: .7em; height: .5em; background: #2f9e5c; border: .14em solid var(--line); border-left: none; }
+  .dg-eye { position: absolute; left: 3.5em; top: .95em; width: .25em; height: .25em; background: #fef08a; }
+  .dg-horn {
+    position: absolute; left: 3.1em; top: .12em; width: 0; height: 0;
+    border-left: .2em solid transparent; border-right: .2em solid transparent; border-bottom: .4em solid #1d7a44;
+  }
+  .dg-wing {
+    position: absolute; left: 1.2em; top: .05em; width: 1.6em; height: 1.1em;
+    background: #3fbf72; border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 30% 0, 60% 40%, 100% 0, 70% 100%);
+    transform-origin: bottom left;
+    animation: dg-flap .7s steps(2,end) infinite;
+  }
+  @keyframes dg-flap { 0%,100%{ transform: rotate(0deg); } 50%{ transform: rotate(-16deg); } }
+  .dg-tail {
+    position: absolute; left: .1em; top: 1.3em; width: 1em; height: .5em;
+    background: #2f9e5c; border: .14em solid var(--line); border-right: none;
+    clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  }
+  .dg-leg { position: absolute; bottom: .35em; width: .35em; height: .6em; background: #2f9e5c; border: .12em solid var(--line); }
+  .dg-leg.l1 { left: 1.5em; }
+  .dg-leg.l2 { left: 2.6em; }
 
   .starfield { position: absolute; inset: 0; pointer-events: none; }
   .star { position: absolute; background: #fff; border-radius: 50%; }
@@ -215,17 +342,11 @@
   .c-tick      { stroke: var(--magic-glow); stroke-width: 4; stroke-linecap: round; }
   .c-label     { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 15px; fill: var(--snow); }
   .c-horizon   { stroke: var(--magic-glow); stroke-width: 2.5; opacity: .4; }
-  .c-pivot     { fill: var(--stone3); stroke: var(--line); stroke-width: 3; }
 
-  .c-wand {
-    stroke: #7a4a26; stroke-width: 9; stroke-linecap: round;
-    transition: stroke .12s ease;
-  }
-  .c-wand.firing { stroke: var(--magic-glow); filter: drop-shadow(0 0 10px rgba(217,194,255,.9)); }
-  .c-wand-gem { fill: var(--magic); stroke: var(--line); stroke-width: 3; filter: drop-shadow(0 0 5px rgba(155,92,255,.8)); }
-
+  /* Trollmannsstaven: én enkelt linje fra dreiepunktet ut til kula.
+     Staven ER siktet — ingen egen "kanonløp"-del. */
   .c-sight {
-    stroke: var(--magic); stroke-width: 4; stroke-linecap: round;
+    stroke: var(--magic); stroke-width: 6; stroke-linecap: round;
     filter: drop-shadow(0 0 3px rgba(155,92,255,.7));
     opacity: 1; transition: opacity .15s ease;
   }
@@ -252,9 +373,10 @@
   .dragon-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
   .dragon-sprite {
     position: absolute; left: 50%; top: 50%;
+    width: 4.6em; height: 3em;
+    font-size: clamp(9px, 4vw, 15px);
     transform: translate(-50%,-50%) scaleX(-1);
-    font-size: clamp(2.1rem, 9.5vw, 3.3rem);
-    filter: drop-shadow(0 0 8px rgba(255,139,43,.5));
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.4)) drop-shadow(0 0 8px rgba(255,139,43,.5));
     transition: opacity .3s ease, transform .3s ease;
     opacity: 0;
   }
@@ -343,8 +465,8 @@
 
   @media (prefers-reduced-motion: reduce) {
     *, .result-panel, .precision-badge, .c-reference, .star.twinkle,
-    .dragon-sprite, .fx-burst, .fx-shard, .fx-ring, .fx-mini,
-    .c-wand, .c-sight, .c-orb, .projectile, .king-face, .king-bubble {
+    .dragon-sprite, .dg-wing, .fx-burst, .fx-shard, .fx-ring, .fx-mini,
+    .c-sight, .c-orb, .projectile, .king, .king-bubble, .wizard {
       animation-duration: .01ms !important; transition-duration: .01ms !important;
     }
   }
@@ -403,8 +525,20 @@
         <div class="king-tower">
           <div class="king" id="king">
             <span class="king-bubble" id="kingBubble"></span>
-            <span class="king-face">🤴</span>
+            <span class="king-crown"></span>
+            <span class="king-head"></span>
+            <span class="king-beard"></span>
+            <span class="king-face"></span>
+            <span class="king-body"></span>
+            <span class="king-arm"></span>
           </div>
+        </div>
+
+        <div class="wizard" id="wizard" aria-hidden="true">
+          <span class="wiz-hat"></span>
+          <span class="wiz-head"></span>
+          <span class="wiz-beard"></span>
+          <span class="wiz-body"></span>
         </div>
 
         <div class="cannon-slider"
@@ -421,7 +555,18 @@
 
         <div class="projectile" id="projectile" aria-hidden="true"></div>
         <div class="dragon-layer">
-          <div class="dragon-sprite" id="dragon" aria-hidden="true">🐉</div>
+          <div class="dragon-sprite" id="dragon" aria-hidden="true">
+            <span class="dg-tail"></span>
+            <span class="dg-wing"></span>
+            <span class="dg-leg l1"></span>
+            <span class="dg-leg l2"></span>
+            <span class="dg-body"></span>
+            <span class="dg-belly"></span>
+            <span class="dg-head"></span>
+            <span class="dg-horn"></span>
+            <span class="dg-snout"></span>
+            <span class="dg-eye"></span>
+          </div>
         </div>
         <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
       </div>
@@ -482,7 +627,6 @@ const LABEL_R = 202;
 const HANDLE_R = 11;
 const HANDLE_HIT_R = 28;
 const ENTRY_R = 340; /* langt nok utenfor lerretet (440×250) på enhver vinkel */
-const WAND_LEN = 46;
 const SHOT_R = 250;
 
 function pctX(x) { return (x / 440) * 100; }
@@ -526,29 +670,12 @@ function buildStaticBase(svg) {
   });
 }
 
-/* Trollmannsstaven: en rund, trestamme-lignende stav med en glødende
-   magisk edelsten i tuppen, rotert med et SVG-transform. */
-function makeWand(angleDeg) {
-  const g = svgEl('g', { class: 'c-wand-group' });
-  const shaft = svgEl('line', { x1: PIVOT.x - 4, y1: PIVOT.y, x2: PIVOT.x + WAND_LEN, y2: PIVOT.y, class: 'c-wand' });
-  const gemPos = pt(0, WAND_LEN);
-  const gem = svgEl('circle', { cx: gemPos.x, cy: gemPos.y, r: 6, class: 'c-wand-gem' });
-  g.appendChild(shaft);
-  g.appendChild(gem);
-  g.setAttribute('transform', `rotate(${-angleDeg} ${PIVOT.x} ${PIVOT.y})`);
-  return { g, shaft };
-}
-
 /* ── STATISK EKSEMPEL (90°) på startskjermen ── */
 (function buildExample() {
   const svg = $('exampleSvg');
   buildStaticBase(svg);
-  const wand = makeWand(90);
-  svg.appendChild(wand.g);
-  svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 9, class: 'c-pivot' }));
-  const wandTip = pt(90, WAND_LEN);
   const sightTip = pt(90, ARM_LEN);
-  svg.appendChild(svgEl('line', { x1: wandTip.x, y1: wandTip.y, x2: sightTip.x, y2: sightTip.y, class: 'c-sight' }));
+  svg.appendChild(svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: sightTip.x, y2: sightTip.y, class: 'c-sight' }));
   svg.appendChild(svgEl('circle', { cx: sightTip.x, cy: sightTip.y, r: HANDLE_R, class: 'c-orb' }));
 })();
 
@@ -577,15 +704,12 @@ const slider = $('angleSlider');
 const svg = $('cannonSvg');
 buildStaticBase(svg);
 
-const wand = makeWand(0);
-svg.appendChild(wand.g);
-svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 9, class: 'c-pivot' }));
-
 const refArm = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x, y2: PIVOT.y, class: 'c-reference' });
 svg.appendChild(refArm);
-/* Siktelinjen + kula: den delen spilleren drar i. Forsvinner idet
+/* Trollmannsstaven ER siktet: én enkelt linje fra dreiepunktet (der
+   trollmannen står) ut til kula spilleren drar i. Forsvinner idet
    trylleformen kastes — se lockAngle(). */
-const sightLine = svgEl('line', { x1: PIVOT.x + WAND_LEN, y1: PIVOT.y, x2: PIVOT.x + ARM_LEN, y2: PIVOT.y, class: 'c-sight' });
+const sightLine = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x + ARM_LEN, y2: PIVOT.y, class: 'c-sight' });
 svg.appendChild(sightLine);
 const orbHit = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_HIT_R, class: 'c-orb-hit' });
 svg.appendChild(orbHit);
@@ -596,6 +720,7 @@ const dragonEl = $('dragon');
 const fxLayer = $('fxLayer');
 const projectileEl = $('projectile');
 const kingEl = $('king');
+const wizardEl = $('wizard');
 const kingBubble = $('kingBubble');
 
 /* ── LYD (Web Audio API, enkle og diskrete effekter — ingen filer) ── */
@@ -659,10 +784,7 @@ function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
 function clampPct(v) { return clamp(v, 6, 94); }
 
 function renderArm() {
-  const wandTip = pt(angleDeg, WAND_LEN);
   const sightTip = pt(angleDeg, ARM_LEN);
-  wand.g.setAttribute('transform', `rotate(${-angleDeg} ${PIVOT.x} ${PIVOT.y})`);
-  sightLine.setAttribute('x1', wandTip.x); sightLine.setAttribute('y1', wandTip.y);
   sightLine.setAttribute('x2', sightTip.x); sightLine.setAttribute('y2', sightTip.y);
   orbHit.setAttribute('cx', sightTip.x); orbHit.setAttribute('cy', sightTip.y);
   orbDot.setAttribute('cx', sightTip.x); orbDot.setAttribute('cy', sightTip.y);
@@ -780,7 +902,6 @@ function resetDragon() {
   dragonEl.classList.remove('visible', 'banished', 'fled');
   dragonEl.style.left = '50%';
   dragonEl.style.top = '50%';
-  dragonEl.textContent = '🐉';
   void dragonEl.offsetWidth;
   dragonEl.style.transition = '';
 }
@@ -802,7 +923,7 @@ function loadTask() {
   slider.classList.remove('locked');
   slider.removeAttribute('aria-disabled');
   refArm.classList.remove('show');
-  wand.shaft.classList.remove('firing');
+  wizardEl.classList.remove('casting');
   sightLine.classList.remove('hidden-aim');
   orbDot.classList.remove('hidden-aim');
   resetProjectile();
@@ -876,12 +997,12 @@ function crashIntoWall(leftPct, topPct) {
   crashSound();
 }
 
-/* Trylleformkulen: en liten lysende kule som skytes ut fra stavens
-   tupp og flyr rett fram langs den låste vinkelen. */
+/* Trylleformkulen: kula ved stavens tupp blir til en lysende kule som
+   flyr rett fram langs den låste vinkelen. */
 function fireProjectile(angleDeg) {
-  const start = pt(angleDeg, WAND_LEN);
+  const start = pt(angleDeg, ARM_LEN);
   const end = pt(angleDeg, SHOT_R);
-  const shotMs = REDUCED_MOTION ? 0 : 240;
+  const shotMs = REDUCED_MOTION ? 0 : 380;
 
   projectileEl.style.transition = 'none';
   projectileEl.style.left = pctX(start.x) + '%';
@@ -922,7 +1043,7 @@ function showKingReaction(points) {
       setTimeout(() => fx.remove(), 1000);
     }
   }
-  setTimeout(() => kingEl.classList.remove(anim), REDUCED_MOTION ? 0 : 950);
+  setTimeout(() => kingEl.classList.remove(anim), REDUCED_MOTION ? 0 : 1300);
 }
 
 function lockAngle() {
@@ -935,13 +1056,13 @@ function lockAngle() {
   angleDeg = rounded;
   renderArm();
 
-  /* Siktelinjen og kula forsvinner idet trylleformen kastes, og en
-     lysende kule skytes ut fra staven — det skal se ut som et
-     virkelig kast. */
+  /* Siktelinjen og kula forsvinner idet trylleformen kastes, trollmannen
+     kaster en trylleform, og en lysende kule skytes ut fra staven —
+     det skal se ut som et virkelig kast. */
   sightLine.classList.add('hidden-aim');
   orbDot.classList.add('hidden-aim');
-  wand.shaft.classList.add('firing');
-  setTimeout(() => wand.shaft.classList.remove('firing'), REDUCED_MOTION ? 0 : 220);
+  wizardEl.classList.add('casting');
+  setTimeout(() => wizardEl.classList.remove('casting'), REDUCED_MOTION ? 0 : 900);
   fireProjectile(rounded);
   castSound();
 
@@ -971,13 +1092,12 @@ function lockAngle() {
   const rimLeftPct = pctX(rimPt.x), rimTopPct = pctY(rimPt.y);
   const baseLeftPct = pctX(PIVOT.x), baseTopPct = pctY(PIVOT.y);
 
-  const flightMs = REDUCED_MOTION ? 0 : 950;
-  const resolveMs = REDUCED_MOTION ? 0 : 500;
+  const flightMs = REDUCED_MOTION ? 0 : 1400;
+  const resolveMs = REDUCED_MOTION ? 0 : 750;
 
   dragonEl.style.transition = 'none';
   dragonEl.style.left = entryLeftPct + '%';
   dragonEl.style.top = entryTopPct + '%';
-  dragonEl.textContent = '🐉';
   dragonEl.classList.remove('banished', 'fled');
   dragonEl.classList.add('visible');
   void dragonEl.offsetWidth;
