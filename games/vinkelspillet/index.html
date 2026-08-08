@@ -463,10 +463,92 @@
     font-weight: 700; font-size: .78rem; opacity: .8;
   }
 
+  /* ══ FINALE (iscenesatt sketsj i borgscenen) ══ */
+  .finale-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+
+  .finale-curtain {
+    position: absolute; left: 0; right: 0; top: 0; height: 0;
+    background:
+      repeating-linear-gradient(90deg, #b91c1c 0 14px, #7f1d1d 14px 28px),
+      linear-gradient(#ef4444, #7f1d1d);
+    border-bottom: .35em solid var(--gold);
+    box-shadow: 0 4px 0 var(--line);
+  }
+  .finale-curtain.drop  { animation: curtain-drop 1.7s steps(8,end) forwards; }
+  .finale-curtain.stuck { animation: curtain-stuck 2.4s steps(7,end) forwards; }
+  @keyframes curtain-drop  { 0%{ height:0; } 100%{ height:26%; } }
+  /* Teppet setter seg fast halvveis og rykker motvillig — poenget er at
+     det aldri kommer helt ned. */
+  @keyframes curtain-stuck {
+    0%{ height:0; } 40%{ height:15%; } 55%{ height:13%; }
+    70%{ height:16%; } 85%{ height:14%; } 100%{ height:15%; }
+  }
+
+  /* Mini-trollmenn som regner ned og danner en jublende folkemengde */
+  .mini-wiz {
+    position: absolute; bottom: 3%; width: 1.1em; height: 1.5em;
+    font-size: clamp(9px, 3vw, 14px);
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,.5));
+  }
+  .mini-wiz::before {
+    content: ''; position: absolute; left: .06em; top: 0; width: .95em; height: .75em;
+    background: #2c3e78; border: .14em solid var(--line);
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  }
+  .mini-wiz::after {
+    content: ''; position: absolute; left: .18em; top: .72em; width: .72em; height: .75em;
+    background: #2c3e78; border: .14em solid var(--line);
+  }
+  .mini-wiz.rain  { animation: mini-rain var(--fall-ms, 1300ms) cubic-bezier(.4,0,.7,1) forwards; }
+  .mini-wiz.cheer { animation: mini-cheer .5s steps(2,end) infinite; }
+  @keyframes mini-rain {
+    0%   { transform: translateY(var(--from, -220px)) rotate(0deg); opacity: 0; }
+    8%   { opacity: 1; }
+    100% { transform: translateY(0) rotate(360deg); opacity: 1; }
+  }
+  @keyframes mini-cheer { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-5px); } }
+
+  /* Drager som slår seg ned på murkronen som duer */
+  .finale-dragon { z-index: 5; }
+  .finale-dragon.peek { animation: dg-peek 2.4s ease-in-out forwards; }
+  @keyframes dg-peek { 0%{ top: 104%; } 28%,62%{ top: 78%; } 100%{ top: 104%; } }
+
+  .stolen-crown {
+    position: absolute; width: 1.5em; height: .7em; z-index: 6;
+    font-size: clamp(9px, 3.4vw, 15px);
+    background: var(--gold); border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 0 40%, 18% 100%, 30% 15%, 50% 100%, 70% 15%, 82% 100%, 100% 40%, 100% 100%);
+    transform: translate(-50%,-50%) scale(0);
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,.5));
+  }
+  .stolen-crown.pop { animation: crown-steal .7s steps(3,end) forwards; }
+  @keyframes crown-steal {
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(-40deg); }
+    60%  { transform: translate(-50%,-50%) scale(1.3) rotate(12deg); }
+    100% { transform: translate(-50%,-50%) scale(1) rotate(0); }
+  }
+
+  /* Løkke-varianter av kongens reaksjoner, til finalen */
+  .king.cheer-loop { animation: king-cheer 1.3s steps(5,end) infinite; }
+  .king.clap-loop  { animation: king-nod 1.2s steps(4,end) infinite; }
+  .king.panic-loop { animation: king-panic 1.2s steps(6,end) infinite; }
+  .king.cheer-loop .king-arm { transform: rotate(-105deg); }
+  .king.clap-loop  .king-arm { transform: rotate(-45deg); }
+  .king.panic-loop .king-arm { transform: rotate(-125deg); }
+  .king.panic-loop .king-face::after { border-radius: .3em .3em 0 0; background: #16121a; }
+  .king.crownless .king-crown { opacity: 0; transition: opacity .25s ease; }
+
+  .wizard.victory { animation: wiz-victory .8s steps(3,end) infinite; }
+  @keyframes wiz-victory {
+    0%,100% { transform: translate(-50%,-100%) translateY(0) rotate(0); }
+    50%     { transform: translate(-50%,-100%) translateY(-9px) rotate(-4deg); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     *, .result-panel, .precision-badge, .c-reference, .star.twinkle,
     .dragon-sprite, .dg-wing, .fx-burst, .fx-shard, .fx-ring, .fx-mini,
-    .c-sight, .c-orb, .projectile, .king, .king-bubble, .wizard {
+    .c-sight, .c-orb, .projectile, .king, .king-bubble, .wizard,
+    .finale-curtain, .mini-wiz, .stolen-crown, .finale-dragon {
       animation-duration: .01ms !important; transition-duration: .01ms !important;
     }
   }
@@ -508,7 +590,7 @@
     <div class="hud">
       <div class="hud-target">
         <span class="hud-label" id="hudTaskLabel">Drage 1 av 10</span>
-        <span class="hud-coord">Sikt: <span id="targetDisplay">70°</span></span>
+        <span class="hud-coord"><span id="aimPrefix">Sikt: </span><span id="targetDisplay">70°</span></span>
       </div>
       <div class="hud-right">
         <div class="hud-stat">
@@ -569,6 +651,7 @@
           </div>
         </div>
         <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+        <div class="finale-layer" id="finaleLayer" aria-hidden="true"></div>
       </div>
     </div>
 
@@ -595,9 +678,9 @@
 <!-- ════════ SLUTT ════════ -->
 <div class="screen" id="screen-end">
   <div class="center-wrap">
-    <div class="hero-emoji">🏰👑</div>
-    <div class="logo" style="font-size:clamp(1.7rem,6.5vw,2.6rem);"><span class="a">Borgen</span> <span class="b">står støtt!</span></div>
-    <p class="tagline">Her er resultatet ditt etter 10 drager.</p>
+    <div class="hero-emoji" id="endEmoji">🏰👑</div>
+    <div class="logo" id="endTitle" style="font-size:clamp(1.7rem,6.5vw,2.6rem);">Borgen står støtt!</div>
+    <p class="tagline" id="endSub">Her er resultatet ditt etter 10 drager.</p>
     <div class="panel result-card">
       <div class="result-row"><span>Totalpoeng</span><strong id="endScore">0 av 30</strong></div>
       <div class="result-row"><span>Gjennomsnittlig avvik</span><strong id="endAvg">0°</strong></div>
@@ -875,6 +958,48 @@ const KING_LINES = {
 };
 const KING_ANIM = { 3: 'cheer', 2: 'nod', 1: 'wince', 0: 'panic' };
 
+/* ── AVSLUTNINGER ──
+   Poengsummen bestemmer tonen (triumf / middels / katastrofe), og innenfor
+   hver tone trekkes én av flere varianter tilfeldig. 30/30 gir en egen,
+   sjelden avslutning. */
+const ENDINGS = {
+  perfekt: [
+    { emoji: '👑🧙', title: 'Legenden om vinkelmesteren', king: 'DU ER KONGE NÅ!',
+      sub: 'Kongen har abdisert på stående fot. Du fikk kronen. Du ba ikke om den.' },
+  ],
+  triumf: [
+    { emoji: '🏰👑', title: 'Rikets vinkelmester', king: 'TIL RIDDER MED DEG!',
+      sub: 'Kongen har allerede bestilt statue. I gull. Av seg selv.' },
+    { emoji: '🏰✨', title: 'Dragefri himmel', king: 'HIMMELEN ER MIN IGJEN!',
+      sub: 'Dragene har søkt asyl i nabokongeriket. Vinkelmessig uforsvarlig der også.' },
+    { emoji: '🏰🎉', title: 'Trollmannen får fri', king: 'TA HELGEN, MAGIKER!',
+      sub: 'Kongen har gitt deg fri på fredag. Han har glemt det innen torsdag.' },
+  ],
+  middels: [
+    { emoji: '🏰🧱', title: 'Muren står. Stort sett.', king: 'Vi... klarte oss.',
+      sub: 'Ingen omkom. Kongen kaller det en seier. Muromkostningene er en annen sak.' },
+    { emoji: '🏰🤷', title: 'Godkjent av kongen (så vidt)', king: 'Javel. Greit nok.',
+      sub: 'Kongen nikket. Det var mest for å få nakken til å knekke, men han nikket.' },
+    { emoji: '🏰📜', title: 'Delvis heroisk', king: 'Rådet vurderer saken.',
+      sub: 'Skjoldet holdt. Æren er fortsatt til behandling i rådet.' },
+  ],
+  katastrofe: [
+    { emoji: '🐉🛋️', title: 'Dragene har flyttet inn', king: 'DE HAR MED BAGASJE!',
+      sub: 'De har tatt med sofa. De blir til over påske.' },
+    { emoji: '🐉👑', title: 'Ny ledelse i borgen', king: 'DEN TOK KRONEN MIN!',
+      sub: 'Dragen har allerede innført nye åpningstider i tronsalen.' },
+    { emoji: '🐉📢', title: 'Kongen søker ny trollmann', king: 'VAKTER! ...VAKTER?',
+      sub: 'Stillingen er utlyst. Kravene er senket betraktelig.' },
+  ],
+};
+
+function pickEnding(score, maxScore) {
+  if (score >= maxScore) return Object.assign({ tier: 'perfekt' }, pickFrom(ENDINGS.perfekt));
+  const ratio = score / maxScore;
+  const tier = ratio >= 0.8 ? 'triumf' : ratio >= 0.4 ? 'middels' : 'katastrofe';
+  return Object.assign({ tier }, pickFrom(ENDINGS[tier]));
+}
+
 /* ── SPILLTILSTAND ── */
 let round = [];
 let taskIndex = 0;
@@ -888,6 +1013,7 @@ const showScreen = id => {
 
 function startGame() {
   initAudio();
+  resetFinale();
   round = buildRound();
   taskIndex = 0;
   totalScore = 0;
@@ -916,7 +1042,7 @@ function resetProjectile() {
 }
 
 function loadTask() {
-  if (taskIndex >= round.length) { endGame(); return; }
+  if (taskIndex >= round.length) { startFinale(); return; }
   locked = false;
   angleDeg = 0;
   dragging = false;
@@ -932,6 +1058,7 @@ function loadTask() {
 
   const target = round[taskIndex];
   $('hudTaskLabel').textContent = 'Drage ' + (taskIndex + 1) + ' av ' + round.length;
+  $('aimPrefix').textContent = 'Sikt: ';
   $('targetDisplay').textContent = target + '°';
 
   $('btnLock').hidden = false;
@@ -1146,9 +1273,172 @@ function lockAngle() {
     'Riktig vinkel ' + target + ' grader. Du siktet på ' + rounded + ' grader. Avvik ' + deviation + ' grader. ' + message + ' ' + points + ' poeng.';
 }
 
-function endGame() {
+/* ── FINALESKETSJEN ──
+   Spilles i borgscenen med figurene som allerede står der, før
+   resultatskjermen vises. */
+const FINALE_MS = REDUCED_MOTION ? 0 : 3800;
+const finaleLayer = $('finaleLayer');
+
+function resetFinale() {
+  finaleLayer.innerHTML = '';
+  kingEl.classList.remove('cheer-loop', 'clap-loop', 'panic-loop', 'crownless');
+  wizardEl.classList.remove('victory');
+  kingBubble.classList.remove('show');
+}
+
+function addCurtain(cls, delay) {
+  setTimeout(() => {
+    const c = document.createElement('div');
+    c.className = 'finale-curtain ' + cls;
+    finaleLayer.appendChild(c);
+  }, delay);
+}
+
+/* Klone dragen slik at finalen gjenbruker de samme pixeldelene. */
+function cloneDragon(extraClass) {
+  const d = dragonEl.cloneNode(true);
+  d.removeAttribute('id');
+  d.className = 'dragon-sprite finale-dragon visible' + (extraClass ? ' ' + extraClass : '');
+  d.style.transition = 'none';
+  return d;
+}
+
+function finaleTriumph() {
+  kingEl.classList.add('cheer-loop');
+  wizardEl.classList.add('victory');
+  addCurtain('drop', 250);
+
+  for (let i = 0; i < 14; i++) {
+    setTimeout(() => {
+      const m = document.createElement('div');
+      m.className = 'mini-wiz rain';
+      m.style.left = (5 + Math.random() * 88) + '%';
+      m.style.setProperty('--from', -(150 + Math.random() * 120) + 'px');
+      const fall = 1000 + Math.random() * 700;
+      m.style.setProperty('--fall-ms', fall + 'ms');
+      finaleLayer.appendChild(m);
+      setTimeout(() => { m.classList.remove('rain'); m.classList.add('cheer'); }, fall);
+    }, 500 + i * 110);
+  }
+
+  setTimeout(() => {
+    ['✨', '👑', '🎉'].forEach((icon, i) => {
+      for (let k = 0; k < 4; k++) {
+        const fx = document.createElement('span');
+        fx.className = 'fx-mini';
+        fx.textContent = icon;
+        fx.style.left = (12 + Math.random() * 76) + '%';
+        fx.style.top = (25 + Math.random() * 40) + '%';
+        fx.style.animationDelay = (i * 90 + k * 60) + 'ms';
+        finaleLayer.appendChild(fx);
+        requestAnimationFrame(() => fx.classList.add('pop'));
+      }
+    });
+  }, 1100);
+}
+
+function finaleMiddling() {
+  kingEl.classList.add('clap-loop');
+  addCurtain('stuck', 350);
+
+  /* Én drage titter så vidt opp bak muren, ser hvordan det står til,
+     og synker ned igjen uten å si noe. */
+  setTimeout(() => {
+    const d = cloneDragon('peek');
+    d.style.left = '24%';
+    d.style.top = '104%';
+    finaleLayer.appendChild(d);
+    setTimeout(() => d.remove(), 2500);
+  }, 1250);
+}
+
+function finaleDisaster() {
+  kingEl.classList.add('panic-loop');
+
+  const perches = [14, 33, 52, 71, 88];
+  perches.forEach((leftPct, i) => {
+    setTimeout(() => {
+      const d = cloneDragon();
+      d.style.left = (leftPct < 50 ? -20 : 120) + '%';
+      d.style.top = (12 + Math.random() * 22) + '%';
+      finaleLayer.appendChild(d);
+      void d.offsetWidth;
+      d.style.transition = 'left 1.1s ease-out, top 1.1s ease-out';
+      requestAnimationFrame(() => {
+        d.style.left = leftPct + '%';
+        d.style.top = '77%';
+      });
+    }, 200 + i * 200);
+  });
+
+  /* Kronen skifter eier. */
+  setTimeout(() => {
+    kingEl.classList.add('crownless');
+    const crown = document.createElement('div');
+    crown.className = 'stolen-crown';
+    crown.style.left = '52%';
+    crown.style.top = '68%';
+    finaleLayer.appendChild(crown);
+    requestAnimationFrame(() => crown.classList.add('pop'));
+  }, 1900);
+
+  setTimeout(() => {
+    ['💢', '🔥'].forEach((icon, i) => {
+      for (let k = 0; k < 3; k++) {
+        const fx = document.createElement('span');
+        fx.className = 'fx-mini';
+        fx.textContent = icon;
+        fx.style.left = (60 + Math.random() * 34) + '%';
+        fx.style.top = (18 + Math.random() * 22) + '%';
+        fx.style.animationDelay = (i * 100 + k * 70) + 'ms';
+        finaleLayer.appendChild(fx);
+        requestAnimationFrame(() => fx.classList.add('pop'));
+      }
+    });
+  }, 2400);
+}
+
+function playFinale(ending, done) {
+  resetFinale();
+
+  kingBubble.textContent = ending.king;
+  kingBubble.classList.add('show');
+
+  if (REDUCED_MOTION) { done(); return; }
+
+  if (ending.tier === 'middels') finaleMiddling();
+  else if (ending.tier === 'katastrofe') finaleDisaster();
+  else finaleTriumph();
+
+  setTimeout(done, FINALE_MS);
+}
+
+function startFinale() {
+  const maxScore = round.length * 3;
+  const ending = pickEnding(totalScore, maxScore);
+
+  /* Rydd bort oppgave-grensesnittet så scenen står fri til sketsjen. */
+  $('resultPanel').hidden = true;
+  $('resultPanel').classList.remove('show');
+  $('btnLock').hidden = true;
+  refArm.classList.remove('show');
+  sightLine.classList.add('hidden-aim');
+  orbDot.classList.add('hidden-aim');
+  resetDragon();
+  $('hudTaskLabel').textContent = 'Alle ' + round.length + ' drager er over';
+  $('aimPrefix').textContent = '';
+  $('targetDisplay').textContent = 'Slaget er over!';
+  $('srAnnounce').textContent = ending.title + '. ' + ending.sub;
+
+  playFinale(ending, () => endGame(ending));
+}
+
+function endGame(ending) {
   const avg = deviations.reduce((s, d) => s + d, 0) / deviations.length;
   const best = Math.min(...deviations);
+  $('endEmoji').textContent = ending.emoji;
+  $('endTitle').textContent = ending.title;
+  $('endSub').textContent = ending.sub;
   $('endScore').textContent = totalScore + ' av ' + (round.length * 3);
   $('endAvg').textContent = (Math.round(avg * 10) / 10) + '°';
   $('endBest').textContent = best + '°';
