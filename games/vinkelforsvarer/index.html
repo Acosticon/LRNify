@@ -184,13 +184,13 @@
     filter: drop-shadow(0 0 4px rgba(250,204,21,.8));
   }
 
-  .asteroid-layer { position: absolute; inset: 0; pointer-events: none; }
+  .asteroid-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
   .asteroid-sprite {
-    position: absolute; left: 34%; top: 18%;
+    position: absolute; left: 50%; top: 50%;
     transform: translate(-50%,-50%);
     font-size: clamp(2.3rem, 10vw, 3.6rem);
     filter: drop-shadow(0 0 9px rgba(251,146,60,.6));
-    transition: left .45s ease, top .45s ease, opacity .3s ease, transform .3s ease;
+    transition: opacity .3s ease, transform .3s ease;
     opacity: 0;
   }
   .asteroid-sprite.visible { opacity: 1; }
@@ -199,22 +199,32 @@
 
   .fx-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
   .fx-burst {
-    position: absolute; font-size: clamp(1.6rem, 7vw, 2.4rem);
+    position: absolute; font-size: clamp(3.2rem, 15vw, 5.4rem);
     transform: translate(-50%,-50%) scale(0);
   }
-  .fx-burst.pop { animation: burstPop .55s cubic-bezier(.2,.9,.3,1.4) forwards; }
+  .fx-burst.pop { animation: burstPop .65s cubic-bezier(.2,.9,.3,1.4) forwards; }
   @keyframes burstPop {
     0%   { transform: translate(-50%,-50%) scale(0); opacity: 0; }
-    45%  { transform: translate(-50%,-50%) scale(1.25); opacity: 1; }
-    100% { transform: translate(-50%,-50%) scale(1); opacity: 0; }
+    40%  { transform: translate(-50%,-50%) scale(1.35); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.05); opacity: 0; }
   }
   .fx-shard {
-    position: absolute; width: 7px; height: 7px; border-radius: 1px;
-    animation: shardFly .6s ease-out forwards;
+    position: absolute; width: 8px; height: 8px; border-radius: 1px;
+    animation: shardFly .75s ease-out forwards;
   }
   @keyframes shardFly {
     0%   { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity: 1; }
     100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(.2); opacity: 0; }
+  }
+  .fx-ring {
+    position: absolute; width: 14px; height: 14px;
+    border-radius: 50%; border: 5px solid rgba(255,205,120,.9);
+    transform: translate(-50%,-50%) scale(0); opacity: 1;
+  }
+  .fx-ring.expand { animation: ringExpand .55s ease-out forwards; }
+  @keyframes ringExpand {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: .9; }
+    100% { transform: translate(-50%,-50%) scale(11); opacity: 0; }
   }
 
   .lock-actions { width: 100%; display: flex; justify-content: center; }
@@ -386,6 +396,10 @@ const TICK_OUT = 186;
 const LABEL_R = 202;
 const HANDLE_R = 11;
 const HANDLE_HIT_R = 28;
+const ENTRY_R = 340; /* langt nok utenfor lerretet (440×250) på enhver vinkel */
+
+function pctX(x) { return (x / 440) * 100; }
+function pctY(y) { return (y / 250) * 100; }
 
 function pt(angleDeg, radius) {
   const rad = angleDeg * Math.PI / 180;
@@ -471,6 +485,45 @@ svg.appendChild(muzzleDot);
 
 const asteroidEl = $('asteroid');
 const fxLayer = $('fxLayer');
+
+/* ── LYD (Web Audio API, enkle og diskrete effekter — ingen filer) ── */
+let audioCtx = null;
+function initAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!audioCtx) audioCtx = new AC();
+  else if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function tone(freq, ms, type, vol, delay = 0, freqEnd = null) {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t0);
+  if (freqEnd !== null) o.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), t0 + ms / 1000);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
+}
+function fireSound() { tone(760, 100, 'sawtooth', 0.07, 0, 200); }
+function deflectSound() { tone(500, 170, 'triangle', 0.07, 0, 900); }
+function explosionSound() {
+  if (!audioCtx) return;
+  const dur = 0.38;
+  const n = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.6) * 0.6;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 850;
+  const g = audioCtx.createGain(); g.gain.value = 0.2;
+  src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+  src.start();
+  tone(85, 240, 'sine', 0.11, 0.01);
+}
 
 let angleDeg = 0;
 let dragging = false;
@@ -575,6 +628,7 @@ const showScreen = id => {
 };
 
 function startGame() {
+  initAudio();
   round = buildRound();
   taskIndex = 0;
   totalScore = 0;
@@ -585,10 +639,13 @@ function startGame() {
 }
 
 function resetAsteroid() {
+  asteroidEl.style.transition = 'none';
   asteroidEl.classList.remove('visible', 'exploded', 'deflected');
-  asteroidEl.style.left = '34%';
-  asteroidEl.style.top = '18%';
+  asteroidEl.style.left = '50%';
+  asteroidEl.style.top = '50%';
   asteroidEl.textContent = '☄️';
+  void asteroidEl.offsetWidth; /* tving reflow så neste transition ikke arver denne hoppet */
+  asteroidEl.style.transition = '';
 }
 
 function loadTask() {
@@ -617,20 +674,30 @@ function loadTask() {
 }
 
 function spawnShards(leftPct, topPct) {
-  const cols = ['#fb923c', '#facc15', '#f87171'];
-  for (let i = 0; i < 9; i++) {
+  const cols = ['#fb923c', '#facc15', '#f87171', '#fde68a'];
+  for (let i = 0; i < 18; i++) {
     const s = document.createElement('div');
     s.className = 'fx-shard';
     s.style.left = leftPct + '%';
     s.style.top = topPct + '%';
     s.style.background = cols[i % cols.length];
     const angle = Math.random() * Math.PI * 2;
-    const dist = 26 + Math.random() * 28;
+    const dist = 40 + Math.random() * 48;
     s.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
     s.style.setProperty('--dy', (Math.sin(angle) * dist) + 'px');
     fxLayer.appendChild(s);
-    setTimeout(() => s.remove(), 700);
+    setTimeout(() => s.remove(), 800);
   }
+}
+
+function spawnRing(leftPct, topPct) {
+  const r = document.createElement('div');
+  r.className = 'fx-ring';
+  r.style.left = leftPct + '%';
+  r.style.top = topPct + '%';
+  fxLayer.appendChild(r);
+  requestAnimationFrame(() => r.classList.add('expand'));
+  setTimeout(() => r.remove(), 600);
 }
 
 function spawnBurst(leftPct, topPct, emoji) {
@@ -641,7 +708,15 @@ function spawnBurst(leftPct, topPct, emoji) {
   b.style.top = topPct + '%';
   fxLayer.appendChild(b);
   requestAnimationFrame(() => b.classList.add('pop'));
-  setTimeout(() => b.remove(), 650);
+  setTimeout(() => b.remove(), 750);
+}
+
+function explode(leftPct, topPct) {
+  asteroidEl.classList.add('exploded');
+  spawnBurst(leftPct, topPct, '💥');
+  spawnShards(leftPct, topPct);
+  spawnRing(leftPct, topPct);
+  explosionSound();
 }
 
 function lockAngle() {
@@ -656,6 +731,7 @@ function lockAngle() {
 
   barrel.classList.add('firing');
   setTimeout(() => barrel.classList.remove('firing'), REDUCED_MOTION ? 0 : 260);
+  fireSound();
 
   const target = round[taskIndex];
   const deviation = Math.abs(target - rounded);
@@ -669,49 +745,56 @@ function lockAngle() {
   refArm.setAttribute('y2', refPt.y);
   requestAnimationFrame(() => refArm.classList.add('show'));
 
-  /* Asteroiden er usynlig helt til skuddet er avfyrt. Først da avsløres
-     den ved riktig vinkel, slik at posisjonen aldri lekker fasiten på
-     forhånd. Deretter reagerer den ut fra treffsikkerheten:
-       – 2–3 poeng (godt/direkte treff): eksploderer der den ble avslørt
+  /* Asteroiden er usynlig helt til skuddet er avfyrt. Først da kommer
+     den inn i bildet utenfra, langs den rette banen som målvinkelen
+     angir — slik at vinkelen aldri lekker fasiten på forhånd, men
+     tydelig vises som en bane når den flyr inn. Etter innflygingen
+     reagerer den ut fra treffsikkerheten:
+       – 2–3 poeng (godt/direkte treff): eksploderer der den blir truffet
        – 1 poeng (streiftreff): endrer kurs og driver bort, urørt
        – 0 poeng (bom): fortsetter uhindret inn og eksploderer på basen */
+  const entryPt = pt(target, ENTRY_R);
   const rimPt = pt(target, ARC_R);
-  const rimLeftPct = (rimPt.x / 440) * 100;
-  const rimTopPct = (rimPt.y / 250) * 100;
-  const baseLeftPct = (PIVOT.x / 440) * 100;
-  const baseTopPct = (PIVOT.y / 250) * 100;
+  const entryLeftPct = pctX(entryPt.x), entryTopPct = pctY(entryPt.y);
+  const rimLeftPct = pctX(rimPt.x), rimTopPct = pctY(rimPt.y);
+  const baseLeftPct = pctX(PIVOT.x), baseTopPct = pctY(PIVOT.y);
 
-  const showDelay = REDUCED_MOTION ? 0 : 150;
-  const reactDelay = REDUCED_MOTION ? 0 : 150;
-  const settleDelay = REDUCED_MOTION ? 0 : 420;
+  const flightMs = REDUCED_MOTION ? 0 : 950;
+  const resolveMs = REDUCED_MOTION ? 0 : 500;
 
-  setTimeout(() => {
+  /* Hopp umerkelig til inngangspunktet (langt utenfor lerretet, så det
+     er uansett usynlig), deretter animer innover langs banen. */
+  asteroidEl.style.transition = 'none';
+  asteroidEl.style.left = entryLeftPct + '%';
+  asteroidEl.style.top = entryTopPct + '%';
+  asteroidEl.textContent = '☄️';
+  asteroidEl.classList.remove('exploded', 'deflected');
+  asteroidEl.classList.add('visible');
+  void asteroidEl.offsetWidth;
+  asteroidEl.style.transition = `left ${flightMs}ms linear, top ${flightMs}ms linear, opacity .3s ease, transform .3s ease`;
+
+  requestAnimationFrame(() => {
     asteroidEl.style.left = rimLeftPct + '%';
     asteroidEl.style.top = rimTopPct + '%';
-    asteroidEl.textContent = '☄️';
-    asteroidEl.classList.add('visible');
+  });
 
-    setTimeout(() => {
-      if (points >= 2) {
-        asteroidEl.classList.add('exploded');
-        spawnBurst(rimLeftPct, rimTopPct, '💥');
-        spawnShards(rimLeftPct, rimTopPct);
-      } else if (points === 1) {
-        const side = target < 90 ? -1 : 1;
-        asteroidEl.style.left = clampPct(rimLeftPct + side * 16) + '%';
-        asteroidEl.style.top = clampPct(rimTopPct - 12) + '%';
-        setTimeout(() => asteroidEl.classList.add('deflected'), settleDelay);
-      } else {
-        asteroidEl.style.left = baseLeftPct + '%';
-        asteroidEl.style.top = baseTopPct + '%';
-        setTimeout(() => {
-          asteroidEl.classList.add('exploded');
-          spawnBurst(baseLeftPct, baseTopPct, '💥');
-          spawnShards(baseLeftPct, baseTopPct);
-        }, settleDelay);
-      }
-    }, reactDelay);
-  }, showDelay);
+  setTimeout(() => {
+    if (points >= 2) {
+      explode(rimLeftPct, rimTopPct);
+    } else if (points === 1) {
+      const side = target < 90 ? -1 : 1;
+      asteroidEl.style.transition = `left ${resolveMs}ms ease, top ${resolveMs}ms ease, opacity .3s ease, transform .3s ease`;
+      asteroidEl.style.left = clampPct(rimLeftPct + side * 16) + '%';
+      asteroidEl.style.top = clampPct(rimTopPct - 12) + '%';
+      deflectSound();
+      setTimeout(() => asteroidEl.classList.add('deflected'), resolveMs);
+    } else {
+      asteroidEl.style.transition = `left ${resolveMs}ms linear, top ${resolveMs}ms linear, opacity .3s ease, transform .3s ease`;
+      asteroidEl.style.left = baseLeftPct + '%';
+      asteroidEl.style.top = baseTopPct + '%';
+      setTimeout(() => explode(baseLeftPct, baseTopPct), resolveMs);
+    }
+  }, flightMs);
 
   $('resTarget').textContent = target + '°';
   $('resPlayer').textContent = rounded + '°';
