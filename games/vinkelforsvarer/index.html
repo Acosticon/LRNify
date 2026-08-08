@@ -188,19 +188,14 @@
   .asteroid-sprite {
     position: absolute; left: 34%; top: 18%;
     transform: translate(-50%,-50%);
-    font-size: clamp(1.6rem, 7vw, 2.3rem);
-    filter: drop-shadow(0 0 6px rgba(251,146,60,.55));
-    transition: left .5s ease, top .5s ease, opacity .35s ease;
-    opacity: 1;
+    font-size: clamp(2.3rem, 10vw, 3.6rem);
+    filter: drop-shadow(0 0 9px rgba(251,146,60,.6));
+    transition: left .45s ease, top .45s ease, opacity .3s ease, transform .3s ease;
+    opacity: 0;
   }
-  .asteroid-sprite.bob { animation: asteroidBob 3.2s ease-in-out infinite; }
-  @keyframes asteroidBob {
-    0%,100% { margin-top: 0; }
-    50%     { margin-top: 8px; }
-  }
-  .asteroid-sprite.hidden-ast { opacity: 0; }
-  .asteroid-sprite.exploded { transform: translate(-50%,-50%) scale(1.5); opacity: 0; }
-  .asteroid-sprite.missed { transform: translate(-50%,-50%) translateX(60px); opacity: 0; }
+  .asteroid-sprite.visible { opacity: 1; }
+  .asteroid-sprite.exploded { transform: translate(-50%,-50%) scale(1.6); opacity: 0; }
+  .asteroid-sprite.deflected { transform: translate(-50%,-50%) scale(.6); opacity: 0; }
 
   .fx-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
   .fx-burst {
@@ -330,7 +325,7 @@
         </div>
 
         <div class="asteroid-layer">
-          <div class="asteroid-sprite bob" id="asteroid" aria-hidden="true">☄️</div>
+          <div class="asteroid-sprite" id="asteroid" aria-hidden="true">☄️</div>
         </div>
         <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
       </div>
@@ -349,7 +344,7 @@
         <span class="precision-badge" id="precisionBadge" hidden aria-hidden="true">✓</span>
       </div>
       <div class="result-points" id="resPoints">+3 poeng</div>
-      <button class="btn-primary" id="btnNext">Neste fiende</button>
+      <button class="btn-primary" id="btnNext">Klar!</button>
     </div>
 
     <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
@@ -482,6 +477,7 @@ let dragging = false;
 let locked = false;
 
 function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+function clampPct(v) { return clamp(v, 6, 94); }
 
 function renderArm() {
   const p = pt(angleDeg, ARM_LEN);
@@ -563,8 +559,8 @@ function buildRound() {
 function scoreFor(deviation) {
   if (deviation <= 2) return { points: 3, message: 'Direkte treff!' };
   if (deviation <= 5) return { points: 2, message: 'Sterk trefning!' };
-  if (deviation <= 10) return { points: 1, message: 'Streiftreff!' };
-  return { points: 0, message: 'Bom! Asteroiden fløy forbi basen.' };
+  if (deviation <= 10) return { points: 1, message: 'Streiftreff! Den endret kurs og bommet på basen.' };
+  return { points: 0, message: 'Bom! Asteroiden traff basen.' };
 }
 
 /* ── SPILLTILSTAND ── */
@@ -589,11 +585,10 @@ function startGame() {
 }
 
 function resetAsteroid() {
+  asteroidEl.classList.remove('visible', 'exploded', 'deflected');
   asteroidEl.style.left = '34%';
   asteroidEl.style.top = '18%';
   asteroidEl.textContent = '☄️';
-  asteroidEl.classList.remove('exploded', 'missed', 'hidden-ast');
-  asteroidEl.classList.add('bob');
 }
 
 function loadTask() {
@@ -674,29 +669,49 @@ function lockAngle() {
   refArm.setAttribute('y2', refPt.y);
   requestAnimationFrame(() => refArm.classList.add('show'));
 
-  /* Asteroiden flyttes til riktig vinkel først NÅR svaret er låst,
-     slik at posisjonen aldri avslører fasiten på forhånd. */
+  /* Asteroiden er usynlig helt til skuddet er avfyrt. Først da avsløres
+     den ved riktig vinkel, slik at posisjonen aldri lekker fasiten på
+     forhånd. Deretter reagerer den ut fra treffsikkerheten:
+       – 2–3 poeng (godt/direkte treff): eksploderer der den ble avslørt
+       – 1 poeng (streiftreff): endrer kurs og driver bort, urørt
+       – 0 poeng (bom): fortsetter uhindret inn og eksploderer på basen */
   const rimPt = pt(target, ARC_R);
-  const leftPct = (rimPt.x / 440) * 100;
-  const topPct = (rimPt.y / 250) * 100;
-  const moveDelay = REDUCED_MOTION ? 0 : 180;
-  const moveDuration = REDUCED_MOTION ? 0 : 480;
+  const rimLeftPct = (rimPt.x / 440) * 100;
+  const rimTopPct = (rimPt.y / 250) * 100;
+  const baseLeftPct = (PIVOT.x / 440) * 100;
+  const baseTopPct = (PIVOT.y / 250) * 100;
+
+  const showDelay = REDUCED_MOTION ? 0 : 150;
+  const reactDelay = REDUCED_MOTION ? 0 : 150;
+  const settleDelay = REDUCED_MOTION ? 0 : 420;
 
   setTimeout(() => {
-    asteroidEl.classList.remove('bob');
-    asteroidEl.style.left = leftPct + '%';
-    asteroidEl.style.top = topPct + '%';
+    asteroidEl.style.left = rimLeftPct + '%';
+    asteroidEl.style.top = rimTopPct + '%';
+    asteroidEl.textContent = '☄️';
+    asteroidEl.classList.add('visible');
 
     setTimeout(() => {
-      if (points > 0) {
+      if (points >= 2) {
         asteroidEl.classList.add('exploded');
-        spawnBurst(leftPct, topPct, '💥');
-        spawnShards(leftPct, topPct);
+        spawnBurst(rimLeftPct, rimTopPct, '💥');
+        spawnShards(rimLeftPct, rimTopPct);
+      } else if (points === 1) {
+        const side = target < 90 ? -1 : 1;
+        asteroidEl.style.left = clampPct(rimLeftPct + side * 16) + '%';
+        asteroidEl.style.top = clampPct(rimTopPct - 12) + '%';
+        setTimeout(() => asteroidEl.classList.add('deflected'), settleDelay);
       } else {
-        asteroidEl.classList.add('missed');
+        asteroidEl.style.left = baseLeftPct + '%';
+        asteroidEl.style.top = baseTopPct + '%';
+        setTimeout(() => {
+          asteroidEl.classList.add('exploded');
+          spawnBurst(baseLeftPct, baseTopPct, '💥');
+          spawnShards(baseLeftPct, baseTopPct);
+        }, settleDelay);
       }
-    }, moveDuration);
-  }, moveDelay);
+    }, reactDelay);
+  }, showDelay);
 
   $('resTarget').textContent = target + '°';
   $('resPlayer').textContent = rounded + '°';
