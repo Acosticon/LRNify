@@ -6,8 +6,9 @@
                  på et obskurt fagord.
      2. BIG    – hele Norsk Ordbank (bokmål, fullformer) fra
                  Nasjonalbiblioteket/Språkbanken, ~581 000
-                 former. Deles med originalversjonen av spillet
-                 for å slippe to kopier av samme 7,6 MB fil.
+                 former. Ligger i games/_shared/ordliste.txt og
+                 deles med originalversjonen av spillet for å
+                 slippe to kopier av samme 7,6 MB fil.
      3. ONLINE – Bokmålsordboka (api.ordbokene.no) som siste
                  utvei for ord ingen av listene kjenner.
    ========================================================= */
@@ -71,7 +72,7 @@ const SEED_WORDS_RAW = `
   esel eik enkel edderkopp energi erte
 `;
 
-const BIG_WORDLIST_URL = '../ordkjedeverkstedet/ordliste.txt';
+const BIG_WORDLIST_URL = '../_shared/ordliste.txt';
 const BIG_TIMEOUT_MS = 10000;
 const API_URL = 'https://api.ordbokene.no/api/v1/concepts';
 const API_TIMEOUT_MS = 4000;

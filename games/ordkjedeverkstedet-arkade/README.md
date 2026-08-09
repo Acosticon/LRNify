@@ -32,14 +32,16 @@ python3 -m http.server 8000     # fra games/-mappa
 
 og åpne `http://localhost:8000/ordkjedeverkstedet-arkade/`.
 
-## Ordlisten deles med originalversjonen
+## Ordlisten ligger i games/_shared/
 
-`dictionary.js` laster `../ordkjedeverkstedet/ordliste.txt` – ca. 581 000
+`dictionary.js` laster `../_shared/ordliste.txt` – ca. 581 000
 bøyningsformer fra Norsk Ordbank (bokmål), Nasjonalbiblioteket/Språkbanken.
-Vi holder én kopi av den 7,6 MB store fila i repoet.
+Filen deles med `games/ordkjedeverkstedet/` (originalversjonen), så vi
+holder kun én kopi av den 7,6 MB store fila i repoet.
 
-**Flytter eller sletter du `games/ordkjedeverkstedet/`, må stien
-`BIG_WORDLIST_URL` i `js/dictionary.js` oppdateres.**
+**Flytter eller sletter du `games/_shared/`, må `BIG_WORDLIST_URL` i
+`js/dictionary.js` oppdateres – og tilsvarende `BIG_WORDLIST_URL` i
+`games/ordkjedeverkstedet/index.html`.**
 
 Ordgodkjenning skjer i tre lag:
 
