@@ -79,38 +79,41 @@ og åpne `http://localhost:8000/ordtoget/`.
 
 ## Togvogner
 
-Ordet står på en egen **skiltplate** inne i vogna. Vognene har svært
-ulike farger, og uten plata ble teksten uleselig på flere av dem –
-plata gir lik lesbarhet uansett vogntype.
+Vognene tegnes med **CSS, ikke bilder**. Det er et krav fra mekanikken:
+vognlengden følger ordlengden, og et bitmap kan ikke strekkes fra «is»
+til «menneskerettighetsorganisasjonene» uten å bli forvrengt. CSS gir i
+tillegg skarpe kanter på alle skjermer og null lastetid.
+
+Hver vogn har metallrammer med nagler i endene, tak, hjul som følger
+ordlengden, og en typespesifikk pynt: stjerne, snø, slyngplanter,
+tannhjul, dødningflagg, egg, spøkelsesvinduer, lavasprekker, planet.
+
+Ordet står på en egen **skiltplate** midt på vogna. Vognene har svært
+ulike farger, og uten plata ble teksten uleselig på flere av dem.
+Vognene har derfor romslig sidemarg, så pynten får plass i endene.
 
 Vogntypen bestemmes av ordet selv (stabil hash) blant de typene du har
-låst opp, så samme ord gir samme vogn. Vognlengden følger ordlengden,
-og antall hjulpar øker med lengden.
+vunnet, så samme ord gir samme vogn.
 
 ### Vognskjulet
 
-Du starter med **én** vogn, godsvogna. De ni andre står som tomme
-plasser og må vinnes.
+Du starter med **én** vogn, den klassiske godsvogna. De ti andre står
+som tomme plasser og må vinnes.
 
 * Kun **ett oppdrag er aktivt** om gangen, med framdriftslinje.
 * Alle tellere måles **fra forrige opplåsing** (`since` i
   `progress.js`), så man kan aldri løse to oppdrag på én gang.
 * Oppdrag sjekkes underveis i runden, ikke bare på slutten.
 
-Oppdragene bestemmer **når** du får en pakke, ikke **hvilken** vogn du
-får:
+Oppdragene bestemmer **når** du får en pakke, ikke **hvilken** vogn:
 
-| # | Oppdrag |
-|---|---------|
-| 1 | Kjør én runde |
-| 2 | Kjør tre runder til |
-| 3 | Lag et tog med 10 vogner |
-| 4 | Bruk et ord på 10 bokstaver |
-| 5 | Få 800 poeng i én runde |
-| 6 | Kjør ti runder til |
-| 7 | Samle 5000 poeng |
-| 8 | Samle 10 000 poeng |
-| 9 | Samle 25 000 poeng |
+| # | Oppdrag | | # | Oppdrag |
+|---|---------|-|---|---------|
+| 1 | Kjør én runde | | 6 | Kjør ti runder til |
+| 2 | Kjør tre runder til | | 7 | Lag et tog med 15 vogner |
+| 3 | Lag et tog med 10 vogner | | 8 | Samle 5000 poeng |
+| 4 | Bruk et ord på 10 bokstaver | | 9 | Samle 10 000 poeng |
+| 5 | Få 800 poeng i én runde | | 10 | Samle 25 000 poeng |
 
 ### Pakker og vognhjulet
 
@@ -120,25 +123,24 @@ inngangen får en rød merknad. Resultatskjermen har en snarvei rett inn.
 Trykker du på pakka rister den, lokket flyr av – og så starter
 **vognhjulet**: en slot machine som ruller gjennom vogntypene, bremser
 med tikkende lyd og lander på gevinsten. Hva du får avgjøres først i
-det øyeblikket, av en vektet trekning blant vognene du ikke har fra før.
+det øyeblikket.
 
-Trekningen er semi-tilfeldig. Hver vogn har en `tier`, og vektene
-flytter seg etter hvor langt du er kommet:
+### Sjeldenhet
 
-| Tier | Vogner | Tidlig | Midtveis | Sent |
+| Nivå | Vogner | Tidlig | Midtveis | Sent |
 |------|--------|--------|----------|------|
-| 1 – vanlig | Passasjer, Tømmer, Konteiner | 10 | 5 | 2 |
-| 2 – uvanlig | Tank, Kjøle, Post | 4 | 8 | 5 |
-| 3 – sjelden | Sirkus, Rakett, Konge | 1 | 4 | 10 |
+| 1 Vanlig | Kjøle, Jungel, Industri | 12 | 6 | 2 |
+| 2 Sjelden | Tank, Godteri, Pirat | 5 | 9 | 5 |
+| 3 Episk | Dinosaur, Spøkelses, Vulkan | 1,5 | 5 | 9 |
+| 4 Legendarisk | Rom | 0,4 | 1,5 | 6 |
 
-Du kan altså få Kongevogna på første trekning – det er bare lite
-sannsynlig. Mot slutten er de sjeldne mest sannsynlige, og siden
-allerede vunne vogner faller ut av puljen, får du aldri duplikater.
+Vektene forskyves etter hvor langt du er kommet, men alt kan komme når
+som helst – Romvogna kan dukke opp på første trekning, det er bare lite
+sannsynlig. Vunne vogner faller ut av puljen, så duplikater er umulig.
+Sjeldne gevinster får kraftigere feiring.
 
 Damplokomotivet og gullvogna står utenfor: lokomotivet trekker alltid
-toget, og gullvogna kommer av seg selv på gylne ord. Gullvogna er
-bevisst ikke en gevinst – ellers ville løftet «GULLVOGN! ×3» vist en
-helt vanlig vogn.
+toget, og gullvogna kommer av seg selv på gylne ord.
 
 ## Spillmoduser
 
@@ -184,12 +186,15 @@ Bokmålsordboka (`api.ordbokene.no`) for ord ingen av listene kjenner.
 
 ## Lagring
 
-Framgang lagres i `localStorage` under `ordtoget-progress-v2`
+Framgang lagres i `localStorage` under `ordtoget-progress-v3`
 (rekorder per modus, vunne vogner, uåpnet pakke, oppdragsnummer og
 tellerne siden forrige opplåsing), og versjonsvalget under
-`ordtoget-versjon`. Nøkkelen ble bumpet fra `v1` da opplåsingen ble
-lagt om – gammel data hadde flere vogner åpne enn den nye modellen
-tillater, og blir liggende ubrukt.
+`ordtoget-versjon`. Nøkkelen bumpes hver gang vognutvalget eller
+opplåsingsmodellen legges om, så gammel data ikke gir vogner som ikke
+finnes lenger. Eldre nøkler blir liggende ubrukt.
+
+**Nullstill all framgang** ligger nederst i vognskjulet. Den krever to
+trykk, siden den ikke kan angres.
 Kun tall og vogn-id-er – ingen persondata.
 Feiler lagringen (privat nettlesermodus), kjører spillet videre uten
 å lagre.

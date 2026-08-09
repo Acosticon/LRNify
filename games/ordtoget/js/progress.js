@@ -15,10 +15,11 @@
 
 import { MISSIONS, START_CARRIAGE, CARRIAGES, drawCarriage } from './carriages.js';
 
-/* Nøkkelen er bumpet fra v1: opplåsingen er lagt helt om, og
-   gamle lagringer hadde flere vogner åpne enn den nye modellen
-   tillater. Gammel v1-data blir liggende ubrukt. */
-const KEY = 'ordtoget-progress-v2';
+/* Nøkkelen er bumpet for hver gang vognutvalget eller
+   opplåsingsmodellen er lagt om. v3: vognene fikk nye id-er da
+   utvalget ble tegnet på nytt, så gamle lagringer pekte på
+   vogner som ikke finnes lenger. Eldre data blir liggende ubrukt. */
+const KEY = 'ordtoget-progress-v3';
 
 const emptySince = () => ({
   rounds: 0,          // runder spilt siden forrige opplåsing
@@ -29,7 +30,7 @@ const emptySince = () => ({
 });
 
 const emptyData = () => ({
-  v: 2,
+  v: 3,
   totalScore: 0,
   rounds: 0,
   bestPerMode: {},
