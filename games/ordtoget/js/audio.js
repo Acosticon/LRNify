@@ -59,11 +59,44 @@ export class Sfx {
     osc.stop(t0 + dur + 0.02);
   }
 
+  /** Kort støyknepp – brukes til damp og koblingslyd. */
+  noise(dur = 0.18, vol = 0.07, filterHz = 1400){
+    if(!this.enabled || !this.ctx) return;
+    const rate = this.ctx.sampleRate;
+    const len = Math.max(1, Math.floor(rate * dur));
+    const buf = this.ctx.createBuffer(1, len, rate);
+    const data = buf.getChannelData(0);
+    for(let i = 0; i < len; i++){
+      // avtagende hvit støy
+      data[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = filterHz;
+    const gain = this.ctx.createGain();
+    gain.gain.value = vol;
+    src.connect(filter); filter.connect(gain); gain.connect(this.ctx.destination);
+    src.start();
+  }
+
   correct(mult){
     const base = 520 + (mult - 1) * 85;
     this.tone(base, 0, .11, 'triangle', .16);
     this.tone(base * 1.5, .07, .13, 'triangle', .12);
+    this.noise(.13, .05, 900);          // vogna kobles på
   }
+
+  /** Togfløyte – to toner i kvint, litt luftig. */
+  whistle(){
+    this.tone(784, 0, .5, 'sine', .13);
+    this.tone(1175, .02, .5, 'sine', .1);
+    this.noise(.4, .035, 2200);
+  }
+
+  /** Damputslipp. */
+  steam(){ this.noise(.36, .06, 1600); }
   combo(mult){
     for(let i = 0; i < 3; i++){
       this.tone(440 * Math.pow(1.26, i + mult), i * .06, .14, 'square', .1);
@@ -87,6 +120,18 @@ export class Sfx {
   hint(){ this.tone(880, 0, .09, 'sine', .1); this.tone(1170, .06, .1, 'sine', .08); }
   lowTick(){ this.tone(230, 0, .06, 'square', .07); }
   life(){ this.tone(320, 0, .18, 'sawtooth', .13); this.tone(200, .1, .24, 'sawtooth', .12); }
-  over(){ [440, 370, 294, 220].forEach((f, i) => this.tone(f, i * .13, .3, 'triangle', .15)); }
-  win(){ [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, i * .1, .34, 'triangle', .15)); }
+  over(){
+    [440, 370, 294, 220].forEach((f, i) => this.tone(f, i * .13, .3, 'triangle', .15));
+    this.noise(.5, .05, 700);          // toget bremser inn
+  }
+  win(){
+    [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, i * .1, .34, 'triangle', .15));
+    setTimeout(() => this.whistle(), 520);
+  }
+  /** Ny vogntype låst opp. (Ikke forveksle med unlock(), som
+      åpner AudioContext etter en brukerhandling.) */
+  unlocked(){
+    [659, 880, 1175].forEach((f, i) => this.tone(f, i * .09, .3, 'triangle', .14));
+    this.noise(.3, .05, 1800);
+  }
 }

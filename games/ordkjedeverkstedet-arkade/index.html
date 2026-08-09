@@ -3,126 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ordkjedeverkstedet – Arkade</title>
-<meta name="description" content="Arkadeversjonen av Ordkjedeverkstedet: bygg ordkjeder, jag kombo og slå rekorden din.">
-<link rel="stylesheet" href="css/style.css">
+<title>Flyttet – spillet heter nå Ordtoget</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://lrnify.no/games/ordtoget/">
+<meta http-equiv="refresh" content="0; url=../ordtoget/">
+<style>
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+    background:#0b1020; color:#f3f6ff;
+    display:flex; align-items:center; justify-content:center;
+    height:100vh; margin:0; text-align:center; padding:20px;
+  }
+  a{ color:#ffc24d; }
+</style>
 </head>
 <body>
-
-<canvas id="bgCanvas" aria-hidden="true"></canvas>
-<div id="scanlines" aria-hidden="true"></div>
-
-<div id="shakeWrap">
-  <div id="app">
-
-    <!-- ============ STARTSKJERM ============ -->
-    <section id="screen-start" class="screen active">
-      <div class="logo">
-        <span class="l1">ORDKJEDE</span>
-        <span class="l2">VERKSTEDET</span>
-      </div>
-      <div class="badge">ARKADE</div>
-
-      <p class="rule">Smi en kjede av ord! Hvert nye ord må starte med
-        <b>siste bokstav</b> i ordet foran.</p>
-
-      <div class="demo" aria-hidden="true">
-        <span class="dchip">KAT<em>T</em></span><span class="dlink">—</span>
-        <span class="dchip">TO<em>G</em></span><span class="dlink">—</span>
-        <span class="dchip">GU<em>L</em></span>
-      </div>
-
-      <h2 class="section-title">Velg modus</h2>
-      <div class="modes" id="modeList" role="radiogroup" aria-label="Velg spillmodus"></div>
-
-      <p class="best-note" id="startBest">&nbsp;</p>
-
-      <button id="startBtn" class="btn-big" type="button">START</button>
-      <button id="soundBtn" class="sound-toggle" type="button" aria-pressed="true">🔊 Lyd på</button>
-    </section>
-
-    <!-- ============ SPILLSKJERM ============ -->
-    <section id="screen-game" class="screen">
-      <div class="hud">
-        <div class="stat"><span class="k">Poeng</span><span class="v" id="scoreVal">0</span></div>
-        <div class="stat"><span class="k">Nivå</span><span class="v alt" id="levelVal">1</span></div>
-        <div class="stat lives" id="livesBox" hidden><span class="k">Liv</span><span class="v" id="livesVal">♥♥♥</span></div>
-        <div class="spacer"></div>
-        <button id="muteBtn" class="icon-btn" type="button" aria-pressed="true" aria-label="Slå lyd av eller på">🔊</button>
-      </div>
-
-      <div class="heat" id="heatBox">
-        <div class="heat-track"><div id="heatFill" class="heat-fill"></div></div>
-        <span id="timeVal">20</span>
-      </div>
-
-      <div class="combo" id="comboWrap" aria-hidden="true">
-        <span class="combo-label" id="comboLabel">KOMBO ×2</span>
-        <div class="combo-track"><div class="combo-fill" id="comboFill"></div></div>
-      </div>
-
-      <div class="powerups" id="powerups" aria-label="Kraftbonuser"></div>
-
-      <div class="chain-wrap">
-        <div id="chain" class="chain" role="list" aria-label="Ordkjeden din"></div>
-      </div>
-
-      <div class="feedback">
-        <svg class="mascot" id="mascot" viewBox="0 0 64 64" aria-hidden="true">
-          <path d="M32 4 v7" stroke="#6b4f95" stroke-width="3" stroke-linecap="round"/>
-          <circle cx="32" cy="4" r="3.4" fill="#ff8a2b"/>
-          <rect x="10" y="12" width="44" height="40" rx="12" fill="#3a2856" stroke="#6b4f95" stroke-width="2.5"/>
-          <ellipse id="eyeL" cx="24" cy="30" rx="4" ry="4" fill="#ffd23f"/>
-          <ellipse id="eyeR" cx="40" cy="30" rx="4" ry="4" fill="#ffd23f"/>
-          <path id="mouth" d="M 26 42 Q 32 46 38 42" stroke="#ffd23f" stroke-width="2.6"
-                fill="none" stroke-linecap="round"/>
-        </svg>
-        <div id="msg" role="status" aria-live="polite"></div>
-      </div>
-
-      <div class="preview" id="preview">
-        <span id="previewText">&nbsp;</span>
-        <span id="previewPoints"></span>
-      </div>
-      <div class="power-meter"><div id="powerFill"></div></div>
-
-      <form id="wordForm" autocomplete="off">
-        <label for="wordInput" class="sr-only">Skriv neste ord i kjeden</label>
-        <input id="wordInput" type="text" autocomplete="off" autocapitalize="off"
-               autocorrect="off" spellcheck="false" maxlength="40">
-        <button id="addBtn" type="submit">SMI!</button>
-      </form>
-
-      <button id="hintBtn" type="button">💡 Hint (−3 sek) · <span id="hintsLeft">3</span> igjen</button>
-    </section>
-
-    <!-- ============ SLUTTSKJERM ============ -->
-    <section id="screen-end" class="screen">
-      <div class="rank" id="rankTitle">Ordlærling</div>
-      <div class="final-score"><span id="endScore">0</span><span class="u">POENG</span></div>
-
-      <div class="stats">
-        <div class="stat-card"><span class="k">Ord i kjeden</span><span class="v" id="endWords">0</span></div>
-        <div class="stat-card"><span class="k">Beste kombo</span><span class="v" id="endCombo">×1</span></div>
-        <div class="stat-card"><span class="k">Lengste ord</span><span class="v" id="endLongest">–</span></div>
-        <div class="stat-card"><span class="k">Nivå nådd</span><span class="v" id="endLevel">1</span></div>
-      </div>
-
-      <div id="endChain" class="end-chain" role="list" aria-label="Ordkjeden din"></div>
-      <div class="best-line" id="bestLine"></div>
-
-      <div class="end-actions">
-        <button id="restartBtn" class="btn-big" type="button">SPILL IGJEN</button>
-        <button id="menuBtn" class="sound-toggle" type="button">← Bytt modus</button>
-      </div>
-    </section>
-
-  </div>
-</div>
-
-<canvas id="fxCanvas" aria-hidden="true"></canvas>
-<div id="vignette" aria-hidden="true"></div>
-
-<script type="module" src="js/main.js"></script>
+  <p>Spillet heter nå <strong>Ordtoget</strong>.<br>
+     <a href="../ordtoget/">Fortsett hit hvis du ikke sendes videre automatisk.</a></p>
+  <script>location.replace('../ordtoget/');</script>
 </body>
 </html>

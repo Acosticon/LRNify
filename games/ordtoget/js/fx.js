@@ -1,7 +1,7 @@
 /* =========================================================
    EFFEKTMOTOR — én rAF-løkke som tegner to canvas-lag:
-     bg  = rolige glør som stiger i bakgrunnen
-     fg  = gnister, ringer, poengtekst
+     bg  = stjerner som blinker svakt i bakgrunnen
+     fg  = damp, gnister fra hjulene, ringer og poengtekst
    Pluss skjermrist på et wrapper-element.
    Respekterer prefers-reduced-motion.
    ========================================================= */
@@ -20,16 +20,16 @@ export class Fx {
       ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
       : false;
 
-    this.particles = [];   // gnister (forgrunn)
-    this.embers = [];      // bakgrunnsglør
+    this.sparks = [];
+    this.puffs = [];
     this.rings = [];
     this.texts = [];
+    this.stars = [];
 
     this.shake = 0;
     this.ambient = false;
     this.running = false;
     this.lastT = 0;
-    this.dpr = 1;
 
     this._onResize = () => this.resize();
     window.addEventListener('resize', this._onResize);
@@ -46,6 +46,23 @@ export class Fx {
     }
     this.bgCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.fgCtx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    this._seedStars();
+  }
+
+  _seedStars(){
+    this.stars.length = 0;
+    if(this.reduced) return;
+    const n = Math.round((this.w * this.h) / 26000);
+    for(let i = 0; i < n; i++){
+      this.stars.push({
+        x: Math.random() * this.w,
+        y: Math.random() * this.h * 0.62,
+        r: 0.5 + Math.random() * 1.2,
+        base: 0.16 + Math.random() * 0.4,
+        phase: Math.random() * TAU,
+        speed: 0.4 + Math.random() * 0.9
+      });
+    }
   }
 
   start(){
@@ -72,26 +89,47 @@ export class Fx {
 
   /* ---------------- spawnere ---------------- */
 
-  burst(x, y, count, opts = {}){
+  /** Gnister fra hjulene når en vogn kobles på. */
+  sparks_(x, y, count, opts = {}){
     if(this.reduced) return;
-    const spread = opts.speed || 260;
-    const colors = opts.colors || ['#ffd23f', '#ff8a2b', '#e2560f'];
+    const colors = opts.colors || ['#ffe08a', '#ffc24d', '#d98b0e'];
+    const speed = opts.speed || 240;
     for(let i = 0; i < count; i++){
       const a = Math.random() * TAU;
-      const sp = spread * (0.35 + Math.random() * 0.9);
-      this.particles.push({
+      const sp = speed * (0.3 + Math.random() * 0.9);
+      this.sparks.push({
         x, y,
         vx: Math.cos(a) * sp,
-        vy: Math.sin(a) * sp - 60,
-        life: 0.5 + Math.random() * 0.45,
+        vy: Math.sin(a) * sp - 50,
+        life: 0.45 + Math.random() * 0.4,
         age: 0,
-        size: 1.6 + Math.random() * 2.6,
+        size: 1.4 + Math.random() * 2.4,
         color: colors[(Math.random() * colors.length) | 0]
       });
     }
   }
+  burst(x, y, count, opts){ this.sparks_(x, y, count, opts); }
 
-  ring(x, y, color = '#ffd23f', maxR = 130){
+  /** Dampskyer fra lokomotivet. Små og myke – ellers leser de
+      som grå flekker i stedet for røyk. */
+  steam(x, y, count = 5){
+    if(this.reduced) return;
+    for(let i = 0; i < count; i++){
+      this.puffs.push({
+        x: x + (Math.random() - 0.5) * 10,
+        y: y + (Math.random() - 0.5) * 5,
+        vx: 6 + Math.random() * 20,
+        vy: -(22 + Math.random() * 26),
+        r: 3 + Math.random() * 4,
+        grow: 9 + Math.random() * 11,
+        life: 0.9 + Math.random() * 0.6,
+        age: 0,
+        delay: i * 0.09
+      });
+    }
+  }
+
+  ring(x, y, color = '#ffc24d', maxR = 130){
     if(this.reduced) return;
     this.rings.push({ x, y, r: 8, maxR, life: .55, age: 0, color });
   }
@@ -103,7 +141,7 @@ export class Fx {
       life: opts.life || 0.95,
       age: 0,
       size: opts.size || 26,
-      color: opts.color || '#ffd23f',
+      color: opts.color || '#ffc24d',
       weight: opts.weight || 900
     });
   }
@@ -113,9 +151,9 @@ export class Fx {
     this.shake = Math.min(24, this.shake + amount);
   }
 
-  /** Rydder alt – brukes ved rundestart/slutt. */
   clear(){
-    this.particles.length = 0;
+    this.sparks.length = 0;
+    this.puffs.length = 0;
     this.rings.length = 0;
     this.texts.length = 0;
     this.shake = 0;
@@ -125,16 +163,27 @@ export class Fx {
   /* ---------------- oppdatering ---------------- */
 
   update(dt){
-    const g = 620;   // tyngdekraft for gnister
+    const g = 600;
 
-    for(let i = this.particles.length - 1; i >= 0; i--){
-      const p = this.particles[i];
+    for(let i = this.sparks.length - 1; i >= 0; i--){
+      const p = this.sparks[i];
       p.age += dt;
-      if(p.age >= p.life){ this.particles.splice(i, 1); continue; }
+      if(p.age >= p.life){ this.sparks.splice(i, 1); continue; }
       p.vy += g * dt;
       p.x += p.vx * dt;
       p.y += p.vy * dt;
       p.vx *= 0.985;
+    }
+
+    for(let i = this.puffs.length - 1; i >= 0; i--){
+      const p = this.puffs[i];
+      if(p.delay > 0){ p.delay -= dt; continue; }   // puffene kommer etter hverandre
+      p.age += dt;
+      if(p.age >= p.life){ this.puffs.splice(i, 1); continue; }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy *= 0.985;
+      p.r += p.grow * dt;
     }
 
     for(let i = this.rings.length - 1; i >= 0; i--){
@@ -153,33 +202,8 @@ export class Fx {
       tx.vy *= 0.96;
     }
 
-    // bakgrunnsglør
-    if(this.ambient){
-      if(this.embers.length < 34 && Math.random() < 0.5){
-        this.embers.push({
-          x: Math.random() * this.w,
-          y: this.h + 12,
-          vy: -(14 + Math.random() * 26),
-          vx: (Math.random() - 0.5) * 14,
-          size: 0.8 + Math.random() * 2,
-          alpha: 0.12 + Math.random() * 0.3,
-          drift: Math.random() * TAU
-        });
-      }
-      for(let i = this.embers.length - 1; i >= 0; i--){
-        const e = this.embers[i];
-        e.drift += dt * 1.4;
-        e.y += e.vy * dt;
-        e.x += (e.vx + Math.sin(e.drift) * 9) * dt;
-        if(e.y < -14) this.embers.splice(i, 1);
-      }
-    } else if(this.embers.length){
-      this.embers.length = 0;
-    }
-
-    // skjermrist
     if(this.shake > 0.2){
-      this.shake *= Math.pow(0.0016, dt);   // rask utdemping
+      this.shake *= Math.pow(0.0016, dt);
       const dx = (Math.random() - 0.5) * this.shake;
       const dy = (Math.random() - 0.5) * this.shake;
       if(this.shakeEl) this.shakeEl.style.transform = `translate(${dx}px, ${dy}px)`;
@@ -193,24 +217,40 @@ export class Fx {
 
   draw(){
     const bg = this.bgCtx, fg = this.fgCtx;
+    const now = performance.now() / 1000;
 
     bg.clearRect(0, 0, this.w, this.h);
-    if(this.embers.length){
-      bg.globalCompositeOperation = 'lighter';
-      for(const e of this.embers){
-        bg.globalAlpha = e.alpha;
-        bg.fillStyle = '#ff8a2b';
+    if(this.ambient && this.stars.length){
+      for(const s of this.stars){
+        const a = s.base + Math.sin(now * s.speed + s.phase) * 0.14;
+        bg.globalAlpha = Math.max(0, a);
+        bg.fillStyle = '#dce6ff';
         bg.beginPath();
-        bg.arc(e.x, e.y, e.size, 0, TAU);
+        bg.arc(s.x, s.y, s.r, 0, TAU);
         bg.fill();
       }
       bg.globalAlpha = 1;
-      bg.globalCompositeOperation = 'source-over';
     }
 
     fg.clearRect(0, 0, this.w, this.h);
 
-    // ringer
+    // damp – bak alt annet i forgrunnen, tegnet med myk kant
+    for(const p of this.puffs){
+      if(p.delay > 0) continue;
+      const t = p.age / p.life;
+      // toner inn raskt, ut sakte
+      const alpha = (t < 0.18 ? t / 0.18 : 1 - (t - 0.18) / 0.82) * 0.3;
+      if(alpha <= 0) continue;
+      const grad = fg.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r);
+      grad.addColorStop(0, `rgba(220,230,255,${alpha})`);
+      grad.addColorStop(1, 'rgba(220,230,255,0)');
+      fg.fillStyle = grad;
+      fg.beginPath();
+      fg.arc(p.x, p.y, p.r, 0, TAU);
+      fg.fill();
+    }
+    fg.globalAlpha = 1;
+
     for(const r of this.rings){
       const t = r.age / r.life;
       fg.globalAlpha = (1 - t) * 0.8;
@@ -221,9 +261,8 @@ export class Fx {
       fg.stroke();
     }
 
-    // gnister
     fg.globalCompositeOperation = 'lighter';
-    for(const p of this.particles){
+    for(const p of this.sparks){
       const t = p.age / p.life;
       fg.globalAlpha = 1 - t;
       fg.fillStyle = p.color;
@@ -233,7 +272,6 @@ export class Fx {
     }
     fg.globalCompositeOperation = 'source-over';
 
-    // tekst
     for(const tx of this.texts){
       const t = tx.age / tx.life;
       const pop = t < 0.22 ? 0.6 + (t / 0.22) * 0.55 : 1.05 - (t - 0.22) * 0.08;
@@ -242,7 +280,7 @@ export class Fx {
       fg.textAlign = 'center';
       fg.textBaseline = 'middle';
       fg.lineWidth = 4;
-      fg.strokeStyle = 'rgba(0,0,0,.55)';
+      fg.strokeStyle = 'rgba(0,0,0,.6)';
       fg.strokeText(tx.text, tx.x, tx.y);
       fg.fillStyle = tx.color;
       fg.fillText(tx.text, tx.x, tx.y);

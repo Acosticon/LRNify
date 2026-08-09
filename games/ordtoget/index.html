@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ordtoget</title>
+<meta name="description" content="Ordtoget – bygg et tog av ord der hver vogn starter med siste bokstav i den forrige.">
+<style>
+  :root{
+    --night-1:#131a2e; --night-2:#0b1020;
+    --lamp:#ffc24d; --lamp-hot:#ffe08a;
+    --steel:#8fa3c8; --ink:#f3f6ff; --muted:#9fb0d4;
+    --line:#2c3a5c;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; margin:0; }
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:radial-gradient(900px 420px at 50% 0%, #24304f 0%, transparent 60%),
+               linear-gradient(180deg,var(--night-1),var(--night-2) 75%);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px 16px;
+  }
+  .wrap{ max-width:520px; width:100%; text-align:center; }
+  h1{
+    font-size:clamp(2.2rem,10vw,3.4rem); margin:0; font-weight:900; letter-spacing:.02em;
+    background:linear-gradient(180deg,var(--lamp-hot),var(--lamp) 60%,#d98b0e);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 22px rgba(255,194,77,.45));
+  }
+  .tagline{ color:var(--muted); margin:10px 0 26px; line-height:1.5; }
+  .choices{ display:flex; flex-direction:column; gap:12px; }
+  .choice{
+    display:flex; align-items:center; gap:14px; text-align:left;
+    background:rgba(255,255,255,.05); border:2px solid var(--line);
+    border-radius:16px; padding:16px 18px; min-height:64px;
+    color:var(--ink); text-decoration:none; font:inherit; cursor:pointer;
+    transition:border-color .16s, background .16s;
+  }
+  .choice:hover, .choice:focus-visible{
+    border-color:var(--lamp); background:rgba(255,194,77,.1); outline:none;
+  }
+  .choice .ic{ font-size:1.9rem; line-height:1; }
+  .choice .nm{ font-weight:900; display:block; font-size:1.05rem; }
+  .choice .ds{ color:var(--muted); font-size:.86rem; display:block; margin-top:2px; }
+  .note{ color:#6f80a6; font-size:.8rem; margin-top:22px; line-height:1.5; }
+  .spinner{ color:var(--muted); font-weight:700; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Ordtoget</h1>
+    <p class="tagline">Bygg et tog av ord. Hver vogn må starte med
+      siste bokstav i vogna foran.</p>
+
+    <div id="choices" class="choices" hidden>
+      <a class="choice" href="mobil.html" data-v="mobil">
+        <span class="ic" aria-hidden="true">📱</span>
+        <span><span class="nm">Mobilversjon</span>
+          <span class="ds">Laget for tommelen og skjermtastatur</span></span>
+      </a>
+      <a class="choice" href="pc.html" data-v="pc">
+        <span class="ic" aria-hidden="true">🖥️</span>
+        <span><span class="nm">PC-versjon</span>
+          <span class="ds">Bred skinnegang, tastatursnarveier og togstall</span></span>
+      </a>
+    </div>
+
+    <p id="loading" class="spinner">Kobler vogner …</p>
+    <p class="note">Du kan bytte versjon når som helst inne i spillet.</p>
+  </div>
+
+<script type="module">
+  import { resolve, saveChoice } from './js/device.js';
+
+  const params = new URLSearchParams(location.search);
+  const forceChooser = params.has('velg');
+
+  const choices = document.getElementById('choices');
+  const loading = document.getElementById('loading');
+
+  choices.querySelectorAll('.choice').forEach(a => {
+    a.addEventListener('click', () => saveChoice(a.dataset.v));
+  });
+
+  if(forceChooser){
+    loading.hidden = true;
+    choices.hidden = false;
+  } else {
+    // replace() så «tilbake» ikke havner i en omdirigeringsløkke
+    location.replace(resolve() === 'mobil' ? 'mobil.html' : 'pc.html');
+  }
+</script>
+</body>
+</html>
