@@ -448,17 +448,19 @@ input.shake{ animation:shake .3s; }
   background-repeat:no-repeat;
 }
 
-/* plassen som har et aktivt oppdrag */
-.depot-item.next{
-  border-style:solid; border-color:var(--lamp);
+/* kortet med det aktive oppdraget */
+.mission-card{
+  display:flex; flex-direction:column; gap:3px;
+  border:2px solid var(--lamp); border-radius:15px;
   background:linear-gradient(100deg, rgba(255,194,77,.14), rgba(255,194,77,.03));
+  padding:12px 14px;
 }
-.depot-item.next .slot-ghost{ border-color:var(--lamp); color:var(--lamp); }
-.depot-item.next .dn{ color:var(--lamp); }
-.mission-goal{
-  display:block; color:var(--ink); font-size:.8rem;
-  font-weight:800; margin-top:1px; line-height:1.3;
+.mission-card .mk{
+  font-size:.6rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--lamp); font-weight:900;
 }
+.mission-card .mg{ font-weight:900; font-size:.98rem; line-height:1.3; }
+.mission-card .mh{ color:var(--muted); font-size:.74rem; margin-top:4px; }
 .mission-bar{
   height:6px; border-radius:99px; margin-top:6px;
   background:#151d33; border:1px solid var(--line); overflow:hidden;
@@ -546,6 +548,32 @@ input.shake{ animation:shake .3s; }
 .crate-reveal .mini{ width:78px; height:38px; }
 .crate-reveal .rn{ font-weight:900; font-size:1.15rem; color:var(--lamp-hot); }
 .crate-reveal .rd{ color:var(--muted); font-size:.83rem; max-width:30ch; }
+
+/* ---------- vognhjulet (slot machine) ---------- */
+.reel-window{
+  position:relative; width:100%; height:62px;
+  overflow:hidden; border-radius:12px;
+  background:linear-gradient(180deg,#0f1526,#161e33);
+  border:2px solid var(--line);
+  /* toner ut mot kantene så det ser ut som et hjul som ruller */
+  -webkit-mask-image:linear-gradient(180deg, transparent, #000 26%, #000 74%, transparent);
+          mask-image:linear-gradient(180deg, transparent, #000 26%, #000 74%, transparent);
+}
+.reel{ will-change:transform; }
+.reel-item{
+  height:62px; display:flex; align-items:center; gap:11px;
+  padding:0 14px;
+}
+.reel-item .mini{ flex:0 0 auto; }
+.reel-item .rl{ font-weight:900; font-size:.92rem; color:var(--ink); }
+.reel-marker{
+  position:absolute; inset:0; pointer-events:none;
+  border-top:2px solid rgba(255,194,77,.5);
+  border-bottom:2px solid rgba(255,194,77,.5);
+  box-shadow:inset 0 0 22px rgba(255,194,77,.18);
+}
+.crate-card.spinning{ animation:none; }
+.crate-card.landed .reel-marker{ border-color:var(--lamp-hot); }
 
 /* merknad på knappen inn til vognskjulet */
 .dot-badge{

@@ -89,40 +89,56 @@ og antall hjulpar øker med lengden.
 
 ### Vognskjulet
 
-Du starter med **én** vogn. Resten står som tomme plasser i
-vognskjulet, og låses opp én om gangen.
+Du starter med **én** vogn, godsvogna. De ni andre står som tomme
+plasser og må vinnes.
 
-* Kun **ett oppdrag er aktivt** om gangen. Neste plass viser oppdraget
-  og hvor langt du er kommet.
+* Kun **ett oppdrag er aktivt** om gangen, med framdriftslinje.
 * Alle tellere måles **fra forrige opplåsing** (`since` i
-  `progress.js`), så man kan aldri låse opp to vogner på én gang.
+  `progress.js`), så man kan aldri løse to oppdrag på én gang.
 * Oppdrag sjekkes underveis i runden, ikke bare på slutten.
 
-### Pakker
+Oppdragene bestemmer **når** du får en pakke, ikke **hvilken** vogn du
+får:
 
-Et fullført oppdrag gir ikke vogna med én gang. Den legges som en
-**uåpnet pakke** i vognskjulet, og inngangen får en rød merknad. Går
-du inn, står pakka der og kan pakkes opp – lokket flyr av, lyset
-strømmer ut, og vogna avdukes. Først da låses den opp og neste
-oppdrag starter.
+| # | Oppdrag |
+|---|---------|
+| 1 | Kjør én runde |
+| 2 | Kjør tre runder til |
+| 3 | Lag et tog med 10 vogner |
+| 4 | Bruk et ord på 10 bokstaver |
+| 5 | Få 800 poeng i én runde |
+| 6 | Kjør ti runder til |
+| 7 | Samle 5000 poeng |
+| 8 | Samle 10 000 poeng |
+| 9 | Samle 25 000 poeng |
 
-| Vogn | Oppdrag |
-|------|---------|
-| Godsvogn | – (du starter med den) |
-| Passasjervogn | Kjør én runde |
-| Tømmervogn | Kjør tre runder til |
-| Tankvogn | Lag et tog med 10 vogner |
-| Kjølevogn | Bruk et ord på 10 bokstaver |
-| Sirkusvogn | Få 800 poeng i én runde |
-| Konteinervogn | Kjør ti runder til |
-| Postvogn | Samle 5000 poeng |
-| Rakettvogn | Samle 10 000 poeng |
-| Kongevogn | Samle 25 000 poeng |
+### Pakker og vognhjulet
 
-Damplokomotivet og gullvogna står utenfor opplåsingen: lokomotivet
-trekker alltid toget, og gullvogna kommer av seg selv på gylne ord.
-Gullvogna er bevisst ikke en opplåsing – ellers ville løftet
-«GULLVOGN! ×3» vist en helt vanlig vogn.
+Et fullført oppdrag legger en **uåpnet pakke** i vognskjulet, og
+inngangen får en rød merknad. Resultatskjermen har en snarvei rett inn.
+
+Trykker du på pakka rister den, lokket flyr av – og så starter
+**vognhjulet**: en slot machine som ruller gjennom vogntypene, bremser
+med tikkende lyd og lander på gevinsten. Hva du får avgjøres først i
+det øyeblikket, av en vektet trekning blant vognene du ikke har fra før.
+
+Trekningen er semi-tilfeldig. Hver vogn har en `tier`, og vektene
+flytter seg etter hvor langt du er kommet:
+
+| Tier | Vogner | Tidlig | Midtveis | Sent |
+|------|--------|--------|----------|------|
+| 1 – vanlig | Passasjer, Tømmer, Konteiner | 10 | 5 | 2 |
+| 2 – uvanlig | Tank, Kjøle, Post | 4 | 8 | 5 |
+| 3 – sjelden | Sirkus, Rakett, Konge | 1 | 4 | 10 |
+
+Du kan altså få Kongevogna på første trekning – det er bare lite
+sannsynlig. Mot slutten er de sjeldne mest sannsynlige, og siden
+allerede vunne vogner faller ut av puljen, får du aldri duplikater.
+
+Damplokomotivet og gullvogna står utenfor: lokomotivet trekker alltid
+toget, og gullvogna kommer av seg selv på gylne ord. Gullvogna er
+bevisst ikke en gevinst – ellers ville løftet «GULLVOGN! ×3» vist en
+helt vanlig vogn.
 
 ## Spillmoduser
 
@@ -168,9 +184,12 @@ Bokmålsordboka (`api.ordbokene.no`) for ord ingen av listene kjenner.
 
 ## Lagring
 
-Framgang lagres i `localStorage` under `ordtoget-progress-v1`
-(rekorder per modus, opplåste vogner, uåpnet pakke og tellerne siden
-forrige opplåsing), og versjonsvalget under `ordtoget-versjon`.
+Framgang lagres i `localStorage` under `ordtoget-progress-v2`
+(rekorder per modus, vunne vogner, uåpnet pakke, oppdragsnummer og
+tellerne siden forrige opplåsing), og versjonsvalget under
+`ordtoget-versjon`. Nøkkelen ble bumpet fra `v1` da opplåsingen ble
+lagt om – gammel data hadde flere vogner åpne enn den nye modellen
+tillater, og blir liggende ubrukt.
 Kun tall og vogn-id-er – ingen persondata.
 Feiler lagringen (privat nettlesermodus), kjører spillet videre uten
 å lagre.

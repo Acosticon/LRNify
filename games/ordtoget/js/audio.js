@@ -128,6 +128,18 @@ export class Sfx {
     [523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, i * .1, .34, 'triangle', .15));
     setTimeout(() => this.whistle(), 520);
   }
+  /** Ett klikk fra hjulet som snurrer. */
+  reelTick(){
+    this.tone(1250, 0, .035, 'square', .055);
+    this.noise(.03, .035, 2600);
+  }
+
+  /** Hjulet stopper på en vogn. */
+  reelStop(){
+    this.tone(660, 0, .1, 'triangle', .14);
+    this.tone(990, .05, .16, 'triangle', .12);
+  }
+
   /** Ny vogntype låst opp. (Ikke forveksle med unlock(), som
       åpner AudioContext etter en brukerhandling.) */
   unlocked(){
