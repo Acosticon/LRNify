@@ -706,6 +706,60 @@
   .finale-curtain.close { animation: curtain-close .55s steps(6,end) forwards; }
   @keyframes curtain-close { 0% { height: 26%; } 100% { height: 104%; } }
 
+  /* ── NARRATIVE TILSTANDER ──
+     Hver finale forteller én handling: kongen kroner trollmannen, dragen
+     napper hatten hans, eller dragen bærer ham bort. Delene under er
+     før/etter-tilstandene den handlingen etterlater. */
+
+  /* Kongen forlater tårnet og går bort til trollmannen */
+  .king-tower { transition: transform 1.3s steps(11,end); }
+  .king.walking { animation: king-walk .34s steps(2,end) infinite; }
+  @keyframes king-walk {
+    0%,100% { transform: translateY(0) rotate(-4deg); }
+    50%     { transform: translateY(-5px) rotate(4deg); }
+  }
+
+  /* Kronen trollmannen får når han slås til ridder */
+  .wiz-crown {
+    position: absolute; left: 1.15em; bottom: 4.55em; width: 2.1em; height: .85em;
+    background: var(--gold); border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 0 40%, 18% 100%, 30% 15%, 50% 100%, 70% 15%, 82% 100%, 100% 40%, 100% 100%);
+    box-shadow: inset -.26em -.18em 0 rgba(0,0,0,.2);
+    opacity: 0; transition: opacity .3s ease;
+  }
+  .wizard.crowned .wiz-crown { opacity: 1; }
+  .wizard.hatless .wiz-hat { opacity: 0; transition: opacity .3s ease; }
+
+  /* Kronen som flyr fra kongens hode til trollmannens */
+  .flying-crown {
+    position: absolute; width: 1.7em; height: .8em;
+    font-size: clamp(9px, 3.4vw, 15px);
+    background: var(--gold); border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 0 40%, 18% 100%, 30% 15%, 50% 100%, 70% 15%, 82% 100%, 100% 40%, 100% 100%);
+    transform: translate(-50%,-50%); z-index: 9; pointer-events: none;
+    filter: drop-shadow(0 0 6px rgba(255,209,102,.8));
+  }
+
+  /* Trollmannen som blir båret bort — han sparker imot */
+  /* Han henger og dingler, så det ikke bare ser ut som at drage og
+     trollmann tilfeldigvis overlapper hverandre. */
+  .wizard.carried {
+    animation: none; z-index: 8;
+    transform: translate(-50%,-100%) rotate(-15deg) scale(.92);
+  }
+  .wizard.carried .wiz-body { animation: wiz-kick .3s steps(2,end) infinite; }
+  .wizard.carried .wiz-arm  { animation: wiz-flail .26s steps(2,end) infinite; }
+  @keyframes wiz-kick  { 0%,100%{ transform: rotate(-9deg); } 50%{ transform: rotate(9deg); } }
+  @keyframes wiz-flail { 0%,100%{ transform: rotate(-60deg); } 50%{ transform: rotate(-115deg); } }
+
+  /* Hatten dragen stjeler, plassert på dragens hode */
+  .dg-hat {
+    position: absolute; left: 3.05em; top: -.55em; width: 1.35em; height: 1em;
+    background: #2c3e78; border: .14em solid var(--line);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+    box-shadow: inset -.2em -.16em 0 rgba(0,0,0,.28);
+  }
+
   .scene-frame.shake { animation: scene-shake .5s steps(6,end); }
   @keyframes scene-shake {
     0%,100% { transform: translate(0,0); }
@@ -800,6 +854,7 @@
           <span class="wiz-body"></span>
           <span class="wiz-hem"></span>
           <span class="wiz-arm" id="wizArm"></span>
+          <span class="wiz-crown"></span>
         </div>
 
         <div class="cannon-slider"
@@ -1154,27 +1209,27 @@ const ENDINGS = {
   ],
   triumf: [
     { emoji: '🏰👑', title: 'Rikets vinkelmester', king: 'TIL RIDDER MED DEG!',
-      sub: 'Kongen har allerede bestilt statue. I gull. Av seg selv.' },
-    { emoji: '🏰✨', title: 'Dragefri himmel', king: 'HIMMELEN ER MIN IGJEN!',
-      sub: 'Dragene har søkt asyl i nabokongeriket. Vinkelmessig uforsvarlig der også.' },
-    { emoji: '🏰🎉', title: 'Trollmannen får fri', king: 'TA HELGEN, MAGIKER!',
-      sub: 'Kongen har gitt deg fri på fredag. Han har glemt det innen torsdag.' },
+      sub: 'Kongen ga fra seg kronen på stedet. Han angrer allerede litt.' },
+    { emoji: '🏰✨', title: 'Kronet på muren', king: 'DEN ER DIN, MAGIKER!',
+      sub: 'Kongen kom ned fra tårnet for første gang på tolv år. Det tok på.' },
+    { emoji: '🏰🎉', title: 'Hoffets nye helt', king: 'HELE RIKET JUBLER!',
+      sub: 'Du fikk kronen, tittelen og kongens egen stol. Stolen er ikke behagelig.' },
   ],
   middels: [
-    { emoji: '🏰🧱', title: 'Muren står. Stort sett.', king: 'Vi... klarte oss.',
-      sub: 'Ingen omkom. Kongen kaller det en seier. Muromkostningene er en annen sak.' },
+    { emoji: '🏰🎩', title: 'Hatten er tapt', king: 'IKKE HATTEN!',
+      sub: 'Muren står. Hatten gjør ikke. Kongen kaller det uavgjort.' },
     { emoji: '🏰🤷', title: 'Godkjent av kongen (så vidt)', king: 'Javel. Greit nok.',
-      sub: 'Kongen nikket. Det var mest for å få nakken til å knekke, men han nikket.' },
+      sub: 'Dragen slapp unna med hodeplagget ditt. Kongen nikket likevel.' },
     { emoji: '🏰📜', title: 'Delvis heroisk', king: 'Rådet vurderer saken.',
-      sub: 'Skjoldet holdt. Æren er fortsatt til behandling i rådet.' },
+      sub: 'Skjoldet holdt. Hatten er nå dragens problem.' },
   ],
   katastrofe: [
-    { emoji: '🐉🛋️', title: 'Dragene har flyttet inn', king: 'DE HAR MED BAGASJE!',
-      sub: 'De har tatt med sofa. De blir til over påske.' },
-    { emoji: '🐉👑', title: 'Ny ledelse i borgen', king: 'DEN TOK KRONEN MIN!',
-      sub: 'Dragen har allerede innført nye åpningstider i tronsalen.' },
     { emoji: '🐉📢', title: 'Kongen søker ny trollmann', king: 'VAKTER! ...VAKTER?',
-      sub: 'Stillingen er utlyst. Kravene er senket betraktelig.' },
+      sub: 'Stillingen ble ledig ganske brått. Kravene er senket betraktelig.' },
+    { emoji: '🐉💼', title: 'Bortført i tjeneste', king: 'DEN TOK HAM!',
+      sub: 'Dragen tok trollmannen. Kongen har allerede begynt å rydde kontoret hans.' },
+    { emoji: '🐉🍽️', title: 'Dragen tok med seg lunsj', king: 'KOM TILBAKE MED HAM!',
+      sub: 'Det var ikke lunsj. Det var deg.' },
   ],
 };
 
@@ -1464,16 +1519,29 @@ function lockAngle() {
 /* ── FINALESKETSJEN ──
    Spilles i borgscenen med figurene som allerede står der, før
    resultatskjermen vises. */
-const FINALE_MS = REDUCED_MOTION ? 0 : 3800;
 const finaleLayer = $('finaleLayer');
 
 function resetFinale() {
   finaleLayer.innerHTML = '';
   document.querySelectorAll('body > .escapee').forEach(el => el.remove());
-  kingEl.classList.remove('cheer-loop', 'clap-loop', 'panic-loop', 'crownless');
-  wizardEl.classList.remove('victory');
+  kingEl.classList.remove('cheer-loop', 'clap-loop', 'panic-loop', 'crownless', 'walking', 'wince');
   kingBubble.classList.remove('show');
   $('sceneFrame').classList.remove('shake');
+
+  /* Kongen tilbake i tårnet og trollmannen tilbake på muren, uten at
+     tilbakestillingen selv animeres. */
+  const tower = document.querySelector('.king-tower');
+  tower.style.transition = 'none';
+  tower.style.transform = 'none';
+
+  wizardEl.style.transition = 'none';
+  wizardEl.classList.remove('victory', 'crowned', 'hatless', 'carried', 'casting');
+  wizardEl.style.left = '50%';
+  wizardEl.style.top = '88%';
+
+  void wizardEl.offsetWidth;
+  tower.style.transition = '';
+  wizardEl.style.transition = '';
 }
 
 function shakeScene() {
@@ -1528,136 +1596,181 @@ function cloneDragon(extraClass) {
   return d;
 }
 
-function finaleTriumph() {
-  kingEl.classList.add('cheer-loop');
-  wizardEl.classList.add('victory');
-  addCurtain('drop', 250);
+/* Én figur som gjør én tydelig ting, ordentlig animert. Hjelperne under
+   deles av alle tre finalene. */
 
-  /* Folkemengden må være samlet i god tid før scenen kuttes, ellers
-     rekker den aldri å bli en folkemengde. Siste mini lander ~2,4 s,
-     som gir drøyt ett sekund med full jubel. */
-  for (let i = 0; i < 14; i++) {
+function rainCrowd(count, startDelay) {
+  for (let i = 0; i < count; i++) {
     setTimeout(() => {
       const m = document.createElement('div');
       m.className = 'mini-wiz rain';
       m.style.left = (5 + Math.random() * 88) + '%';
       m.style.setProperty('--from', -(140 + Math.random() * 90) + 'px');
-      const fall = 800 + Math.random() * 450;
+      const fall = 700 + Math.random() * 350;
       m.style.setProperty('--fall-ms', fall + 'ms');
       finaleLayer.appendChild(m);
       setTimeout(() => { m.classList.remove('rain'); m.classList.add('cheer'); }, fall);
-    }, 350 + i * 70);
+    }, startDelay + i * 65);
   }
+}
 
+function burstIcons(icons, perIcon, area) {
+  icons.forEach((icon, i) => {
+    for (let k = 0; k < perIcon; k++) {
+      const fx = document.createElement('span');
+      fx.className = 'fx-mini';
+      fx.textContent = icon;
+      fx.style.left = (area.x + Math.random() * area.w) + '%';
+      fx.style.top = (area.y + Math.random() * area.h) + '%';
+      fx.style.animationDelay = (i * 90 + k * 60) + 'ms';
+      finaleLayer.appendChild(fx);
+      requestAnimationFrame(() => fx.classList.add('pop'));
+    }
+  });
+}
+
+function closeCurtain(delay) {
   setTimeout(() => {
-    ['✨', '👑', '🎉'].forEach((icon, i) => {
-      for (let k = 0; k < 4; k++) {
-        const fx = document.createElement('span');
-        fx.className = 'fx-mini';
-        fx.textContent = icon;
-        fx.style.left = (12 + Math.random() * 76) + '%';
-        fx.style.top = (25 + Math.random() * 40) + '%';
-        fx.style.animationDelay = (i * 90 + k * 60) + 'ms';
-        finaleLayer.appendChild(fx);
-        requestAnimationFrame(() => fx.classList.add('pop'));
-      }
+    const c = finaleLayer.querySelector('.finale-curtain');
+    if (c) { c.classList.remove('drop'); c.classList.add('close'); }
+  }, delay);
+}
+
+/* Plasserer en drageklon i scenen med en gitt startposisjon. */
+function spawnActorDragon(leftPct, topPct) {
+  const d = cloneDragon();
+  d.style.left = leftPct + '%';
+  d.style.top = topPct + '%';
+  finaleLayer.appendChild(d);
+  void d.offsetWidth;
+  return d;
+}
+function flyTo(el, leftPct, topPct, ms, easing) {
+  el.style.transition = `left ${ms}ms ${easing}, top ${ms}ms ${easing}`;
+  requestAnimationFrame(() => { el.style.left = leftPct + '%'; el.style.top = topPct + '%'; });
+}
+
+/* ══ TRIUMF: Kongen forlater tårnet og kroner trollmannen ══ */
+function finaleTriumph() {
+  const tower = document.querySelector('.king-tower');
+  kingEl.classList.add('cheer-loop');
+  addCurtain('drop', 200);
+
+  /* 1. Kongen klatrer ned og går bort til trollmannen */
+  setTimeout(() => {
+    kingEl.classList.remove('cheer-loop');
+    kingEl.classList.add('walking');
+    const t = tower.getBoundingClientRect();
+    const w = wizardEl.getBoundingClientRect();
+    tower.style.transform =
+      'translate(' + ((w.right + w.width * 0.35) - t.left) + 'px, ' + (w.bottom - t.bottom) + 'px)';
+  }, 550);
+
+  /* 2. Han tar av sin egen krone og setter den på trollmannen */
+  setTimeout(() => {
+    kingEl.classList.remove('walking');
+    kingEl.classList.add('crownless');
+
+    const scene = $('sceneFrame').getBoundingClientRect();
+    const from = kingEl.querySelector('.king-crown').getBoundingClientRect();
+    const to = wizardEl.getBoundingClientRect();
+    const crown = document.createElement('div');
+    crown.className = 'flying-crown';
+    crown.style.left = pctX((from.left + from.width / 2 - scene.left) * 440 / scene.width) + '%';
+    crown.style.top = pctY((from.top + from.height / 2 - scene.top) * 250 / scene.height) + '%';
+    finaleLayer.appendChild(crown);
+    void crown.offsetWidth;
+    crown.style.transition = 'left .75s ease-in-out, top .75s ease-in-out';
+    requestAnimationFrame(() => {
+      crown.style.left = pctX((to.left + to.width / 2 - scene.left) * 440 / scene.width) + '%';
+      crown.style.top = pctY((to.top - scene.top) * 250 / scene.height) + '%';
     });
-  }, 1100);
+    setTimeout(() => {
+      crown.remove();
+      wizardEl.classList.add('crowned');
+      burstIcons(['✨', '👑'], 4, { x: 30, y: 30, w: 40, h: 25 });
+    }, 800);
+  }, 2000);
 
-  /* Halve folkemengden løper ut av rammen og over siden i ren begeistring */
+  /* 3. Riket feirer den nye vinkelmesteren */
   setTimeout(() => {
-    releaseEscapees('#finaleLayer .mini-wiz', 7, (i, r) => {
+    kingEl.classList.add('cheer-loop');
+    wizardEl.classList.add('victory');
+    rainCrowd(12, 0);
+    burstIcons(['🎉', '✨'], 4, { x: 12, y: 25, w: 76, h: 35 });
+  }, 2900);
+
+  setTimeout(() => {
+    releaseEscapees('#finaleLayer .mini-wiz', 6, (i, r) => {
       const goLeft = r.left < window.innerWidth / 2;
       return {
         rx: (goLeft ? -1 : 1) * (window.innerWidth * 0.7 + Math.random() * 200),
         ry: -40 - Math.random() * 90,
         rot: (goLeft ? -1 : 1) * (360 + Math.random() * 360),
-        ms: 1700 + Math.random() * 700,
+        ms: 1500 + Math.random() * 600,
       };
     });
-  }, 2700);
+  }, 4200);
 
-  /* Teppefall til slutt — forestillingen er over */
-  setTimeout(() => {
-    const c = finaleLayer.querySelector('.finale-curtain');
-    if (c) { c.classList.remove('drop'); c.classList.add('close'); }
-  }, 3550);
+  closeCurtain(4700);
 }
 
+/* ══ MIDDELS: Dragen napper hatten og stikker av med den ══ */
 function finaleMiddling() {
   kingEl.classList.add('clap-loop');
-  addCurtain('stuck', 350);
+  addCurtain('stuck', 300);
 
-  /* Én drage titter så vidt opp bak muren, ser hvordan det står til,
-     og synker ned igjen uten å si noe. */
+  const d = spawnActorDragon(-22, 34);
+  flyTo(d, 40, 60, 1300, 'linear');
+
+  /* Den napper hatten idet den passerer */
   setTimeout(() => {
-    const d = cloneDragon('peek');
-    d.style.left = '24%';
-    d.style.top = '104%';
-    finaleLayer.appendChild(d);
-    setTimeout(() => d.remove(), 2000);
-  }, 1150);
+    wizardEl.classList.add('hatless');
+    const hat = document.createElement('span');
+    hat.className = 'dg-hat';
+    d.appendChild(hat);
+    burstIcons(['💨'], 3, { x: 38, y: 40, w: 20, h: 18 });
+  }, 1600);
+
+  /* Og forsvinner med den */
+  setTimeout(() => flyTo(d, 128, 8, 1500, 'ease-in'), 2100);
+
+  setTimeout(() => {
+    kingEl.classList.remove('clap-loop');
+    kingEl.classList.add('wince');
+  }, 2300);
 }
 
+/* ══ KATASTROFE: Dragen griper trollmannen og flyr av sted med ham ══ */
 function finaleDisaster() {
   kingEl.classList.add('panic-loop');
 
-  const perches = [14, 33, 52, 71, 88];
-  perches.forEach((leftPct, i) => {
-    setTimeout(() => {
-      const d = cloneDragon();
-      d.style.left = (leftPct < 50 ? -20 : 120) + '%';
-      d.style.top = (12 + Math.random() * 22) + '%';
-      finaleLayer.appendChild(d);
-      void d.offsetWidth;
-      d.style.transition = 'left 1.1s ease-out, top 1.1s ease-out';
-      requestAnimationFrame(() => {
-        d.style.left = leftPct + '%';
-        d.style.top = '77%';
-      });
-    }, 200 + i * 200);
-  });
+  const d = spawnActorDragon(124, 26);
+  flyTo(d, 50, 52, 1400, 'linear');
 
-  /* Kronen skifter eier. */
+  /* Den griper trollmannen — han løftes opp under dragen og sparker imot */
+  setTimeout(() => {
+    shakeScene();
+    d.classList.add('breathing');
+    wizardEl.classList.add('carried');
+    wizardEl.style.transition = 'left .45s ease-out, top .45s ease-out, transform .45s ease-out';
+    wizardEl.style.top = '74%';
+    burstIcons(['💢'], 3, { x: 44, y: 42, w: 18, h: 16 });
+  }, 1450);
+
+  /* Og bærer ham ut av bildet */
+  setTimeout(() => {
+    flyTo(d, -28, -14, 1700, 'ease-in');
+    wizardEl.style.transition = 'left 1700ms ease-in, top 1700ms ease-in, transform .45s ease-out';
+    wizardEl.style.left = '-28%';
+    wizardEl.style.top = '8%';
+  }, 2100);
+
+  /* Kongen står igjen alene på muren */
   setTimeout(() => {
     kingEl.classList.add('crownless');
-    const crown = document.createElement('div');
-    crown.className = 'stolen-crown';
-    crown.style.left = '52%';
-    crown.style.top = '68%';
-    finaleLayer.appendChild(crown);
-    requestAnimationFrame(() => crown.classList.add('pop'));
-  }, 1900);
-
-  setTimeout(() => {
-    ['💢', '🔥'].forEach((icon, i) => {
-      for (let k = 0; k < 3; k++) {
-        const fx = document.createElement('span');
-        fx.className = 'fx-mini';
-        fx.textContent = icon;
-        fx.style.left = (60 + Math.random() * 34) + '%';
-        fx.style.top = (18 + Math.random() * 22) + '%';
-        fx.style.animationDelay = (i * 100 + k * 70) + 'ms';
-        finaleLayer.appendChild(fx);
-        requestAnimationFrame(() => fx.classList.add('pop'));
-      }
-    });
-  }, 2400);
-
-  /* Dragene puster ild og flyr ut av rammen, over hele siden */
-  setTimeout(() => {
-    finaleLayer.querySelectorAll('.finale-dragon').forEach(d => d.classList.add('breathing'));
-    shakeScene();
-  }, 2200);
-
-  setTimeout(() => {
-    releaseEscapees('#finaleLayer .finale-dragon', 3, (i, r) => ({
-      rx: window.innerWidth * 0.85 + Math.random() * 160,
-      ry: -60 - Math.random() * 120,
-      rot: 0,
-      ms: 1800 + Math.random() * 500,
-    }));
-  }, 2900);
+    burstIcons(['😱', '💢'], 3, { x: 62, y: 16, w: 30, h: 20 });
+  }, 3200);
 }
 
 function playFinale(ending, done) {
@@ -1668,11 +1781,14 @@ function playFinale(ending, done) {
 
   if (REDUCED_MOTION) { done(); return; }
 
-  if (ending.tier === 'middels') finaleMiddling();
-  else if (ending.tier === 'katastrofe') finaleDisaster();
-  else finaleTriumph();
+  /* Hvert narrativ har sin egen lengde — kroningen tar lengst tid fordi
+     kongen må gå hele veien bort til trollmannen først. */
+  let runMs;
+  if (ending.tier === 'middels') { finaleMiddling(); runMs = 4200; }
+  else if (ending.tier === 'katastrofe') { finaleDisaster(); runMs = 4600; }
+  else { finaleTriumph(); runMs = 5500; }
 
-  setTimeout(done, FINALE_MS);
+  setTimeout(done, runMs);
 }
 
 function startFinale() {
