@@ -242,7 +242,10 @@
     padding:2px 4px;
   }
   #errorMsg.ok{ color:var(--good); }
+  #errorMsg.checking{ color:var(--ink-soft); font-weight:600; }
   #errorMsg:empty{ visibility:hidden; }
+
+  #wordInput:disabled, #addBtn:disabled{ opacity:.6; cursor:default; }
 
   .sr-only{
     position:absolute; width:1px; height:1px; padding:0; margin:-1px;
@@ -340,11 +343,13 @@
   "use strict";
 
   /* =========================================================
-     ORDLISTE — innebygd, ca. 490 vanlige norske substantiv,
-     verb og adjektiv (grunnform / infinitiv). Rediger fritt,
-     ett ord per "token", skilt med mellomrom/linjeskift.
+     STARTORD — innebygd, ca. 490 vanlige og korte norske
+     substantiv, verb og adjektiv (grunnform / infinitiv).
+     Brukes KUN til å trekke et hyggelig, gjenkjennelig
+     startord for runden — selve ordgodkjenningen bruker den
+     mye større ordboken i ordliste.txt (se lenger ned).
      ========================================================= */
-  var WORD_LIST_RAW = "\
+  var SEED_WORDS_RAW = "\
     hus bil katt hund fugl fisk bok stol bord dør \
     vindu skole lærer elev venn familie mor far søster bror \
     barn mann kvinne gutt jente by land verden konge dronning \
@@ -403,13 +408,70 @@
     esel eik enkel edderkopp energi erte \
   ";
 
-  var WORDS = new Set(WORD_LIST_RAW.trim().split(/\s+/));
-  var WORDS_ARR = Array.from(WORDS);
+  var SEED_WORDS = new Set(SEED_WORDS_RAW.trim().split(/\s+/));
+  var SEED_WORDS_ARR = Array.from(SEED_WORDS);
+
+  /* =========================================================
+     HOVEDORDBOK — hele Norsk Ordbank (bokmål, fullformer),
+     levert av Nasjonalbiblioteket/Språkbanken. Lastes fra
+     ordliste.txt (en fil i samme mappe, ett ord per linje —
+     ca. 581 000 bøyningsformer, egennavn/forkortelser/symboler
+     fjernet). Dette er hovedkilden for å godkjenne innsendte
+     ord; STARTORD over brukes bare til å velge rundens åpningsord.
+     ========================================================= */
+  var BIG_WORDS = new Set();
+  var bigListStatus = 'loading'; // 'loading' | 'ready' | 'error'
+  var BIG_WORDLIST_URL = 'ordliste.txt';
+  var BIG_WORDLIST_TIMEOUT_MS = 10000;
+
+  function loadBigWordList(){
+    var timedOut = false;
+    var timeoutId = setTimeout(function(){
+      timedOut = true;
+      if(bigListStatus === 'loading'){
+        bigListStatus = 'error';
+        updateStartAvailability();
+      }
+    }, BIG_WORDLIST_TIMEOUT_MS);
+
+    fetch(BIG_WORDLIST_URL)
+      .then(function(res){
+        if(!res.ok) throw new Error('http ' + res.status);
+        return res.text();
+      })
+      .then(function(text){
+        if(timedOut) return;
+        clearTimeout(timeoutId);
+        var words = text.split(/\s+/);
+        for(var i = 0; i < words.length; i++){
+          if(words[i]) BIG_WORDS.add(words[i]);
+        }
+        bigListStatus = 'ready';
+        updateStartAvailability();
+      })
+      .catch(function(){
+        if(timedOut) return;
+        clearTimeout(timeoutId);
+        bigListStatus = 'error';
+        updateStartAvailability();
+      });
+  }
 
   var START_TIME = 20;
   var MAX_TIME = 20;
   var TIME_BONUS = 5;
   var TICK_MS = 100;
+
+  /* =========================================================
+     ONLINE ORDBOK (siste utvei) — Bokmålsordboka via
+     Språkrådet/UiBs API (api.ordbokene.no). SEED_WORDS og
+     BIG_WORDS dekker allerede det aller meste; ord som likevel
+     ikke finnes i noen av dem sjekkes mot nettordboken før de
+     avvises. Spillet krever derfor nettilgang.
+     ========================================================= */
+  var DICT_API_URL = 'https://api.ordbokene.no/api/v1/concepts';
+  var DICT_TIMEOUT_MS = 4000;
+  var onlineCheckToken = 0;
 
   var screens = {
     start: document.getElementById('screen-start'),
@@ -420,6 +482,7 @@
   var restartBtn = document.getElementById('restartBtn');
   var wordForm = document.getElementById('wordForm');
   var wordInput = document.getElementById('wordInput');
+  var addBtn = document.getElementById('addBtn');
   var errorMsg = document.getElementById('errorMsg');
   var chainEl = document.getElementById('chain');
   var endChainEl = document.getElementById('endChain');
@@ -442,6 +505,16 @@
     Object.keys(screens).forEach(function(key){
       screens[key].classList.toggle('active', key === name);
     });
+  }
+
+  function updateStartAvailability(){
+    if(bigListStatus === 'loading'){
+      startBtn.disabled = true;
+      startBtn.textContent = 'Laster ordliste …';
+    } else {
+      startBtn.disabled = false;
+      startBtn.textContent = 'Start';
+    }
   }
 
   function normalize(raw){
@@ -490,8 +563,90 @@
   }
 
   function setError(text, ok){
+    errorMsg.classList.remove('checking');
     errorMsg.textContent = text || '';
     errorMsg.classList.toggle('ok', !!ok);
+  }
+
+  function setChecking(isChecking){
+    wordInput.disabled = isChecking;
+    addBtn.disabled = isChecking;
+    if(isChecking){
+      errorMsg.classList.remove('ok');
+      errorMsg.classList.add('checking');
+      errorMsg.textContent = 'Sjekker ordet …';
+    } else {
+      errorMsg.classList.remove('checking');
+    }
+  }
+
+  function resetInput(){
+    wordInput.value = '';
+    wordInput.focus();
+  }
+
+  function acceptWord(word){
+    chain.push(word);
+    usedWords.add(word);
+    score += 1;
+    timeLeft = Math.min(MAX_TIME, timeLeft + TIME_BONUS);
+    scoreVal.textContent = String(score);
+    setError('Riktig!', true);
+    renderChain(true);
+    updateTimerUI();
+    updatePlaceholder();
+    resetInput();
+  }
+
+  function rejectWord(message){
+    setError(message, false);
+    wordInput.classList.remove('shake');
+    // tvinger reflow slik at risteanimasjonen kan spilles på nytt
+    void wordInput.offsetWidth;
+    wordInput.classList.add('shake');
+    resetInput();
+  }
+
+  /* Best mulig tolkning av svaret fra api.ordbokene.no sitt
+     concepts-endepunkt. Strukturen er ikke offisielt dokumentert
+     ett-til-ett, så vi sjekker flere kjente former defensivt i
+     stedet for å stole blindt på én bestemt nøkkel. */
+  function wordFoundInDictResponse(data, word){
+    if(!data || typeof data !== 'object') return false;
+    var w = word.toLocaleLowerCase('nb-NO');
+
+    if(data.a && typeof data.a === 'object'){
+      var keys = Object.keys(data.a);
+      for(var i = 0; i < keys.length; i++){
+        if(keys[i].toLocaleLowerCase('nb-NO') === w){
+          var hit = data.a[keys[i]];
+          if(hit && (!Array.isArray(hit) || hit.length > 0)) return true;
+        }
+      }
+    }
+    if(data.articles && data.articles.bm && Object.keys(data.articles.bm).length > 0){
+      return true;
+    }
+    return false;
+  }
+
+  function checkWordOnline(word){
+    var url = DICT_API_URL + '?w=' + encodeURIComponent(word) + '&dict=bm&scope=e';
+    var controller = ('AbortController' in window) ? new AbortController() : null;
+    var timeoutId = controller ? setTimeout(function(){ controller.abort(); }, DICT_TIMEOUT_MS) : null;
+    return fetch(url, controller ? { signal: controller.signal } : {})
+      .then(function(res){
+        if(timeoutId) clearTimeout(timeoutId);
+        if(!res.ok) throw new Error('Nettverksfeil (' + res.status + ')');
+        return res.json();
+      })
+      .then(function(data){
+        var found = wordFoundInDictResponse(data, word);
+        if(!found && window.console && console.debug){
+          console.debug('[Ordkjedeverkstedet] Fant ikke «' + word + '» i ordbok-responsen. Rådata:', data);
+        }
+        return found;
+      });
   }
 
   function tick(){
@@ -507,6 +662,8 @@
 
   function startRound(){
     if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
+    onlineCheckToken++;
+    setChecking(false);
 
     chain = [];
     usedWords = new Set();
@@ -514,7 +671,7 @@
     timeLeft = START_TIME;
     roundActive = true;
 
-    var startWord = WORDS_ARR[Math.floor(Math.random() * WORDS_ARR.length)];
+    var startWord = SEED_WORDS_ARR[Math.floor(Math.random() * SEED_WORDS_ARR.length)];
     chain.push(startWord);
     usedWords.add(startWord);
 
@@ -533,6 +690,8 @@
 
   function endRound(){
     roundActive = false;
+    onlineCheckToken++;
+    setChecking(false);
     if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
 
     bestScore = Math.max(bestScore, score);
@@ -554,37 +713,36 @@
     if(word === ''){ return; }
 
     var requiredLetter = lastLetter(chain[chain.length - 1]);
-    var ok = false;
 
-    if(!WORDS.has(word)){
-      setError('Ordet finnes ikke i ordlisten', false);
-    } else if(word.charAt(0) !== requiredLetter){
-      setError('Ordet må starte med «' + requiredLetter.toLocaleUpperCase('nb-NO') + '»', false);
-    } else if(usedWords.has(word)){
-      setError('Dette ordet er allerede brukt', false);
-    } else {
-      ok = true;
+    if(word.charAt(0) !== requiredLetter){
+      rejectWord('Ordet må starte med «' + requiredLetter.toLocaleUpperCase('nb-NO') + '»');
+      return;
+    }
+    if(usedWords.has(word)){
+      rejectWord('Dette ordet er allerede brukt');
+      return;
+    }
+    if(SEED_WORDS.has(word) || BIG_WORDS.has(word)){
+      acceptWord(word);
+      return;
     }
 
-    if(ok){
-      chain.push(word);
-      usedWords.add(word);
-      score += 1;
-      timeLeft = Math.min(MAX_TIME, timeLeft + TIME_BONUS);
-      scoreVal.textContent = String(score);
-      setError('Riktig!', true);
-      renderChain(true);
-      updateTimerUI();
-      updatePlaceholder();
-    } else {
-      wordInput.classList.remove('shake');
-      // tvinger reflow slik at risteanimasjonen kan spilles på nytt
-      void wordInput.offsetWidth;
-      wordInput.classList.add('shake');
-    }
-
-    wordInput.value = '';
-    wordInput.focus();
+    // Ikke i den innebygde listen — sjekk mot nettordboken før vi avviser.
+    var myToken = ++onlineCheckToken;
+    setChecking(true);
+    checkWordOnline(word).then(function(found){
+      if(myToken !== onlineCheckToken || !roundActive) return;
+      setChecking(false);
+      if(found){
+        acceptWord(word);
+      } else {
+        rejectWord('Ordet finnes ikke i ordlisten');
+      }
+    }).catch(function(){
+      if(myToken !== onlineCheckToken || !roundActive) return;
+      setChecking(false);
+      rejectWord('Kunne ikke sjekke ordet – prøv igjen');
+    });
   }
 
   wordForm.addEventListener('submit', function(e){
@@ -594,6 +752,9 @@
 
   startBtn.addEventListener('click', startRound);
   restartBtn.addEventListener('click', startRound);
+
+  updateStartAvailability();
+  loadBigWordList();
 
 })();
 </script>
