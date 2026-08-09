@@ -45,9 +45,12 @@
           </p>
         </div>
 
-        <aside class="start-side" aria-label="Togstallen">
-          <h2 class="side-title">Togstallen <span id="depotCount" class="depot-count">1/8</span></h2>
-          <p class="side-sub">Nye vogner låses opp mens du spiller.</p>
+        <aside class="start-side" aria-label="Vognskjulet">
+          <h2 class="side-title">Vognskjulet
+            <span id="depotCount" class="depot-count">1/10</span>
+            <span class="dot-badge" data-crate-badge hidden aria-label="Ny pakke venter"></span>
+          </h2>
+          <p class="side-sub">Fullfør oppdrag og pakk opp nye vogner.</p>
           <div class="depot" id="depot"></div>
         </aside>
       </div>
@@ -133,6 +136,9 @@
         </div>
 
         <div class="best-line" id="bestLine"></div>
+        <button id="crateHint" class="crate-hint" type="button" hidden>
+          🎁 Ny pakke i vognskjulet – trykk for å pakke opp
+        </button>
 
         <div class="end-actions">
           <button id="restartBtn" class="btn start-btn" type="button">KJØR IGJEN</button>
