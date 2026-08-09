@@ -1,0 +1,211 @@
+/* =========================================================
+   LRNify blogg – delt stilark.
+   Samme paletter/fonter som resten av lrnify.no (se index.html).
+   Brukes av /blog/index.html og alle /blog/<slug>/index.html.
+   ========================================================= */
+:root{
+  --cream:#fff9f0;
+  --ink:#2b2118;
+  --yellow:#facc15;
+  --card:#ffffff;
+  --muted:#7a6f63;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:'Nunito',sans-serif;
+  background:var(--cream);
+  color:var(--ink);
+  min-height:100%;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ===== HEADER (identisk med forsiden) ===== */
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 24px;
+  position:relative;
+}
+.logo{
+  font-family:'Chewy',cursive;
+  font-size:clamp(2rem,6vw,3rem);
+  transform:rotate(-2deg);
+  line-height:1;
+  user-select:none;
+  text-decoration:none;color:var(--ink);
+  display:inline-block;
+}
+.logo b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400;}
+
+.menu-btn{
+  width:54px;height:54px;
+  background:var(--yellow);
+  border:4px solid var(--ink);
+  box-shadow:0 6px 0 var(--ink);
+  cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  transform:rotate(2deg);
+}
+.menu-btn:active{transform:rotate(2deg) translateY(4px);box-shadow:0 2px 0 var(--ink);}
+.menu-btn span{display:block;width:26px;height:4px;background:var(--ink);border-radius:2px;}
+
+.drawer{
+  position:fixed;top:0;right:0;height:100%;width:min(320px,82vw);
+  background:var(--card);
+  border-left:4px solid var(--ink);
+  box-shadow:-8px 0 0 rgba(43,33,24,.12);
+  transform:translateX(100%);
+  transition:transform .28s ease;
+  z-index:50;
+  padding:24px;
+  display:flex;flex-direction:column;gap:6px;
+}
+.drawer.open{transform:translateX(0);}
+.drawer h2{font-family:'Chewy',cursive;font-size:1.6rem;margin-bottom:12px;}
+.drawer a{
+  display:block;text-decoration:none;color:var(--ink);
+  font-weight:800;font-size:1.05rem;
+  padding:12px 14px;border:3px solid var(--ink);
+  background:var(--cream);margin-bottom:4px;
+  transition:background .15s;
+}
+.drawer a:hover,.drawer a:focus-visible{background:var(--yellow);outline:none;}
+.drawer-close{
+  align-self:flex-end;background:none;border:none;cursor:pointer;
+  font-family:'Chewy',cursive;font-size:1.8rem;color:var(--muted);
+  margin-bottom:4px;line-height:1;
+}
+.scrim{
+  position:fixed;inset:0;background:rgba(43,33,24,.4);
+  opacity:0;pointer-events:none;transition:opacity .28s;z-index:40;
+}
+.scrim.open{opacity:1;pointer-events:auto;}
+
+/* ===== BLOGG-HERO ===== */
+.blog-hero{text-align:center;padding:8px 24px 28px;}
+.blog-hero h1{
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;font-weight:600;
+  font-size:clamp(1.5rem,5vw,2.4rem);
+  color:var(--ink);
+}
+.blog-hero p{
+  max-width:560px;
+  margin:10px auto 0;
+  color:var(--muted);
+  font-weight:600;
+  font-size:clamp(.85rem,2.2vw,1rem);
+  line-height:1.4;
+}
+.breadcrumb{
+  max-width:720px;margin:0 auto;padding:0 24px;
+  font-weight:800;font-size:.85rem;
+}
+.breadcrumb a{color:var(--muted);text-decoration:none;}
+.breadcrumb a:hover{color:var(--ink);}
+
+/* ===== POST-LISTE (blog/index.html) ===== */
+main{padding:20px 20px 60px;max-width:900px;margin:0 auto;}
+.post-list{display:flex;flex-direction:column;gap:22px;}
+.post-card{
+  display:block;
+  background:var(--card);
+  border:4px solid var(--ink);
+  box-shadow:0 8px 0 var(--ink);
+  text-decoration:none;color:var(--ink);
+  padding:22px 24px;
+  transition:transform .12s ease,box-shadow .12s ease;
+}
+.post-card:hover,.post-card:focus-visible{
+  transform:translateY(-4px);
+  box-shadow:0 12px 0 var(--ink);
+  outline:none;
+}
+.post-card:active{transform:translateY(4px);box-shadow:0 2px 0 var(--ink);}
+.post-card .meta{
+  font-weight:800;font-size:.75rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.04em;
+}
+.post-card h2{
+  font-family:'Chewy',cursive;font-size:1.5rem;line-height:1.15;
+  margin:6px 0 8px;
+}
+.post-card p{font-weight:600;color:var(--ink);line-height:1.5;font-size:.95rem;}
+
+/* ===== ARTIKKEL (blog/<slug>/index.html) ===== */
+.post-article{
+  max-width:720px;margin:0 auto;padding:8px 24px 60px;
+}
+.post-article .meta{
+  font-weight:800;font-size:.8rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.04em;
+  margin-bottom:6px;
+}
+.post-article h1{
+  font-family:'Chewy',cursive;
+  font-size:clamp(1.7rem,5vw,2.4rem);
+  line-height:1.15;
+  margin-bottom:16px;
+}
+.post-article .lead{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;
+  font-size:clamp(1.05rem,2.6vw,1.25rem);
+  color:var(--ink);
+  margin-bottom:24px;
+}
+.post-article h2{
+  font-family:'Chewy',cursive;font-size:1.35rem;
+  margin:32px 0 10px;
+}
+.post-article h3{
+  font-weight:900;font-size:1.05rem;
+  margin:22px 0 8px;
+}
+.post-article p{
+  font-weight:600;line-height:1.65;font-size:1rem;margin-bottom:14px;
+}
+.post-article ul,.post-article ol{
+  margin:0 0 16px 1.3em;font-weight:600;line-height:1.6;
+}
+.post-article li{margin-bottom:6px;}
+.post-article a{color:var(--ink);font-weight:800;text-decoration-color:var(--yellow);text-decoration-thickness:3px;}
+.post-article a:hover{text-decoration-color:var(--ink);}
+.post-article strong{font-weight:900;}
+
+.cta-box{
+  background:var(--card);
+  border:4px solid var(--ink);
+  box-shadow:0 6px 0 var(--ink);
+  padding:20px 22px;
+  margin:28px 0;
+}
+.cta-box p{margin-bottom:10px;}
+.cta-box .btn{
+  display:inline-block;
+  background:var(--yellow);
+  border:3px solid var(--ink);
+  box-shadow:0 5px 0 var(--ink);
+  color:var(--ink);
+  font-weight:900;text-decoration:none;
+  padding:10px 18px;
+  transition:transform .1s,box-shadow .1s;
+}
+.cta-box .btn:hover{transform:translateY(-2px);box-shadow:0 7px 0 var(--ink);}
+.cta-box .btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink);}
+
+.post-nav{
+  max-width:720px;margin:0 auto;padding:0 24px 40px;
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.post-nav a{
+  font-weight:800;color:var(--ink);text-decoration:none;
+  border-bottom:3px solid var(--yellow);
+}
+.post-nav a:hover{border-bottom-color:var(--ink);}
+
+footer{
+  text-align:center;padding:24px;color:var(--muted);
+  font-weight:700;font-size:.85rem;
+  border-top:3px solid rgba(43,33,24,.12);
+}
+footer a{color:var(--muted);}

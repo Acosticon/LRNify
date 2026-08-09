@@ -1,0 +1,1834 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Vinkelspillet — LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sky1: #63c7ff;
+    --sky2: #1d4d8f;
+    --night: #10264f;
+    --surface: #14213d;
+    --surface2: #243b66;
+    --ink: #fff8d6;
+    --snow: #f4fbff;
+    --muted: #b7d8ff;
+    --line: #08152b;
+    --green: #34e27a;
+    --red: #ff4b4b;
+    --amber: #ffd166;
+    --gold: #ffd166;
+    --stone: #7f8da3;
+    --stone2: #aeb9c8;
+    --stone3: #45546d;
+    --mortar: #1b263b;
+    --magic: #9b5cff;
+    --magic-glow: #d9c2ff;
+    --fire: #ff8b2b;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { image-rendering: pixelated; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--ink);
+    background:
+      radial-gradient(circle at 14% 14%, rgba(255,255,255,.85) 0 2px, transparent 3px),
+      radial-gradient(circle at 78% 20%, rgba(255,255,255,.7) 0 2px, transparent 3px),
+      radial-gradient(circle at 40% 8%, rgba(255,255,255,.6) 0 2px, transparent 3px),
+      linear-gradient(180deg, var(--sky1) 0%, var(--sky2) 55%, var(--night) 100%);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ TOPPLINJE ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px;
+  }
+  .back-link {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: .75rem;
+    color: var(--muted); text-decoration: none; letter-spacing: .04em;
+    background: rgba(8,21,43,.55); border: 3px solid var(--line);
+    padding: 6px 10px; box-shadow: 0 4px 0 var(--line);
+  }
+  .back-link:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+
+  /* ══ SKJERMER ══ */
+  .screen { display: none; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    width: min(600px, 100%); margin: 0 auto; padding: 0 18px 50px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 4px; }
+  .logo {
+    font-family: 'Fraunces', serif; font-weight: 700; letter-spacing: -.03em;
+    font-size: clamp(2rem,7.5vw,3.2rem); line-height: .95; transform: rotate(-1deg);
+    text-shadow: 3px 3px 0 var(--line);
+  }
+  .logo .a { font-style: italic; color: var(--amber); }
+  .logo .b { color: var(--snow); }
+  .tagline {
+    font-weight: 700; color: var(--muted); font-size: clamp(.85rem,2.3vw,1rem);
+    max-width: 440px; line-height: 1.5;
+  }
+
+  .panel {
+    width: 100%; background: rgba(20,33,61,.92); border: 4px solid var(--line);
+    box-shadow: 0 6px 0 var(--line), inset 0 0 0 2px rgba(255,255,255,.08);
+    padding: 18px 20px;
+  }
+  .panel h2 {
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.2rem;
+    color: var(--gold); margin-bottom: 10px; text-shadow: 2px 2px 0 var(--line);
+  }
+  .panel p { font-size: .85rem; color: var(--muted); line-height: 1.7; font-weight: 500; }
+
+  .example-label { font-weight: 700; font-size: .75rem; color: var(--amber); margin-bottom: 8px; letter-spacing: .04em; text-transform: uppercase; }
+  .example-wrap { width: min(58vw, 230px); margin: 0 auto; aspect-ratio: 440/250; position: relative; border: 4px solid var(--line); box-shadow: 0 5px 0 var(--line); overflow: hidden; }
+  .example-wrap svg { width: 100%; height: 100%; display: block; }
+
+  button, .btn-primary { font-family: 'IBM Plex Mono', monospace; cursor: pointer; }
+  .btn-primary {
+    font-weight: 700; background: var(--amber); color: #2a1700;
+    border: 4px solid var(--line); box-shadow: 0 6px 0 var(--line), inset 0 0 0 2px rgba(255,255,255,.25);
+    padding: 15px 26px; font-size: 1.05rem; width: 100%; max-width: 320px;
+    transition: transform .1s, box-shadow .1s; letter-spacing: .02em;
+  }
+  .btn-primary:hover  { filter: brightness(1.07); transform: translateY(-2px); }
+  .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--line), inset 0 0 0 2px rgba(255,255,255,.25); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .btn-primary:focus-visible { outline: 3px solid var(--snow); outline-offset: 3px; }
+  .btn-back {
+    font-weight: 700; color: var(--muted); text-decoration: none; font-size: .8rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--snow); }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 40px; }
+  .game-wrap { width: min(640px, 100%); margin: 0 auto; display: flex; flex-direction: column; gap: 14px; align-items: center; animation: fadeIn .3s ease; }
+
+  .hud {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap;
+  }
+  .hud-target {
+    background: var(--amber); border: 4px solid var(--line); box-shadow: 0 6px 0 var(--line);
+    padding: 8px 16px; transform: rotate(-1deg); flex: 1 1 auto; min-width: 190px; color: #2a1700;
+  }
+  .hud-label { display:block; font-weight:700; font-size:.62rem; text-transform:uppercase; letter-spacing:.08em; opacity:.75; }
+  .hud-coord { font-family: 'Fraunces', serif; font-weight: 700; font-size: clamp(1.4rem,5.6vw,1.9rem); display: block; }
+  .hud-right { display: flex; gap: 8px; }
+  .hud-stat {
+    background: var(--surface); border: 3px solid var(--line); box-shadow: 0 4px 0 var(--line);
+    padding: 6px 12px; text-align: center; min-width: 70px;
+  }
+  .hud-stat-label { display:block; font-weight:700; font-size:.58rem; text-transform:uppercase; letter-spacing:.05em; color: var(--muted); }
+  .hud-stat-val { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.1rem; color: var(--gold); }
+
+  /* ══ BORGSCENEN ══ */
+  .scene-wrap { width: min(94vw, 560px); margin: 0 auto; }
+  .scene-frame {
+    position: relative; width: 100%; aspect-ratio: 440 / 250;
+    background:
+      radial-gradient(circle at 20% 12%, rgba(255,255,255,.6) 0 2px, transparent 3px),
+      radial-gradient(circle at 70% 18%, rgba(255,255,255,.5) 0 2px, transparent 3px),
+      linear-gradient(180deg, #274d86 0%, #142a54 60%, #0a1530 100%);
+    border: 4px solid var(--line); box-shadow: 0 7px 0 var(--line);
+    overflow: hidden;
+  }
+
+  .king-tower {
+    position: absolute; top: 6px; right: 8px; z-index: 6;
+    pointer-events: none;
+  }
+
+  /* ── KONGEN (pixelfigur) ── */
+  .king {
+    position: relative; display: block;
+    font-size: clamp(8px, 2.7vw, 13px);
+    width: 4.6em; height: 5.6em;
+    transform-origin: bottom center;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.5));
+    animation: king-idle 1.3s steps(2,end) infinite;
+  }
+  @keyframes king-idle { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
+  /* Skyggetoner: hver flate får en mørk kant innvendig nede/høyre og et
+     lyst strøk oppe/venstre, så boksene leser som volum. Samme grep som
+     Brøkeborgen bruker på murverk og figurer. */
+  .king-body {
+    position: absolute; left: .5em; bottom: 0; width: 3.6em; height: 2.6em;
+    background: #b91c1c; border: .15em solid var(--line);
+    clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%);
+    box-shadow: inset -.5em -.35em 0 rgba(0,0,0,.22), inset .28em .2em 0 rgba(255,255,255,.13);
+  }
+  .king-body::after {
+    content: ''; position: absolute; left: 0; right: 0; top: 0; height: .5em;
+    background: var(--gold); border-bottom: .15em solid var(--line);
+    box-shadow: inset 0 -.16em 0 rgba(0,0,0,.2);
+  }
+  .king-head {
+    position: absolute; left: 1.3em; bottom: 2.3em; width: 2em; height: 1.7em;
+    background: #ffd6a5; border: .15em solid var(--line);
+    box-shadow: inset -.34em -.24em 0 rgba(0,0,0,.14);
+  }
+  .king-beard {
+    position: absolute; left: 1.3em; bottom: 2.2em; width: 2em; height: .9em;
+    background: #e9e9e9; border: .15em solid var(--line); border-top: none;
+    clip-path: polygon(0 0, 100% 0, 82% 100%, 18% 100%);
+  }
+  .king-face { position: absolute; left: 1.75em; bottom: 2.95em; width: 1.1em; height: .5em; }
+  .king-face::before { content: ''; position: absolute; left: 0; top: 0; width: .26em; height: .26em; background: #16121a; box-shadow: .56em 0 0 #16121a; }
+  .king-face::after { content: ''; position: absolute; left: .18em; top: .38em; width: .55em; height: .2em; background: #8a3030; border-radius: 0 0 .3em .3em; }
+  .king-crown {
+    position: absolute; left: 1.1em; bottom: 3.7em; width: 2.4em; height: 1em;
+    background: var(--gold); border: .15em solid var(--line);
+    clip-path: polygon(0 100%, 0 40%, 18% 100%, 30% 15%, 50% 100%, 70% 15%, 82% 100%, 100% 40%, 100% 100%);
+    box-shadow: inset -.3em -.2em 0 rgba(0,0,0,.2);
+  }
+  .king-crown::after {
+    content: ''; position: absolute; left: 50%; top: -.28em; width: .34em; height: .34em;
+    background: #ff4b4b; border: .1em solid var(--line); border-radius: 50%; transform: translateX(-50%);
+  }
+  .king-arm {
+    position: absolute; left: 3.5em; bottom: 1.55em; width: 1.4em; height: .5em;
+    background: #b91c1c; border: .14em solid var(--line);
+    box-shadow: inset 0 -.16em 0 rgba(0,0,0,.2);
+    transform-origin: left center; transform: rotate(-12deg);
+    transition: transform .25s ease;
+  }
+
+  /* ── KONGENS REKVISITTER ──
+     Komikken i Brøkeborgen ligger i at figuren drar fram ting, ikke bare
+     skifter positur. Hver reaksjon får sin egen gjenstand. */
+  .king-prop { position: absolute; opacity: 0; pointer-events: none; z-index: 3; }
+
+  .king-scepter {
+    left: 4.5em; bottom: 1.9em; width: .28em; height: 1.6em;
+    background: #7a4a26; border: .12em solid var(--line);
+    transform-origin: bottom center;
+  }
+  .king-scepter::after {
+    content: ''; position: absolute; left: 50%; top: -.42em; width: .6em; height: .6em;
+    margin-left: -.3em; background: var(--gold);
+    border: .12em solid var(--line); border-radius: 50%;
+    box-shadow: inset -.14em -.1em 0 rgba(0,0,0,.25);
+  }
+  .king.cheer .king-scepter, .king.nod .king-scepter, .king.cheer-loop .king-scepter, .king.clap-loop .king-scepter {
+    opacity: 1; animation: prop-wave .9s steps(4,end) infinite;
+  }
+  @keyframes prop-wave { 0%,100%{ transform: rotate(-14deg); } 50%{ transform: rotate(20deg); } }
+
+  .king-goblet {
+    left: 4.4em; bottom: 1.7em; width: .75em; height: .7em;
+    background: var(--gold); border: .12em solid var(--line);
+    clip-path: polygon(0 0, 100% 0, 72% 100%, 28% 100%);
+  }
+  .king.wince .king-goblet { opacity: 1; animation: prop-drop .95s steps(5,end) forwards; }
+  @keyframes prop-drop {
+    0%   { transform: translate(0,0) rotate(0); opacity: 1; }
+    45%  { transform: translate(.5em,.9em) rotate(75deg); opacity: 1; }
+    100% { transform: translate(.8em,2.4em) rotate(160deg); opacity: 0; }
+  }
+
+  /* Skiltet holdes opp foran brystet. Til høyre for kongen ville det
+     havnet utenfor scenekanten og blitt klippet bort. */
+  .king-sign {
+    left: .5em; bottom: .55em; min-width: 2.4em; padding: .12em .2em;
+    background: var(--ink); color: #151515; border: .16em solid var(--line);
+    font-family: 'IBM Plex Mono', monospace; font-size: .85em; font-weight: 700;
+    text-align: center; box-shadow: .2em .2em 0 var(--line);
+    transform-origin: bottom left;
+  }
+  .king.panic .king-sign, .king.panic-loop .king-sign {
+    opacity: 1; animation: prop-shake .8s steps(5,end) infinite;
+  }
+  @keyframes prop-shake {
+    0%,100% { transform: rotate(-12deg) translateY(0); }
+    50%     { transform: rotate(10deg) translateY(-.25em); }
+  }
+
+  .king-monocle {
+    left: 2.55em; bottom: 3.05em; width: .55em; height: .55em;
+    border: .14em solid var(--gold); border-radius: 50%;
+    background: rgba(255,255,255,.18);
+  }
+  .king.wince .king-monocle, .king.panic .king-monocle, .king.panic-loop .king-monocle {
+    opacity: 1; animation: prop-pop-off 1s steps(5,end) forwards;
+  }
+  @keyframes prop-pop-off {
+    0%   { transform: translate(0,0) rotate(0); opacity: 1; }
+    35%  { transform: translate(.6em,-.7em) rotate(40deg); opacity: 1; }
+    100% { transform: translate(1.3em,1.6em) rotate(190deg); opacity: 0; }
+  }
+  /* Stegantallet er satt slik at hver animasjon lander på ~5–6 bildeskift
+     i sekundet uansett varighet — samme tempo som Brøkeborgens figurer.
+     Med færre steg fryser figuren mellom hvert hopp. */
+  .king.cheer  { animation: king-cheer 1.3s steps(7,end); }
+  .king.nod    { animation: king-nod 1s steps(5,end); }
+  .king.wince  { animation: king-wince 1s steps(5,end); }
+  .king.panic  { animation: king-panic 1.3s steps(8,end); }
+  .king.cheer .king-arm { transform: rotate(-105deg); }
+  .king.nod   .king-arm { transform: rotate(-45deg); }
+  .king.wince .king-arm { transform: rotate(12deg); }
+  .king.panic .king-arm { transform: rotate(-125deg); }
+  .king.wince .king-face::after, .king.panic .king-face::after {
+    border-radius: .3em .3em 0 0; background: #16121a;
+  }
+  @keyframes king-cheer { 0%,100%{ transform: translateY(0) rotate(0) scale(1); } 25%{ transform: translateY(-12px) rotate(-9deg) scale(1.08); } 55%{ transform: translateY(-3px) rotate(8deg) scale(1.04); } 80%{ transform: translateY(-8px) rotate(-5deg) scale(1.06); } }
+  @keyframes king-nod   { 0%,100%{ transform: rotate(0); } 50%{ transform: rotate(9deg) translateY(3px); } }
+  @keyframes king-wince { 0%,100%{ transform: translateX(0) rotate(0); } 25%{ transform: translateX(-5px) rotate(-6deg); } 75%{ transform: translateX(5px) rotate(6deg); } }
+  @keyframes king-panic { 0%,100%{ transform: translate(0,0) rotate(0); } 16%{ transform: translate(-6px,0) rotate(-9deg); } 33%{ transform: translate(6px,-3px) rotate(9deg); } 50%{ transform: translate(-5px,0) rotate(-6deg); } 66%{ transform: translate(5px,-3px) rotate(6deg); } }
+
+  .king-bubble {
+    position: absolute; top: -.6em; right: 4.4em; min-width: 90px; max-width: 130px;
+    padding: 5px 8px; background: var(--ink); color: #151515;
+    border: 3px solid var(--line); font-size: 10px; font-weight: 700; text-align: center;
+    box-shadow: 3px 3px 0 var(--line);
+    opacity: 0; transform: scale(.7) rotate(-4deg);
+    pointer-events: none; z-index: 7;
+  }
+  .king-bubble.show { animation: bubble-pop 1.3s ease forwards; }
+  @keyframes bubble-pop {
+    0%   { opacity: 0; transform: scale(.5) rotate(-8deg); }
+    16%  { opacity: 1; transform: scale(1.12) rotate(-2deg); }
+    26%,80% { opacity: 1; transform: scale(1) rotate(-2deg); }
+    100% { opacity: 0; transform: scale(.8) translateY(-8px) rotate(3deg); }
+  }
+
+  /* ── TROLLMANNEN (pixelfigur, står ved dreiepunktet) ── */
+  .wizard {
+    position: absolute; left: 50%; top: 88%;
+    transform: translate(-50%, -100%);
+    font-size: clamp(8px, 2.8vw, 13px);
+    width: 4.4em; height: 5.2em;
+    z-index: 3; pointer-events: none;
+    transform-origin: bottom center;
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.45));
+    animation: wiz-idle 1.5s steps(2,end) infinite;
+  }
+  /* Pusten må faktisk synes — 1 grad rotasjon forsvant helt. */
+  @keyframes wiz-idle {
+    0%,100% { transform: translate(-50%,-100%) translateY(0); }
+    50%     { transform: translate(-50%,-100%) translateY(-3px); }
+  }
+  .wiz-body {
+    position: absolute; left: .6em; bottom: 0; width: 3.2em; height: 2.5em;
+    background: #2c3e78; border: .15em solid var(--line);
+    clip-path: polygon(14% 0, 86% 0, 100% 100%, 0 100%);
+    box-shadow: inset -.5em -.35em 0 rgba(0,0,0,.25), inset .26em .18em 0 rgba(255,255,255,.1);
+  }
+  .wiz-body::after {
+    content: ''; position: absolute; left: 0; right: 0; top: .3em; height: .32em;
+    background: var(--gold); opacity: .85;
+  }
+  /* Kappekant nederst, så roben ikke bare ender i en strek */
+  .wiz-hem {
+    position: absolute; left: .45em; bottom: 0; width: 3.5em; height: .34em;
+    background: var(--magic); border: .14em solid var(--line);
+  }
+  .wiz-head {
+    position: absolute; left: 1.5em; bottom: 2.2em; width: 1.6em; height: 1.4em;
+    background: #f0c39a; border: .15em solid var(--line);
+    box-shadow: inset -.28em -.2em 0 rgba(0,0,0,.15);
+  }
+  .wiz-eye {
+    position: absolute; left: 1.85em; bottom: 2.95em; width: .22em; height: .22em;
+    background: #16121a; box-shadow: .62em 0 0 #16121a;
+  }
+  .wiz-beard {
+    position: absolute; left: 1.4em; bottom: 2.05em; width: 1.8em; height: 1em;
+    background: #e9e9e9; border: .15em solid var(--line); border-top: none;
+    clip-path: polygon(0 0, 100% 0, 68% 100%, 32% 100%);
+    box-shadow: inset -.24em -.18em 0 rgba(0,0,0,.12);
+  }
+  .wiz-hat {
+    position: absolute; left: .9em; bottom: 3.35em; width: 2.6em; height: 1.85em;
+    background: #2c3e78; border: .15em solid var(--line);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+    box-shadow: inset -.4em -.3em 0 rgba(0,0,0,.28);
+  }
+  .wiz-hat::before {
+    content: ''; position: absolute; left: -.35em; right: -.35em; bottom: -.2em; height: .4em;
+    background: #2c3e78; border: .14em solid var(--line);
+    box-shadow: inset 0 -.14em 0 rgba(0,0,0,.25);
+  }
+  .wiz-hat::after {
+    content: ''; position: absolute; left: 1.05em; top: .3em; width: .32em; height: .32em;
+    background: var(--gold); border: .08em solid var(--line); border-radius: 50%;
+  }
+  /* Armen peker dit staven sikter — vinkelen settes fra renderArm(). */
+  .wiz-arm {
+    position: absolute; left: 2.5em; bottom: 1.75em; width: 1.25em; height: .42em;
+    background: #4c60b4; border: .14em solid var(--line);
+    box-shadow: inset 0 -.14em 0 rgba(0,0,0,.25);
+    transform-origin: left center;
+    transform: rotate(var(--arm-rot, 0deg));
+  }
+  .wiz-arm::after {
+    content: ''; position: absolute; right: -.32em; top: 50%; width: .4em; height: .4em;
+    margin-top: -.2em; background: #f0c39a;
+    border: .12em solid var(--line); border-radius: 50%;
+  }
+  .wizard.casting { animation: wiz-cast .9s steps(5,end); }
+  @keyframes wiz-cast {
+    0%,100% { transform: translate(-50%,-100%) rotate(0) scale(1); }
+    30% { transform: translate(-50%,-100%) rotate(-5deg) scale(1.05); }
+    60% { transform: translate(-50%,-100%) rotate(4deg) scale(1.02); }
+  }
+
+  /* ── DRAGEN (pixelfigur) ── */
+  .dg-body {
+    position: absolute; left: .9em; top: .9em; width: 2.6em; height: 1.5em;
+    background: #2f9e5c; border: .14em solid var(--line);
+    clip-path: polygon(0 30%, 15% 0, 85% 0, 100% 30%, 100% 100%, 0 100%);
+    box-shadow: inset -.4em -.3em 0 rgba(0,0,0,.25), inset .22em .16em 0 rgba(255,255,255,.12);
+  }
+  .dg-belly { position: absolute; left: 1.1em; top: 1.55em; width: 2.2em; height: .65em; background: #cdf3da; box-shadow: inset 0 -.16em 0 rgba(0,0,0,.12); }
+  .dg-head {
+    position: absolute; left: 3em; top: .6em; width: 1.3em; height: 1.1em;
+    background: #2f9e5c; border: .14em solid var(--line);
+    box-shadow: inset -.24em -.18em 0 rgba(0,0,0,.25);
+  }
+  .dg-snout { position: absolute; left: 4.1em; top: 1em; width: .7em; height: .5em; background: #2f9e5c; border: .14em solid var(--line); border-left: none; }
+  .dg-eye {
+    position: absolute; left: 3.5em; top: .95em; width: .25em; height: .25em; background: #fef08a;
+    animation: dg-blink 3.4s steps(1,end) infinite;
+  }
+  @keyframes dg-blink { 0%,92%,100% { transform: scaleY(1); } 96% { transform: scaleY(.15); } }
+  /* Bakvinge: mørkere og forsinket, gir dybde til vingeslaget */
+  .dg-wing-back {
+    position: absolute; left: 1.5em; top: .3em; width: 1.4em; height: .95em;
+    background: #1d7a44; border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 30% 0, 60% 40%, 100% 0, 70% 100%);
+    transform-origin: bottom left;
+    animation: dg-flap .7s steps(2,end) infinite;
+    animation-delay: .18s;
+    z-index: -1;
+  }
+  /* Ildpust — vises bare når dragen treffer muren */
+  .dg-fire {
+    position: absolute; left: 4.7em; top: .95em; width: 1.5em; height: .6em;
+    background: linear-gradient(90deg, #fde68a, var(--fire), transparent);
+    clip-path: polygon(0 40%, 55% 0, 80% 45%, 100% 20%, 92% 100%, 45% 75%, 0 100%);
+    opacity: 0; transform-origin: left center;
+  }
+  .dragon-sprite.breathing .dg-fire { animation: dg-breathe .7s steps(4,end) forwards; }
+  @keyframes dg-breathe {
+    0%   { opacity: 0; transform: scaleX(.2); }
+    30%  { opacity: 1; transform: scaleX(1.25); }
+    70%  { opacity: 1; transform: scaleX(1); }
+    100% { opacity: 0; transform: scaleX(1.4); }
+  }
+  .dg-horn {
+    position: absolute; left: 3.1em; top: .12em; width: 0; height: 0;
+    border-left: .2em solid transparent; border-right: .2em solid transparent; border-bottom: .4em solid #1d7a44;
+  }
+  .dg-wing {
+    position: absolute; left: 1.2em; top: .05em; width: 1.6em; height: 1.1em;
+    background: #3fbf72; border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 30% 0, 60% 40%, 100% 0, 70% 100%);
+    transform-origin: bottom left;
+    animation: dg-flap .7s steps(2,end) infinite;
+    box-shadow: inset -.2em -.16em 0 rgba(0,0,0,.2);
+  }
+  @keyframes dg-flap { 0%,100%{ transform: rotate(0deg); } 50%{ transform: rotate(-16deg); } }
+  .dg-tail {
+    position: absolute; left: .1em; top: 1.3em; width: 1em; height: .5em;
+    background: #2f9e5c; border: .14em solid var(--line); border-right: none;
+    clip-path: polygon(100% 0, 0 50%, 100% 100%);
+  }
+  .dg-leg { position: absolute; bottom: .35em; width: .35em; height: .6em; background: #2f9e5c; border: .12em solid var(--line); }
+  .dg-leg.l1 { left: 1.5em; }
+  .dg-leg.l2 { left: 2.6em; }
+
+  .starfield { position: absolute; inset: 0; pointer-events: none; }
+  .star { position: absolute; background: #fff; border-radius: 50%; }
+  .star.twinkle { animation: twinkle 2.6s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100% { opacity: .25; } 50% { opacity: .9; } }
+
+  .cannon-slider {
+    position: absolute; inset: 0;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    cursor: grab;
+  }
+  .cannon-slider:active { cursor: grabbing; }
+  .cannon-slider.locked { cursor: default; }
+  .cannon-slider svg { width: 100%; height: 100%; display: block; }
+  .cannon-slider:focus-visible {
+    outline: 3px solid var(--amber); outline-offset: -4px;
+  }
+
+  .c-wallblock { fill: var(--stone3); stroke: var(--line); stroke-width: 2; }
+  .c-merlon    { fill: var(--stone2); stroke: var(--line); stroke-width: 2; }
+  .c-dome      { fill: rgba(217,194,255,.05); stroke: var(--magic-glow); stroke-width: 2.5; stroke-dasharray: 5 6; }
+  .c-tick      { stroke: var(--magic-glow); stroke-width: 4; stroke-linecap: round; }
+  .c-label     { font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: 15px; fill: var(--snow); }
+  .c-horizon   { stroke: var(--magic-glow); stroke-width: 2.5; opacity: .4; }
+
+  /* Trollmannsstaven: én enkelt linje fra dreiepunktet ut til kula.
+     Staven ER siktet — ingen egen "kanonløp"-del. */
+  .c-sight {
+    stroke: var(--magic); stroke-width: 6; stroke-linecap: round;
+    filter: drop-shadow(0 0 3px rgba(155,92,255,.7));
+    opacity: 1; transition: opacity .15s ease;
+  }
+  .c-reference {
+    stroke: var(--green); stroke-width: 5; stroke-linecap: round;
+    stroke-dasharray: 10 8; opacity: 0; transition: opacity .5s ease;
+  }
+  .c-reference.show { opacity: 1; }
+  .c-orb-hit { fill: transparent; }
+  .c-orb {
+    fill: var(--amber); stroke: var(--line); stroke-width: 3.5;
+    filter: drop-shadow(0 0 4px rgba(255,209,102,.8));
+    opacity: 1; transition: opacity .15s ease;
+  }
+  .hidden-aim { opacity: 0; }
+
+  .projectile {
+    position: absolute; width: 13px; height: 13px; border-radius: 50%;
+    background: var(--magic-glow);
+    box-shadow: 0 0 10px 3px rgba(217,194,255,.85), 0 0 4px rgba(255,255,255,.9);
+    transform: translate(-50%,-50%); opacity: 0; pointer-events: none;
+  }
+
+  .dragon-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .dragon-sprite {
+    position: absolute; left: 50%; top: 50%;
+    width: 4.6em; height: 3em;
+    font-size: clamp(9px, 4vw, 15px);
+    transform: translate(-50%,-50%) scaleX(-1);
+    filter: drop-shadow(2px 3px 0 rgba(0,0,0,.4)) drop-shadow(0 0 8px rgba(255,139,43,.5));
+    transition: opacity .3s ease, transform .3s ease;
+    opacity: 0;
+  }
+  .dragon-sprite.visible { opacity: 1; }
+  .dragon-sprite.banished { transform: translate(-50%,-50%) scaleX(-1) scale(1.6); opacity: 0; }
+  .dragon-sprite.fled { transform: translate(-50%,-50%) scaleX(-1) scale(.6); opacity: 0; }
+
+  .fx-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .fx-burst {
+    position: absolute; font-size: clamp(3rem, 14vw, 5rem);
+    transform: translate(-50%,-50%) scale(0);
+  }
+  .fx-burst.pop { animation: burstPop .65s cubic-bezier(.2,.9,.3,1.4) forwards; }
+  @keyframes burstPop {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+    40%  { transform: translate(-50%,-50%) scale(1.3); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.05); opacity: 0; }
+  }
+  .fx-shard {
+    position: absolute; width: 8px; height: 8px; border-radius: 1px;
+    animation: shardFly .75s ease-out forwards;
+  }
+  @keyframes shardFly {
+    0%   { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(.2); opacity: 0; }
+  }
+  .fx-ring {
+    position: absolute; width: 14px; height: 14px;
+    border-radius: 50%; border: 5px solid rgba(217,194,255,.9);
+    transform: translate(-50%,-50%) scale(0); opacity: 1;
+  }
+  .fx-ring.expand { animation: ringExpand .55s ease-out forwards; }
+  @keyframes ringExpand {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: .9; }
+    100% { transform: translate(-50%,-50%) scale(11); opacity: 0; }
+  }
+
+  .fx-mini {
+    position: absolute; font-size: 1.1rem; transform: translate(-50%,-50%);
+    opacity: 0; pointer-events: none; z-index: 7;
+  }
+  .fx-mini.pop { animation: miniPop .9s ease forwards; }
+  @keyframes miniPop {
+    0%   { opacity: 0; transform: translate(-50%,-50%) translateY(0) scale(.5); }
+    20%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(-50%,-50%) translateY(-30px) scale(1.1); }
+  }
+
+  .lock-actions { width: 100%; display: flex; justify-content: center; }
+
+  .result-panel {
+    width: 100%; background: rgba(20,33,61,.94); border: 4px solid var(--line);
+    box-shadow: 0 6px 0 var(--line), inset 0 0 0 2px rgba(255,255,255,.08);
+    padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .result-panel[hidden] { display: none; }
+  .result-panel.show { opacity: 1; transform: translateY(0); }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; font-size: .88rem; color: var(--muted); }
+  .result-row strong { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.25rem; color: var(--snow); }
+  .result-message {
+    font-weight: 700; font-size: .95rem; padding-top: 4px; border-top: 3px solid var(--surface2);
+    display: flex; align-items: center; gap: 8px; justify-content: center; text-align: center;
+    color: var(--gold);
+  }
+  .precision-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); color: #08152b; font-size: .8rem; font-weight: 900;
+    transform: scale(0);
+  }
+  .precision-badge[hidden] { display: none; }
+  .precision-badge.show { animation: badgePop .35s ease forwards; }
+  @keyframes badgePop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .result-points {
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.35rem; text-align: center; color: var(--amber);
+  }
+
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+
+  footer {
+    text-align: center; padding: 22px; color: var(--muted);
+    font-weight: 700; font-size: .78rem; opacity: .8;
+  }
+
+  /* ══ FINALE (iscenesatt sketsj i borgscenen) ══ */
+  .finale-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 5; }
+
+  .finale-curtain {
+    position: absolute; left: 0; right: 0; top: 0; height: 0;
+    background:
+      repeating-linear-gradient(90deg, #b91c1c 0 14px, #7f1d1d 14px 28px),
+      linear-gradient(#ef4444, #7f1d1d);
+    border-bottom: .35em solid var(--gold);
+    box-shadow: 0 4px 0 var(--line);
+    z-index: 4; /* teppet henger foran folkemengden som faller bak det */
+  }
+  .finale-curtain.drop  { animation: curtain-drop 1.5s steps(9,end) forwards; }
+  .finale-curtain.stuck { animation: curtain-stuck 2s steps(10,end) forwards; }
+  @keyframes curtain-drop  { 0%{ height:0; } 100%{ height:26%; } }
+  /* Teppet setter seg fast halvveis og rykker motvillig — poenget er at
+     det aldri kommer helt ned. */
+  @keyframes curtain-stuck {
+    0%{ height:0; } 40%{ height:15%; } 55%{ height:13%; }
+    70%{ height:16%; } 85%{ height:14%; } 100%{ height:15%; }
+  }
+
+  /* Mini-trollmenn som regner ned og danner en jublende folkemengde */
+  /* Folkemengden står på murkanten (samme grunnlinje som trollmannen),
+     ikke nede i selve murbåndet der de forsvant i mørket. Lilla hatt gir
+     nok kontrast mot natthimmelen til at de leser som små trollmenn. */
+  .mini-wiz {
+    position: absolute; bottom: 12%; width: 1.1em; height: 1.5em; z-index: 1;
+    font-size: clamp(11px, 3.7vw, 17px);
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,.55));
+  }
+  .mini-wiz::before {
+    content: ''; position: absolute; left: .06em; top: 0; width: .95em; height: .78em;
+    background: var(--magic); border: .14em solid var(--line);
+    clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
+  }
+  .mini-wiz::after {
+    content: ''; position: absolute; left: .18em; top: .75em; width: .72em; height: .75em;
+    background: #3d4d94; border: .14em solid var(--line);
+  }
+  .mini-wiz.rain  { animation: mini-rain var(--fall-ms, 1300ms) steps(14,end) forwards; }
+  .mini-wiz.cheer { animation: mini-cheer .5s steps(2,end) infinite; }
+  @keyframes mini-rain {
+    0%   { transform: translateY(var(--from, -220px)) rotate(0deg); opacity: 0; }
+    8%   { opacity: 1; }
+    100% { transform: translateY(0) rotate(360deg); opacity: 1; }
+  }
+  @keyframes mini-cheer { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-5px); } }
+
+  /* Drager som slår seg ned på murkronen som duer */
+  .finale-dragon { z-index: 5; }
+  .finale-dragon.peek { animation: dg-peek 1.9s steps(12,end) forwards; }
+  @keyframes dg-peek { 0%{ top: 104%; } 26%,64%{ top: 78%; } 100%{ top: 104%; } }
+
+  .stolen-crown {
+    position: absolute; width: 1.5em; height: .7em; z-index: 6;
+    font-size: clamp(9px, 3.4vw, 15px);
+    background: var(--gold); border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 0 40%, 18% 100%, 30% 15%, 50% 100%, 70% 15%, 82% 100%, 100% 40%, 100% 100%);
+    transform: translate(-50%,-50%) scale(0);
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,.5));
+  }
+  .stolen-crown.pop { animation: crown-steal .7s steps(3,end) forwards; }
+  @keyframes crown-steal {
+    0%   { transform: translate(-50%,-50%) scale(0) rotate(-40deg); }
+    60%  { transform: translate(-50%,-50%) scale(1.3) rotate(12deg); }
+    100% { transform: translate(-50%,-50%) scale(1) rotate(0); }
+  }
+
+  /* Løkke-varianter av kongens reaksjoner, til finalen */
+  .king.cheer-loop { animation: king-cheer 1.3s steps(7,end) infinite; }
+  .king.clap-loop  { animation: king-nod 1.2s steps(6,end) infinite; }
+  .king.panic-loop { animation: king-panic 1.2s steps(7,end) infinite; }
+  .king.cheer-loop .king-arm { transform: rotate(-105deg); }
+  .king.clap-loop  .king-arm { transform: rotate(-45deg); }
+  .king.panic-loop .king-arm { transform: rotate(-125deg); }
+  .king.panic-loop .king-face::after { border-radius: .3em .3em 0 0; background: #16121a; }
+  .king.crownless .king-crown { opacity: 0; transition: opacity .25s ease; }
+
+  .wizard.victory { animation: wiz-victory .8s steps(4,end) infinite; }
+  @keyframes wiz-victory {
+    0%,100% { transform: translate(-50%,-100%) translateY(0) rotate(0); }
+    50%     { transform: translate(-50%,-100%) translateY(-9px) rotate(-4deg); }
+  }
+
+  /* ── FIGURER SOM FORLATER SPILLFLATEN ──
+     Brøkeborgens sterkeste finalegrep: figurene bryter ut av rammen og
+     krysser hele siden. position:fixed gjør at scenens overflow ikke
+     klipper dem. */
+  .escapee {
+    position: fixed; bottom: auto; z-index: 90; pointer-events: none;
+    animation: escape-run var(--run-ms, 2200ms) linear forwards;
+  }
+  @keyframes escape-run {
+    0%   { transform: translate(0,0) rotate(0); opacity: 1; }
+    85%  { opacity: 1; }
+    100% { transform: translate(var(--rx,0), var(--ry,0)) rotate(var(--rot,0deg)); opacity: 0; }
+  }
+
+  /* Teppet går helt ned til slutt — «forestillingen er over» */
+  .finale-curtain.close { animation: curtain-close .55s steps(6,end) forwards; }
+  @keyframes curtain-close { 0% { height: 26%; } 100% { height: 104%; } }
+
+  /* ── NARRATIVE TILSTANDER ──
+     Hver finale forteller én handling: kongen kroner trollmannen, dragen
+     napper hatten hans, eller dragen bærer ham bort. Delene under er
+     før/etter-tilstandene den handlingen etterlater. */
+
+  /* Kongen forlater tårnet og går bort til trollmannen */
+  .king-tower { transition: transform 1.3s steps(11,end); }
+  .king.walking { animation: king-walk .34s steps(2,end) infinite; }
+  @keyframes king-walk {
+    0%,100% { transform: translateY(0) rotate(-4deg); }
+    50%     { transform: translateY(-5px) rotate(4deg); }
+  }
+
+  /* Kronen trollmannen får når han slås til ridder */
+  .wiz-crown {
+    position: absolute; left: 1.15em; bottom: 4.55em; width: 2.1em; height: .85em;
+    background: var(--gold); border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 0 40%, 18% 100%, 30% 15%, 50% 100%, 70% 15%, 82% 100%, 100% 40%, 100% 100%);
+    box-shadow: inset -.26em -.18em 0 rgba(0,0,0,.2);
+    opacity: 0; transition: opacity .3s ease;
+  }
+  .wizard.crowned .wiz-crown { opacity: 1; }
+  .wizard.hatless .wiz-hat { opacity: 0; transition: opacity .3s ease; }
+
+  /* Kronen som flyr fra kongens hode til trollmannens */
+  .flying-crown {
+    position: absolute; width: 1.7em; height: .8em;
+    font-size: clamp(9px, 3.4vw, 15px);
+    background: var(--gold); border: .14em solid var(--line);
+    clip-path: polygon(0 100%, 0 40%, 18% 100%, 30% 15%, 50% 100%, 70% 15%, 82% 100%, 100% 40%, 100% 100%);
+    transform: translate(-50%,-50%); z-index: 9; pointer-events: none;
+    filter: drop-shadow(0 0 6px rgba(255,209,102,.8));
+  }
+
+  /* Trollmannen som blir båret bort — han sparker imot */
+  /* Han henger og dingler, så det ikke bare ser ut som at drage og
+     trollmann tilfeldigvis overlapper hverandre. */
+  .wizard.carried {
+    animation: none; z-index: 8;
+    transform: translate(-50%,-100%) rotate(-15deg) scale(.92);
+  }
+  .wizard.carried .wiz-body { animation: wiz-kick .3s steps(2,end) infinite; }
+  .wizard.carried .wiz-arm  { animation: wiz-flail .26s steps(2,end) infinite; }
+  @keyframes wiz-kick  { 0%,100%{ transform: rotate(-9deg); } 50%{ transform: rotate(9deg); } }
+  @keyframes wiz-flail { 0%,100%{ transform: rotate(-60deg); } 50%{ transform: rotate(-115deg); } }
+
+  /* Hatten dragen stjeler, plassert på dragens hode */
+  .dg-hat {
+    position: absolute; left: 3.05em; top: -.55em; width: 1.35em; height: 1em;
+    background: #2c3e78; border: .14em solid var(--line);
+    clip-path: polygon(38% 0, 62% 0, 100% 100%, 0 100%);
+    box-shadow: inset -.2em -.16em 0 rgba(0,0,0,.28);
+  }
+
+  .scene-frame.shake { animation: scene-shake .5s steps(6,end); }
+  @keyframes scene-shake {
+    0%,100% { transform: translate(0,0); }
+    20% { transform: translate(-6px, 4px); }
+    40% { transform: translate(6px, -4px); }
+    60% { transform: translate(-5px, -2px); }
+    80% { transform: translate(5px, 3px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .result-panel, .precision-badge, .c-reference, .star.twinkle,
+    .dragon-sprite, .dg-wing, .fx-burst, .fx-shard, .fx-ring, .fx-mini,
+    .c-sight, .c-orb, .projectile, .king, .king-bubble, .wizard,
+    .finale-curtain, .mini-wiz, .stolen-crown, .finale-dragon,
+    .king-prop, .dg-wing-back, .dg-eye, .dg-fire, .escapee, .scene-frame {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <span></span>
+  <a class="back-link" href="../../index.html#grid">← LRNify</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="hero-emoji">🏰🐉</div>
+    <div class="logo"><span class="a">Vinkel</span><span class="b">spillet</span></div>
+    <p class="tagline">Drager angriper borgen! Du er hofftrollmannen. Kongen roper ut hvilken vinkel dragen kommer fra — sikt staven dit og kast en trylleform, uten å se tallet mens du sikter.</p>
+
+    <div class="panel">
+      <h2>Slik spiller du</h2>
+      <div class="example-label">Eksempel: staven sikter på 90°</div>
+      <div class="example-wrap">
+        <svg id="exampleSvg" viewBox="0 0 440 250" role="img" aria-label="Eksempel: staven sikter rett opp fra dreiepunktet, altså 90 grader."></svg>
+      </div>
+      <p style="margin-top:10px;">
+        10 drager. Du sikter staven med finger, mus eller piltaster og trykker «Kast!» når du er fornøyd. Kongen følger med fra tårnet og har meninger om alt du gjør.
+      </p>
+    </div>
+
+    <button class="btn-primary" id="btn-start">Forsvar borgen</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="hud">
+      <div class="hud-target">
+        <span class="hud-label" id="hudTaskLabel">Drage 1 av 10</span>
+        <span class="hud-coord"><span id="aimPrefix">Sikt: </span><span id="targetDisplay">70°</span></span>
+      </div>
+      <div class="hud-right">
+        <div class="hud-stat">
+          <span class="hud-stat-label">Poeng</span>
+          <span class="hud-stat-val" id="hudScore">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scene-wrap">
+      <div class="scene-frame" id="sceneFrame">
+        <div class="starfield" id="starfield"></div>
+
+        <div class="king-tower">
+          <div class="king" id="king">
+            <span class="king-bubble" id="kingBubble"></span>
+            <span class="king-crown"></span>
+            <span class="king-head"></span>
+            <span class="king-beard"></span>
+            <span class="king-face"></span>
+            <span class="king-monocle king-prop"></span>
+            <span class="king-body"></span>
+            <span class="king-arm"></span>
+            <span class="king-scepter king-prop"></span>
+            <span class="king-goblet king-prop"></span>
+            <span class="king-sign king-prop" id="kingSign">NEI!</span>
+          </div>
+        </div>
+
+        <div class="wizard" id="wizard" aria-hidden="true">
+          <span class="wiz-hat"></span>
+          <span class="wiz-head"></span>
+          <span class="wiz-eye"></span>
+          <span class="wiz-beard"></span>
+          <span class="wiz-body"></span>
+          <span class="wiz-hem"></span>
+          <span class="wiz-arm" id="wizArm"></span>
+          <span class="wiz-crown"></span>
+        </div>
+
+        <div class="cannon-slider"
+             id="angleSlider"
+             tabindex="0"
+             role="slider"
+             aria-orientation="horizontal"
+             aria-valuemin="0"
+             aria-valuemax="180"
+             aria-valuenow="0"
+             aria-label="Roterbar trollmannsstav. Dra med finger eller mus, eller bruk venstre og høyre piltast (Shift for 5 grader av gangen). Trykk Enter for å kaste.">
+          <svg id="cannonSvg" viewBox="0 0 440 250" aria-hidden="true"></svg>
+        </div>
+
+        <div class="projectile" id="projectile" aria-hidden="true"></div>
+        <div class="dragon-layer">
+          <div class="dragon-sprite" id="dragon" aria-hidden="true">
+            <span class="dg-wing-back"></span>
+            <span class="dg-tail"></span>
+            <span class="dg-leg l1"></span>
+            <span class="dg-leg l2"></span>
+            <span class="dg-body"></span>
+            <span class="dg-belly"></span>
+            <span class="dg-head"></span>
+            <span class="dg-horn"></span>
+            <span class="dg-snout"></span>
+            <span class="dg-eye"></span>
+            <span class="dg-fire"></span>
+            <span class="dg-wing"></span>
+          </div>
+        </div>
+        <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+        <div class="finale-layer" id="finaleLayer" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="lock-actions">
+      <button class="btn-primary" id="btnLock">Kast!</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel" hidden>
+      <div class="result-row"><span>Riktig vinkel</span><strong id="resTarget">70°</strong></div>
+      <div class="result-row"><span>Du siktet på</span><strong id="resPlayer">68°</strong></div>
+      <div class="result-row"><span>Avvik</span><strong id="resDeviation">2°</strong></div>
+      <div class="result-message">
+        <span id="resMessage">Rent trylleri!</span>
+        <span class="precision-badge" id="precisionBadge" hidden aria-hidden="true">✓</span>
+      </div>
+      <div class="result-points" id="resPoints">+3 poeng</div>
+      <button class="btn-primary" id="btnNext">Neste drage!</button>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="hero-emoji" id="endEmoji">🏰👑</div>
+    <div class="logo" id="endTitle" style="font-size:clamp(1.7rem,6.5vw,2.6rem);">Borgen står støtt!</div>
+    <p class="tagline" id="endSub">Her er resultatet ditt etter 10 drager.</p>
+    <div class="panel result-card">
+      <div class="result-row"><span>Totalpoeng</span><strong id="endScore">0 av 30</strong></div>
+      <div class="result-row"><span>Gjennomsnittlig avvik</span><strong id="endAvg">0°</strong></div>
+      <div class="result-row"><span>Beste forsøk</span><strong id="endBest">0°</strong></div>
+    </div>
+    <button class="btn-primary" id="btn-again">Spill igjen</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const pickFrom = arr => arr[Math.floor(Math.random() * arr.length)];
+
+/* ── SCENEGEOMETRI (delt mellom eksempel og interaktivt verktøy) ── */
+const PIVOT = { x: 220, y: 220 };
+const ARC_R = 172;
+const ARM_LEN = 152;
+const TICK_IN = 160;
+const TICK_OUT = 186;
+const LABEL_R = 202;
+const HANDLE_R = 11;
+const HANDLE_HIT_R = 28;
+const ENTRY_R = 340; /* langt nok utenfor lerretet (440×250) på enhver vinkel */
+const SHOT_R = 250;
+
+function pctX(x) { return (x / 440) * 100; }
+function pctY(y) { return (y / 250) * 100; }
+
+function pt(angleDeg, radius) {
+  const rad = angleDeg * Math.PI / 180;
+  return { x: PIVOT.x + radius * Math.cos(rad), y: PIVOT.y - radius * Math.sin(rad) };
+}
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(NS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function buildStaticBase(svg) {
+  svg.appendChild(svgEl('rect', { x: 0, y: PIVOT.y, width: 440, height: 250 - PIVOT.y, class: 'c-wallblock' }));
+
+  /* Murkrone (krenelering) langs toppen av veggen */
+  const merlonW = 26, gap = 12, count = Math.ceil(440 / (merlonW + gap)) + 1;
+  for (let i = 0; i < count; i++) {
+    const x = i * (merlonW + gap) - 8;
+    svg.appendChild(svgEl('rect', { x, y: PIVOT.y - 14, width: merlonW, height: 16, class: 'c-merlon' }));
+  }
+
+  const domeStart = pt(180, ARC_R);
+  const domeEnd = pt(0, ARC_R);
+  svg.appendChild(svgEl('path', {
+    d: `M ${domeStart.x} ${domeStart.y} A ${ARC_R} ${ARC_R} 0 0 1 ${domeEnd.x} ${domeEnd.y}`,
+    class: 'c-dome'
+  }));
+
+  svg.appendChild(svgEl('line', { x1: 0, y1: PIVOT.y, x2: 440, y2: PIVOT.y, class: 'c-horizon' }));
+
+  [0, 90, 180].forEach(a => {
+    const inner = pt(a, TICK_IN), outer = pt(a, TICK_OUT), lp = pt(a, LABEL_R);
+    svg.appendChild(svgEl('line', { x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y, class: 'c-tick' }));
+    const label = svgEl('text', { x: lp.x, y: lp.y, class: 'c-label', 'text-anchor': 'middle', 'dominant-baseline': 'middle' });
+    label.textContent = a + '°';
+    svg.appendChild(label);
+  });
+}
+
+/* ── STATISK EKSEMPEL (90°) på startskjermen ── */
+(function buildExample() {
+  const svg = $('exampleSvg');
+  buildStaticBase(svg);
+  const sightTip = pt(90, ARM_LEN);
+  svg.appendChild(svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: sightTip.x, y2: sightTip.y, class: 'c-sight' }));
+  svg.appendChild(svgEl('circle', { cx: sightTip.x, cy: sightTip.y, r: HANDLE_R, class: 'c-orb' }));
+})();
+
+/* ── STJERNER (dekorativt, statisk per sideinnlasting) ── */
+(function buildStars() {
+  const field = $('starfield');
+  if (!field) return;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 40; i++) {
+    const s = document.createElement('div');
+    s.className = 'star' + (Math.random() < 0.4 && !REDUCED_MOTION ? ' twinkle' : '');
+    const size = 1 + Math.random() * 2;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = (Math.random() * 72) + '%';
+    s.style.opacity = String(0.3 + Math.random() * 0.6);
+    if (s.className.includes('twinkle')) s.style.animationDelay = (Math.random() * 2.6) + 's';
+    frag.appendChild(s);
+  }
+  field.appendChild(frag);
+})();
+
+/* ── INTERAKTIVT VERKTØY ── */
+const slider = $('angleSlider');
+const svg = $('cannonSvg');
+buildStaticBase(svg);
+
+const refArm = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x, y2: PIVOT.y, class: 'c-reference' });
+svg.appendChild(refArm);
+/* Trollmannsstaven ER siktet: én enkelt linje fra dreiepunktet (der
+   trollmannen står) ut til kula spilleren drar i. Forsvinner idet
+   trylleformen kastes — se lockAngle(). */
+const sightLine = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x + ARM_LEN, y2: PIVOT.y, class: 'c-sight' });
+svg.appendChild(sightLine);
+const orbHit = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_HIT_R, class: 'c-orb-hit' });
+svg.appendChild(orbHit);
+const orbDot = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_R, class: 'c-orb' });
+svg.appendChild(orbDot);
+
+const dragonEl = $('dragon');
+const fxLayer = $('fxLayer');
+const projectileEl = $('projectile');
+const kingEl = $('king');
+const wizardEl = $('wizard');
+const wizArm = $('wizArm');
+const kingBubble = $('kingBubble');
+
+/* ── LYD (Web Audio API, enkle og diskrete effekter — ingen filer) ── */
+let audioCtx = null;
+function initAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!audioCtx) audioCtx = new AC();
+  else if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function tone(freq, ms, type, vol, delay = 0, freqEnd = null) {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t0);
+  if (freqEnd !== null) o.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), t0 + ms / 1000);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
+}
+function castSound() { tone(700, 90, 'sine', 0.06, 0, 1200); tone(900, 120, 'triangle', 0.05, 0.05, 1500); }
+function fleeSound() { tone(600, 170, 'triangle', 0.07, 0, 260); }
+function poofSound() {
+  if (!audioCtx) return;
+  const dur = 0.3;
+  const n = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.7) * 0.5;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter(); filt.type = 'bandpass'; filt.frequency.value = 1200;
+  const g = audioCtx.createGain(); g.gain.value = 0.16;
+  src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+  src.start();
+  tone(500, 160, 'sine', 0.08, 0.02, 900);
+}
+function crashSound() {
+  if (!audioCtx) return;
+  const dur = 0.35;
+  const n = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.5) * 0.6;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 700;
+  const g = audioCtx.createGain(); g.gain.value = 0.2;
+  src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+  src.start();
+  tone(80, 240, 'sine', 0.12, 0.01);
+}
+
+let angleDeg = 0;
+let dragging = false;
+let locked = false;
+
+function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+function clampPct(v) { return clamp(v, 6, 94); }
+
+function renderArm() {
+  const sightTip = pt(angleDeg, ARM_LEN);
+  sightLine.setAttribute('x2', sightTip.x); sightLine.setAttribute('y2', sightTip.y);
+  orbHit.setAttribute('cx', sightTip.x); orbHit.setAttribute('cy', sightTip.y);
+  orbDot.setAttribute('cx', sightTip.x); orbDot.setAttribute('cy', sightTip.y);
+  slider.setAttribute('aria-valuenow', String(Math.round(angleDeg)));
+  /* Trollmannen peker faktisk dit staven sikter. Armen begrenses så den
+     ikke vrir seg gjennom kroppen på ytterpunktene. */
+  if (wizArm) wizArm.style.setProperty('--arm-rot', (-clamp(angleDeg, 8, 172)) + 'deg');
+}
+
+function pointerAngle(evt) {
+  const rect = svg.getBoundingClientRect();
+  const scaleX = 440 / rect.width, scaleY = 250 / rect.height;
+  const x = (evt.clientX - rect.left) * scaleX;
+  const y = (evt.clientY - rect.top) * scaleY;
+  const dx = x - PIVOT.x, dy = PIVOT.y - y;
+  let ang = Math.atan2(dy, dx) * 180 / Math.PI;
+  if (ang < 0) ang = dx >= 0 ? 0 : 180;
+  return clamp(ang, 0, 180);
+}
+
+slider.addEventListener('pointerdown', e => {
+  if (locked) return;
+  dragging = true;
+  slider.setPointerCapture(e.pointerId);
+  angleDeg = pointerAngle(e);
+  renderArm();
+  e.preventDefault();
+});
+slider.addEventListener('pointermove', e => {
+  if (!dragging || locked) return;
+  angleDeg = pointerAngle(e);
+  renderArm();
+});
+function endDrag() { dragging = false; }
+slider.addEventListener('pointerup', endDrag);
+slider.addEventListener('pointercancel', endDrag);
+
+slider.addEventListener('keydown', e => {
+  if (locked) return;
+  const step = e.shiftKey ? 5 : 1;
+  if (e.key === 'ArrowRight') { angleDeg = clamp(angleDeg + step, 0, 180); renderArm(); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft') { angleDeg = clamp(angleDeg - step, 0, 180); renderArm(); e.preventDefault(); }
+  else if (e.key === 'Enter') { e.preventDefault(); lockAngle(); }
+});
+
+/* ── OPPGAVEGENERERING ──
+   1–3: kjente referansevinkler, 4–7: multipler av 5°, 8–10: vilkårlige
+   hele grader. Ingen målvinkel gjentas i samme runde. Identisk med
+   Vinkeljakten og Vinkelforsvarer — kun presentasjonen er endret. */
+const REFERENCE_ANGLES = [30, 45, 60, 90, 120, 135, 150];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildRound() {
+  const used = new Set();
+  const round = [];
+
+  shuffle(REFERENCE_ANGLES).slice(0, 3).forEach(a => { round.push(a); used.add(a); });
+
+  const multiplesPool = [];
+  for (let a = 5; a < 180; a += 5) if (!used.has(a)) multiplesPool.push(a);
+  shuffle(multiplesPool).slice(0, 4).forEach(a => { round.push(a); used.add(a); });
+
+  while (round.length < 10) {
+    const candidate = 1 + Math.floor(Math.random() * 179);
+    if (!used.has(candidate)) { round.push(candidate); used.add(candidate); }
+  }
+
+  return round;
+}
+
+function scoreFor(deviation) {
+  if (deviation <= 2) return { points: 3, message: 'Rent trylleri!' };
+  if (deviation <= 5) return { points: 2, message: 'Kongelig godt kastet!' };
+  if (deviation <= 10) return { points: 1, message: 'Streiftreff — dragen snudde i siste sekund.' };
+  return { points: 0, message: 'Bom! Dragen brøt gjennom muren.' };
+}
+
+const KING_LINES = {
+  3: ['KONGELIG BRA!', 'Ridder-verdig treff!', 'Rent trylleri, sier jeg!', 'Slottet takker deg!'],
+  2: ['Godt jobbet, trollmann!', 'Nesten kongelig presist!', 'Bra kastet!'],
+  1: ['Uff, den var nære!', 'Slapp unna med et nødskrik!', 'Skjerp sansene, magiker!'],
+  0: ['VAKTER! VAKTER!', 'Min krone ristet av DET der!', 'Trollmann... vi må snakke.', 'Muren tok en ny skramme!']
+};
+const KING_ANIM = { 3: 'cheer', 2: 'nod', 1: 'wince', 0: 'panic' };
+
+/* ── AVSLUTNINGER ──
+   Poengsummen bestemmer tonen (triumf / middels / katastrofe), og innenfor
+   hver tone trekkes én av flere varianter tilfeldig. 30/30 gir en egen,
+   sjelden avslutning. */
+const ENDINGS = {
+  perfekt: [
+    { emoji: '👑🧙', title: 'Legenden om vinkelmesteren', king: 'DU ER KONGE NÅ!',
+      sub: 'Kongen har abdisert på stående fot. Du fikk kronen. Du ba ikke om den.' },
+  ],
+  triumf: [
+    { emoji: '🏰👑', title: 'Rikets vinkelmester', king: 'TIL RIDDER MED DEG!',
+      sub: 'Kongen ga fra seg kronen på stedet. Han angrer allerede litt.' },
+    { emoji: '🏰✨', title: 'Kronet på muren', king: 'DEN ER DIN, MAGIKER!',
+      sub: 'Kongen kom ned fra tårnet for første gang på tolv år. Det tok på.' },
+    { emoji: '🏰🎉', title: 'Hoffets nye helt', king: 'HELE RIKET JUBLER!',
+      sub: 'Du fikk kronen, tittelen og kongens egen stol. Stolen er ikke behagelig.' },
+  ],
+  middels: [
+    { emoji: '🏰🎩', title: 'Hatten er tapt', king: 'IKKE HATTEN!',
+      sub: 'Muren står. Hatten gjør ikke. Kongen kaller det uavgjort.' },
+    { emoji: '🏰🤷', title: 'Godkjent av kongen (så vidt)', king: 'Javel. Greit nok.',
+      sub: 'Dragen slapp unna med hodeplagget ditt. Kongen nikket likevel.' },
+    { emoji: '🏰📜', title: 'Delvis heroisk', king: 'Rådet vurderer saken.',
+      sub: 'Skjoldet holdt. Hatten er nå dragens problem.' },
+  ],
+  katastrofe: [
+    { emoji: '🐉📢', title: 'Kongen søker ny trollmann', king: 'VAKTER! ...VAKTER?',
+      sub: 'Stillingen ble ledig ganske brått. Kravene er senket betraktelig.' },
+    { emoji: '🐉💼', title: 'Bortført i tjeneste', king: 'DEN TOK HAM!',
+      sub: 'Dragen tok trollmannen. Kongen har allerede begynt å rydde kontoret hans.' },
+    { emoji: '🐉🍽️', title: 'Dragen tok med seg lunsj', king: 'KOM TILBAKE MED HAM!',
+      sub: 'Det var ikke lunsj. Det var deg.' },
+  ],
+};
+
+function pickEnding(score, maxScore) {
+  if (score >= maxScore) return Object.assign({ tier: 'perfekt' }, pickFrom(ENDINGS.perfekt));
+  const ratio = score / maxScore;
+  const tier = ratio >= 0.8 ? 'triumf' : ratio >= 0.4 ? 'middels' : 'katastrofe';
+  return Object.assign({ tier }, pickFrom(ENDINGS[tier]));
+}
+
+/* ── SPILLTILSTAND ── */
+let round = [];
+let taskIndex = 0;
+let totalScore = 0;
+let deviations = [];
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+
+function startGame() {
+  initAudio();
+  resetFinale();
+  round = buildRound();
+  taskIndex = 0;
+  totalScore = 0;
+  deviations = [];
+  $('hudScore').textContent = '0';
+  showScreen('screen-game');
+  loadTask();
+}
+
+function resetDragon() {
+  dragonEl.style.transition = 'none';
+  dragonEl.classList.remove('visible', 'banished', 'fled', 'breathing');
+  dragonEl.style.left = '50%';
+  dragonEl.style.top = '50%';
+  void dragonEl.offsetWidth;
+  dragonEl.style.transition = '';
+}
+
+function resetProjectile() {
+  projectileEl.style.transition = 'none';
+  projectileEl.style.opacity = '0';
+  projectileEl.style.left = '50%';
+  projectileEl.style.top = '50%';
+  void projectileEl.offsetWidth;
+  projectileEl.style.transition = '';
+}
+
+function loadTask() {
+  if (taskIndex >= round.length) { startFinale(); return; }
+  locked = false;
+  angleDeg = 0;
+  dragging = false;
+  slider.classList.remove('locked');
+  slider.removeAttribute('aria-disabled');
+  refArm.classList.remove('show');
+  wizardEl.classList.remove('casting');
+  sightLine.classList.remove('hidden-aim');
+  orbDot.classList.remove('hidden-aim');
+  resetProjectile();
+  renderArm();
+  resetDragon();
+
+  const target = round[taskIndex];
+  $('hudTaskLabel').textContent = 'Drage ' + (taskIndex + 1) + ' av ' + round.length;
+  $('aimPrefix').textContent = 'Sikt: ';
+  $('targetDisplay').textContent = target + '°';
+
+  $('btnLock').hidden = false;
+  $('btnLock').disabled = false;
+  $('resultPanel').hidden = true;
+  $('resultPanel').classList.remove('show');
+  $('precisionBadge').hidden = true;
+  $('precisionBadge').classList.remove('show');
+  $('srAnnounce').textContent = '';
+}
+
+function spawnShards(leftPct, topPct) {
+  const cols = ['#d9c2ff', '#9b5cff', '#ffd166', '#fde68a'];
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('div');
+    s.className = 'fx-shard';
+    s.style.left = leftPct + '%';
+    s.style.top = topPct + '%';
+    s.style.background = cols[i % cols.length];
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 40 + Math.random() * 48;
+    s.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
+    s.style.setProperty('--dy', (Math.sin(angle) * dist) + 'px');
+    fxLayer.appendChild(s);
+    setTimeout(() => s.remove(), 800);
+  }
+}
+
+function spawnRing(leftPct, topPct) {
+  const r = document.createElement('div');
+  r.className = 'fx-ring';
+  r.style.left = leftPct + '%';
+  r.style.top = topPct + '%';
+  fxLayer.appendChild(r);
+  requestAnimationFrame(() => r.classList.add('expand'));
+  setTimeout(() => r.remove(), 600);
+}
+
+function spawnBurst(leftPct, topPct, emoji) {
+  const b = document.createElement('div');
+  b.className = 'fx-burst';
+  b.textContent = emoji;
+  b.style.left = leftPct + '%';
+  b.style.top = topPct + '%';
+  fxLayer.appendChild(b);
+  requestAnimationFrame(() => b.classList.add('pop'));
+  setTimeout(() => b.remove(), 750);
+}
+
+function banish(leftPct, topPct) {
+  dragonEl.classList.add('banished');
+  spawnBurst(leftPct, topPct, '✨');
+  spawnShards(leftPct, topPct);
+  spawnRing(leftPct, topPct);
+  poofSound();
+}
+
+function crashIntoWall(leftPct, topPct) {
+  dragonEl.classList.add('banished');
+  spawnBurst(leftPct, topPct, '💥');
+  spawnShards(leftPct, topPct);
+  spawnRing(leftPct, topPct);
+  crashSound();
+  shakeScene();
+}
+
+/* Trylleformkulen: kula ved stavens tupp blir til en lysende kule som
+   flyr rett fram langs den låste vinkelen. */
+function fireProjectile(angleDeg) {
+  const start = pt(angleDeg, ARM_LEN);
+  const end = pt(angleDeg, SHOT_R);
+  const shotMs = REDUCED_MOTION ? 0 : 380;
+
+  projectileEl.style.transition = 'none';
+  projectileEl.style.left = pctX(start.x) + '%';
+  projectileEl.style.top = pctY(start.y) + '%';
+  projectileEl.style.opacity = '1';
+  void projectileEl.offsetWidth;
+  projectileEl.style.transition = `left ${shotMs}ms linear, top ${shotMs}ms linear, opacity ${shotMs}ms ease`;
+
+  requestAnimationFrame(() => {
+    projectileEl.style.left = pctX(end.x) + '%';
+    projectileEl.style.top = pctY(end.y) + '%';
+    projectileEl.style.opacity = '0';
+  });
+}
+
+function showKingReaction(points) {
+  const anim = KING_ANIM[points];
+  const line = pickFrom(KING_LINES[points]);
+  kingEl.classList.remove('cheer', 'nod', 'wince', 'panic');
+  kingBubble.classList.remove('show');
+  void kingEl.offsetWidth;
+  kingBubble.textContent = line;
+  $('kingSign').textContent = pickFrom(['NEI!', 'AU!', 'HÆ?', 'HJELP', 'ÆSJ']);
+  kingEl.classList.add(anim);
+  kingBubble.classList.add('show');
+
+  const icons = points >= 2 ? ['👑', '✨', '🎉'] : points === 1 ? ['😅', '💨'] : ['💢', '🔥', '😱'];
+  const tower = document.querySelector('.king-tower');
+  if (tower) {
+    for (let i = 0; i < 6; i++) {
+      const fx = document.createElement('span');
+      fx.className = 'fx-mini';
+      fx.textContent = icons[i % icons.length];
+      fx.style.left = (18 + (Math.random() * 30 - 15)) + 'px';
+      fx.style.top = (30 + (Math.random() * 16 - 8)) + 'px';
+      fx.style.animationDelay = (i * 40) + 'ms';
+      tower.appendChild(fx);
+      requestAnimationFrame(() => fx.classList.add('pop'));
+      setTimeout(() => fx.remove(), 1000);
+    }
+  }
+  setTimeout(() => kingEl.classList.remove(anim), REDUCED_MOTION ? 0 : 1300);
+}
+
+function lockAngle() {
+  if (locked) return;
+  locked = true;
+  slider.classList.add('locked');
+  slider.setAttribute('aria-disabled', 'true');
+
+  const rounded = Math.round(angleDeg);
+  angleDeg = rounded;
+  renderArm();
+
+  /* Siktelinjen og kula forsvinner idet trylleformen kastes, trollmannen
+     kaster en trylleform, og en lysende kule skytes ut fra staven —
+     det skal se ut som et virkelig kast. */
+  sightLine.classList.add('hidden-aim');
+  orbDot.classList.add('hidden-aim');
+  wizardEl.classList.add('casting');
+  setTimeout(() => wizardEl.classList.remove('casting'), REDUCED_MOTION ? 0 : 900);
+  fireProjectile(rounded);
+  castSound();
+
+  const target = round[taskIndex];
+  const deviation = Math.abs(target - rounded);
+  const { points, message } = scoreFor(deviation);
+  totalScore += points;
+  deviations.push(deviation);
+  $('hudScore').textContent = String(totalScore);
+
+  const refPt = pt(target, ARM_LEN);
+  refArm.setAttribute('x2', refPt.x);
+  refArm.setAttribute('y2', refPt.y);
+  requestAnimationFrame(() => refArm.classList.add('show'));
+
+  /* Dragen er usynlig helt til trylleformen er kastet. Først da kommer
+     den inn i bildet utenfra, langs den rette banen som målvinkelen
+     angir — slik at vinkelen aldri lekker fasiten på forhånd, men
+     tydelig vises som en flygebane. Deretter reagerer den ut fra
+     treffsikkerheten:
+       – 2–3 poeng (godt/direkte treff): forvises der den blir truffet
+       – 1 poeng (streiftreff): snur og flykter, urørt
+       – 0 poeng (bom): fortsetter uhindret inn og bryter gjennom muren */
+  const entryPt = pt(target, ENTRY_R);
+  const rimPt = pt(target, ARC_R);
+  const entryLeftPct = pctX(entryPt.x), entryTopPct = pctY(entryPt.y);
+  const rimLeftPct = pctX(rimPt.x), rimTopPct = pctY(rimPt.y);
+  const baseLeftPct = pctX(PIVOT.x), baseTopPct = pctY(PIVOT.y);
+
+  const flightMs = REDUCED_MOTION ? 0 : 1400;
+  const resolveMs = REDUCED_MOTION ? 0 : 750;
+
+  dragonEl.style.transition = 'none';
+  dragonEl.style.left = entryLeftPct + '%';
+  dragonEl.style.top = entryTopPct + '%';
+  dragonEl.classList.remove('banished', 'fled');
+  dragonEl.classList.add('visible');
+  void dragonEl.offsetWidth;
+  dragonEl.style.transition = `left ${flightMs}ms linear, top ${flightMs}ms linear, opacity .3s ease, transform .3s ease`;
+
+  requestAnimationFrame(() => {
+    dragonEl.style.left = rimLeftPct + '%';
+    dragonEl.style.top = rimTopPct + '%';
+  });
+
+  setTimeout(() => {
+    if (points >= 2) {
+      banish(rimLeftPct, rimTopPct);
+    } else if (points === 1) {
+      const side = target < 90 ? -1 : 1;
+      dragonEl.style.transition = `left ${resolveMs}ms ease, top ${resolveMs}ms ease, opacity .3s ease, transform .3s ease`;
+      dragonEl.style.left = clampPct(rimLeftPct + side * 16) + '%';
+      dragonEl.style.top = clampPct(rimTopPct - 12) + '%';
+      fleeSound();
+      setTimeout(() => dragonEl.classList.add('fled'), resolveMs);
+    } else {
+      dragonEl.style.transition = `left ${resolveMs}ms linear, top ${resolveMs}ms linear, opacity .3s ease, transform .3s ease`;
+      dragonEl.style.left = baseLeftPct + '%';
+      dragonEl.style.top = baseTopPct + '%';
+      dragonEl.classList.add('breathing');
+      setTimeout(() => crashIntoWall(baseLeftPct, baseTopPct), resolveMs);
+    }
+  }, flightMs);
+
+  showKingReaction(points);
+
+  $('resTarget').textContent = target + '°';
+  $('resPlayer').textContent = rounded + '°';
+  $('resDeviation').textContent = deviation + '°';
+  $('resMessage').textContent = message;
+  $('resPoints').textContent = '+' + points + ' poeng';
+
+  const badge = $('precisionBadge');
+  if (deviation <= 2) { badge.hidden = false; requestAnimationFrame(() => badge.classList.add('show')); }
+  else { badge.hidden = true; badge.classList.remove('show'); }
+
+  $('resultPanel').hidden = false;
+  requestAnimationFrame(() => $('resultPanel').classList.add('show'));
+  $('btnLock').hidden = true;
+
+  $('srAnnounce').textContent =
+    'Riktig vinkel ' + target + ' grader. Du siktet på ' + rounded + ' grader. Avvik ' + deviation + ' grader. ' + message + ' ' + points + ' poeng.';
+}
+
+/* ── FINALESKETSJEN ──
+   Spilles i borgscenen med figurene som allerede står der, før
+   resultatskjermen vises. */
+const finaleLayer = $('finaleLayer');
+
+function resetFinale() {
+  finaleLayer.innerHTML = '';
+  document.querySelectorAll('body > .escapee').forEach(el => el.remove());
+  kingEl.classList.remove('cheer-loop', 'clap-loop', 'panic-loop', 'crownless', 'walking', 'wince');
+  kingBubble.classList.remove('show');
+  $('sceneFrame').classList.remove('shake');
+
+  /* Kongen tilbake i tårnet og trollmannen tilbake på muren, uten at
+     tilbakestillingen selv animeres. */
+  const tower = document.querySelector('.king-tower');
+  tower.style.transition = 'none';
+  tower.style.transform = 'none';
+
+  wizardEl.style.transition = 'none';
+  wizardEl.classList.remove('victory', 'crowned', 'hatless', 'carried', 'casting');
+  wizardEl.style.left = '50%';
+  wizardEl.style.top = '88%';
+
+  void wizardEl.offsetWidth;
+  tower.style.transition = '';
+  wizardEl.style.transition = '';
+}
+
+function shakeScene() {
+  const f = $('sceneFrame');
+  f.classList.remove('shake');
+  void f.offsetWidth;
+  f.classList.add('shake');
+}
+
+/* Løsner figurer fra spillflaten så de kan krysse hele siden. Kloner
+   posisjoneres med position:fixed på nøyaktig samme skjermpunkt, slik at
+   overgangen ikke synes. */
+function releaseEscapees(selector, count, plan) {
+  [...document.querySelectorAll(selector)].slice(0, count).forEach((src, i) => {
+    const r = src.getBoundingClientRect();
+    if (!r.width) return;
+    const e = src.cloneNode(true);
+    e.classList.remove('rain', 'cheer', 'peek', 'visible');
+    e.classList.add('escapee');
+    const spec = plan(i, r);
+    e.style.left = r.left + 'px';
+    e.style.top = r.top + 'px';
+    e.style.right = 'auto';
+    e.style.opacity = '1';
+    e.style.transition = 'none';
+    e.style.setProperty('--rx', spec.rx + 'px');
+    e.style.setProperty('--ry', spec.ry + 'px');
+    e.style.setProperty('--rot', spec.rot + 'deg');
+    e.style.setProperty('--run-ms', spec.ms + 'ms');
+    document.body.appendChild(e);
+    /* Originalen skjules i samme øyeblikk, ellers ser det ut som
+       figuren dupliseres i stedet for å forlate scenen. */
+    src.style.visibility = 'hidden';
+    setTimeout(() => e.remove(), spec.ms + 300);
+  });
+}
+
+function addCurtain(cls, delay) {
+  setTimeout(() => {
+    const c = document.createElement('div');
+    c.className = 'finale-curtain ' + cls;
+    finaleLayer.appendChild(c);
+  }, delay);
+}
+
+/* Klone dragen slik at finalen gjenbruker de samme pixeldelene. */
+function cloneDragon(extraClass) {
+  const d = dragonEl.cloneNode(true);
+  d.removeAttribute('id');
+  d.className = 'dragon-sprite finale-dragon visible' + (extraClass ? ' ' + extraClass : '');
+  d.style.transition = 'none';
+  return d;
+}
+
+/* Én figur som gjør én tydelig ting, ordentlig animert. Hjelperne under
+   deles av alle tre finalene. */
+
+function rainCrowd(count, startDelay) {
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const m = document.createElement('div');
+      m.className = 'mini-wiz rain';
+      m.style.left = (5 + Math.random() * 88) + '%';
+      m.style.setProperty('--from', -(140 + Math.random() * 90) + 'px');
+      const fall = 700 + Math.random() * 350;
+      m.style.setProperty('--fall-ms', fall + 'ms');
+      finaleLayer.appendChild(m);
+      setTimeout(() => { m.classList.remove('rain'); m.classList.add('cheer'); }, fall);
+    }, startDelay + i * 65);
+  }
+}
+
+function burstIcons(icons, perIcon, area) {
+  icons.forEach((icon, i) => {
+    for (let k = 0; k < perIcon; k++) {
+      const fx = document.createElement('span');
+      fx.className = 'fx-mini';
+      fx.textContent = icon;
+      fx.style.left = (area.x + Math.random() * area.w) + '%';
+      fx.style.top = (area.y + Math.random() * area.h) + '%';
+      fx.style.animationDelay = (i * 90 + k * 60) + 'ms';
+      finaleLayer.appendChild(fx);
+      requestAnimationFrame(() => fx.classList.add('pop'));
+    }
+  });
+}
+
+function closeCurtain(delay) {
+  setTimeout(() => {
+    const c = finaleLayer.querySelector('.finale-curtain');
+    if (c) { c.classList.remove('drop'); c.classList.add('close'); }
+  }, delay);
+}
+
+/* Plasserer en drageklon i scenen med en gitt startposisjon. */
+function spawnActorDragon(leftPct, topPct) {
+  const d = cloneDragon();
+  d.style.left = leftPct + '%';
+  d.style.top = topPct + '%';
+  finaleLayer.appendChild(d);
+  void d.offsetWidth;
+  return d;
+}
+function flyTo(el, leftPct, topPct, ms, easing) {
+  el.style.transition = `left ${ms}ms ${easing}, top ${ms}ms ${easing}`;
+  requestAnimationFrame(() => { el.style.left = leftPct + '%'; el.style.top = topPct + '%'; });
+}
+
+/* ══ TRIUMF: Kongen forlater tårnet og kroner trollmannen ══ */
+function finaleTriumph() {
+  const tower = document.querySelector('.king-tower');
+  kingEl.classList.add('cheer-loop');
+  addCurtain('drop', 200);
+
+  /* 1. Kongen klatrer ned og går bort til trollmannen */
+  setTimeout(() => {
+    kingEl.classList.remove('cheer-loop');
+    kingEl.classList.add('walking');
+    const t = tower.getBoundingClientRect();
+    const w = wizardEl.getBoundingClientRect();
+    tower.style.transform =
+      'translate(' + ((w.right + w.width * 0.35) - t.left) + 'px, ' + (w.bottom - t.bottom) + 'px)';
+  }, 550);
+
+  /* 2. Han tar av sin egen krone og setter den på trollmannen */
+  setTimeout(() => {
+    kingEl.classList.remove('walking');
+    kingEl.classList.add('crownless');
+
+    const scene = $('sceneFrame').getBoundingClientRect();
+    const from = kingEl.querySelector('.king-crown').getBoundingClientRect();
+    const to = wizardEl.getBoundingClientRect();
+    const crown = document.createElement('div');
+    crown.className = 'flying-crown';
+    crown.style.left = pctX((from.left + from.width / 2 - scene.left) * 440 / scene.width) + '%';
+    crown.style.top = pctY((from.top + from.height / 2 - scene.top) * 250 / scene.height) + '%';
+    finaleLayer.appendChild(crown);
+    void crown.offsetWidth;
+    crown.style.transition = 'left .75s ease-in-out, top .75s ease-in-out';
+    requestAnimationFrame(() => {
+      crown.style.left = pctX((to.left + to.width / 2 - scene.left) * 440 / scene.width) + '%';
+      crown.style.top = pctY((to.top - scene.top) * 250 / scene.height) + '%';
+    });
+    setTimeout(() => {
+      crown.remove();
+      wizardEl.classList.add('crowned');
+      burstIcons(['✨', '👑'], 4, { x: 30, y: 30, w: 40, h: 25 });
+    }, 800);
+  }, 2000);
+
+  /* 3. Riket feirer den nye vinkelmesteren */
+  setTimeout(() => {
+    kingEl.classList.add('cheer-loop');
+    wizardEl.classList.add('victory');
+    rainCrowd(12, 0);
+    burstIcons(['🎉', '✨'], 4, { x: 12, y: 25, w: 76, h: 35 });
+  }, 2900);
+
+  setTimeout(() => {
+    releaseEscapees('#finaleLayer .mini-wiz', 6, (i, r) => {
+      const goLeft = r.left < window.innerWidth / 2;
+      return {
+        rx: (goLeft ? -1 : 1) * (window.innerWidth * 0.7 + Math.random() * 200),
+        ry: -40 - Math.random() * 90,
+        rot: (goLeft ? -1 : 1) * (360 + Math.random() * 360),
+        ms: 1500 + Math.random() * 600,
+      };
+    });
+  }, 4200);
+
+  closeCurtain(4700);
+}
+
+/* ══ MIDDELS: Dragen napper hatten og stikker av med den ══ */
+function finaleMiddling() {
+  kingEl.classList.add('clap-loop');
+  addCurtain('stuck', 300);
+
+  const d = spawnActorDragon(-22, 34);
+  flyTo(d, 40, 60, 1300, 'linear');
+
+  /* Den napper hatten idet den passerer */
+  setTimeout(() => {
+    wizardEl.classList.add('hatless');
+    const hat = document.createElement('span');
+    hat.className = 'dg-hat';
+    d.appendChild(hat);
+    burstIcons(['💨'], 3, { x: 38, y: 40, w: 20, h: 18 });
+  }, 1600);
+
+  /* Og forsvinner med den */
+  setTimeout(() => flyTo(d, 128, 8, 1500, 'ease-in'), 2100);
+
+  setTimeout(() => {
+    kingEl.classList.remove('clap-loop');
+    kingEl.classList.add('wince');
+  }, 2300);
+}
+
+/* ══ KATASTROFE: Dragen griper trollmannen og flyr av sted med ham ══ */
+function finaleDisaster() {
+  kingEl.classList.add('panic-loop');
+
+  const d = spawnActorDragon(124, 26);
+  flyTo(d, 50, 52, 1400, 'linear');
+
+  /* Den griper trollmannen — han løftes opp under dragen og sparker imot */
+  setTimeout(() => {
+    shakeScene();
+    d.classList.add('breathing');
+    wizardEl.classList.add('carried');
+    wizardEl.style.transition = 'left .45s ease-out, top .45s ease-out, transform .45s ease-out';
+    wizardEl.style.top = '74%';
+    burstIcons(['💢'], 3, { x: 44, y: 42, w: 18, h: 16 });
+  }, 1450);
+
+  /* Og bærer ham ut av bildet */
+  setTimeout(() => {
+    flyTo(d, -28, -14, 1700, 'ease-in');
+    wizardEl.style.transition = 'left 1700ms ease-in, top 1700ms ease-in, transform .45s ease-out';
+    wizardEl.style.left = '-28%';
+    wizardEl.style.top = '8%';
+  }, 2100);
+
+  /* Kongen står igjen alene på muren */
+  setTimeout(() => {
+    kingEl.classList.add('crownless');
+    burstIcons(['😱', '💢'], 3, { x: 62, y: 16, w: 30, h: 20 });
+  }, 3200);
+}
+
+function playFinale(ending, done) {
+  resetFinale();
+
+  kingBubble.textContent = ending.king;
+  kingBubble.classList.add('show');
+
+  if (REDUCED_MOTION) { done(); return; }
+
+  /* Hvert narrativ har sin egen lengde — kroningen tar lengst tid fordi
+     kongen må gå hele veien bort til trollmannen først. */
+  let runMs;
+  if (ending.tier === 'middels') { finaleMiddling(); runMs = 4200; }
+  else if (ending.tier === 'katastrofe') { finaleDisaster(); runMs = 4600; }
+  else { finaleTriumph(); runMs = 5500; }
+
+  setTimeout(done, runMs);
+}
+
+function startFinale() {
+  const maxScore = round.length * 3;
+  const ending = pickEnding(totalScore, maxScore);
+
+  /* Rydd bort oppgave-grensesnittet så scenen står fri til sketsjen. */
+  $('resultPanel').hidden = true;
+  $('resultPanel').classList.remove('show');
+  $('btnLock').hidden = true;
+  refArm.classList.remove('show');
+  sightLine.classList.add('hidden-aim');
+  orbDot.classList.add('hidden-aim');
+  resetDragon();
+  $('hudTaskLabel').textContent = 'Alle ' + round.length + ' drager er over';
+  $('aimPrefix').textContent = '';
+  $('targetDisplay').textContent = 'Slaget er over!';
+  $('srAnnounce').textContent = ending.title + '. ' + ending.sub;
+
+  playFinale(ending, () => endGame(ending));
+}
+
+function endGame(ending) {
+  const avg = deviations.reduce((s, d) => s + d, 0) / deviations.length;
+  const best = Math.min(...deviations);
+  $('endEmoji').textContent = ending.emoji;
+  $('endTitle').textContent = ending.title;
+  $('endSub').textContent = ending.sub;
+  $('endScore').textContent = totalScore + ' av ' + (round.length * 3);
+  $('endAvg').textContent = (Math.round(avg * 10) / 10) + '°';
+  $('endBest').textContent = best + '°';
+  showScreen('screen-end');
+}
+
+$('btn-start').addEventListener('click', startGame);
+$('btnLock').addEventListener('click', lockAngle);
+$('btnNext').addEventListener('click', () => { taskIndex++; loadTask(); });
+$('btn-again').addEventListener('click', startGame);
+
+renderArm();
+</script>
+</body>
+</html>

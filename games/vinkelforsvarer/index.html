@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Vinkelforsvarer — LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #2b2118;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+    --gridline:#e8dfc9;
+
+    --space-bg-top: #232a5c;
+    --space-bg-bottom: #0b0e26;
+    --space-ink: #eef0fa;
+    --ground: #171b3f;
+    --turret: #545a86;
+    --sight: #38bdf8;
+    --laser-flash: #cffafe;
+    --correct: #4ade80;
+    --explosion: #fb923c;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SCREENS ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .screen-hero { padding: 4px 0 4px; }
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 6px; }
+  .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.9rem,7vw,3rem); }
+  .screen-hero p  {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.9rem,2.4vw,1.05rem); margin-top: 8px; max-width: 440px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; width: 100%;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 10px; }
+
+  .example-label { font-weight: 800; font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
+  .example-wrap { width: min(60vw, 240px); margin: 0 auto; aspect-ratio: 440/250; position: relative; border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink); overflow: hidden; }
+  .example-wrap svg { width: 100%; height: 100%; display: block; }
+
+  button, .btn-primary { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+  .btn-primary:focus-visible {
+    outline: 3px solid var(--ink); outline-offset: 3px;
+  }
+  .btn-back {
+    font-weight: 800; color: var(--muted); text-decoration: none; font-size: .9rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 40px; }
+  .game-wrap { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; align-items: center; animation: fadeIn .3s ease; }
+
+  .hud {
+    width: 100%;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap; padding-top: 6px;
+  }
+  .hud-target {
+    background: var(--yellow); border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 8px 16px; transform: rotate(-1deg); flex: 1 1 auto; min-width: 200px;
+  }
+  .hud-label { display:block; font-weight:900; font-size:.65rem; text-transform:uppercase; letter-spacing:.06em; opacity:.7; }
+  .hud-coord { font-family: 'Chewy', cursive; font-size: clamp(1.5rem,6vw,2rem); display: block; }
+  .hud-right { display: flex; gap: 8px; }
+  .hud-stat {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 6px 12px; text-align: center; min-width: 74px;
+  }
+  .hud-stat-label { display:block; font-weight:900; font-size:.6rem; text-transform:uppercase; letter-spacing:.05em; color: var(--muted); }
+  .hud-stat-val { font-family: 'Chewy', cursive; font-size: 1.1rem; }
+
+  /* ══ KANONVERKTØY (romskip-lerret) ══ */
+  .canvas-wrap { width: min(94vw, 560px); margin: 0 auto; }
+  .canvas-frame {
+    position: relative; width: 100%; aspect-ratio: 440 / 250;
+    background: linear-gradient(180deg, var(--space-bg-top) 0%, var(--space-bg-bottom) 100%);
+    border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    overflow: hidden;
+  }
+
+  .starfield { position: absolute; inset: 0; pointer-events: none; }
+  .star { position: absolute; background: #fff; border-radius: 50%; }
+  .star.twinkle { animation: twinkle 2.6s ease-in-out infinite; }
+  @keyframes twinkle { 0%,100% { opacity: .25; } 50% { opacity: .9; } }
+
+  .cannon-slider {
+    position: absolute; inset: 0;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    cursor: grab;
+  }
+  .cannon-slider:active { cursor: grabbing; }
+  .cannon-slider.locked { cursor: default; }
+  .cannon-slider svg { width: 100%; height: 100%; display: block; }
+  .cannon-slider:focus-visible {
+    outline: 3px solid var(--yellow); outline-offset: -4px;
+  }
+
+  .c-ground   { fill: var(--ground); }
+  .c-dome     { fill: rgba(255,255,255,.04); stroke: var(--space-ink); stroke-width: 2.5; stroke-dasharray: 5 6; }
+  .c-tick     { stroke: var(--space-ink); stroke-width: 4; stroke-linecap: round; }
+  .c-label    { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 16px; fill: var(--space-ink); }
+  .c-horizon  { stroke: var(--space-ink); stroke-width: 3; opacity: .55; }
+  .c-turret-base { fill: var(--turret); stroke: var(--ink); stroke-width: 3; }
+  .c-pivot    { fill: var(--turret); stroke: var(--ink); stroke-width: 3; }
+  /* Det fysiske kanonløpet — sitter fast på basen og følger siktet,
+     men blir stående (fryst) etter avfyring. */
+  .c-gun-barrel {
+    fill: var(--turret); stroke: var(--ink); stroke-width: 3;
+    transition: fill .12s ease;
+  }
+  .c-gun-barrel.firing { fill: var(--laser-flash); filter: drop-shadow(0 0 10px rgba(207,250,254,.9)); }
+  /* Siktelinjen + kula — kun synlig mens spilleren sikter, forsvinner
+     idet «Fyr!» trykkes. */
+  .c-sight {
+    stroke: var(--sight); stroke-width: 4; stroke-linecap: round;
+    filter: drop-shadow(0 0 3px rgba(56,189,248,.7));
+    opacity: 1; transition: opacity .15s ease;
+  }
+  .c-reference {
+    stroke: var(--correct); stroke-width: 5; stroke-linecap: round;
+    stroke-dasharray: 10 8; opacity: 0; transition: opacity .5s ease;
+  }
+  .c-reference.show { opacity: 1; }
+  .c-muzzle-hit { fill: transparent; }
+  .c-muzzle {
+    fill: var(--yellow); stroke: var(--ink); stroke-width: 3.5;
+    filter: drop-shadow(0 0 4px rgba(250,204,21,.8));
+    opacity: 1; transition: opacity .15s ease;
+  }
+  .hidden-aim { opacity: 0; }
+
+  .projectile {
+    position: absolute; width: 13px; height: 13px; border-radius: 50%;
+    background: var(--laser-flash);
+    box-shadow: 0 0 10px 3px rgba(207,250,254,.85), 0 0 4px rgba(255,255,255,.9);
+    transform: translate(-50%,-50%); opacity: 0; pointer-events: none;
+  }
+
+  .asteroid-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .asteroid-sprite {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%,-50%);
+    font-size: clamp(2.3rem, 10vw, 3.6rem);
+    filter: drop-shadow(0 0 9px rgba(251,146,60,.6));
+    transition: opacity .3s ease, transform .3s ease;
+    opacity: 0;
+  }
+  .asteroid-sprite.visible { opacity: 1; }
+  .asteroid-sprite.exploded { transform: translate(-50%,-50%) scale(1.6); opacity: 0; }
+  .asteroid-sprite.deflected { transform: translate(-50%,-50%) scale(.6); opacity: 0; }
+
+  .fx-layer { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .fx-burst {
+    position: absolute; font-size: clamp(3.2rem, 15vw, 5.4rem);
+    transform: translate(-50%,-50%) scale(0);
+  }
+  .fx-burst.pop { animation: burstPop .65s cubic-bezier(.2,.9,.3,1.4) forwards; }
+  @keyframes burstPop {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: 0; }
+    40%  { transform: translate(-50%,-50%) scale(1.35); opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.05); opacity: 0; }
+  }
+  .fx-shard {
+    position: absolute; width: 8px; height: 8px; border-radius: 1px;
+    animation: shardFly .75s ease-out forwards;
+  }
+  @keyframes shardFly {
+    0%   { transform: translate(-50%,-50%) translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(-50%,-50%) translate(var(--dx), var(--dy)) scale(.2); opacity: 0; }
+  }
+  .fx-ring {
+    position: absolute; width: 14px; height: 14px;
+    border-radius: 50%; border: 5px solid rgba(255,205,120,.9);
+    transform: translate(-50%,-50%) scale(0); opacity: 1;
+  }
+  .fx-ring.expand { animation: ringExpand .55s ease-out forwards; }
+  @keyframes ringExpand {
+    0%   { transform: translate(-50%,-50%) scale(0); opacity: .9; }
+    100% { transform: translate(-50%,-50%) scale(11); opacity: 0; }
+  }
+
+  .lock-actions { width: 100%; display: flex; justify-content: center; }
+
+  .result-panel {
+    width: 100%; background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; display: flex; flex-direction: column; gap: 10px;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .result-panel[hidden] { display: none; }
+  .result-panel.show { opacity: 1; transform: translateY(0); }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: .95rem; }
+  .result-row strong { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+  .result-message {
+    font-weight: 800; font-size: 1rem; padding-top: 4px; border-top: 3px solid var(--gridline);
+    display: flex; align-items: center; gap: 8px; justify-content: center; text-align: center;
+  }
+  .precision-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--green); color: #fff; font-size: .8rem; font-weight: 900;
+    transform: scale(0);
+  }
+  .precision-badge[hidden] { display: none; }
+  .precision-badge.show { animation: badgePop .35s ease forwards; }
+  @keyframes badgePop { 0% { transform: scale(0); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+  .result-points {
+    font-family: 'Chewy', cursive; font-size: 1.4rem; text-align: center;
+  }
+
+  /* ══ SLUTTSKJERM ══ */
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+
+  footer {
+    text-align: center; padding: 24px; color: var(--muted);
+    font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(43,33,24,.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .result-panel, .precision-badge, .c-reference, .star.twinkle,
+    .asteroid-sprite, .fx-burst, .fx-shard, .c-gun-barrel, .c-sight,
+    .c-muzzle, .projectile {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🛰️☄️</div>
+      <h1>Vinkelforsvarer</h1>
+      <p>Asteroider nærmer seg basen! Du får vite hvilken vinkel de kommer fra — sikt laserkanonen dit og skyt dem ned, uten å se tallet mens du sikter.</p>
+    </div>
+    <div class="card">
+      <h2>Slik spiller du</h2>
+      <div class="example-label">Eksempel: kanonen sikter på 90°</div>
+      <div class="example-wrap">
+        <svg id="exampleSvg" viewBox="0 0 440 250" role="img" aria-label="Eksempel: laserkanonen sikter rett opp fra dreiepunktet, altså 90 grader."></svg>
+      </div>
+      <p style="font-weight:700; font-size:.9rem; color:var(--muted); margin-top:10px;">
+        10 fiender. Du sikter kanonen med finger, mus eller piltaster og trykker «Fyr!» når du er fornøyd.
+      </p>
+    </div>
+    <button class="btn-primary" id="btn-start">Start forsvaret</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="hud">
+      <div class="hud-target">
+        <span class="hud-label" id="hudTaskLabel">Fiende 1 av 10</span>
+        <span class="hud-coord">Sikt: <span id="targetDisplay">70°</span></span>
+      </div>
+      <div class="hud-right">
+        <div class="hud-stat">
+          <span class="hud-stat-label">Poeng</span>
+          <span class="hud-stat-val" id="hudScore">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="canvas-wrap">
+      <div class="canvas-frame" id="canvasFrame">
+        <div class="starfield" id="starfield"></div>
+
+        <div class="cannon-slider"
+             id="angleSlider"
+             tabindex="0"
+             role="slider"
+             aria-orientation="horizontal"
+             aria-valuemin="0"
+             aria-valuemax="180"
+             aria-valuenow="0"
+             aria-label="Roterbar laserkanon. Dra med finger eller mus, eller bruk venstre og høyre piltast (Shift for 5 grader av gangen). Trykk Enter for å fyre.">
+          <svg id="cannonSvg" viewBox="0 0 440 250" aria-hidden="true"></svg>
+        </div>
+
+        <div class="projectile" id="projectile" aria-hidden="true"></div>
+        <div class="asteroid-layer">
+          <div class="asteroid-sprite" id="asteroid" aria-hidden="true">☄️</div>
+        </div>
+        <div class="fx-layer" id="fxLayer" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div class="lock-actions">
+      <button class="btn-primary" id="btnLock">Fyr!</button>
+    </div>
+
+    <div class="result-panel" id="resultPanel" hidden>
+      <div class="result-row"><span>Riktig vinkel</span><strong id="resTarget">70°</strong></div>
+      <div class="result-row"><span>Du siktet på</span><strong id="resPlayer">68°</strong></div>
+      <div class="result-row"><span>Avvik</span><strong id="resDeviation">2°</strong></div>
+      <div class="result-message">
+        <span id="resMessage">Direkte treff!</span>
+        <span class="precision-badge" id="precisionBadge" hidden aria-hidden="true">✓</span>
+      </div>
+      <div class="result-points" id="resPoints">+3 poeng</div>
+      <button class="btn-primary" id="btnNext">Klar!</button>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🛰️🎉</div>
+      <h1>Basen er trygg!</h1>
+      <p>Her er resultatet ditt etter 10 fiender.</p>
+    </div>
+    <div class="card result-card">
+      <div class="result-row"><span>Totalpoeng</span><strong id="endScore">0 av 30</strong></div>
+      <div class="result-row"><span>Gjennomsnittlig avvik</span><strong id="endAvg">0°</strong></div>
+      <div class="result-row"><span>Beste forsøk</span><strong id="endBest">0°</strong></div>
+    </div>
+    <button class="btn-primary" id="btn-again">Spill igjen</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── KANONGEOMETRI (delt mellom eksempel og interaktivt verktøy) ── */
+const PIVOT = { x: 220, y: 220 };
+const ARC_R = 172;
+const ARM_LEN = 152;
+const TICK_IN = 160;
+const TICK_OUT = 186;
+const LABEL_R = 202;
+const HANDLE_R = 11;
+const HANDLE_HIT_R = 28;
+const ENTRY_R = 340; /* langt nok utenfor lerretet (440×250) på enhver vinkel */
+const BARREL_LEN = 50; /* det fysiske kanonløpet */
+const BARREL_W = 16;
+const SHOT_R = 250; /* hvor langt prosjektilet flyr ut før det forsvinner */
+
+function pctX(x) { return (x / 440) * 100; }
+function pctY(y) { return (y / 250) * 100; }
+
+function pt(angleDeg, radius) {
+  const rad = angleDeg * Math.PI / 180;
+  return { x: PIVOT.x + radius * Math.cos(rad), y: PIVOT.y - radius * Math.sin(rad) };
+}
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(NS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function buildStaticBase(svg) {
+  svg.appendChild(svgEl('rect', { x: 0, y: PIVOT.y, width: 440, height: 250 - PIVOT.y, class: 'c-ground' }));
+
+  const domeStart = pt(180, ARC_R);
+  const domeEnd = pt(0, ARC_R);
+  svg.appendChild(svgEl('path', {
+    d: `M ${domeStart.x} ${domeStart.y} A ${ARC_R} ${ARC_R} 0 0 1 ${domeEnd.x} ${domeEnd.y}`,
+    class: 'c-dome'
+  }));
+
+  const hL = pt(180, ARM_LEN + 20), hR = pt(0, ARM_LEN + 20);
+  svg.appendChild(svgEl('line', { x1: 0, y1: PIVOT.y, x2: 440, y2: PIVOT.y, class: 'c-horizon' }));
+
+  [0, 90, 180].forEach(a => {
+    const inner = pt(a, TICK_IN), outer = pt(a, TICK_OUT), lp = pt(a, LABEL_R);
+    svg.appendChild(svgEl('line', { x1: inner.x, y1: inner.y, x2: outer.x, y2: outer.y, class: 'c-tick' }));
+    const label = svgEl('text', { x: lp.x, y: lp.y, class: 'c-label', 'text-anchor': 'middle', 'dominant-baseline': 'middle' });
+    label.textContent = a + '°';
+    svg.appendChild(label);
+  });
+
+  const baseTop = PIVOT.y - 4;
+  svg.appendChild(svgEl('polygon', {
+    points: `${PIVOT.x-30},${PIVOT.y+22} ${PIVOT.x-15},${baseTop} ${PIVOT.x+15},${baseTop} ${PIVOT.x+30},${PIVOT.y+22}`,
+    class: 'c-turret-base'
+  }));
+}
+
+/* Det fysiske kanonløpet: et rektangel som stikker ut fra dreiepunktet,
+   rotert med et SVG-transform slik at det følger siktevinkelen. */
+function makeGunBarrel(angleDeg) {
+  const gb = svgEl('rect', {
+    x: PIVOT.x - 6, y: PIVOT.y - BARREL_W / 2,
+    width: BARREL_LEN + 6, height: BARREL_W,
+    class: 'c-gun-barrel'
+  });
+  gb.setAttribute('transform', `rotate(${-angleDeg} ${PIVOT.x} ${PIVOT.y})`);
+  return gb;
+}
+
+/* ── STATISK EKSEMPEL (90°) på startskjermen ── */
+(function buildExample() {
+  const svg = $('exampleSvg');
+  buildStaticBase(svg);
+  const barrelTip = pt(90, BARREL_LEN);
+  const sightTip = pt(90, ARM_LEN);
+  svg.appendChild(makeGunBarrel(90));
+  svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 9, class: 'c-pivot' }));
+  svg.appendChild(svgEl('line', { x1: barrelTip.x, y1: barrelTip.y, x2: sightTip.x, y2: sightTip.y, class: 'c-sight' }));
+  svg.appendChild(svgEl('circle', { cx: sightTip.x, cy: sightTip.y, r: HANDLE_R, class: 'c-muzzle' }));
+})();
+
+/* ── STJERNER (dekorativt, statisk per sideinnlasting) ── */
+(function buildStars() {
+  const field = $('starfield');
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < 46; i++) {
+    const s = document.createElement('div');
+    s.className = 'star' + (Math.random() < 0.4 && !REDUCED_MOTION ? ' twinkle' : '');
+    const size = 1 + Math.random() * 2;
+    s.style.width = size + 'px';
+    s.style.height = size + 'px';
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = (Math.random() * 78) + '%';
+    s.style.opacity = String(0.3 + Math.random() * 0.6);
+    if (s.className.includes('twinkle')) s.style.animationDelay = (Math.random() * 2.6) + 's';
+    frag.appendChild(s);
+  }
+  field.appendChild(frag);
+})();
+
+/* ── INTERAKTIVT VERKTØY ── */
+const slider = $('angleSlider');
+const svg = $('cannonSvg');
+buildStaticBase(svg);
+
+const gunBarrel = makeGunBarrel(0);
+svg.appendChild(gunBarrel);
+svg.appendChild(svgEl('circle', { cx: PIVOT.x, cy: PIVOT.y, r: 9, class: 'c-pivot' }));
+
+const refArm = svgEl('line', { x1: PIVOT.x, y1: PIVOT.y, x2: PIVOT.x, y2: PIVOT.y, class: 'c-reference' });
+svg.appendChild(refArm);
+/* Siktelinjen + kula: den delen spilleren drar i. Forsvinner idet
+   skuddet avfyres — se lockAngle(). */
+const sightLine = svgEl('line', { x1: PIVOT.x + BARREL_LEN, y1: PIVOT.y, x2: PIVOT.x + ARM_LEN, y2: PIVOT.y, class: 'c-sight' });
+svg.appendChild(sightLine);
+const muzzleHit = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_HIT_R, class: 'c-muzzle-hit' });
+svg.appendChild(muzzleHit);
+const muzzleDot = svgEl('circle', { cx: PIVOT.x + ARM_LEN, cy: PIVOT.y, r: HANDLE_R, class: 'c-muzzle' });
+svg.appendChild(muzzleDot);
+
+const asteroidEl = $('asteroid');
+const fxLayer = $('fxLayer');
+const projectileEl = $('projectile');
+
+/* ── LYD (Web Audio API, enkle og diskrete effekter — ingen filer) ── */
+let audioCtx = null;
+function initAudio() {
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  if (!audioCtx) audioCtx = new AC();
+  else if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+function tone(freq, ms, type, vol, delay = 0, freqEnd = null) {
+  if (!audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, t0);
+  if (freqEnd !== null) o.frequency.exponentialRampToValueAtTime(Math.max(freqEnd, 1), t0 + ms / 1000);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.exponentialRampToValueAtTime(vol, t0 + 0.015);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000);
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start(t0); o.stop(t0 + ms / 1000 + 0.05);
+}
+function fireSound() { tone(760, 100, 'sawtooth', 0.07, 0, 200); }
+function deflectSound() { tone(500, 170, 'triangle', 0.07, 0, 900); }
+function explosionSound() {
+  if (!audioCtx) return;
+  const dur = 0.38;
+  const n = Math.floor(audioCtx.sampleRate * dur);
+  const buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < n; i++) data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 1.6) * 0.6;
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const filt = audioCtx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 850;
+  const g = audioCtx.createGain(); g.gain.value = 0.2;
+  src.connect(filt); filt.connect(g); g.connect(audioCtx.destination);
+  src.start();
+  tone(85, 240, 'sine', 0.11, 0.01);
+}
+
+let angleDeg = 0;
+let dragging = false;
+let locked = false;
+
+function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+function clampPct(v) { return clamp(v, 6, 94); }
+
+function renderArm() {
+  const barrelTip = pt(angleDeg, BARREL_LEN);
+  const sightTip = pt(angleDeg, ARM_LEN);
+  gunBarrel.setAttribute('transform', `rotate(${-angleDeg} ${PIVOT.x} ${PIVOT.y})`);
+  sightLine.setAttribute('x1', barrelTip.x); sightLine.setAttribute('y1', barrelTip.y);
+  sightLine.setAttribute('x2', sightTip.x); sightLine.setAttribute('y2', sightTip.y);
+  muzzleHit.setAttribute('cx', sightTip.x); muzzleHit.setAttribute('cy', sightTip.y);
+  muzzleDot.setAttribute('cx', sightTip.x); muzzleDot.setAttribute('cy', sightTip.y);
+  slider.setAttribute('aria-valuenow', String(Math.round(angleDeg)));
+}
+
+function pointerAngle(evt) {
+  const rect = svg.getBoundingClientRect();
+  const scaleX = 440 / rect.width, scaleY = 250 / rect.height;
+  const x = (evt.clientX - rect.left) * scaleX;
+  const y = (evt.clientY - rect.top) * scaleY;
+  const dx = x - PIVOT.x, dy = PIVOT.y - y;
+  let ang = Math.atan2(dy, dx) * 180 / Math.PI;
+  if (ang < 0) ang = dx >= 0 ? 0 : 180;
+  return clamp(ang, 0, 180);
+}
+
+slider.addEventListener('pointerdown', e => {
+  if (locked) return;
+  dragging = true;
+  slider.setPointerCapture(e.pointerId);
+  angleDeg = pointerAngle(e);
+  renderArm();
+  e.preventDefault();
+});
+slider.addEventListener('pointermove', e => {
+  if (!dragging || locked) return;
+  angleDeg = pointerAngle(e);
+  renderArm();
+});
+function endDrag() { dragging = false; }
+slider.addEventListener('pointerup', endDrag);
+slider.addEventListener('pointercancel', endDrag);
+
+slider.addEventListener('keydown', e => {
+  if (locked) return;
+  const step = e.shiftKey ? 5 : 1;
+  if (e.key === 'ArrowRight') { angleDeg = clamp(angleDeg + step, 0, 180); renderArm(); e.preventDefault(); }
+  else if (e.key === 'ArrowLeft') { angleDeg = clamp(angleDeg - step, 0, 180); renderArm(); e.preventDefault(); }
+  else if (e.key === 'Enter') { e.preventDefault(); lockAngle(); }
+});
+
+/* ── OPPGAVEGENERERING ──
+   1–3: kjente referansevinkler, 4–7: multipler av 5°, 8–10: vilkårlige
+   hele grader. Ingen målvinkel gjentas i samme runde. Identisk med
+   Vinkeljakten — kun presentasjonen er endret. */
+const REFERENCE_ANGLES = [30, 45, 60, 90, 120, 135, 150];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function buildRound() {
+  const used = new Set();
+  const round = [];
+
+  shuffle(REFERENCE_ANGLES).slice(0, 3).forEach(a => { round.push(a); used.add(a); });
+
+  const multiplesPool = [];
+  for (let a = 5; a < 180; a += 5) if (!used.has(a)) multiplesPool.push(a);
+  shuffle(multiplesPool).slice(0, 4).forEach(a => { round.push(a); used.add(a); });
+
+  while (round.length < 10) {
+    const candidate = 1 + Math.floor(Math.random() * 179);
+    if (!used.has(candidate)) { round.push(candidate); used.add(candidate); }
+  }
+
+  return round;
+}
+
+function scoreFor(deviation) {
+  if (deviation <= 2) return { points: 3, message: 'Direkte treff!' };
+  if (deviation <= 5) return { points: 2, message: 'Sterk trefning!' };
+  if (deviation <= 10) return { points: 1, message: 'Streiftreff! Den endret kurs og bommet på basen.' };
+  return { points: 0, message: 'Bom! Asteroiden traff basen.' };
+}
+
+/* ── SPILLTILSTAND ── */
+let round = [];
+let taskIndex = 0;
+let totalScore = 0;
+let deviations = [];
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+
+function startGame() {
+  initAudio();
+  round = buildRound();
+  taskIndex = 0;
+  totalScore = 0;
+  deviations = [];
+  $('hudScore').textContent = '0';
+  showScreen('screen-game');
+  loadTask();
+}
+
+function resetAsteroid() {
+  asteroidEl.style.transition = 'none';
+  asteroidEl.classList.remove('visible', 'exploded', 'deflected');
+  asteroidEl.style.left = '50%';
+  asteroidEl.style.top = '50%';
+  asteroidEl.textContent = '☄️';
+  void asteroidEl.offsetWidth; /* tving reflow så neste transition ikke arver denne hoppet */
+  asteroidEl.style.transition = '';
+}
+
+function resetProjectile() {
+  projectileEl.style.transition = 'none';
+  projectileEl.style.opacity = '0';
+  projectileEl.style.left = '50%';
+  projectileEl.style.top = '50%';
+  void projectileEl.offsetWidth;
+  projectileEl.style.transition = '';
+}
+
+function loadTask() {
+  if (taskIndex >= round.length) { endGame(); return; }
+  locked = false;
+  angleDeg = 0;
+  dragging = false;
+  slider.classList.remove('locked');
+  slider.removeAttribute('aria-disabled');
+  refArm.classList.remove('show');
+  gunBarrel.classList.remove('firing');
+  sightLine.classList.remove('hidden-aim');
+  muzzleDot.classList.remove('hidden-aim');
+  resetProjectile();
+  renderArm();
+  resetAsteroid();
+
+  const target = round[taskIndex];
+  $('hudTaskLabel').textContent = 'Fiende ' + (taskIndex + 1) + ' av ' + round.length;
+  $('targetDisplay').textContent = target + '°';
+
+  $('btnLock').hidden = false;
+  $('btnLock').disabled = false;
+  $('resultPanel').hidden = true;
+  $('resultPanel').classList.remove('show');
+  $('precisionBadge').hidden = true;
+  $('precisionBadge').classList.remove('show');
+  $('srAnnounce').textContent = '';
+}
+
+function spawnShards(leftPct, topPct) {
+  const cols = ['#fb923c', '#facc15', '#f87171', '#fde68a'];
+  for (let i = 0; i < 18; i++) {
+    const s = document.createElement('div');
+    s.className = 'fx-shard';
+    s.style.left = leftPct + '%';
+    s.style.top = topPct + '%';
+    s.style.background = cols[i % cols.length];
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 40 + Math.random() * 48;
+    s.style.setProperty('--dx', (Math.cos(angle) * dist) + 'px');
+    s.style.setProperty('--dy', (Math.sin(angle) * dist) + 'px');
+    fxLayer.appendChild(s);
+    setTimeout(() => s.remove(), 800);
+  }
+}
+
+function spawnRing(leftPct, topPct) {
+  const r = document.createElement('div');
+  r.className = 'fx-ring';
+  r.style.left = leftPct + '%';
+  r.style.top = topPct + '%';
+  fxLayer.appendChild(r);
+  requestAnimationFrame(() => r.classList.add('expand'));
+  setTimeout(() => r.remove(), 600);
+}
+
+function spawnBurst(leftPct, topPct, emoji) {
+  const b = document.createElement('div');
+  b.className = 'fx-burst';
+  b.textContent = emoji;
+  b.style.left = leftPct + '%';
+  b.style.top = topPct + '%';
+  fxLayer.appendChild(b);
+  requestAnimationFrame(() => b.classList.add('pop'));
+  setTimeout(() => b.remove(), 750);
+}
+
+function explode(leftPct, topPct) {
+  asteroidEl.classList.add('exploded');
+  spawnBurst(leftPct, topPct, '💥');
+  spawnShards(leftPct, topPct);
+  spawnRing(leftPct, topPct);
+  explosionSound();
+}
+
+/* Prosjektilet: en liten lysende kule som skytes ut fra kanonløpets
+   munning og flyr rett fram langs den låste vinkelen. */
+function fireProjectile(angleDeg) {
+  const start = pt(angleDeg, BARREL_LEN);
+  const end = pt(angleDeg, SHOT_R);
+  const shotMs = REDUCED_MOTION ? 0 : 240;
+
+  projectileEl.style.transition = 'none';
+  projectileEl.style.left = pctX(start.x) + '%';
+  projectileEl.style.top = pctY(start.y) + '%';
+  projectileEl.style.opacity = '1';
+  void projectileEl.offsetWidth;
+  projectileEl.style.transition = `left ${shotMs}ms linear, top ${shotMs}ms linear, opacity ${shotMs}ms ease`;
+
+  requestAnimationFrame(() => {
+    projectileEl.style.left = pctX(end.x) + '%';
+    projectileEl.style.top = pctY(end.y) + '%';
+    projectileEl.style.opacity = '0';
+  });
+}
+
+function lockAngle() {
+  if (locked) return;
+  locked = true;
+  slider.classList.add('locked');
+  slider.setAttribute('aria-disabled', 'true');
+
+  const rounded = Math.round(angleDeg);
+  angleDeg = rounded;
+  renderArm();
+
+  /* Siktelinjen og kula forsvinner idet skuddet går, og et prosjektil
+     skytes ut fra kanonløpet — det skal se ut som et reelt skudd. */
+  sightLine.classList.add('hidden-aim');
+  muzzleDot.classList.add('hidden-aim');
+  gunBarrel.classList.add('firing');
+  setTimeout(() => gunBarrel.classList.remove('firing'), REDUCED_MOTION ? 0 : 220);
+  fireProjectile(rounded);
+  fireSound();
+
+  const target = round[taskIndex];
+  const deviation = Math.abs(target - rounded);
+  const { points, message } = scoreFor(deviation);
+  totalScore += points;
+  deviations.push(deviation);
+  $('hudScore').textContent = String(totalScore);
+
+  const refPt = pt(target, ARM_LEN);
+  refArm.setAttribute('x2', refPt.x);
+  refArm.setAttribute('y2', refPt.y);
+  requestAnimationFrame(() => refArm.classList.add('show'));
+
+  /* Asteroiden er usynlig helt til skuddet er avfyrt. Først da kommer
+     den inn i bildet utenfra, langs den rette banen som målvinkelen
+     angir — slik at vinkelen aldri lekker fasiten på forhånd, men
+     tydelig vises som en bane når den flyr inn. Etter innflygingen
+     reagerer den ut fra treffsikkerheten:
+       – 2–3 poeng (godt/direkte treff): eksploderer der den blir truffet
+       – 1 poeng (streiftreff): endrer kurs og driver bort, urørt
+       – 0 poeng (bom): fortsetter uhindret inn og eksploderer på basen */
+  const entryPt = pt(target, ENTRY_R);
+  const rimPt = pt(target, ARC_R);
+  const entryLeftPct = pctX(entryPt.x), entryTopPct = pctY(entryPt.y);
+  const rimLeftPct = pctX(rimPt.x), rimTopPct = pctY(rimPt.y);
+  const baseLeftPct = pctX(PIVOT.x), baseTopPct = pctY(PIVOT.y);
+
+  const flightMs = REDUCED_MOTION ? 0 : 950;
+  const resolveMs = REDUCED_MOTION ? 0 : 500;
+
+  /* Hopp umerkelig til inngangspunktet (langt utenfor lerretet, så det
+     er uansett usynlig), deretter animer innover langs banen. */
+  asteroidEl.style.transition = 'none';
+  asteroidEl.style.left = entryLeftPct + '%';
+  asteroidEl.style.top = entryTopPct + '%';
+  asteroidEl.textContent = '☄️';
+  asteroidEl.classList.remove('exploded', 'deflected');
+  asteroidEl.classList.add('visible');
+  void asteroidEl.offsetWidth;
+  asteroidEl.style.transition = `left ${flightMs}ms linear, top ${flightMs}ms linear, opacity .3s ease, transform .3s ease`;
+
+  requestAnimationFrame(() => {
+    asteroidEl.style.left = rimLeftPct + '%';
+    asteroidEl.style.top = rimTopPct + '%';
+  });
+
+  setTimeout(() => {
+    if (points >= 2) {
+      explode(rimLeftPct, rimTopPct);
+    } else if (points === 1) {
+      const side = target < 90 ? -1 : 1;
+      asteroidEl.style.transition = `left ${resolveMs}ms ease, top ${resolveMs}ms ease, opacity .3s ease, transform .3s ease`;
+      asteroidEl.style.left = clampPct(rimLeftPct + side * 16) + '%';
+      asteroidEl.style.top = clampPct(rimTopPct - 12) + '%';
+      deflectSound();
+      setTimeout(() => asteroidEl.classList.add('deflected'), resolveMs);
+    } else {
+      asteroidEl.style.transition = `left ${resolveMs}ms linear, top ${resolveMs}ms linear, opacity .3s ease, transform .3s ease`;
+      asteroidEl.style.left = baseLeftPct + '%';
+      asteroidEl.style.top = baseTopPct + '%';
+      setTimeout(() => explode(baseLeftPct, baseTopPct), resolveMs);
+    }
+  }, flightMs);
+
+  $('resTarget').textContent = target + '°';
+  $('resPlayer').textContent = rounded + '°';
+  $('resDeviation').textContent = deviation + '°';
+  $('resMessage').textContent = message;
+  $('resPoints').textContent = '+' + points + ' poeng';
+
+  const badge = $('precisionBadge');
+  if (deviation <= 2) { badge.hidden = false; requestAnimationFrame(() => badge.classList.add('show')); }
+  else { badge.hidden = true; badge.classList.remove('show'); }
+
+  $('resultPanel').hidden = false;
+  requestAnimationFrame(() => $('resultPanel').classList.add('show'));
+  $('btnLock').hidden = true;
+
+  $('srAnnounce').textContent =
+    'Riktig vinkel ' + target + ' grader. Du siktet på ' + rounded + ' grader. Avvik ' + deviation + ' grader. ' + message + ' ' + points + ' poeng.';
+}
+
+function endGame() {
+  const avg = deviations.reduce((s, d) => s + d, 0) / deviations.length;
+  const best = Math.min(...deviations);
+  $('endScore').textContent = totalScore + ' av ' + (round.length * 3);
+  $('endAvg').textContent = (Math.round(avg * 10) / 10) + '°';
+  $('endBest').textContent = best + '°';
+  showScreen('screen-end');
+}
+
+$('btn-start').addEventListener('click', startGame);
+$('btnLock').addEventListener('click', lockAngle);
+$('btnNext').addEventListener('click', () => { taskIndex++; loadTask(); });
+$('btn-again').addEventListener('click', startGame);
+
+renderArm();
+</script>
+</body>
+</html>
