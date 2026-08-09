@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Setningskirurgen</title>
+<style>
+  :root{
+    --ink:#1b2a4a;
+    --ink-soft:#5a6b8a;
+    --paper:#ffffff;
+    --bg-1:#eef2ff;
+    --bg-2:#e6f4f1;
+    --accent:#0e7c86;
+    --accent-dark:#0a5e66;
+    --good:#1e9e5a;
+    --good-bg:#e3f8ec;
+    --bad:#c0392b;
+    --bad-bg:#fdecea;
+    --chip-bg:#ffffff;
+    --chip-border:#c9d6ee;
+    --focus:#8a4fff;
+    --hint:#d4a94c;
+    --radius:16px;
+    --shadow:0 6px 0 rgba(20,30,60,.10), 0 10px 20px rgba(20,30,60,.12);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    min-height:100%;
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:linear-gradient(160deg,var(--bg-1),var(--bg-2) 70%);
+    font-size:clamp(15px,2.2vw,18px);
+    overflow-x:hidden;
+  }
+  #app{
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    padding:env(safe-area-inset-top) max(14px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(14px, env(safe-area-inset-left));
+  }
+  .screen{ display:none; flex:1; flex-direction:column; min-width:0; }
+  .screen.active{ display:flex; }
+
+  a:focus-visible, button:focus-visible, [tabindex]:focus-visible{
+    outline:3px solid var(--focus);
+    outline-offset:2px;
+  }
+
+  /* ---------- Startskjerm ---------- */
+  #screen-start{
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:16px;
+    padding:24px 12px;
+    max-width:520px;
+    margin:0 auto;
+  }
+  #screen-start h1{
+    font-size:clamp(1.3rem,7vw,2.4rem);
+    margin:0;
+    color:var(--accent-dark);
+    overflow-wrap:break-word;
+    max-width:100%;
+  }
+  .rule{
+    font-size:1.05em;
+    line-height:1.5;
+    margin:0;
+    max-width:40ch;
+    overflow-wrap:break-word;
+  }
+  .example-box{
+    background:rgba(255,255,255,.6);
+    border:1px solid var(--chip-border);
+    border-radius:var(--radius);
+    padding:14px 18px;
+    font-size:1.1em;
+    line-height:1.6;
+  }
+  .example-box s{ color:var(--bad); text-decoration-thickness:2px; }
+  .example-box .arrow{ color:var(--ink-soft); margin:0 4px; }
+  .example-box strong{ color:var(--good); }
+
+  .btn-primary{
+    appearance:none;
+    border:none;
+    background:var(--accent);
+    color:#fff;
+    font-size:1.15em;
+    font-weight:800;
+    padding:14px 34px;
+    min-height:44px;
+    border-radius:999px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    touch-action:manipulation;
+  }
+  .btn-primary:hover{ background:var(--accent-dark); }
+  .btn-primary:active{ transform:translateY(2px); box-shadow:none; }
+
+  /* ---------- Spillskjerm ---------- */
+  #screen-game{ max-width:640px; margin:0 auto; width:100%; gap:16px; padding:10px 2px 24px; }
+
+  .hud{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:6px 4px;
+  }
+  .hud-item{ display:flex; flex-direction:column; gap:2px; }
+  .hud-item .label{
+    font-size:.75em;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--ink-soft);
+    font-weight:700;
+  }
+  .hud-item.score #scoreVal{
+    font-size:1.6em;
+    font-weight:900;
+    color:var(--accent-dark);
+    line-height:1;
+  }
+  #taskCounter{ font-weight:800; font-size:1.05em; }
+
+  .sentence-card{
+    background:rgba(255,255,255,.65);
+    border:1px solid var(--chip-border);
+    border-radius:var(--radius);
+    padding:22px 18px;
+  }
+
+  #sentence{
+    font-size:clamp(1.15rem,4.4vw,1.55rem);
+    line-height:2.3;
+    font-weight:700;
+    text-align:center;
+  }
+  .tok{
+    display:inline-block;
+    padding:6px 5px;
+    margin:1px 0;
+    border-radius:8px;
+    cursor:pointer;
+    border-bottom:3px solid transparent;
+    transition:background-color .15s ease, border-color .15s ease;
+  }
+  .tok:hover, .tok:focus-visible{
+    background:rgba(14,124,134,.10);
+    border-bottom-color:var(--accent);
+  }
+  .tok[aria-disabled="true"]{
+    cursor:default;
+  }
+  .tok[aria-disabled="true"]:hover{ background:none; border-bottom-color:transparent; }
+  .tok.found{
+    background:var(--good-bg);
+    border-bottom-color:var(--good);
+    color:var(--good);
+  }
+  .tok.fixed{
+    background:var(--good-bg);
+    border-bottom-color:var(--good);
+    color:var(--good);
+    animation:swapIn .35s ease-out;
+  }
+  @keyframes swapIn{
+    from{ opacity:0; transform:scale(.85); }
+    to{ opacity:1; transform:none; }
+  }
+  .tok.shake{ animation:shake .28s ease-in-out; background:var(--bad-bg); border-bottom-color:var(--bad); }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+  .tok-missing{
+    min-width:22px;
+    height:1em;
+    border-bottom:3px dashed var(--ink-soft);
+    vertical-align:middle;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .tok.shake, .tok.fixed{ animation:none; }
+  }
+
+  #feedback{
+    min-height:1.4em;
+    font-weight:800;
+    text-align:center;
+    padding:2px 4px;
+  }
+  #feedback.ok{ color:var(--good); }
+  #feedback.bad{ color:var(--bad); }
+  #feedback:empty{ visibility:hidden; }
+
+  #alternatives{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+  }
+  .alt-btn{
+    appearance:none;
+    border:2px solid var(--chip-border);
+    background:var(--chip-bg);
+    color:var(--ink);
+    font-weight:800;
+    font-size:1.05em;
+    padding:12px 22px;
+    min-height:44px;
+    border-radius:12px;
+    cursor:pointer;
+    touch-action:manipulation;
+    flex:1 1 auto;
+    min-width:100px;
+  }
+  .alt-btn:hover:not(:disabled){ border-color:var(--accent); }
+  .alt-btn:active:not(:disabled){ transform:translateY(1px); }
+  .alt-btn:disabled{ cursor:default; opacity:.55; }
+  .alt-btn.wrong-flash{ background:var(--bad-bg); border-color:var(--bad); }
+  .alt-btn.hint{
+    border-color:var(--hint);
+    box-shadow:0 0 0 3px rgba(212,169,76,.35);
+    animation:pulseHint 1.1s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .alt-btn.hint{ animation:none; }
+  }
+  @keyframes pulseHint{
+    0%,100%{ box-shadow:0 0 0 2px rgba(212,169,76,.25); }
+    50%{ box-shadow:0 0 0 6px rgba(212,169,76,.35); }
+  }
+
+  #explanation{
+    background:var(--good-bg);
+    border:1px solid var(--good);
+    color:var(--ink);
+    border-radius:12px;
+    padding:12px 16px;
+    font-size:.98em;
+    line-height:1.5;
+    text-align:center;
+    animation:fadeIn .3s ease-out;
+  }
+  @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+  @media (prefers-reduced-motion: reduce){
+    #explanation{ animation:none; }
+  }
+
+  #nextBtn{ align-self:center; }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  /* ---------- Sluttskjerm ---------- */
+  #screen-end{
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:14px;
+    padding:24px 12px;
+    max-width:560px;
+    margin:0 auto;
+  }
+  #screen-end h2{ margin:0; font-size:clamp(1.4rem,5vw,2rem); color:var(--accent-dark); }
+  #resultLine{ font-size:1.2em; }
+  #resultLine strong{ color:var(--accent-dark); }
+  .cat-summary{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:8px;
+    max-width:46ch;
+  }
+  .cat-chip{
+    background:var(--chip-bg);
+    border:2px solid var(--chip-border);
+    border-radius:999px;
+    padding:6px 14px;
+    font-weight:700;
+    font-size:.9em;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <section id="screen-start" class="screen active">
+    <h1>Setningskirurgen</h1>
+    <p class="rule">Hver setning har én feil. Finn den og reparer den.</p>
+    <p class="example-box" aria-hidden="true">
+      Jeg liker <s>og</s> lese.<span class="arrow">→</span>Jeg liker <strong>å</strong> lese.
+    </p>
+    <button id="startBtn" class="btn-primary" type="button">Start</button>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <div class="hud">
+      <div id="taskCounter">Oppgave 1 av 10</div>
+      <div class="hud-item score">
+        <span class="label">Poeng</span>
+        <span id="scoreVal">0</span>
+      </div>
+    </div>
+
+    <div class="sentence-card">
+      <p id="sentence" aria-label="Setning"></p>
+    </div>
+
+    <div id="feedback" role="alert" aria-live="assertive"></div>
+
+    <div id="alternatives" hidden></div>
+
+    <p id="explanation" hidden></p>
+
+    <button id="nextBtn" class="btn-primary" type="button" hidden>Neste</button>
+  </section>
+
+  <section id="screen-end" class="screen">
+    <h2>Runden er over!</h2>
+    <p id="resultLine">Resultat: <strong id="resultScore">0</strong> av 10</p>
+    <p>Funnet på første forsøk: <strong id="resultFirstTry">0</strong> av 10</p>
+    <div id="catSummary" class="cat-summary"></div>
+    <button id="playAgainBtn" class="btn-primary" type="button">Spill igjen</button>
+  </section>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     OPPGAVEBANK — 30 kvalitetssikrede setninger med nøyaktig
+     én tydelig feil hver. Rediger fritt, men behold strukturen.
+
+     tokens: setningen slik den vises FØR retting, ett ord /
+             skilletegn per element. Tom streng ("") betyr at
+             et skilletegn mangler helt på det stedet.
+     errorIndex: hvilket element i tokens som inneholder feilen.
+     correct: riktig tekst på den plassen.
+     distractors: 1-3 andre alternativer å velge mellom.
+     removeNextToken: brukes ved særskriving — elementet rett
+             etter feilen fjernes når riktig svar velges (to ord
+             blir slått sammen til ett).
+     ========================================================= */
+  var TASKS = [
+    { id:'caps-1', category:'stor-bokstav', difficulty:1,
+      tokens:['katten','sover','på','sofaen','.'], errorIndex:0,
+      correct:'Katten', distractors:['katten','KATTEN'],
+      explanation:'Nye setninger skal starte med stor bokstav.' },
+
+    { id:'caps-2', category:'stor-bokstav', difficulty:1,
+      tokens:['hunden','løper','fort','i','parken','.'], errorIndex:0,
+      correct:'Hunden', distractors:['hunden','HUNDEN'],
+      explanation:'Nye setninger skal starte med stor bokstav.' },
+
+    { id:'caps-3', category:'stor-bokstav', difficulty:2,
+      tokens:['Vi','skal','reise','til','norge','i','sommer','.'], errorIndex:4,
+      correct:'Norge', distractors:['norge','NORGE'],
+      explanation:'Landnavn er egennavn og skal ha stor forbokstav: Norge.' },
+
+    { id:'caps-4', category:'stor-bokstav', difficulty:2,
+      tokens:['Læreren','vår','heter','Ola','larsen','.'], errorIndex:4,
+      correct:'Larsen', distractors:['larsen','LARSEN'],
+      explanation:'Etternavn er egennavn og skal ha stor forbokstav: Larsen.' },
+
+    { id:'caps-5', category:'stor-bokstav', difficulty:2,
+      tokens:['Mormor','bor','i','bergen','.'], errorIndex:3,
+      correct:'Bergen', distractors:['bergen','BERGEN'],
+      explanation:'Stedsnavn er egennavn og skal ha stor forbokstav: Bergen.' },
+
+    { id:'punct-1', category:'tegnsetting', difficulty:1,
+      tokens:['Liker','du','pizza','.'], errorIndex:3,
+      correct:'?', distractors:['!'],
+      explanation:'Spørsmål skal avsluttes med spørsmålstegn.' },
+
+    { id:'punct-2', category:'tegnsetting', difficulty:1,
+      tokens:['Sola','skinner','i','dag','?'], errorIndex:4,
+      correct:'.', distractors:['!'],
+      explanation:'Dette er en påstand, ikke et spørsmål, og skal avsluttes med punktum.' },
+
+    { id:'punct-3', category:'tegnsetting', difficulty:1,
+      tokens:['Kan','du','lukke','døren','!'], errorIndex:4,
+      correct:'?', distractors:['.'],
+      explanation:'Dette er et spørsmål og skal avsluttes med spørsmålstegn.' },
+
+    { id:'punct-4', category:'tegnsetting', difficulty:1,
+      tokens:['Vi','spiste','middag','klokken','seks',''], errorIndex:5,
+      correct:'.', distractors:['!','?'],
+      explanation:'Setningen mangler punktum til slutt.' },
+
+    { id:'punct-5', category:'tegnsetting', difficulty:1,
+      tokens:['Hvor','er','skolen',''], errorIndex:3,
+      correct:'?', distractors:['.','!'],
+      explanation:'Spørsmål skal avsluttes med spørsmålstegn.' },
+
+    { id:'spell-1', category:'staving', difficulty:1,
+      tokens:['Vi','skal','spile','fotball','i','dag','.'], errorIndex:2,
+      correct:'spille', distractors:['spile'],
+      explanation:'Spille skrives med dobbel L.' },
+
+    { id:'spell-2', category:'staving', difficulty:1,
+      tokens:['Klasen','vår','skal','på','tur','i','morgen','.'], errorIndex:0,
+      correct:'Klassen', distractors:['Klasen'],
+      explanation:'Klassen skrives med dobbel S.' },
+
+    { id:'spell-3', category:'staving', difficulty:1,
+      tokens:['Han','har','mange','vener','på','skolen','.'], errorIndex:3,
+      correct:'venner', distractors:['vener'],
+      explanation:'Venner skrives med dobbel N.' },
+
+    { id:'spell-4', category:'staving', difficulty:2,
+      tokens:['Jeg','vill','gjerne','bade','i','sjøen','.'], errorIndex:1,
+      correct:'vil', distractors:['vill'],
+      explanation:'Vil (ønsker) skrives med én L. Vill betyr noe helt annet, som et villdyr.' },
+
+    { id:'spell-5', category:'staving', difficulty:1,
+      tokens:['Kan','jeg','få','site','her','?'], errorIndex:3,
+      correct:'sitte', distractors:['site'],
+      explanation:'Sitte skrives med dobbel T.' },
+
+    { id:'ogaa-1', category:'ogaa', difficulty:2,
+      tokens:['Jeg','liker','og','lese','bøker','.'], errorIndex:2,
+      correct:'å', distractors:['og'],
+      explanation:'Å står foran verb i infinitiv: å lese.' },
+
+    { id:'ogaa-2', category:'ogaa', difficulty:2,
+      tokens:['Jeg','spiste','frokost','å','gikk','på','skolen','.'], errorIndex:3,
+      correct:'og', distractors:['å'],
+      explanation:'Og brukes for å binde sammen to verb i fortid: spiste og gikk.' },
+
+    { id:'ogaa-3', category:'ogaa', difficulty:2,
+      tokens:['Hun','liker','og','synge','og','danse','.'], errorIndex:2,
+      correct:'å', distractors:['og'],
+      explanation:'Å står foran verb i infinitiv: å synge.' },
+
+    { id:'ogaa-4', category:'ogaa', difficulty:2,
+      tokens:['Kan','du','hjelpe','meg','og','bære','vesken','?'], errorIndex:4,
+      correct:'å', distractors:['og'],
+      explanation:'Å står foran verb i infinitiv: å bære.' },
+
+    { id:'dana-1', category:'dana', difficulty:2,
+      tokens:['I','går','syklet','vi','hjem','når','det','begynte','å','regne','.'], errorIndex:5,
+      correct:'da', distractors:['når','fordi'],
+      explanation:'Da brukes om noe som skjedde én gang i fortiden.' },
+
+    { id:'dana-2', category:'dana', difficulty:2,
+      tokens:['Når','jeg','var','liten',',','bodde','vi','i','Bergen','.'], errorIndex:0,
+      correct:'Da', distractors:['Når','Fordi'],
+      explanation:'Da brukes om en avgrenset periode eller hendelse i fortiden.' },
+
+    { id:'dana-3', category:'dana', difficulty:2,
+      tokens:['Da','det','snør',',','blir','jeg','alltid','glad','.'], errorIndex:0,
+      correct:'Når', distractors:['Da','Fordi'],
+      explanation:'Når brukes om noe som skjer gjentatte ganger.' },
+
+    { id:'dana-4', category:'dana', difficulty:2,
+      tokens:['Når','vi','kom','fram','til','hytta',',','var','det','allerede','mørkt','.'], errorIndex:0,
+      correct:'Da', distractors:['Når','Hvor'],
+      explanation:'Da brukes om en enkelthendelse i fortiden.' },
+
+    { id:'boy-1', category:'boying', difficulty:2,
+      tokens:['Han','har','spist','to','eple','i','dag','.'], errorIndex:4,
+      correct:'epler', distractors:['eple','eplene'],
+      explanation:'Etter «to» skal substantivet stå i flertall: epler.' },
+
+    { id:'boy-2', category:'boying', difficulty:2,
+      tokens:['Jeg','har','gåt','hjem','fra','skolen','.'], errorIndex:2,
+      correct:'gått', distractors:['gåt','gådd'],
+      explanation:'Perfektum av å gå er gått.' },
+
+    { id:'boy-3', category:'boying', difficulty:3,
+      tokens:['De','to','gutten','løp','fort','.'], errorIndex:2,
+      correct:'guttene', distractors:['gutten','gutter'],
+      explanation:'Etter «to» i bestemt form skal substantivet stå i bestemt flertall: guttene.' },
+
+    { id:'boy-4', category:'boying', difficulty:2,
+      tokens:['Det','er','et','fin','hus','.'], errorIndex:3,
+      correct:'fint', distractors:['fin','fine'],
+      explanation:'Hus er intetkjønn, og adjektivet skal bøyes slik: et fint hus.' },
+
+    { id:'sammen-1', category:'sammen', difficulty:3,
+      tokens:['Jeg','spiste','is','krem','etter','middag','.'], errorIndex:2,
+      correct:'iskrem', distractors:['is-krem'], removeNextToken:true,
+      explanation:'Iskrem er ett sammensatt ord og skal skrives i ett ord.' },
+
+    { id:'sammen-2', category:'sammen', difficulty:3,
+      tokens:['Vi','spilte','fotball','i','skole','gården','.'], errorIndex:4,
+      correct:'skolegården', distractors:['skole-gården'], removeNextToken:true,
+      explanation:'Skolegården er ett sammensatt ord og skal skrives i ett ord.' },
+
+    { id:'sammen-3', category:'sammen', difficulty:3,
+      tokens:['Han','fikk','en','ny','fotball','trøye','til','bursdagen','.'], errorIndex:4,
+      correct:'fotballtrøye', distractors:['fotball-trøye'], removeNextToken:true,
+      explanation:'Fotballtrøye er ett sammensatt ord og skal skrives i ett ord.' }
+  ];
+
+  var CATEGORY_LABELS = {
+    'stor-bokstav':'Stor bokstav',
+    'tegnsetting':'Tegnsetting',
+    'staving':'Staving',
+    'ogaa':'Og/å',
+    'dana':'Da/når',
+    'boying':'Bøying',
+    'sammen':'Sammensatte ord'
+  };
+
+  var TASKS_PER_ROUND = 10;
+
+  var screens = {
+    start: document.getElementById('screen-start'),
+    game: document.getElementById('screen-game'),
+    end: document.getElementById('screen-end')
+  };
+  var startBtn = document.getElementById('startBtn');
+  var playAgainBtn = document.getElementById('playAgainBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var taskCounterEl = document.getElementById('taskCounter');
+  var scoreVal = document.getElementById('scoreVal');
+  var sentenceEl = document.getElementById('sentence');
+  var feedbackEl = document.getElementById('feedback');
+  var altsEl = document.getElementById('alternatives');
+  var explanationEl = document.getElementById('explanation');
+  var resultScoreEl = document.getElementById('resultScore');
+  var resultFirstTryEl = document.getElementById('resultFirstTry');
+  var catSummaryEl = document.getElementById('catSummary');
+
+  var sessionTasks = [];
+  var currentTaskIndex = 0;
+  var task = null;
+  var currentTokens = [];
+  var taskState = {};
+  var score = 0;
+  var firstTryCount = 0;
+  var categoriesSeen = {};
+
+  function showScreen(name){
+    Object.keys(screens).forEach(function(key){
+      screens[key].classList.toggle('active', key === name);
+    });
+  }
+
+  function shuffle(arr){
+    for(var i = arr.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  function isAttachLeft(tok){
+    return tok === '' || /^[.,!?]$/.test(tok);
+  }
+
+  function sentenceText(tokens){
+    var out = '';
+    tokens.forEach(function(tok, i){
+      if(i > 0 && !isAttachLeft(tok)) out += ' ';
+      out += tok;
+    });
+    return out;
+  }
+
+  function setFeedback(text, kind){
+    feedbackEl.textContent = text || '';
+    feedbackEl.classList.remove('ok','bad');
+    if(kind === 'ok') feedbackEl.classList.add('ok');
+    if(kind === 'bad') feedbackEl.classList.add('bad');
+  }
+
+  function onTokenKeydown(e){
+    if(e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){
+      e.preventDefault();
+      onTokenActivate.call(e.currentTarget);
+    }
+  }
+
+  function onTokenActivate(){
+    if(taskState.phase !== 'find') return;
+    var idx = Number(this.getAttribute('data-idx'));
+    taskState.findAttempts++;
+    if(idx === task.errorIndex){
+      taskState.firstTryFound = (taskState.findAttempts === 1);
+      this.classList.add('found');
+      this.setAttribute('aria-pressed','true');
+      taskState.phase = 'choose';
+      lockWordTokens();
+      setFeedback('Ordet er funnet. Velg riktig retting under.', 'ok');
+      showAlternatives();
+    } else {
+      var el = this;
+      el.classList.remove('shake');
+      void el.offsetWidth;
+      el.classList.add('shake');
+      setTimeout(function(){ el.classList.remove('shake'); }, 320);
+      setFeedback('Feilen er et annet sted.', 'bad');
+    }
+  }
+
+  function renderSentence(){
+    sentenceEl.innerHTML = '';
+    sentenceEl.setAttribute('aria-label', 'Setning: ' + sentenceText(currentTokens));
+    currentTokens.forEach(function(tok, i){
+      if(i > 0 && !isAttachLeft(tok)){
+        sentenceEl.appendChild(document.createTextNode(' '));
+      }
+      var span = document.createElement('span');
+      span.className = 'tok' + (tok === '' ? ' tok-missing' : '');
+      span.setAttribute('data-idx', String(i));
+      span.setAttribute('role', 'button');
+      span.tabIndex = 0;
+      span.setAttribute('aria-label', tok === '' ? 'mangler tegn her' : tok);
+      span.textContent = tok;
+      span.addEventListener('click', onTokenActivate);
+      span.addEventListener('keydown', onTokenKeydown);
+      sentenceEl.appendChild(span);
+    });
+  }
+
+  function lockWordTokens(){
+    Array.prototype.forEach.call(sentenceEl.querySelectorAll('.tok'), function(el){
+      el.tabIndex = -1;
+      el.setAttribute('aria-disabled', 'true');
+    });
+  }
+
+  function showAlternatives(){
+    var options = shuffle([task.correct].concat(task.distractors));
+    taskState.chooseAttempts = 0;
+    altsEl.innerHTML = '';
+    altsEl.hidden = false;
+    options.forEach(function(opt){
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'alt-btn';
+      btn.textContent = opt === '' ? '(ingenting)' : opt;
+      btn.addEventListener('click', function(){ onChooseAlt(opt, btn); });
+      altsEl.appendChild(btn);
+    });
+    var first = altsEl.querySelector('button');
+    if(first) first.focus();
+  }
+
+  function disableAlternatives(){
+    Array.prototype.forEach.call(altsEl.querySelectorAll('button'), function(b){
+      b.disabled = true;
+    });
+  }
+
+  function applyFix(){
+    var idx = task.errorIndex;
+    currentTokens[idx] = task.correct;
+    if(task.removeNextToken){
+      currentTokens.splice(idx + 1, 1);
+    }
+    renderSentence();
+    lockWordTokens();
+    var fixedSpan = sentenceEl.querySelector('[data-idx="' + idx + '"]');
+    if(fixedSpan) fixedSpan.classList.add('fixed');
+  }
+
+  function onChooseAlt(opt, btn){
+    if(taskState.phase !== 'choose') return;
+    taskState.chooseAttempts++;
+    if(opt === task.correct){
+      taskState.phase = 'done';
+      applyFix();
+      score++;
+      scoreVal.textContent = String(score);
+      if(taskState.firstTryFound) firstTryCount++;
+      setFeedback('✓ Riktig', 'ok');
+      explanationEl.textContent = task.explanation;
+      explanationEl.hidden = false;
+      disableAlternatives();
+      nextBtn.hidden = false;
+      nextBtn.focus();
+    } else {
+      setFeedback('Prøv igjen.', 'bad');
+      btn.classList.add('wrong-flash');
+      setTimeout(function(){ btn.classList.remove('wrong-flash'); }, 400);
+      if(taskState.chooseAttempts >= 2){
+        var correctBtn = Array.prototype.find.call(altsEl.querySelectorAll('button'), function(b){
+          return b.textContent === task.correct;
+        });
+        if(correctBtn) correctBtn.classList.add('hint');
+      }
+    }
+  }
+
+  function pickSessionTasks(){
+    var pool = shuffle(TASKS.slice());
+    var chosen = pool.slice(0, TASKS_PER_ROUND);
+    chosen.sort(function(a, b){
+      if(a.difficulty !== b.difficulty) return a.difficulty - b.difficulty;
+      return Math.random() - 0.5;
+    });
+    return chosen;
+  }
+
+  function loadTask(i){
+    currentTaskIndex = i;
+    task = sessionTasks[i];
+    currentTokens = task.tokens.slice();
+    taskState = { phase:'find', findAttempts:0, chooseAttempts:0, firstTryFound:false };
+    categoriesSeen[task.category] = (categoriesSeen[task.category] || 0) + 1;
+
+    taskCounterEl.textContent = 'Oppgave ' + (i + 1) + ' av ' + sessionTasks.length;
+    altsEl.hidden = true;
+    altsEl.innerHTML = '';
+    explanationEl.hidden = true;
+    explanationEl.textContent = '';
+    nextBtn.hidden = true;
+    setFeedback('', null);
+    renderSentence();
+  }
+
+  function startGame(){
+    sessionTasks = pickSessionTasks();
+    score = 0;
+    firstTryCount = 0;
+    categoriesSeen = {};
+    scoreVal.textContent = '0';
+    showScreen('game');
+    loadTask(0);
+  }
+
+  function showResults(){
+    resultScoreEl.textContent = String(score);
+    resultFirstTryEl.textContent = String(firstTryCount);
+    catSummaryEl.innerHTML = '';
+    Object.keys(categoriesSeen).forEach(function(cat){
+      var chip = document.createElement('span');
+      chip.className = 'cat-chip';
+      chip.textContent = (CATEGORY_LABELS[cat] || cat) + ' (' + categoriesSeen[cat] + ')';
+      catSummaryEl.appendChild(chip);
+    });
+    showScreen('end');
+    playAgainBtn.focus();
+  }
+
+  nextBtn.addEventListener('click', function(){
+    if(currentTaskIndex + 1 >= sessionTasks.length){
+      showResults();
+    } else {
+      loadTask(currentTaskIndex + 1);
+      var first = sentenceEl.querySelector('.tok');
+      if(first) first.focus();
+    }
+  });
+
+  startBtn.addEventListener('click', startGame);
+  playAgainBtn.addEventListener('click', startGame);
+
+})();
+</script>
+</body>
+</html>
