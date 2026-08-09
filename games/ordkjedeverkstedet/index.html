@@ -343,11 +343,13 @@
   "use strict";
 
   /* =========================================================
-     ORDLISTE — innebygd, ca. 490 vanlige norske substantiv,
-     verb og adjektiv (grunnform / infinitiv). Rediger fritt,
-     ett ord per "token", skilt med mellomrom/linjeskift.
+     STARTORD — innebygd, ca. 490 vanlige og korte norske
+     substantiv, verb og adjektiv (grunnform / infinitiv).
+     Brukes KUN til å trekke et hyggelig, gjenkjennelig
+     startord for runden — selve ordgodkjenningen bruker den
+     mye større ordboken i ordliste.txt (se lenger ned).
      ========================================================= */
-  var WORD_LIST_RAW = "\
+  var SEED_WORDS_RAW = "\
     hus bil katt hund fugl fisk bok stol bord dør \
     vindu skole lærer elev venn familie mor far søster bror \
     barn mann kvinne gutt jente by land verden konge dronning \
@@ -406,8 +408,54 @@
     esel eik enkel edderkopp energi erte \
   ";
 
-  var WORDS = new Set(WORD_LIST_RAW.trim().split(/\s+/));
-  var WORDS_ARR = Array.from(WORDS);
+  var SEED_WORDS = new Set(SEED_WORDS_RAW.trim().split(/\s+/));
+  var SEED_WORDS_ARR = Array.from(SEED_WORDS);
+
+  /* =========================================================
+     HOVEDORDBOK — hele Norsk Ordbank (bokmål, fullformer),
+     levert av Nasjonalbiblioteket/Språkbanken. Lastes fra
+     ordliste.txt (en fil i samme mappe, ett ord per linje —
+     ca. 581 000 bøyningsformer, egennavn/forkortelser/symboler
+     fjernet). Dette er hovedkilden for å godkjenne innsendte
+     ord; STARTORD over brukes bare til å velge rundens åpningsord.
+     ========================================================= */
+  var BIG_WORDS = new Set();
+  var bigListStatus = 'loading'; // 'loading' | 'ready' | 'error'
+  var BIG_WORDLIST_URL = 'ordliste.txt';
+  var BIG_WORDLIST_TIMEOUT_MS = 10000;
+
+  function loadBigWordList(){
+    var timedOut = false;
+    var timeoutId = setTimeout(function(){
+      timedOut = true;
+      if(bigListStatus === 'loading'){
+        bigListStatus = 'error';
+        updateStartAvailability();
+      }
+    }, BIG_WORDLIST_TIMEOUT_MS);
+
+    fetch(BIG_WORDLIST_URL)
+      .then(function(res){
+        if(!res.ok) throw new Error('http ' + res.status);
+        return res.text();
+      })
+      .then(function(text){
+        if(timedOut) return;
+        clearTimeout(timeoutId);
+        var words = text.split(/\s+/);
+        for(var i = 0; i < words.length; i++){
+          if(words[i]) BIG_WORDS.add(words[i]);
+        }
+        bigListStatus = 'ready';
+        updateStartAvailability();
+      })
+      .catch(function(){
+        if(timedOut) return;
+        clearTimeout(timeoutId);
+        bigListStatus = 'error';
+        updateStartAvailability();
+      });
+  }
 
   var START_TIME = 20;
   var MAX_TIME = 20;
@@ -415,11 +463,11 @@
   var TICK_MS = 100;
 
   /* =========================================================
-     ONLINE ORDBOK — Bokmålsordboka via Språkrådet/UiBs API
-     (api.ordbokene.no). Den innebygde ordlisten over sjekkes
-     alltid først (raskt, ingen ventetid); ord som ikke finnes
-     der sjekkes mot nettordboken før de avvises. Spillet krever
-     derfor nettilgang for full ordbokdekning.
+     ONLINE ORDBOK (siste utvei) — Bokmålsordboka via
+     Språkrådet/UiBs API (api.ordbokene.no). SEED_WORDS og
+     BIG_WORDS dekker allerede det aller meste; ord som likevel
+     ikke finnes i noen av dem sjekkes mot nettordboken før de
+     avvises. Spillet krever derfor nettilgang.
      ========================================================= */
   var DICT_API_URL = 'https://api.ordbokene.no/api/v1/concepts';
   var DICT_TIMEOUT_MS = 4000;
@@ -457,6 +505,16 @@
     Object.keys(screens).forEach(function(key){
       screens[key].classList.toggle('active', key === name);
     });
+  }
+
+  function updateStartAvailability(){
+    if(bigListStatus === 'loading'){
+      startBtn.disabled = true;
+      startBtn.textContent = 'Laster ordliste …';
+    } else {
+      startBtn.disabled = false;
+      startBtn.textContent = 'Start';
+    }
   }
 
   function normalize(raw){
@@ -613,7 +671,7 @@
     timeLeft = START_TIME;
     roundActive = true;
 
-    var startWord = WORDS_ARR[Math.floor(Math.random() * WORDS_ARR.length)];
+    var startWord = SEED_WORDS_ARR[Math.floor(Math.random() * SEED_WORDS_ARR.length)];
     chain.push(startWord);
     usedWords.add(startWord);
 
@@ -664,7 +722,7 @@
       rejectWord('Dette ordet er allerede brukt');
       return;
     }
-    if(WORDS.has(word)){
+    if(SEED_WORDS.has(word) || BIG_WORDS.has(word)){
       acceptWord(word);
       return;
     }
@@ -694,6 +752,9 @@
 
   startBtn.addEventListener('click', startRound);
   restartBtn.addEventListener('click', startRound);
+
+  updateStartAvailability();
+  loadBigWordList();
 
 })();
 </script>
