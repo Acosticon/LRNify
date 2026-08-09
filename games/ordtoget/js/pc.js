@@ -13,7 +13,7 @@ import { saveChoice } from './device.js';
 function buildDemoTrain(){
   const el = document.getElementById('demoTrain');
   if(!el) return;
-  const demo = [['katt', 'loco'], ['tog', 'freight'], ['gul', 'freight']];
+  const demo = [['katt', 'loco'], ['tog', 'freight'], ['gul', 'frost']];
   demo.forEach(([word, type], i) => {
     if(i > 0) el.appendChild(buildCoupling());
     el.appendChild(buildCarriage(word, type, { current: i === demo.length - 1 }));

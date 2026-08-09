@@ -103,7 +103,9 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 }
 .carriage .body{
   position:relative; display:block; z-index:2;
-  padding:8px 10px;
+  /* Rikelig sidemarg: skiltplata ligger i midten, og pynten
+     (stjerne, hodeskalle, planet …) må ha plass i endene. */
+  padding:9px 24px;
   border-radius:5px 5px 3px 3px;
   border:2px solid rgba(0,0,0,.42);
   box-shadow:inset 0 -10px 16px rgba(0,0,0,.28), 0 3px 0 rgba(0,0,0,.35);
@@ -172,54 +174,236 @@ button:focus-visible, input:focus-visible, a:focus-visible{
   100%{ transform:none; }
 }
 
-/* ---------- vogntyper ---------- */
-.type-loco .body{
-  background:linear-gradient(180deg,#3f5347,#22322b);
-  border-color:#0e1712; padding-left:22px;
+/* ---------- felles detaljer på alle vogner ---------- */
+/* Metallrammer med nagler i hver ende – det er dette som løfter
+   kassa fra «farget boks» til «togvogn». */
+.carriage .body::before,
+.carriage .body::after{
+  content:''; position:absolute; top:0; bottom:0; width:9px; z-index:1;
+  background:
+    radial-gradient(circle 1.4px at 50% 16%, rgba(255,255,255,.5) 0 60%, transparent 62%),
+    radial-gradient(circle 1.4px at 50% 50%, rgba(255,255,255,.5) 0 60%, transparent 62%),
+    radial-gradient(circle 1.4px at 50% 84%, rgba(255,255,255,.5) 0 60%, transparent 62%),
+    linear-gradient(180deg, rgba(255,255,255,.16), rgba(0,0,0,.5));
+  background-repeat:no-repeat;
 }
-.type-loco .roof{ background:linear-gradient(180deg,#4a5f52,#26332c); }
+.carriage .body::before{ left:0; border-right:1px solid rgba(0,0,0,.35); }
+.carriage .body::after{ right:0; border-left:1px solid rgba(0,0,0,.35); }
 
+.carriage .deco{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  border-radius:inherit; overflow:hidden;
+}
+.carriage .plate{ position:relative; z-index:2; }
+
+/* ---------- vogntyper ---------- */
+
+/* Damplokomotiv – mørk grønn kjele med lykt */
+.type-loco .body{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.12) 0 22%, transparent 23%),
+    linear-gradient(180deg,#42604f,#1d2c24);
+  border-color:#0d1712; padding-left:34px;
+}
+.type-loco .roof{ background:linear-gradient(180deg,#54705f,#233029); }
+.type-loco .deco{
+  background:radial-gradient(circle 5px at 17px 50%, #ffe08a 0 55%, rgba(255,224,138,.3) 60%, transparent 74%);
+}
+
+/* Klassisk godsvogn – rødt panel, hvit stjerne */
 .type-freight .body{
   background:
-    repeating-linear-gradient(90deg, rgba(0,0,0,.16) 0 1px, transparent 1px 13px),
-    linear-gradient(180deg,#a9713f,#7d4f28);
-  border-color:#4d2f16;
+    repeating-linear-gradient(90deg, rgba(0,0,0,.2) 0 1px, transparent 1px 14px),
+    linear-gradient(180deg,#c4453c,#7e211c);
+  border-color:#4a100d;
 }
-.type-freight .roof{ background:linear-gradient(180deg,#8c5c33,#5d3b1f); }
+.type-freight .roof{ background:linear-gradient(180deg,#5d6b7a,#333d49); }
+.type-freight .deco::before{
+  content:''; position:absolute; left:5px; top:50%; width:15px; height:15px;
+  transform:translateY(-50%);
+  background:rgba(255,255,255,.92);
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+}
 
-.type-passenger .body{
+/* Kjølevogn – rimfrost og snø på taket */
+.type-frost .body{
   background:
-    repeating-linear-gradient(90deg,
-      transparent 0 9px, rgba(255,235,180,.9) 9px 21px, transparent 21px 30px),
-    linear-gradient(180deg,#3f6fae,#274a7c);
-  border-color:#16294a;
-}
-.type-passenger .roof{ background:linear-gradient(180deg,#54809c,#33526e); }
-
-.type-tank .body{
-  background:linear-gradient(180deg,#e6ecf5 0 18%, #9fb0c6 45%, #6c7d95 100%);
-  border-radius:14px; border-color:#43536b;
-}
-.type-tank .roof{ display:none; }
-
-.type-cool .body{
-  background:linear-gradient(180deg,#f2fbff,#bcd9e8);
+    repeating-linear-gradient(90deg, rgba(255,255,255,.5) 0 1px, transparent 1px 15px),
+    linear-gradient(180deg,#f4fbff 0 40%, #b7d9ea 100%);
   border-color:#5d8296;
 }
-.type-cool .roof{ background:linear-gradient(180deg,#cfe6f0,#8fb2c4); }
-
-.type-circus .body{
-  background:repeating-linear-gradient(115deg,
-    #e4444f 0 13px, #fff2d6 13px 26px);
-  border-color:#7c1d24;
+.type-frost .roof{ background:linear-gradient(180deg,#ffffff,#c3dced); }
+.type-frost .deco{
+  background:
+    radial-gradient(circle 6px at 14% 2px, #fff 0 72%, transparent 74%),
+    radial-gradient(circle 8px at 40% 1px, #fff 0 72%, transparent 74%),
+    radial-gradient(circle 6px at 66% 2px, #fff 0 72%, transparent 74%),
+    radial-gradient(circle 7px at 90% 1px, #fff 0 72%, transparent 74%);
 }
-.type-circus .roof{ background:linear-gradient(180deg,#ffd45e,#d99b1e); }
 
+/* Jungelvogn – overgrodd med slyngplanter */
+.type-jungle .body{
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.2) 0 1px, transparent 1px 13px),
+    linear-gradient(180deg,#5c8a3c,#2f4d20);
+  border-color:#1d3214;
+}
+.type-jungle .roof{ background:linear-gradient(180deg,#6f9b4a,#37542a); }
+.type-jungle .deco{
+  background:
+    radial-gradient(circle 5px at 12% 3px, #8bc34a 0 72%, transparent 74%),
+    radial-gradient(circle 4px at 30% 5px, #558b2f 0 72%, transparent 74%),
+    radial-gradient(circle 6px at 52% 2px, #8bc34a 0 72%, transparent 74%),
+    radial-gradient(circle 4px at 74% 5px, #558b2f 0 72%, transparent 74%),
+    radial-gradient(circle 5px at 92% 3px, #8bc34a 0 72%, transparent 74%),
+    linear-gradient(180deg, rgba(124,179,66,.9) 0 4px, transparent 4px);
+}
+
+/* Industrivogn – varselstriper og tannhjul */
+.type-industri .body{
+  background:linear-gradient(180deg,#f0b429,#b07d0a);
+  border-color:#4a3405;
+}
+.type-industri .roof{ background:linear-gradient(180deg,#4a4f57,#2a2e34); }
+.type-industri .deco{
+  background:
+    repeating-linear-gradient(-45deg,
+      rgba(20,20,24,.9) 0 6px, transparent 6px 12px) bottom / 100% 8px no-repeat,
+    radial-gradient(circle 3px at 12px 44%, #f0b429 0 60%, transparent 62%),
+    radial-gradient(circle 7px at 12px 44%, #2a2e34 0 62%, transparent 64%);
+}
+
+/* Tankvogn – blank sylinder med jernbånd */
+.type-tank .body{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.55) 0 14%, transparent 34%),
+    linear-gradient(180deg,#d8443c 0 30%, #8e211b 75%, #b8352d 100%);
+  border-radius:15px; border-color:#4a100d;
+}
+.type-tank .roof{ display:none; }
+.type-tank .deco{
+  background:
+    linear-gradient(90deg, transparent 22%, rgba(0,0,0,.42) 22% 25%, transparent 25%),
+    linear-gradient(90deg, transparent 74%, rgba(0,0,0,.42) 74% 77%, transparent 77%);
+}
+
+/* Godterivogn – sukkerstang og kuler */
+.type-candy .body{
+  background:repeating-linear-gradient(115deg,
+    #ff5fa2 0 11px, #fff2f7 11px 22px);
+  border-color:#a01f56;
+}
+.type-candy .roof{ background:linear-gradient(180deg,#4fd1c5,#2c9c92); }
+.type-candy .deco{
+  background:
+    radial-gradient(circle 4px at 11px 30%, #ffd23f 0 72%, transparent 74%),
+    radial-gradient(circle 4px at 11px 70%, #4fd1c5 0 72%, transparent 74%),
+    radial-gradient(circle 4px at calc(100% - 11px) 30%, #a06bff 0 72%, transparent 74%),
+    radial-gradient(circle 4px at calc(100% - 11px) 70%, #ff7a2b 0 72%, transparent 74%);
+}
+
+/* Piratvogn – værbitt tre og dødningflagg */
+.type-pirate .body{
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.32) 0 1px, transparent 1px 12px),
+    linear-gradient(180deg,#7a5636,#3f2b18);
+  border-color:#241609;
+}
+.type-pirate .roof{ background:linear-gradient(180deg,#6a4a2e,#332111); }
+.type-pirate .deco::before{
+  content:''; position:absolute; left:4px; top:50%; width:17px; height:15px;
+  transform:translateY(-50%); border-radius:2px;
+  background:
+    radial-gradient(circle 1.5px at 38% 40%, #14161c 0 70%, transparent 72%),
+    radial-gradient(circle 1.5px at 62% 40%, #14161c 0 70%, transparent 72%),
+    radial-gradient(circle 4px at 50% 42%, #f3f6ff 0 70%, transparent 72%),
+    #14161c;
+}
+
+/* Dinosaurvogn – et egg i redet */
+.type-dino .body{
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 1px, transparent 1px 13px),
+    linear-gradient(180deg,#6b8f4e,#31462a);
+  border-color:#1c2a16;
+}
+.type-dino .roof{ background:linear-gradient(180deg,#7fa05c,#3b5232); }
+.type-dino .deco::before{
+  content:''; position:absolute; left:5px; top:50%; width:14px; height:17px;
+  margin-top:-8px;
+  border-radius:50% 50% 46% 46% / 62% 62% 38% 38%;
+  background:
+    radial-gradient(circle 1.6px at 34% 40%, rgba(120,90,50,.85) 0 70%, transparent 72%),
+    radial-gradient(circle 1.4px at 66% 62%, rgba(120,90,50,.85) 0 70%, transparent 72%),
+    linear-gradient(180deg,#f5ead0,#cdb98d);
+}
+
+/* Spøkelsesvogn – grønt lys bak gardinene */
+.type-ghost .body{
+  background:linear-gradient(180deg,#3a2a52,#1a1029);
+  border-color:#0d0718;
+}
+.type-ghost .roof{ background:linear-gradient(180deg,#4a3568,#251740); }
+.type-ghost .deco{
+  background:
+    radial-gradient(ellipse 6px 9px at 12px 50%, rgba(93,255,163,.95) 0 48%, rgba(93,255,163,.3) 62%, transparent 78%),
+    radial-gradient(ellipse 6px 9px at calc(100% - 12px) 50%, rgba(93,255,163,.95) 0 48%, rgba(93,255,163,.3) 62%, transparent 78%);
+  animation:ghostGlow 2.6s ease-in-out infinite;
+}
+@keyframes ghostGlow{ 50%{ opacity:.5; } }
+
+/* Vulkanvogn – glødende sprekker i svart stein */
+.type-volcano .body{
+  background:
+    repeating-linear-gradient(62deg, rgba(255,255,255,.05) 0 2px, transparent 2px 9px),
+    linear-gradient(180deg,#3a3336,#161113);
+  border-color:#0a0708;
+}
+.type-volcano .roof{ background:linear-gradient(180deg,#4a4045,#221b1e); }
+.type-volcano .deco{
+  background:
+    linear-gradient(74deg, transparent 26%, #ff6b1a 26% 28%, transparent 28%),
+    linear-gradient(-68deg, transparent 52%, #ffb300 52% 54%, transparent 54%),
+    linear-gradient(80deg, transparent 72%, #ff4d1a 72% 74%, transparent 74%);
+  filter:drop-shadow(0 0 4px rgba(255,107,26,.9));
+  animation:lavaPulse 2.2s ease-in-out infinite;
+}
+@keyframes lavaPulse{ 50%{ filter:drop-shadow(0 0 8px rgba(255,160,26,1)); } }
+
+/* Romvogn – stjernehimmel bak glasset */
+.type-space .body{
+  background:
+    radial-gradient(circle .9px at 18% 28%, #fff 0 60%, transparent 62%),
+    radial-gradient(circle .8px at 42% 66%, #fff 0 60%, transparent 62%),
+    radial-gradient(circle 1px at 66% 24%, #fff 0 60%, transparent 62%),
+    radial-gradient(circle .8px at 88% 60%, #fff 0 60%, transparent 62%),
+    linear-gradient(180deg,#3b2a6b,#160e2e);
+  border-color:#0c0720;
+}
+.type-space .roof{
+  background:linear-gradient(90deg,#7dd3fc,#c77dff);
+  height:5px; top:-4px;
+}
+.type-space .deco::before{
+  content:''; position:absolute; right:4px; top:50%; width:15px; height:15px;
+  transform:translateY(-50%); border-radius:50%;
+  background:radial-gradient(circle at 34% 34%, #ffd08a 0 40%, #d97b3f 70%, #8a441c 100%);
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.25), 0 0 10px rgba(199,125,255,.6);
+}
+
+/* Gullvogn – ornamentert, kommer på gylne ord */
 .type-gold .body{
   background:linear-gradient(180deg,#ffe89a,#f0b429 55%,#c98708);
-  border-color:#8a5c07; position:relative; overflow:hidden;
+  border-color:#8a5c07; overflow:hidden;
 }
-.type-gold .body::after{
+.type-gold .deco{
+  background:
+    radial-gradient(circle 3.5px at 12px 22%, rgba(255,255,255,.9) 0 62%, transparent 64%),
+    radial-gradient(circle 3.5px at 12px 78%, rgba(255,255,255,.9) 0 62%, transparent 64%),
+    radial-gradient(circle 3.5px at calc(100% - 12px) 22%, rgba(255,255,255,.9) 0 62%, transparent 64%),
+    radial-gradient(circle 3.5px at calc(100% - 12px) 78%, rgba(255,255,255,.9) 0 62%, transparent 64%);
+}
+.type-gold .deco::after{
   content:''; position:absolute; inset:0;
   background:linear-gradient(105deg, transparent 35%, rgba(255,255,255,.75) 50%, transparent 65%);
   transform:translateX(-120%);
@@ -227,49 +411,6 @@ button:focus-visible, input:focus-visible, a:focus-visible{
 }
 @keyframes shine{ 0%,60%{ transform:translateX(-120%); } 100%{ transform:translateX(120%); } }
 .type-gold .roof{ background:linear-gradient(180deg,#ffd45e,#b8860b); }
-
-.type-post .body{
-  background:
-    linear-gradient(180deg, transparent 38%, rgba(255,255,255,.9) 38% 52%, transparent 52%),
-    linear-gradient(180deg,#c2453c,#8d2b26);
-  border-color:#5c1815;
-}
-.type-post .roof{ background:linear-gradient(180deg,#e0d6c4,#a8998a); }
-
-.type-rocket .body{
-  background:linear-gradient(180deg,#4a3a7a,#2a1f4d);
-  border-color:#150f2b;
-}
-.type-rocket .roof{
-  background:linear-gradient(90deg,#ff7a2b,#ffd23f);
-  height:5px; top:-4px;
-}
-
-.type-timber .body{
-  background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 2px, transparent 2px 9px),
-    linear-gradient(180deg,#8a6a3e,#5c4526);
-  border-color:#33240f;
-}
-.type-timber .roof{ display:none; }
-
-.type-container .body{
-  background:
-    repeating-linear-gradient(90deg,
-      #2f8f7a 0 22px, #1f6b5a 22px 24px,
-      #c8703a 24px 46px, #a1552a 46px 48px);
-  border-color:#123028;
-}
-.type-container .roof{ background:linear-gradient(180deg,#4a5f6b,#2b3a44); }
-
-.type-royal .body{
-  background:linear-gradient(180deg,#5b3f8f,#33215c);
-  border-color:#ffd45e;
-  box-shadow:inset 0 -10px 16px rgba(0,0,0,.3),
-             0 3px 0 rgba(0,0,0,.35),
-             inset 0 0 0 1px rgba(255,212,94,.5);
-}
-.type-royal .roof{ background:linear-gradient(180deg,#ffd45e,#c9971c); }
 
 /* =========================================================
    SIGNAL (erstatter maskoten – reagerer på svar)
@@ -592,43 +733,128 @@ input.shake{ animation:shake .3s; }
   box-shadow:0 0 24px rgba(255,194,77,.28);
 }
 
-/* liten vognbrikke til togstallen */
+/* Liten vognbrikke – arver vogntypenes farger, men i mindre format. */
 .mini{
-  width:52px; height:26px; border-radius:4px; position:relative;
-  border:2px solid rgba(0,0,0,.4);
+  width:56px; height:28px; border-radius:4px; position:relative;
+  border:2px solid rgba(0,0,0,.45); overflow:hidden;
+  flex:0 0 auto;
 }
+.mini .deco{ position:absolute; inset:0; }
 .mini::after{
-  content:''; position:absolute; left:6px; right:6px; bottom:-5px; height:8px;
+  content:''; position:absolute; left:5px; right:5px; bottom:-1px; height:7px;
   background:
-    radial-gradient(circle 4px at 18% 50%, #414d69 0 62%, transparent 64%),
-    radial-gradient(circle 4px at 82% 50%, #414d69 0 62%, transparent 64%);
+    radial-gradient(circle 3px at 20% 100%, #1a2033 0 62%, transparent 64%),
+    radial-gradient(circle 3px at 80% 100%, #1a2033 0 62%, transparent 64%);
   background-repeat:no-repeat;
 }
-.mini.type-loco{ background:linear-gradient(180deg,#3f5347,#22322b); }
-.mini.type-freight{ background:linear-gradient(180deg,#a9713f,#7d4f28); }
-.mini.type-passenger{ background:linear-gradient(180deg,#3f6fae,#274a7c); }
-.mini.type-tank{ background:linear-gradient(180deg,#e6ecf5,#6c7d95); border-radius:13px; }
-.mini.type-cool{ background:linear-gradient(180deg,#f2fbff,#bcd9e8); }
-.mini.type-circus{ background:repeating-linear-gradient(115deg,#e4444f 0 9px,#fff2d6 9px 18px); }
-.mini.type-post{
+
+.mini.type-loco{ background:linear-gradient(180deg,#42604f,#1d2c24); }
+.mini.type-loco .deco{
+  background:radial-gradient(circle 3px at 9px 50%, #ffe08a 0 55%, transparent 70%);
+}
+.mini.type-freight{
   background:
-    linear-gradient(180deg, transparent 38%, rgba(255,255,255,.9) 38% 52%, transparent 52%),
-    linear-gradient(180deg,#c2453c,#8d2b26);
+    repeating-linear-gradient(90deg, rgba(0,0,0,.2) 0 1px, transparent 1px 10px),
+    linear-gradient(180deg,#c4453c,#7e211c);
+}
+.mini.type-freight .deco::before{
+  content:''; position:absolute; left:8px; top:50%; width:10px; height:10px;
+  transform:translateY(-50%); background:rgba(255,255,255,.92);
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+}
+.mini.type-frost{ background:linear-gradient(180deg,#f4fbff 0 40%, #b7d9ea 100%); }
+.mini.type-frost .deco{
+  background:
+    radial-gradient(circle 6px at 26% -3px, #fff 0 70%, transparent 72%),
+    radial-gradient(circle 7px at 62% -3px, #fff 0 70%, transparent 72%);
+}
+.mini.type-jungle{ background:linear-gradient(180deg,#5c8a3c,#2f4d20); }
+.mini.type-jungle .deco{
+  background:
+    radial-gradient(circle 4px at 20% 0, #7cb342 0 70%, transparent 72%),
+    radial-gradient(circle 5px at 58% -1px, #7cb342 0 70%, transparent 72%),
+    radial-gradient(circle 3px at 84% 1px, #558b2f 0 70%, transparent 72%);
+}
+.mini.type-industri{ background:linear-gradient(180deg,#f0b429,#b07d0a); }
+.mini.type-industri .deco{
+  background:repeating-linear-gradient(-45deg,
+    rgba(20,20,24,.9) 0 5px, transparent 5px 10px) bottom / 100% 6px no-repeat;
+}
+.mini.type-tank{
+  border-radius:13px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.5) 0 16%, transparent 36%),
+    linear-gradient(180deg,#d8443c 0 30%, #8e211b 100%);
+}
+.mini.type-tank .deco{
+  background:
+    linear-gradient(90deg, transparent 24%, rgba(0,0,0,.42) 24% 28%, transparent 28%),
+    linear-gradient(90deg, transparent 70%, rgba(0,0,0,.42) 70% 74%, transparent 74%);
+}
+.mini.type-candy{ background:repeating-linear-gradient(115deg,#ff5fa2 0 9px,#fff2f7 9px 18px); }
+.mini.type-pirate{
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.32) 0 1px, transparent 1px 9px),
+    linear-gradient(180deg,#7a5636,#3f2b18);
+}
+.mini.type-pirate .deco::before{
+  content:''; position:absolute; left:7px; top:50%; width:13px; height:11px;
+  transform:translateY(-50%); border-radius:2px;
+  background:
+    radial-gradient(circle 3px at 50% 42%, #f3f6ff 0 70%, transparent 72%),
+    #14161c;
+}
+.mini.type-dino{ background:linear-gradient(180deg,#6b8f4e,#31462a); }
+.mini.type-dino .deco::before{
+  content:''; position:absolute; left:8px; bottom:3px; width:11px; height:13px;
+  border-radius:50% 50% 46% 46% / 62% 62% 38% 38%;
+  background:linear-gradient(180deg,#f5ead0,#cdb98d);
+}
+.mini.type-ghost{ background:linear-gradient(180deg,#3a2a52,#1a1029); }
+.mini.type-ghost .deco{
+  background:
+    radial-gradient(ellipse 5px 7px at 26% 52%, rgba(93,255,163,.95) 0 45%, transparent 72%),
+    radial-gradient(ellipse 5px 7px at 72% 52%, rgba(93,255,163,.95) 0 45%, transparent 72%);
+}
+.mini.type-volcano{ background:linear-gradient(180deg,#3a3336,#161113); }
+.mini.type-volcano .deco{
+  background:
+    linear-gradient(74deg, transparent 30%, #ff6b1a 30% 33%, transparent 33%),
+    linear-gradient(-68deg, transparent 56%, #ffb300 56% 59%, transparent 59%);
+  filter:drop-shadow(0 0 3px rgba(255,107,26,.9));
+}
+.mini.type-space{
+  background:
+    radial-gradient(circle .9px at 22% 30%, #fff 0 60%, transparent 62%),
+    radial-gradient(circle .9px at 52% 70%, #fff 0 60%, transparent 62%),
+    radial-gradient(circle 1px at 76% 26%, #fff 0 60%, transparent 62%),
+    linear-gradient(180deg,#3b2a6b,#160e2e);
+}
+.mini.type-space .deco::before{
+  content:''; position:absolute; right:8px; top:50%; width:11px; height:11px;
+  transform:translateY(-50%); border-radius:50%;
+  background:radial-gradient(circle at 34% 34%, #ffd08a 0 40%, #d97b3f 70%, #8a441c 100%);
 }
 .mini.type-gold{ background:linear-gradient(180deg,#ffe89a,#c98708); }
-.mini.type-rocket{ background:linear-gradient(180deg,#4a3a7a,#2a1f4d); }
-.mini.type-timber{
-  background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 2px, transparent 2px 7px),
-    linear-gradient(180deg,#8a6a3e,#5c4526);
+
+/* sjeldenhet – ramme rundt brikka i vognskjulet */
+.rarity-1{ --rar:#9fb0d4; }
+.rarity-2{ --rar:#5fc8ff; }
+.rarity-3{ --rar:#c77dff; }
+.rarity-4{ --rar:#ffc24d; }
+.depot-item.rarity-2 .mini,
+.depot-item.rarity-3 .mini,
+.depot-item.rarity-4 .mini,
+.reel-item.rarity-2 .mini,
+.reel-item.rarity-3 .mini,
+.reel-item.rarity-4 .mini{
+  border-color:var(--rar);
+  box-shadow:0 0 12px color-mix(in srgb, var(--rar) 55%, transparent);
 }
-.mini.type-container{
-  background:repeating-linear-gradient(90deg,
-    #2f8f7a 0 14px, #1f6b5a 14px 16px, #c8703a 16px 30px, #a1552a 30px 32px);
-}
-.mini.type-royal{
-  background:linear-gradient(180deg,#5b3f8f,#33215c);
-  border-color:#ffd45e;
+.rar-tag{
+  display:inline-block; font-size:.6rem; font-weight:900;
+  letter-spacing:.1em; text-transform:uppercase;
+  color:var(--rar); margin-left:6px;
 }
 
 /* =========================================================
@@ -688,6 +914,25 @@ input.shake{ animation:shake .3s; }
 }
 .best-line{ color:var(--muted); font-weight:700; font-size:.88rem; }
 .best-line.new{ color:var(--lamp-hot); }
+
+/* nullstilling – destruktiv, så den er dempet til den er «armert» */
+.btn-danger{
+  background:transparent; border:2px solid #4a2b3a; color:#b8899a;
+  border-radius:99px; padding:9px 16px; min-height:44px;
+  font-weight:700; font-size:.8rem; cursor:pointer;
+  transition:border-color .16s, color .16s, background .16s;
+}
+.btn-danger:hover{ border-color:var(--signal-red); color:var(--signal-red); }
+.btn-danger.armed{
+  border-color:var(--signal-red); color:#fff;
+  /* Pulser farge, ikke størrelse: en bekreftelsesknapp som hopper
+     er vanskeligere å treffe – særlig med tommelen. */
+  animation:dangerPulse 1s ease-in-out infinite;
+}
+@keyframes dangerPulse{
+  0%,100%{ background:rgba(255,95,107,.16); box-shadow:0 0 0 rgba(255,95,107,0); }
+  50%{ background:rgba(255,95,107,.34); box-shadow:0 0 16px rgba(255,95,107,.5); }
+}
 
 /* versjonsbytte */
 .switch-link{

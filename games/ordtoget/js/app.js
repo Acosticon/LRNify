@@ -12,8 +12,8 @@ import { Fx } from './fx.js';
 import { Game, MODES, POWERS, comboProgress } from './game.js';
 import { Progress } from './progress.js';
 import {
-  ALL_SLOTS, CARRIAGES, LOCO, GOLD,
-  pickCarriage, buildCarriage, buildCoupling
+  ALL_SLOTS, CARRIAGES, LOCO, GOLD, RARITY,
+  pickCarriage, buildCarriage, buildCoupling, buildMini
 } from './carriages.js';
 
 const PRAISE = ['Nydelig!', 'Sterkt!', 'Perfekt!', 'Der satt den!', 'Rått!', 'Skarpt!', 'På skinner!'];
@@ -299,7 +299,7 @@ export function createApp(layout = {}){
 
     // Vognene du har vunnet
     ALL_SLOTS.filter(c => progress.isUnlocked(c.id)).forEach(c => {
-      els.depot.appendChild(depotRow(c.id, c.name, c.desc));
+      els.depot.appendChild(depotRow(c));
     });
 
     // Tomme plasser for dem som står igjen
@@ -313,9 +313,7 @@ export function createApp(layout = {}){
     }
 
     // Lokomotiv og gullvogn hører ikke til opplåsingen.
-    [LOCO, GOLD].forEach(c => {
-      els.depot.appendChild(depotRow(c.id, c.name, c.desc));
-    });
+    [LOCO, GOLD].forEach(c => els.depot.appendChild(depotRow(c)));
 
     if(els.depotCount){
       const have = ALL_SLOTS.filter(c => progress.isUnlocked(c.id)).length;
@@ -323,12 +321,17 @@ export function createApp(layout = {}){
     }
   }
 
-  function depotRow(id, name, desc){
+  function depotRow(c){
     const item = document.createElement('div');
-    item.className = 'depot-item';
-    item.innerHTML = `<span class="mini type-${id}" aria-hidden="true"></span>`
-      + `<span class="dt"><span class="dn">${name}</span>`
-      + `<span class="dd">${desc}</span></span>`;
+    const r = c.tier ? RARITY[c.tier] : null;
+    item.className = 'depot-item' + (r ? ' rarity-' + r.id : '');
+    item.appendChild(buildMini(c.id));
+    const txt = document.createElement('span');
+    txt.className = 'dt';
+    txt.innerHTML = `<span class="dn">${c.name}`
+      + (r && r.id > 1 ? `<span class="rar-tag">${r.name}</span>` : '')
+      + `</span><span class="dd">${c.desc}</span>`;
+    item.appendChild(txt);
     return item;
   }
 
@@ -395,9 +398,12 @@ export function createApp(layout = {}){
       // Gevinsten plasseres på nøyaktig den plassen hjulet stopper på.
       const c = i === REEL_WINNER_AT ? won : pool[Math.floor(Math.random() * pool.length)];
       const item = document.createElement('div');
-      item.className = 'reel-item';
-      item.innerHTML = `<span class="mini type-${c.id}" aria-hidden="true"></span>`
-        + `<span class="rl">${c.name}</span>`;
+      item.className = 'reel-item rarity-' + c.tier;
+      item.appendChild(buildMini(c.id));
+      const lbl = document.createElement('span');
+      lbl.className = 'rl';
+      lbl.textContent = c.name;
+      item.appendChild(lbl);
       reel.appendChild(item);
     }
 
@@ -408,15 +414,27 @@ export function createApp(layout = {}){
       sfx.unlocked();
       haptic([18, 60, 18, 60, 30]);
 
-      const r = card.getBoundingClientRect();
-      const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-      fx.burst(cx, cy, 40, { colors: ['#ffe08a', '#ffc24d', '#fff'], speed: 380 });
-      fx.ring(cx, cy, '#ffe08a', 170);
+      const box = card.getBoundingClientRect();
+      const cx = box.left + box.width / 2, cy = box.top + box.height / 2;
+      const rar = RARITY[won.tier];
+      // Sjeldne vogner får kraftigere feiring.
+      fx.burst(cx, cy, 26 + rar.id * 10, { colors: [rar.color, '#ffe08a', '#fff'], speed: 320 + rar.id * 40 });
+      fx.ring(cx, cy, rar.color, 150 + rar.id * 20);
+      if(rar.id >= 3) fx.doShake(6 + rar.id * 2);
 
-      card.innerHTML = '<span class="ck">Ny vogn i skjulet</span>'
-        + `<span class="crate-reveal"><span class="mini type-${won.id}" aria-hidden="true"></span>`
-        + `<span class="rn">${won.name}</span>`
-        + `<span class="rd">${won.desc}</span></span>`;
+      card.className = 'crate-card landed rarity-' + rar.id;
+      card.innerHTML = `<span class="ck" style="color:${rar.color}">${rar.name}</span>`;
+      const rev = document.createElement('span');
+      rev.className = 'crate-reveal';
+      rev.appendChild(buildMini(won.id));
+      const nm = document.createElement('span');
+      nm.className = 'rn';
+      nm.textContent = won.name;
+      const ds = document.createElement('span');
+      ds.className = 'rd';
+      ds.textContent = won.desc;
+      rev.appendChild(nm); rev.appendChild(ds);
+      card.appendChild(rev);
 
       updateCrateBadges();
       setTimeout(renderDepot, 2400);
@@ -781,6 +799,35 @@ export function createApp(layout = {}){
   if(els.hintBtn) els.hintBtn.addEventListener('click', () => {
     if(!game.useHint()) setMsg('Fant ingen hint denne gangen …', 'info');
   });
+  /* Nullstilling av framgang. To trykk – dette kan ikke angres. */
+  if(els.resetBtn){
+    const label = els.resetBtn.textContent;
+    let armed = false, armTimer = null;
+    const disarm = () => {
+      armed = false;
+      clearTimeout(armTimer);
+      els.resetBtn.textContent = label;
+      els.resetBtn.classList.remove('armed');
+    };
+    els.resetBtn.addEventListener('click', () => {
+      if(!armed){
+        armed = true;
+        els.resetBtn.textContent = 'Sikker? Trykk én gang til';
+        els.resetBtn.classList.add('armed');
+        armTimer = setTimeout(disarm, 5000);
+        return;
+      }
+      disarm();
+      progress.reset();
+      renderDepot();
+      updateCrateBadges();
+      updateStartBest();
+      sfx.error();
+      els.resetBtn.textContent = 'All framgang er nullstilt';
+      setTimeout(() => { els.resetBtn.textContent = label; }, 2500);
+    });
+  }
+
   if(els.soundBtn) els.soundBtn.addEventListener('click', () => setSound(!sfx.enabled));
   if(els.muteBtn) els.muteBtn.addEventListener('click', () => setSound(!sfx.enabled));
 

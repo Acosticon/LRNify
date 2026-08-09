@@ -204,3 +204,6 @@ form{ display:flex; gap:10px; }
 .stat-card{ padding:12px 10px; }
 .stat-card .v{ font-size:1.3rem; }
 .end-actions{ display:flex; align-items:center; justify-content:center; gap:14px; margin-top:4px; }
+
+/* nullstilling nederst i vognskjulet */
+.start-side .btn-danger{ align-self:center; margin-top:12px; }
