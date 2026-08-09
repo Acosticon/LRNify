@@ -1,0 +1,499 @@
+/* =========================================================
+   ORDTOGET — felles stil for mobil og PC.
+   Tema: jernbane i skumring. Varmt lampelys mot nattblå himmel.
+   Layout ligger i mobil.css / pc.css.
+   ========================================================= */
+
+:root{
+  --night-1:#131a2e;
+  --night-2:#0b1020;
+  --panel:rgba(255,255,255,.05);
+  --line:#2c3a5c;
+  --line-soft:#222e4a;
+
+  --lamp:#ffc24d;
+  --lamp-hot:#ffe08a;
+  --lamp-deep:#d98b0e;
+  --signal-green:#3ddb7f;
+  --signal-red:#ff5f6b;
+  --steam:#dce6ff;
+  --steel:#8fa3c8;
+  --brass:#e0a94a;
+  --violet:#9b7bff;
+
+  --ink:#f3f6ff;
+  --muted:#9fb0d4;
+  --dim:#6f80a6;
+
+  --radius:16px;
+}
+
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+[hidden]{ display:none !important; }
+html,body{ height:100%; margin:0; }
+body{
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(1100px 500px at 50% -6%, #2a3757 0%, transparent 62%),
+    linear-gradient(180deg, var(--night-1), var(--night-2) 78%);
+  background-attachment:fixed;
+  overflow-x:hidden;
+}
+button{ font-family:inherit; }
+button:focus-visible, input:focus-visible, a:focus-visible{
+  outline:3px solid var(--lamp); outline-offset:3px;
+}
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+}
+
+/* effektlag */
+#bgCanvas{ position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; }
+#fxCanvas{ position:fixed; inset:0; width:100%; height:100%; z-index:60; pointer-events:none; }
+#vignette{
+  position:fixed; inset:0; pointer-events:none; z-index:55; opacity:0;
+  box-shadow:inset 0 0 90px 22px rgba(255,60,70,.5);
+  transition:opacity .3s ease;
+}
+#vignette.on{ opacity:1; animation:vig 1s ease-in-out infinite; }
+@keyframes vig{ 50%{ opacity:.3; } }
+
+/* fjerne åser i bakgrunnen */
+.hills{
+  position:fixed; left:0; right:0; bottom:0; height:34vh; z-index:0;
+  pointer-events:none; opacity:.5;
+  background:
+    radial-gradient(120% 100% at 20% 100%, #1b2740 0 40%, transparent 41%),
+    radial-gradient(120% 100% at 62% 100%, #17223a 0 46%, transparent 47%),
+    radial-gradient(120% 100% at 95% 100%, #1b2740 0 38%, transparent 39%);
+}
+
+/* =========================================================
+   LOGO
+   ========================================================= */
+.logo{
+  font-weight:900; letter-spacing:.01em; line-height:1; margin:0;
+  background:linear-gradient(180deg,var(--lamp-hot),var(--lamp) 58%,var(--lamp-deep));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 0 22px rgba(255,194,77,.42));
+}
+
+/* =========================================================
+   TOGET
+   ========================================================= */
+.train{
+  display:flex; align-items:flex-end;
+  overflow-x:auto; overflow-y:hidden;
+  scrollbar-width:thin;
+  /* skinnegang: skinne øverst, sviller under */
+  background:
+    linear-gradient(180deg,#aebbd6,#6b7c9e) left bottom 8px / 100% 4px repeat-x,
+    repeating-linear-gradient(90deg,#4a3826 0 12px, transparent 12px 34px)
+      left bottom 1px / 34px 7px repeat-x;
+}
+.train::-webkit-scrollbar{ height:6px; }
+.train::-webkit-scrollbar-thumb{ background:#3a4a72; border-radius:99px; }
+
+.carriage{
+  position:relative; flex:0 0 auto;
+  padding-bottom:19px;         /* plass til hjul over skinna */
+  transition:transform .2s ease;
+}
+.carriage .body{
+  position:relative; display:block; z-index:2;
+  padding:11px 15px;
+  border-radius:5px 5px 3px 3px;
+  border:2px solid rgba(0,0,0,.42);
+  font-weight:800; white-space:nowrap; letter-spacing:.01em;
+  box-shadow:inset 0 -10px 16px rgba(0,0,0,.28), 0 3px 0 rgba(0,0,0,.35);
+  color:#20160c;
+}
+.carriage .body .hl{ font-style:normal; }
+.carriage .roof{
+  position:absolute; left:-3px; right:-3px; top:-5px; height:7px; z-index:1;
+  border-radius:4px 4px 0 0;
+  background:linear-gradient(180deg,#5d6b8c,#3c4762);
+  box-shadow:0 1px 0 rgba(0,0,0,.4);
+}
+.carriage .wheels{
+  position:absolute; left:9%; right:9%; bottom:9px; z-index:3;
+  display:flex; justify-content:space-between;
+}
+.carriage .wheels i{
+  width:13px; height:13px; border-radius:50%;
+  background:radial-gradient(circle at 50% 45%, #7d8ba8 0 26%, #333c52 28% 66%, #1a2033 68%);
+  border:2px solid #10141f;
+  box-shadow:0 0 0 1px rgba(255,255,255,.06);
+}
+.coupling{
+  flex:0 0 auto; width:13px; height:4px; margin-bottom:27px;
+  border-radius:2px; background:linear-gradient(90deg,#4a5878,#7d8ba8,#4a5878);
+}
+
+/* pipe på lokomotivet */
+.carriage .chimney{
+  position:absolute; left:11px; top:-17px; width:13px; height:14px; z-index:1;
+  border-radius:3px 3px 0 0;
+  background:linear-gradient(180deg,#2c3448,#1b2130);
+  border:2px solid rgba(0,0,0,.45); border-bottom:none;
+}
+
+/* gjeldende vogn framhevet */
+.carriage.current{ transform:translateY(-2px); }
+.carriage.current .body{
+  box-shadow:inset 0 -10px 16px rgba(0,0,0,.28),
+             0 3px 0 rgba(0,0,0,.35),
+             0 0 26px rgba(255,194,77,.55);
+}
+.carriage.current .body .hl{
+  color:#8a2b00;
+  text-shadow:0 0 10px rgba(255,224,138,.9);
+}
+
+/* ny vogn ruller inn */
+.carriage.arriving{ animation:rollIn .38s cubic-bezier(.2,.85,.3,1.15); }
+@keyframes rollIn{
+  0%{ transform:translateX(46px); opacity:0; }
+  70%{ transform:translateX(-4px); opacity:1; }
+  100%{ transform:none; }
+}
+
+/* ---------- vogntyper ---------- */
+.type-loco .body{
+  background:linear-gradient(180deg,#3f5347,#22322b);
+  color:var(--lamp-hot); border-color:#0e1712;
+  padding-left:22px;
+}
+.type-loco .body .hl{ color:var(--lamp); }
+.type-loco .roof{ background:linear-gradient(180deg,#4a5f52,#26332c); }
+.type-loco.current .body .hl{ color:var(--lamp-hot); }
+
+.type-freight .body{
+  background:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.16) 0 1px, transparent 1px 13px),
+    linear-gradient(180deg,#a9713f,#7d4f28);
+  border-color:#4d2f16;
+}
+.type-freight .roof{ background:linear-gradient(180deg,#8c5c33,#5d3b1f); }
+
+.type-passenger .body{
+  background:
+    repeating-linear-gradient(90deg,
+      transparent 0 9px, rgba(255,235,180,.9) 9px 21px, transparent 21px 30px),
+    linear-gradient(180deg,#3f6fae,#274a7c);
+  color:#eaf2ff; border-color:#16294a;
+  text-shadow:0 1px 2px rgba(0,0,0,.75);
+}
+.type-passenger .body .hl{ color:var(--lamp-hot); }
+.type-passenger .roof{ background:linear-gradient(180deg,#54809c,#33526e); }
+
+.type-tank .body{
+  background:linear-gradient(180deg,#e6ecf5 0 18%, #9fb0c6 45%, #6c7d95 100%);
+  border-radius:14px; border-color:#43536b;
+}
+.type-tank .roof{ display:none; }
+
+.type-cool .body{
+  background:linear-gradient(180deg,#f2fbff,#bcd9e8);
+  border-color:#5d8296; color:#123243;
+}
+.type-cool .roof{ background:linear-gradient(180deg,#cfe6f0,#8fb2c4); }
+
+.type-circus .body{
+  background:repeating-linear-gradient(115deg,
+    #e4444f 0 13px, #fff2d6 13px 26px);
+  border-color:#7c1d24; color:#4a1015;
+}
+.type-circus .roof{ background:linear-gradient(180deg,#ffd45e,#d99b1e); }
+
+.type-gold .body{
+  background:linear-gradient(180deg,#ffe89a,#f0b429 55%,#c98708);
+  border-color:#8a5c07; color:#4a3000;
+  position:relative; overflow:hidden;
+}
+.type-gold .body::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(105deg, transparent 35%, rgba(255,255,255,.75) 50%, transparent 65%);
+  transform:translateX(-120%);
+  animation:shine 2.4s ease-in-out infinite;
+}
+@keyframes shine{ 0%,60%{ transform:translateX(-120%); } 100%{ transform:translateX(120%); } }
+.type-gold .roof{ background:linear-gradient(180deg,#ffd45e,#b8860b); }
+
+.type-post .body{
+  background:
+    linear-gradient(180deg, transparent 38%, rgba(255,255,255,.9) 38% 52%, transparent 52%),
+    linear-gradient(180deg,#c2453c,#8d2b26);
+  border-color:#5c1815; color:#fff3e6;
+  text-shadow:0 1px 2px rgba(0,0,0,.65);
+}
+.type-post .body .hl{ color:var(--lamp-hot); }
+.type-post .roof{ background:linear-gradient(180deg,#e0d6c4,#a8998a); }
+
+.type-rocket .body{
+  background:linear-gradient(180deg,#4a3a7a,#2a1f4d);
+  border-color:#150f2b; color:#f0e6ff;
+  text-shadow:0 1px 2px rgba(0,0,0,.7);
+}
+.type-rocket .body .hl{ color:#ff9d4d; }
+.type-rocket .roof{
+  background:linear-gradient(90deg,#ff7a2b,#ffd23f);
+  height:5px; top:-4px;
+}
+
+/* =========================================================
+   SIGNAL (erstatter maskoten – reagerer på svar)
+   ========================================================= */
+.signal{
+  flex:0 0 auto; width:26px; height:52px; border-radius:9px;
+  background:linear-gradient(180deg,#232c44,#161d30);
+  border:2px solid #35415f;
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:space-around; padding:5px 0;
+}
+.signal i{
+  width:12px; height:12px; border-radius:50%;
+  background:#2a3450; transition:background .18s, box-shadow .18s;
+}
+.signal[data-state="go"] i:first-child{
+  background:var(--signal-green); box-shadow:0 0 14px var(--signal-green);
+}
+.signal[data-state="stop"] i:last-child{
+  background:var(--signal-red); box-shadow:0 0 14px var(--signal-red);
+}
+.signal[data-state="wait"] i:first-child{
+  background:var(--lamp); box-shadow:0 0 14px var(--lamp);
+}
+
+/* =========================================================
+   FELLES KOMPONENTER
+   ========================================================= */
+.stat{ display:flex; flex-direction:column; line-height:1; }
+.stat .k{
+  font-size:.6rem; letter-spacing:.13em; color:var(--dim);
+  font-weight:800; text-transform:uppercase;
+}
+.stat .v{ font-weight:900; font-variant-numeric:tabular-nums; color:var(--lamp); }
+.stat .v.alt{ color:var(--steam); }
+.stat.lives .v{ color:var(--signal-red); }
+
+.heat-track{
+  flex:1; height:14px; border-radius:99px; overflow:hidden;
+  background:#151d33; border:1px solid var(--line);
+}
+.heat-fill{
+  height:100%; width:100%; border-radius:99px;
+  background:linear-gradient(90deg,var(--lamp-deep),var(--lamp) 45%,var(--lamp-hot));
+  transition:width .1s linear;
+}
+.heat-fill.low{ background:linear-gradient(90deg,#c81e2a,var(--signal-red)); }
+.heat-fill.frozen{ background:linear-gradient(90deg,#2f6fd0,#7fd4ff); }
+.time-val{ font-weight:900; font-variant-numeric:tabular-nums; text-align:right; }
+.time-val.low{ color:var(--signal-red); animation:pulse .5s ease-in-out infinite; }
+@keyframes pulse{ 50%{ transform:scale(1.16); } }
+
+.combo{ display:flex; align-items:center; gap:8px; opacity:0; transition:opacity .2s; }
+.combo.on{ opacity:1; }
+.combo-label{
+  font-weight:900; font-size:.85rem; letter-spacing:.05em;
+  color:var(--lamp-hot); white-space:nowrap;
+}
+.combo-track{
+  flex:1; height:6px; border-radius:99px;
+  background:#151d33; border:1px solid var(--line); overflow:hidden;
+}
+.combo-fill{
+  height:100%; width:0%; border-radius:99px;
+  background:linear-gradient(90deg,var(--violet),var(--lamp-hot));
+  transition:width .25s ease;
+}
+.combo.maxed .combo-label{ animation:pulse .7s ease-in-out infinite; }
+
+.powerups{ display:flex; gap:7px; flex-wrap:wrap; }
+.powerups:empty{ display:none; }
+.pu{
+  display:flex; align-items:center; gap:6px; cursor:pointer;
+  background:linear-gradient(180deg,#2d3a5e,#1e2842);
+  border:2px solid var(--violet); border-radius:12px;
+  color:var(--ink); font-weight:800;
+  box-shadow:0 0 14px rgba(155,123,255,.24);
+  animation:puIn .3s cubic-bezier(.2,.9,.3,1.5);
+}
+.pu:disabled{ opacity:.45; cursor:default; }
+.pu .pc{ color:var(--violet); font-weight:900; }
+@keyframes puIn{ from{ transform:scale(.5); opacity:0; } }
+
+.preview{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  font-weight:700; color:var(--dim);
+}
+.preview.good .preview-text{ color:var(--signal-green); }
+.preview.bad .preview-text{ color:var(--signal-red); }
+.preview-points{ font-weight:900; color:var(--lamp-hot); white-space:nowrap; }
+
+.msg{ font-weight:800; line-height:1.3; }
+.msg.ok{ color:var(--signal-green); }
+.msg.bad{ color:var(--signal-red); }
+.msg.info{ color:var(--muted); font-weight:600; }
+.msg.gold{ color:var(--lamp-hot); }
+
+input[type="text"]{
+  background:#151d33; color:var(--ink);
+  border:2px solid #3a4a72; border-radius:13px;
+  font-weight:700;
+  /* minst 16px hindrer at iOS zoomer inn ved fokus */
+  font-size:16px;
+}
+input[type="text"]::placeholder{ color:var(--dim); font-weight:600; }
+input[type="text"]:focus{ border-color:var(--lamp); }
+input.shake{ animation:shake .3s; }
+@keyframes shake{
+  0%,100%{ transform:translateX(0); }
+  20%{ transform:translateX(-8px); } 60%{ transform:translateX(8px); }
+}
+
+.btn{
+  border:none; cursor:pointer; touch-action:manipulation;
+  background:linear-gradient(180deg,var(--lamp-hot),var(--lamp) 58%,var(--lamp-deep));
+  color:#3a2500; font-weight:900; letter-spacing:.05em;
+  border-radius:99px; box-shadow:0 5px 0 #9c6208, 0 10px 24px rgba(255,194,77,.3);
+}
+.btn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 2px 0 #9c6208; }
+.btn:disabled{ opacity:.55; cursor:default; }
+.btn-ghost{
+  background:transparent; border:2px solid var(--line); color:var(--muted);
+  border-radius:99px; font-weight:700; cursor:pointer;
+}
+.btn-ghost:hover{ color:var(--ink); border-color:var(--lamp); }
+.btn-ghost[aria-pressed="true"]{ color:var(--ink); border-color:var(--signal-green); }
+
+/* modusvalg */
+.mode-card{
+  display:flex; align-items:center; gap:12px; text-align:left; cursor:pointer;
+  background:var(--panel); border:2px solid var(--line);
+  border-radius:15px; color:var(--ink);
+  transition:border-color .16s, background .16s;
+}
+.mode-card:hover{ border-color:var(--violet); }
+.mode-card[aria-checked="true"]{
+  border-color:var(--lamp);
+  background:linear-gradient(100deg, rgba(255,194,77,.18), rgba(255,194,77,.04));
+  box-shadow:0 0 20px rgba(255,194,77,.2);
+}
+.mode-card .mi{ font-size:1.55rem; flex:0 0 auto; line-height:1; }
+.mode-card .mname{ font-weight:900; display:block; }
+.mode-card .mdesc{ color:var(--muted); font-size:.82rem; display:block; margin-top:2px; line-height:1.35; }
+
+/* =========================================================
+   TOGSTALLEN — oversikt over vogntyper
+   ========================================================= */
+.depot{ display:grid; gap:9px; }
+.depot-item{
+  display:flex; align-items:center; gap:11px;
+  background:var(--panel); border:1px solid var(--line);
+  border-radius:13px; padding:9px 11px;
+}
+.depot-item.locked{ opacity:.55; }
+.depot-item .mini{ flex:0 0 auto; }
+.depot-item .dt{ min-width:0; }
+.depot-item .dn{ font-weight:900; font-size:.9rem; display:block; }
+.depot-item .dd{ color:var(--muted); font-size:.76rem; display:block; margin-top:1px; line-height:1.3; }
+.depot-item.locked .dd{ color:var(--lamp); }
+
+/* liten vognbrikke til togstallen */
+.mini{
+  width:52px; height:26px; border-radius:4px; position:relative;
+  border:2px solid rgba(0,0,0,.4);
+}
+.mini::after{
+  content:''; position:absolute; left:6px; right:6px; bottom:-6px; height:7px;
+  background:radial-gradient(circle at 20% 50%, #333c52 0 42%, transparent 44%),
+             radial-gradient(circle at 80% 50%, #333c52 0 42%, transparent 44%);
+}
+.mini.type-loco{ background:linear-gradient(180deg,#3f5347,#22322b); }
+.mini.type-freight{ background:linear-gradient(180deg,#a9713f,#7d4f28); }
+.mini.type-passenger{ background:linear-gradient(180deg,#3f6fae,#274a7c); }
+.mini.type-tank{ background:linear-gradient(180deg,#e6ecf5,#6c7d95); border-radius:13px; }
+.mini.type-cool{ background:linear-gradient(180deg,#f2fbff,#bcd9e8); }
+.mini.type-circus{ background:repeating-linear-gradient(115deg,#e4444f 0 9px,#fff2d6 9px 18px); }
+.mini.type-post{
+  background:
+    linear-gradient(180deg, transparent 38%, rgba(255,255,255,.9) 38% 52%, transparent 52%),
+    linear-gradient(180deg,#c2453c,#8d2b26);
+}
+.mini.type-gold{ background:linear-gradient(180deg,#ffe89a,#c98708); }
+.mini.type-rocket{ background:linear-gradient(180deg,#4a3a7a,#2a1f4d); }
+
+/* =========================================================
+   OPPLÅSNING
+   ========================================================= */
+/* Plasseres av JS rett over toget – nederst ville den dekket
+   skrivefeltet på mobil, øverst ville den dekket poengsummen. */
+.unlock-toast{
+  position:fixed; left:50%; top:12vh;
+  transform:translateX(-50%);
+  display:flex; align-items:center; gap:12px; z-index:70;
+  background:linear-gradient(180deg,#2b3555,#1a2138);
+  border:2px solid var(--lamp); border-radius:15px;
+  padding:11px 16px; max-width:min(420px,92vw);
+  box-shadow:0 0 34px rgba(255,194,77,.45);
+  animation:toastIn .45s cubic-bezier(.2,.9,.3,1.4);
+}
+.unlock-toast .ut{ min-width:0; }
+.unlock-toast .uk{
+  font-size:.62rem; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--lamp); font-weight:900; display:block;
+}
+.unlock-toast .un{ font-weight:900; display:block; margin-top:1px; }
+@keyframes toastIn{
+  0%{ transform:translate(-50%,-26px); opacity:0; }
+  100%{ transform:translate(-50%,0); opacity:1; }
+}
+.unlock-toast.leaving{ animation:toastOut .4s ease forwards; }
+@keyframes toastOut{ to{ transform:translate(-50%,-26px); opacity:0; } }
+
+/* =========================================================
+   RESULTAT
+   ========================================================= */
+.rank{
+  font-weight:900;
+  background:linear-gradient(180deg,var(--lamp-hot),var(--lamp-deep));
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  filter:drop-shadow(0 0 16px rgba(255,194,77,.5));
+}
+.final-score{ font-weight:900; color:var(--lamp); line-height:1; }
+.final-score .u{
+  font-size:.9rem; color:var(--dim); letter-spacing:.16em;
+  display:block; margin-top:5px;
+}
+.stats-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+.stat-card{
+  background:var(--panel); border:1px solid var(--line);
+  border-radius:12px; padding:9px 8px;
+}
+.stat-card .k{
+  font-size:.58rem; letter-spacing:.1em; color:var(--dim);
+  font-weight:800; text-transform:uppercase; display:block;
+}
+.stat-card .v{
+  font-size:1.1rem; font-weight:900; margin-top:3px;
+  display:block; overflow-wrap:anywhere;
+}
+.best-line{ color:var(--muted); font-weight:700; font-size:.88rem; }
+.best-line.new{ color:var(--lamp-hot); }
+
+/* versjonsbytte */
+.switch-link{
+  color:var(--dim); font-size:.78rem; text-decoration:none;
+  border-bottom:1px dotted var(--dim);
+}
+.switch-link:hover{ color:var(--lamp); border-color:var(--lamp); }
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+}

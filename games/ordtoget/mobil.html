@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1">
+<title>Ordtoget – mobil</title>
+<meta name="description" content="Ordtoget for mobil – bygg et tog av ord med tommelen.">
+<link rel="stylesheet" href="css/core.css">
+<link rel="stylesheet" href="css/mobil.css">
+</head>
+<body>
+
+<canvas id="bgCanvas" aria-hidden="true"></canvas>
+<div class="hills" aria-hidden="true"></div>
+
+<div id="shakeWrap">
+  <div id="app">
+
+    <!-- ============ START ============ -->
+    <section id="screen-start" class="screen active">
+      <div class="start-top">
+        <h1 class="logo">Ordtoget</h1>
+        <p class="tagline">Hver vogn må starte med <b>siste bokstav</b>
+          i vogna foran.</p>
+      </div>
+
+      <div class="demo-train" aria-hidden="true">
+        <div id="demoTrain" class="train mini-train"></div>
+      </div>
+
+      <div class="start-scroll">
+        <h2 class="section-title">Velg modus</h2>
+        <div class="modes" id="modeList" role="radiogroup" aria-label="Velg spillmodus"></div>
+        <p class="best-note" id="startBest">&nbsp;</p>
+
+        <button id="depotBtn" class="btn-ghost depot-open" type="button" aria-expanded="false">
+          🚃 Togstallen <span id="depotCount" class="depot-count">1/8</span>
+        </button>
+      </div>
+
+      <div class="start-actions">
+        <button id="startBtn" class="btn start-btn" type="button">AVGANG</button>
+        <div class="start-row">
+          <button id="soundBtn" class="btn-ghost small" type="button" aria-pressed="true">🔊 Lyd på</button>
+          <a class="switch-link" href="pc.html" data-switch="pc">Bytt til PC-versjon</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SPILL ============ -->
+    <section id="screen-game" class="screen">
+      <div class="hud">
+        <div class="stat"><span class="k">Poeng</span><span class="v" id="scoreVal">0</span></div>
+        <div class="stat"><span class="k">Nivå</span><span class="v alt" id="levelVal">1</span></div>
+        <div class="stat lives" id="livesBox" hidden><span class="k">Liv</span><span class="v" id="livesVal">♥♥♥</span></div>
+        <div class="spacer"></div>
+        <button id="muteBtn" class="icon-btn" type="button" aria-pressed="true" aria-label="Slå lyd av eller på">🔊</button>
+      </div>
+
+      <div class="heat" id="heatBox">
+        <div class="heat-track"><div id="heatFill" class="heat-fill"></div></div>
+        <span id="timeVal" class="time-val">20</span>
+      </div>
+
+      <div class="combo" id="comboWrap" aria-hidden="true">
+        <span class="combo-label" id="comboLabel">KOMBO ×2</span>
+        <div class="combo-track"><div class="combo-fill" id="comboFill"></div></div>
+      </div>
+
+      <!-- toget fyller det som er igjen av plassen -->
+      <div class="train-area">
+        <div id="train" class="train" role="list" aria-label="Ordtoget ditt"></div>
+      </div>
+
+      <!-- alt under her ligger i tommelsonen -->
+      <div class="dock">
+        <div class="feedback">
+          <div class="signal" id="signal" data-state="go" aria-hidden="true"><i></i><i></i></div>
+          <div id="msg" class="msg"></div>
+        </div>
+
+        <div class="next-row">
+          <div class="next-letter" id="nextLetterBox">
+            <span class="nl-k">Neste</span>
+            <span class="nl-v" id="nextLetter">S</span>
+          </div>
+          <div class="preview-wrap">
+            <div class="preview" id="preview">
+              <span class="preview-text" id="previewText">&nbsp;</span>
+              <span class="preview-points" id="previewPoints"></span>
+            </div>
+            <div class="power-meter"><div id="powerFill"></div></div>
+          </div>
+        </div>
+
+        <div class="powerups" id="powerups" aria-label="Kraftbonuser"></div>
+
+        <form id="wordForm" autocomplete="off">
+          <label for="wordInput" class="sr-only">Skriv neste ord</label>
+          <input id="wordInput" type="text" autocomplete="off" autocapitalize="off"
+                 autocorrect="off" spellcheck="false" enterkeyhint="send" maxlength="40">
+          <button id="addBtn" class="send-btn" type="submit" aria-label="Koble på vogna">→</button>
+        </form>
+
+        <button id="hintBtn" class="hint-btn" type="button">
+          💡 Hint (−3 sek) · <span id="hintsLeft">3</span> igjen
+        </button>
+      </div>
+    </section>
+
+    <!-- ============ RESULTAT ============ -->
+    <section id="screen-end" class="screen">
+      <div class="end-scroll">
+        <div class="rank" id="rankTitle">Sporskifter</div>
+        <div class="final-score"><span id="endScore">0</span><span class="u">POENG</span></div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><span class="k">Vogner</span><span class="v" id="endWords">0</span></div>
+          <div class="stat-card"><span class="k">Beste kombo</span><span class="v" id="endCombo">×1</span></div>
+          <div class="stat-card"><span class="k">Lengste ord</span><span class="v" id="endLongest">–</span></div>
+          <div class="stat-card"><span class="k">Nivå</span><span class="v" id="endLevel">1</span></div>
+        </div>
+
+        <div class="end-train-wrap">
+          <div id="endTrain" class="train" role="list" aria-label="Toget ditt"></div>
+        </div>
+        <div class="best-line" id="bestLine"></div>
+      </div>
+
+      <div class="end-actions">
+        <button id="restartBtn" class="btn start-btn" type="button">KJØR IGJEN</button>
+        <button id="menuBtn" class="btn-ghost small" type="button">← Bytt modus</button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- Togstallen som bunnark -->
+<div id="depotSheet" class="sheet" hidden>
+  <div class="sheet-scrim" id="depotScrim"></div>
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Togstallen">
+    <div class="sheet-grip" aria-hidden="true"></div>
+    <h2 class="sheet-title">Togstallen</h2>
+    <p class="sheet-sub">Nye vogner låses opp mens du spiller.</p>
+    <div class="depot" id="depot"></div>
+    <button id="depotClose" class="btn-ghost small" type="button">Lukk</button>
+  </div>
+</div>
+
+<canvas id="fxCanvas" aria-hidden="true"></canvas>
+<div id="vignette" aria-hidden="true"></div>
+
+<script type="module" src="js/mobil.js"></script>
+</body>
+</html>

@@ -1,0 +1,247 @@
+/* =========================================================
+   ORDTOGET — MOBIL
+   Designprinsipper:
+   - Alt som skal trykkes ligger nederst, i tommelsonen.
+   - Skjermtastaturet er oppe nesten hele tiden. Layouten måles
+     mot visualViewport, ikke mot vindushøyden.
+   - Ett blikk skal holde: neste bokstav er det største elementet
+     ved siden av toget.
+   - Ingen hover. Trykkflater minst 48 px.
+   ========================================================= */
+
+body{
+  /* --vh settes fra JS til visualViewport-høyden slik at layouten
+     krymper når tastaturet kommer opp */
+  --vh:100dvh;
+  overscroll-behavior:none;
+  touch-action:manipulation;
+}
+
+#app{
+  height:var(--vh);
+  display:flex; flex-direction:column;
+  padding:
+    calc(6px + env(safe-area-inset-top))
+    max(10px, env(safe-area-inset-right))
+    calc(6px + env(safe-area-inset-bottom))
+    max(10px, env(safe-area-inset-left));
+  position:relative; z-index:2;
+}
+.screen{ display:none; flex:1; min-height:0; flex-direction:column; }
+.screen.active{ display:flex; }
+
+/* =========================================================
+   START
+   ========================================================= */
+#screen-start{ gap:12px; }
+.start-top{ text-align:center; padding-top:6px; }
+.logo{ font-size:clamp(2.4rem,13vw,3.4rem); }
+.tagline{
+  color:var(--muted); margin:8px auto 0; max-width:30ch;
+  line-height:1.45; font-size:.95rem;
+}
+.tagline b{ color:var(--ink); }
+
+.demo-train{ overflow:hidden; }
+.mini-train{ padding:12px 8px 4px; pointer-events:none; }
+.mini-train .carriage .body{ font-size:.82rem; padding:8px 11px; }
+
+.start-scroll{
+  flex:1; min-height:0; overflow-y:auto;
+  display:flex; flex-direction:column; gap:9px;
+  -webkit-overflow-scrolling:touch;
+}
+.section-title{
+  font-size:.66rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--dim); font-weight:800; margin:2px 0 0; text-align:center;
+}
+.modes{ display:flex; flex-direction:column; gap:8px; }
+.mode-card{ padding:12px 13px; min-height:62px; }
+.mode-card .mname{ font-size:1rem; }
+.best-note{
+  color:var(--dim); font-size:.82rem; font-weight:700;
+  margin:0; text-align:center; min-height:1.2em;
+}
+.depot-open{
+  align-self:center; padding:10px 18px; min-height:48px;
+  font-size:.86rem; display:flex; align-items:center; gap:8px;
+}
+.depot-count{
+  background:rgba(255,194,77,.16); color:var(--lamp);
+  border-radius:99px; padding:2px 9px; font-weight:900; font-size:.78rem;
+}
+
+.start-actions{ display:flex; flex-direction:column; align-items:center; gap:9px; padding-top:4px; }
+.start-btn{ width:100%; max-width:340px; min-height:58px; font-size:1.15rem; }
+.start-row{ display:flex; align-items:center; gap:16px; }
+.btn-ghost.small{ padding:9px 16px; min-height:44px; font-size:.84rem; }
+
+/* =========================================================
+   SPILL
+   ========================================================= */
+#screen-game{ gap:7px; }
+
+.hud{ display:flex; align-items:center; gap:14px; flex:0 0 auto; }
+.hud .spacer{ flex:1; }
+.stat .v{ font-size:1.35rem; }
+.icon-btn{
+  background:transparent; border:2px solid var(--line); color:var(--muted);
+  width:44px; height:44px; border-radius:12px; cursor:pointer;
+  font-size:1.05rem; display:flex; align-items:center; justify-content:center;
+}
+.icon-btn[aria-pressed="true"]{ color:var(--signal-green); border-color:var(--signal-green); }
+
+.heat{ display:flex; align-items:center; gap:9px; flex:0 0 auto; }
+.time-val{ min-width:2.4ch; font-size:1rem; }
+.combo{ flex:0 0 auto; min-height:18px; }
+
+/* toget tar plassen som blir til overs, men ikke mer enn nødvendig –
+   resten skal ligge samlet nede i tommelsonen */
+.train-area{
+  flex:1 1 auto; min-height:86px; max-height:32vh;
+  display:flex;
+  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.16));
+  border:1px solid var(--line-soft); border-radius:14px;
+  overflow:hidden;
+}
+.train-area .train{
+  flex:1; padding:14px 10px 16px;
+  -webkit-overflow-scrolling:touch;
+}
+.carriage .body{ font-size:.95rem; }
+
+/* ---------- tommelsonen ---------- */
+.dock{ flex:0 0 auto; display:flex; flex-direction:column; gap:7px; }
+
+.feedback{ display:flex; align-items:center; gap:10px; min-height:40px; }
+.signal{ width:22px; height:44px; }
+.signal i{ width:10px; height:10px; }
+.msg{ font-size:.92rem; }
+
+.next-row{ display:flex; align-items:stretch; gap:9px; }
+.next-letter{
+  flex:0 0 auto; min-width:64px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  background:linear-gradient(180deg,#2a3450,#1b2338);
+  border:2px solid var(--line); border-radius:13px; padding:4px 10px;
+}
+.next-letter.golden{
+  border-color:var(--lamp);
+  background:linear-gradient(180deg,#4a3a12,#2c220a);
+  box-shadow:0 0 20px rgba(255,194,77,.45);
+}
+.nl-k{
+  font-size:.55rem; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--dim); font-weight:800;
+}
+.nl-v{
+  font-size:1.9rem; font-weight:900; line-height:1; color:var(--lamp);
+  margin-top:1px;
+}
+.next-letter.golden .nl-v{ color:var(--lamp-hot); text-shadow:0 0 14px rgba(255,224,138,.9); }
+
+.preview-wrap{ flex:1; min-width:0; display:flex; flex-direction:column; justify-content:center; gap:6px; }
+.preview{ font-size:.82rem; }
+.power-meter{
+  height:5px; border-radius:99px; background:#151d33;
+  border:1px solid var(--line); overflow:hidden;
+}
+#powerFill{
+  height:100%; width:0%;
+  background:linear-gradient(90deg,var(--steam),var(--violet),var(--lamp-hot));
+  transition:width .13s ease;
+}
+
+.powerups .pu{ padding:8px 11px; min-height:48px; font-size:.8rem; }
+.powerups .pu .pn{ display:none; }        /* kun ikon + antall på mobil */
+.powerups .pu{ gap:5px; }
+
+form{ display:flex; gap:8px; }
+#wordInput{
+  flex:1; min-width:0; min-height:56px; padding:14px 16px;
+  font-size:17px;                          /* over 16px: hindrer iOS-zoom */
+}
+.send-btn{
+  flex:0 0 auto; width:62px; min-height:56px;
+  border:none; border-radius:14px; cursor:pointer;
+  background:linear-gradient(180deg,var(--lamp-hot),var(--lamp-deep));
+  color:#3a2500; font-size:1.6rem; font-weight:900; line-height:1;
+  box-shadow:0 4px 0 #9c6208; touch-action:manipulation;
+}
+.send-btn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 1px 0 #9c6208; }
+.send-btn:disabled{ opacity:.5; }
+
+.hint-btn{
+  align-self:stretch; background:transparent;
+  border:2px dashed var(--line); color:var(--muted);
+  border-radius:12px; min-height:46px; font-weight:800; font-size:.82rem;
+  cursor:pointer;
+}
+.hint-btn:disabled{ opacity:.45; }
+
+/* Når tastaturet er oppe: krymp det som ikke er kritisk. */
+body.kb-open .combo{ display:none; }
+body.kb-open .feedback{ min-height:32px; }
+body.kb-open .signal{ height:34px; }
+body.kb-open .hint-btn{ display:none; }
+body.kb-open .train-area{ min-height:64px; }
+body.kb-open .hud .stat .v{ font-size:1.15rem; }
+
+/* =========================================================
+   RESULTAT
+   ========================================================= */
+#screen-end{ gap:10px; }
+.end-scroll{
+  flex:1; min-height:0; overflow-y:auto;
+  display:flex; flex-direction:column; gap:11px;
+  text-align:center; padding-top:8px;
+  -webkit-overflow-scrolling:touch;
+}
+.rank{ font-size:clamp(1.5rem,8vw,2.2rem); }
+.final-score{ font-size:3.2rem; }
+.end-train-wrap{
+  background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.16));
+  border:1px solid var(--line-soft); border-radius:14px; overflow:hidden;
+}
+.end-train-wrap .train{ padding:12px 8px 14px; }
+.end-train-wrap .carriage .body{ font-size:.8rem; padding:7px 10px; }
+.end-actions{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+
+/* =========================================================
+   TOGSTALLEN (bunnark)
+   ========================================================= */
+.sheet{ position:fixed; inset:0; z-index:80; display:flex; align-items:flex-end; }
+.sheet-scrim{ position:absolute; inset:0; background:rgba(6,10,20,.72); }
+.sheet-panel{
+  position:relative; width:100%; max-height:82vh;
+  background:linear-gradient(180deg,#1c2540,#131a2e);
+  border-top:2px solid var(--line);
+  border-radius:20px 20px 0 0;
+  padding:10px 16px calc(18px + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; gap:9px;
+  animation:sheetUp .28s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes sheetUp{ from{ transform:translateY(100%); } }
+.sheet-grip{
+  width:44px; height:4px; border-radius:99px;
+  background:var(--line); align-self:center; margin-bottom:2px;
+}
+.sheet-title{ margin:0; font-size:1.15rem; font-weight:900; }
+.sheet-sub{ margin:0; color:var(--muted); font-size:.82rem; }
+.sheet .depot{ overflow-y:auto; flex:1; padding-right:2px; }
+.sheet .btn-ghost{ align-self:center; margin-top:2px; }
+
+/* =========================================================
+   LIGGENDE SKJERM
+   Kort skjerm: legg toget ved siden av kontrollene.
+   ========================================================= */
+@media (orientation:landscape) and (max-height:520px){
+  .logo{ font-size:2rem; }
+  .demo-train{ display:none; }
+  .train-area{ min-height:70px; }
+  .next-letter{ min-width:56px; }
+  .nl-v{ font-size:1.5rem; }
+  #wordInput{ min-height:48px; }
+  .send-btn{ min-height:48px; }
+  .hint-btn{ display:none; }
+}
