@@ -33,10 +33,10 @@ krymper toget i stedet for at skrivefeltet forsvinner ut av skjermen.
 Da skjules også kombomåler og hintknapp (`body.kb-open`). Neste
 bokstav er det største elementet ved siden av toget, trykkflatene er
 minst 44 px, skrivefeltet har 17 px skrift så iOS ikke zoomer, og det
-er haptisk respons på treff og bom. Togstallen ligger i et bunnark.
+er haptisk respons på treff og bom. Vognskjulet ligger i et bunnark.
 
 **PC** bruker bredden: lang skinnegang med mange vogner synlig,
-togstallen alltid framme ved siden av, og tastatursnarveiene vist i
+vognskjulet alltid framme ved siden av, og tastatursnarveiene vist i
 stedet for gjemt. Å begynne å skrive setter fokus i feltet automatisk.
 
 ## Filstruktur
@@ -79,28 +79,50 @@ og åpne `http://localhost:8000/ordtoget/`.
 
 ## Togvogner
 
+Ordet står på en egen **skiltplate** inne i vogna. Vognene har svært
+ulike farger, og uten plata ble teksten uleselig på flere av dem –
+plata gir lik lesbarhet uansett vogntype.
+
 Vogntypen bestemmes av ordet selv (stabil hash) blant de typene du har
 låst opp, så samme ord gir samme vogn. Vognlengden følger ordlengden,
 og antall hjulpar øker med lengden.
 
-| Vogn | Låses opp av |
-|------|--------------|
-| Damplokomotiv | alltid – trekker toget |
-| Godsvogn | fra start |
-| Passasjervogn | fra start |
-| Tankvogn | lag et tog med 10 vogner |
-| Kjølevogn | bruk et ord på 10 bokstaver |
-| Sirkusvogn | nå kombo ×4 |
-| Postvogn | treff 5 gylne bokstaver |
-| Rakettvogn | få 1500 poeng i én runde |
-| Gullvogn | alltid – kommer av seg selv på gylne ord |
+### Vognskjulet
 
-To typer er åpne fra start, så toget har farge fra første tur.
-Gullvogna hører til den gylne bokstaven og er ikke en opplåsing –
-ellers ville løftet «GULLVOGN! ×3» vist en helt vanlig vogn.
+Du starter med **én** vogn. Resten står som tomme plasser i
+vognskjulet, og låses opp én om gangen.
 
-Opplåsing sjekkes underveis i runden, ikke bare på slutten, så
-belønningen kommer i samme øyeblikk som du fortjener den.
+* Kun **ett oppdrag er aktivt** om gangen. Neste plass viser oppdraget
+  og hvor langt du er kommet.
+* Alle tellere måles **fra forrige opplåsing** (`since` i
+  `progress.js`), så man kan aldri låse opp to vogner på én gang.
+* Oppdrag sjekkes underveis i runden, ikke bare på slutten.
+
+### Pakker
+
+Et fullført oppdrag gir ikke vogna med én gang. Den legges som en
+**uåpnet pakke** i vognskjulet, og inngangen får en rød merknad. Går
+du inn, står pakka der og kan pakkes opp – lokket flyr av, lyset
+strømmer ut, og vogna avdukes. Først da låses den opp og neste
+oppdrag starter.
+
+| Vogn | Oppdrag |
+|------|---------|
+| Godsvogn | – (du starter med den) |
+| Passasjervogn | Kjør én runde |
+| Tømmervogn | Kjør tre runder til |
+| Tankvogn | Lag et tog med 10 vogner |
+| Kjølevogn | Bruk et ord på 10 bokstaver |
+| Sirkusvogn | Få 800 poeng i én runde |
+| Konteinervogn | Kjør ti runder til |
+| Postvogn | Samle 5000 poeng |
+| Rakettvogn | Samle 10 000 poeng |
+| Kongevogn | Samle 25 000 poeng |
+
+Damplokomotivet og gullvogna står utenfor opplåsingen: lokomotivet
+trekker alltid toget, og gullvogna kommer av seg selv på gylne ord.
+Gullvogna er bevisst ikke en opplåsing – ellers ville løftet
+«GULLVOGN! ×3» vist en helt vanlig vogn.
 
 ## Spillmoduser
 
@@ -147,8 +169,9 @@ Bokmålsordboka (`api.ordbokene.no`) for ord ingen av listene kjenner.
 ## Lagring
 
 Framgang lagres i `localStorage` under `ordtoget-progress-v1`
-(rekorder per modus, opplåste vogner, statistikk), og versjonsvalget
-under `ordtoget-versjon`. Kun tall og vogn-id-er – ingen persondata.
+(rekorder per modus, opplåste vogner, uåpnet pakke og tellerne siden
+forrige opplåsing), og versjonsvalget under `ordtoget-versjon`.
+Kun tall og vogn-id-er – ingen persondata.
 Feiler lagringen (privat nettlesermodus), kjører spillet videre uten
 å lagre.
 

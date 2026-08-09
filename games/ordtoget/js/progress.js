@@ -1,29 +1,39 @@
 /* =========================================================
-   FRAMGANG — lagres lokalt i nettleseren (localStorage).
-   Kun tall og vogn-id-er, ingen persondata. Feiler lagringen
-   (privat nettlesermodus), kjører spillet videre uten å lagre.
+   FRAMGANG OG OPPLÅSING
+   Lagres lokalt (localStorage). Kun tall og vogn-id-er, ingen
+   persondata. Feiler lagringen (privat nettlesermodus), kjører
+   spillet videre uten å lagre.
+
+   Opplåsingen er sekvensiell: kun ett oppdrag er aktivt om
+   gangen, og alle tellere måles fra forrige opplåsing (`since`).
+   Da kan man aldri låse opp to vogner på én gang.
+
+   Når et oppdrag fullføres blir vogna ikke gitt med én gang –
+   den legges som en uåpnet pakke (`pendingCrate`) som spilleren
+   må inn i vognskjulet for å pakke opp.
    ========================================================= */
 
-import { CARRIAGES } from './carriages.js';
-
-/* Vogntypene som er åpne fra start, så toget har farge med én gang. */
-const DEFAULT_UNLOCKED = CARRIAGES.filter(c => !c.unlock).map(c => c.id);
+import { MISSIONS, START_CARRIAGE } from './carriages.js';
 
 const KEY = 'ordtoget-progress-v1';
 
-const EMPTY = {
-  v: 1,
+const emptySince = () => ({
+  rounds: 0,          // runder spilt siden forrige opplåsing
+  score: 0,           // poeng samlet siden forrige opplåsing
+  bestWords: 0,       // lengste tog siden forrige opplåsing
+  longestWordLen: 0,  // lengste ord siden forrige opplåsing
+  bestRoundScore: 0   // beste enkeltrunde siden forrige opplåsing
+});
+
+const emptyData = () => ({
+  v: 2,
   totalScore: 0,
   rounds: 0,
-  goldenHits: 0,
-  longestWordLen: 0,
-  longestWord: '',
-  bestCombo: 1,
-  bestWords: 0,
-  bestScore: 0,
   bestPerMode: {},
-  unlocked: DEFAULT_UNLOCKED.slice()
-};
+  unlocked: [START_CARRIAGE.id],
+  pendingCrate: null,
+  since: emptySince()
+});
 
 export class Progress {
   constructor(){
@@ -31,23 +41,23 @@ export class Progress {
   }
 
   _read(){
+    const base = emptyData();
     try {
       const raw = localStorage.getItem(KEY);
-      if(!raw) return { ...EMPTY, bestPerMode: {}, unlocked: DEFAULT_UNLOCKED.slice() };
-      const parsed = JSON.parse(raw);
-      // Slå sammen med EMPTY så nye felter ikke mangler etter oppdatering,
-      // og sørg for at typer som senere er gjort gratis også er med for
-      // spillere som lagret framgang før endringen.
-      const saved = Array.isArray(parsed.unlocked) ? parsed.unlocked : [];
-      const unlocked = Array.from(new Set([...DEFAULT_UNLOCKED, ...saved]));
+      if(!raw) return base;
+      const p = JSON.parse(raw);
       return {
-        ...EMPTY,
-        ...parsed,
-        bestPerMode: { ...(parsed.bestPerMode || {}) },
-        unlocked
+        ...base,
+        ...p,
+        bestPerMode: { ...(p.bestPerMode || {}) },
+        // Startvogna skal alltid være med, også for spillere som
+        // lagret framgang før opplåsingen ble lagt om.
+        unlocked: Array.from(new Set([START_CARRIAGE.id, ...(p.unlocked || [])])),
+        pendingCrate: p.pendingCrate || null,
+        since: { ...emptySince(), ...(p.since || {}) }
       };
     } catch(e){
-      return { ...EMPTY, bestPerMode: {}, unlocked: DEFAULT_UNLOCKED.slice() };
+      return base;
     }
   }
 
@@ -58,7 +68,6 @@ export class Progress {
 
   get unlockedSet(){ return new Set(this.data.unlocked); }
 
-  /** Lokomotivet og gullvogna hører ikke til opplåsingen. */
   isUnlocked(id){
     return id === 'loco' || id === 'gold' || this.data.unlocked.includes(id);
   }
@@ -67,47 +76,87 @@ export class Progress {
     return this.data.bestPerMode[modeId] || { score: 0, words: 0 };
   }
 
-  /**
-   * Sjekker alle låser mot gjeldende statistikk.
-   * @returns {Array} vogner som ble låst opp akkurat nå
-   */
-  checkUnlocks(){
-    const newly = [];
-    for(const c of CARRIAGES){
-      if(!c.unlock || this.data.unlocked.includes(c.id)) continue;
-      const value = this.data[c.unlock.stat] || 0;
-      if(value >= c.unlock.n){
-        this.data.unlocked.push(c.id);
-        newly.push(c);
-      }
-    }
-    if(newly.length) this.save();
-    return newly;
+  /** Oppdraget som er aktivt nå, eller null når alt er låst opp. */
+  currentMission(){
+    if(this.data.pendingCrate) return null;      // pakka må åpnes først
+    return MISSIONS.find(m => !this.data.unlocked.includes(m.id)) || null;
   }
 
-  /** Kalles underveis i runden, så opplåsing skjer med én gang. */
-  noteDuringRound({ combo, wordLen, golden, words }){
+  /** Hvor langt spilleren er kommet i det aktive oppdraget. */
+  missionProgress(){
+    const m = this.currentMission();
+    if(!m) return null;
+    const s = this.data.since;
+    const value = {
+      rounds: s.rounds,
+      totalScore: s.score,
+      words: s.bestWords,
+      longWord: s.longestWordLen,
+      roundScore: s.bestRoundScore
+    }[m.mission.type] || 0;
+    return {
+      carriage: m,
+      value: Math.min(value, m.mission.n),
+      goal: m.mission.n,
+      pct: Math.min(100, (value / m.mission.n) * 100),
+      done: value >= m.mission.n
+    };
+  }
+
+  /**
+   * Sjekker om det aktive oppdraget er fullført. Vogna gis ikke
+   * med én gang – den blir liggende som en uåpnet pakke.
+   * @returns {object|null} vogna som venter, hvis oppdraget nettopp ble løst
+   */
+  _checkMission(){
+    const p = this.missionProgress();
+    if(!p || !p.done) return null;
+    this.data.pendingCrate = p.carriage.id;
+    this.save();
+    return p.carriage;
+  }
+
+  /** Uåpnet pakke, hvis det finnes en. */
+  pending(){
+    if(!this.data.pendingCrate) return null;
+    return MISSIONS.find(m => m.id === this.data.pendingCrate) || null;
+  }
+
+  /**
+   * Pakker opp pakka: vogna låses opp og tellerne nullstilles,
+   * slik at neste oppdrag måles fra dette punktet.
+   * @returns {object|null} vogna som ble låst opp
+   */
+  openCrate(){
+    const c = this.pending();
+    if(!c) return null;
+    if(!this.data.unlocked.includes(c.id)) this.data.unlocked.push(c.id);
+    this.data.pendingCrate = null;
+    this.data.since = emptySince();
+    this.save();
+    return c;
+  }
+
+  /** Kalles underveis i runden. */
+  noteDuringRound({ wordLen, words }){
+    const s = this.data.since;
     let changed = false;
-    if(combo && combo > this.data.bestCombo){ this.data.bestCombo = combo; changed = true; }
-    if(wordLen && wordLen > this.data.longestWordLen){ this.data.longestWordLen = wordLen; changed = true; }
-    if(golden){ this.data.goldenHits++; changed = true; }
-    if(words && words > this.data.bestWords){ this.data.bestWords = words; changed = true; }
-    if(changed) this.save();
-    return this.checkUnlocks();
+    if(wordLen && wordLen > s.longestWordLen){ s.longestWordLen = wordLen; changed = true; }
+    if(words && words > s.bestWords){ s.bestWords = words; changed = true; }
+    if(!changed) return null;
+    this.save();
+    return this._checkMission();
   }
 
   /** Kalles når runden er ferdig. */
-  finishRound({ modeId, score, words, bestCombo, longest }){
-    const d = this.data;
+  finishRound({ modeId, score, words }){
+    const d = this.data, s = d.since;
     d.rounds++;
     d.totalScore += score;
-    if(score > d.bestScore) d.bestScore = score;
-    if(words > d.bestWords) d.bestWords = words;
-    if(bestCombo > d.bestCombo) d.bestCombo = bestCombo;
-    if(longest && longest.length > d.longestWordLen){
-      d.longestWordLen = longest.length;
-      d.longestWord = longest;
-    }
+    s.rounds++;
+    s.score += score;
+    if(score > s.bestRoundScore) s.bestRoundScore = score;
+    if(words > s.bestWords) s.bestWords = words;
 
     const prev = d.bestPerMode[modeId] || { score: 0, words: 0 };
     const isNewBest = score > prev.score;
@@ -117,11 +166,11 @@ export class Progress {
     };
 
     this.save();
-    return { isNewBest, newlyUnlocked: this.checkUnlocks() };
+    return { isNewBest, unlockedNow: this._checkMission() };
   }
 
   reset(){
-    this.data = { ...EMPTY, bestPerMode: {}, unlocked: DEFAULT_UNLOCKED.slice() };
+    this.data = emptyData();
     this.save();
   }
 }
