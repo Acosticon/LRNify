@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ordkjedeverkstedet – Arkade</title>
+<style>
+  :root{
+    --bg-deep:#150f24;
+    --bg-mid:#241839;
+    --bg-soft:#2f2049;
+    --ember:#ff8a2b;
+    --ember-hot:#ffd23f;
+    --ember-deep:#e2560f;
+    --cool:#3ddbd9;
+    --violet:#a06bff;
+    --good:#4ade80;
+    --bad:#ff6b6b;
+    --ink:#fff6e8;
+    --muted:#bda9d8;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;margin:0;}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1200px 500px at 50% -10%, #4a2a63 0%, transparent 60%),
+      linear-gradient(170deg, var(--bg-mid), var(--bg-deep) 70%);
+    background-attachment:fixed;
+    font-size:clamp(15px,2.2vw,18px);
+    overflow-x:hidden;
+  }
+
+  #app{
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding:env(safe-area-inset-top) max(12px,env(safe-area-inset-right)) env(safe-area-inset-bottom) max(12px,env(safe-area-inset-left));
+  }
+  .screen{ display:none; flex:1; flex-direction:column; min-width:0; }
+  .screen.active{ display:flex; }
+
+  button{ font-family:inherit; }
+  button:focus-visible, input:focus-visible{
+    outline:3px solid var(--cool);
+    outline-offset:3px;
+  }
+
+  /* ================= STARTSKJERM ================= */
+  #screen-start{
+    align-items:center; justify-content:center; text-align:center;
+    gap:16px; padding:20px 8px; max-width:560px; margin:0 auto; width:100%;
+  }
+  .logo{ line-height:.92; }
+  .logo .l1{
+    display:block;
+    font-size:clamp(2.1rem,11vw,3.6rem);
+    font-weight:900; letter-spacing:.02em;
+    background:linear-gradient(180deg,var(--ember-hot),var(--ember) 55%,var(--ember-deep));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 18px rgba(255,138,43,.45));
+  }
+  .logo .l2{
+    display:block;
+    font-size:clamp(.95rem,4.6vw,1.5rem);
+    font-weight:800; letter-spacing:.34em; color:var(--muted);
+    margin-top:4px; padding-left:.34em;
+  }
+  .badge{
+    display:inline-block; margin-top:12px;
+    background:var(--ember); color:#2a1400;
+    font-weight:900; font-size:.8rem; letter-spacing:.18em;
+    padding:6px 14px; border-radius:999px;
+    transform:rotate(-2deg);
+    box-shadow:0 0 22px rgba(255,138,43,.5);
+  }
+  .rule{
+    color:var(--muted); line-height:1.5; margin:0; max-width:34ch;
+    font-size:1.02em; overflow-wrap:break-word;
+  }
+  .rule b{ color:var(--ink); }
+
+  .demo{ display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap; }
+  .demo .dchip{
+    background:linear-gradient(180deg,#3a2856,#2a1c40);
+    border:2px solid #543d7a; border-radius:12px;
+    padding:8px 13px; font-weight:800; letter-spacing:.04em;
+    animation:demoGlow 3s ease-in-out infinite;
+  }
+  .demo .dchip:nth-child(3){ animation-delay:.45s; }
+  .demo .dchip:nth-child(5){ animation-delay:.9s; }
+  .demo .dchip em{ color:var(--ember-hot); font-style:normal; }
+  .demo .dlink{ color:#6b4f95; font-weight:900; }
+  @keyframes demoGlow{
+    0%,70%,100%{ border-color:#543d7a; box-shadow:none; }
+    18%{ border-color:var(--ember); box-shadow:0 0 16px rgba(255,138,43,.5); }
+  }
+
+  .btn-big{
+    border:none; cursor:pointer;
+    background:linear-gradient(180deg,var(--ember-hot),var(--ember) 60%,var(--ember-deep));
+    color:#2a1400; font-size:1.2em; font-weight:900; letter-spacing:.06em;
+    padding:15px 42px; min-height:52px; border-radius:999px;
+    box-shadow:0 6px 0 #a63b06, 0 12px 26px rgba(255,138,43,.35);
+    touch-action:manipulation;
+  }
+  .btn-big:active:not(:disabled){ transform:translateY(4px); box-shadow:0 2px 0 #a63b06; }
+  .btn-big:disabled{ opacity:.55; cursor:default; box-shadow:0 6px 0 #a63b06; }
+
+  .sound-toggle{
+    background:transparent; border:2px solid #543d7a; color:var(--muted);
+    border-radius:999px; padding:9px 16px; min-height:44px;
+    font-weight:700; cursor:pointer; font-size:.9em;
+  }
+  .sound-toggle[aria-pressed="true"]{ color:var(--ink); border-color:var(--cool); }
+
+  /* ================= SPILLSKJERM ================= */
+  #screen-game{ max-width:640px; margin:0 auto; width:100%; gap:9px; padding:8px 0 12px; }
+
+  .hud{ display:flex; align-items:center; gap:10px; }
+  .stat{ display:flex; flex-direction:column; line-height:1; }
+  .stat .k{
+    font-size:.62rem; letter-spacing:.14em; color:var(--muted);
+    font-weight:800; text-transform:uppercase;
+  }
+  .stat .v{ font-size:1.55rem; font-weight:900; font-variant-numeric:tabular-nums; }
+  #scoreVal{ color:var(--ember-hot); }
+  #levelVal{ color:var(--cool); }
+  .stat.level{ margin-left:2px; }
+  .hud .spacer{ flex:1; }
+  .icon-btn{
+    background:transparent; border:2px solid #4a3670; color:var(--muted);
+    width:44px; height:44px; border-radius:12px; cursor:pointer;
+    font-size:1.1rem; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn[aria-pressed="true"]{ color:var(--cool); border-color:var(--cool); }
+
+  /* varmemåler = tid */
+  .heat{ display:flex; align-items:center; gap:9px; }
+  .heat-track{
+    flex:1; height:16px; border-radius:999px; overflow:hidden;
+    background:#1b1230; border:1px solid #43305f; position:relative;
+  }
+  .heat-fill{
+    height:100%; width:100%; border-radius:999px;
+    background:linear-gradient(90deg,var(--ember-deep),var(--ember) 45%,var(--ember-hot));
+    transition:width .1s linear;
+  }
+  .heat-fill.low{ background:linear-gradient(90deg,#c81e1e,var(--bad)); }
+  #timeVal{
+    font-weight:900; font-variant-numeric:tabular-nums;
+    min-width:2.4ch; text-align:right; font-size:1.05rem;
+  }
+  #timeVal.low{ color:var(--bad); animation:pulse .5s ease-in-out infinite; }
+  @keyframes pulse{ 50%{ transform:scale(1.18); } }
+
+  /* kombo */
+  .combo{
+    display:flex; align-items:center; gap:9px;
+    opacity:0; transition:opacity .2s ease; min-height:22px;
+  }
+  .combo.on{ opacity:1; }
+  .combo-label{
+    font-weight:900; font-size:.9rem; letter-spacing:.06em;
+    color:var(--ember-hot); white-space:nowrap;
+  }
+  .combo-track{
+    flex:1; height:7px; border-radius:999px; background:#1b1230;
+    border:1px solid #43305f; overflow:hidden;
+  }
+  .combo-fill{
+    height:100%; width:0%; border-radius:999px;
+    background:linear-gradient(90deg,var(--violet),var(--ember-hot));
+    transition:width .25s ease;
+  }
+  .combo.maxed .combo-label{ animation:pulse .7s ease-in-out infinite; }
+
+  /* kjedestripe */
+  .chain-wrap{ position:relative; flex:1; min-height:78px; display:flex; }
+  .chain{
+    flex:1; display:flex; align-items:center; gap:0;
+    overflow-x:auto; overflow-y:hidden;
+    padding:14px 10px; min-height:78px;
+    background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(0,0,0,.18));
+    border:1px solid #402d5e; border-radius:var(--radius);
+    scrollbar-width:thin;
+  }
+  .chain::-webkit-scrollbar{ height:6px; }
+  .chain::-webkit-scrollbar-thumb{ background:#4a3670; border-radius:999px; }
+  .link{
+    flex:0 0 auto;
+    background:linear-gradient(180deg,#3a2856,#26193c);
+    border:2px solid #553d7d; border-radius:13px;
+    padding:9px 13px; font-weight:800; font-size:.95rem;
+    color:#c9b6e6; white-space:nowrap;
+  }
+  .link .hl{ color:var(--ember); }
+  .link.current{
+    background:linear-gradient(180deg,#5a3a1e,#3d2411);
+    border-color:var(--ember); color:var(--ink);
+    font-size:1.15rem; padding:11px 16px;
+    box-shadow:0 0 24px rgba(255,138,43,.4);
+  }
+  .link.current .hl{
+    color:var(--ember-hot);
+    text-shadow:0 0 12px rgba(255,210,63,.9);
+  }
+  .connector{
+    flex:0 0 auto; width:16px; height:3px;
+    background:linear-gradient(90deg,#4a3670,#6b4f95);
+    border-radius:2px;
+  }
+  .link.pop{ animation:forge .34s cubic-bezier(.2,.9,.3,1.4); }
+  @keyframes forge{
+    0%{ transform:scale(.5) rotate(-8deg); opacity:0; }
+    60%{ transform:scale(1.12) rotate(2deg); opacity:1; }
+    100%{ transform:none; }
+  }
+
+  /* maskot + melding */
+  .feedback{ display:flex; align-items:center; gap:10px; min-height:52px; }
+  .mascot{ flex:0 0 auto; width:52px; height:52px; }
+  .mascot.react{ animation:bob .4s ease; }
+  @keyframes bob{ 40%{ transform:translateY(-9px) scale(1.08); } }
+  #msg{ font-weight:800; font-size:1rem; line-height:1.3; }
+  #msg.ok{ color:var(--good); }
+  #msg.bad{ color:var(--bad); }
+  #msg.info{ color:var(--muted); font-weight:600; }
+
+  form{ display:flex; gap:8px; }
+  #wordInput{
+    flex:1; min-width:0; font-size:1.1rem; font-weight:700;
+    padding:13px 15px; min-height:52px; border-radius:14px;
+    background:#1b1230; color:var(--ink);
+    border:2px solid #553d7d;
+  }
+  #wordInput::placeholder{ color:#8a76ad; font-weight:600; }
+  #wordInput:focus{ border-color:var(--cool); }
+  #wordInput.shake{ animation:shake .3s; }
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-8px); } 60%{ transform:translateX(8px); }
+  }
+  #addBtn{
+    border:none; cursor:pointer; min-height:52px; padding:0 22px;
+    border-radius:14px; font-weight:900; font-size:1rem; letter-spacing:.03em;
+    background:linear-gradient(180deg,var(--ember-hot),var(--ember-deep));
+    color:#2a1400; box-shadow:0 4px 0 #a63b06; white-space:nowrap;
+    touch-action:manipulation;
+  }
+  #addBtn:active:not(:disabled){ transform:translateY(3px); box-shadow:0 1px 0 #a63b06; }
+  #wordInput:disabled,#addBtn:disabled,#hintBtn:disabled{ opacity:.55; cursor:default; }
+  #hintBtn{
+    align-self:flex-start;
+    background:transparent; border:2px dashed #553d7d; color:var(--muted);
+    border-radius:12px; padding:9px 15px; min-height:44px;
+    font-weight:800; font-size:.85rem; cursor:pointer;
+  }
+  #hintBtn:hover:not(:disabled){ color:var(--ink); border-color:var(--violet); }
+
+  /* effektlag */
+  #fx{ position:fixed; inset:0; pointer-events:none; z-index:60; overflow:hidden; }
+  .spark{
+    position:absolute; width:7px; height:7px; border-radius:50%;
+    background:var(--ember-hot); box-shadow:0 0 10px var(--ember);
+    animation:fly .62s ease-out forwards;
+  }
+  @keyframes fly{
+    to{ transform:translate(var(--dx),var(--dy)) scale(.2); opacity:0; }
+  }
+  .popup{
+    position:absolute; font-weight:900; font-size:1.5rem; white-space:nowrap;
+    color:var(--ember-hot); text-shadow:0 3px 12px rgba(0,0,0,.7);
+    animation:rise .95s ease-out forwards;
+  }
+  @keyframes rise{
+    0%{ transform:translate(-50%,0) scale(.6); opacity:0; }
+    25%{ transform:translate(-50%,-16px) scale(1.15); opacity:1; }
+    100%{ transform:translate(-50%,-72px) scale(1); opacity:0; }
+  }
+  .banner{
+    position:fixed; left:50%; top:30%; transform:translate(-50%,-50%);
+    font-size:clamp(1.7rem,9vw,3rem); font-weight:900; letter-spacing:.04em;
+    color:var(--ember-hot); text-shadow:0 0 30px rgba(255,138,43,.9),0 5px 0 #7a2c05;
+    animation:slam .95s ease-out forwards; text-align:center; z-index:70;
+  }
+  @keyframes slam{
+    0%{ transform:translate(-50%,-50%) scale(2.6); opacity:0; }
+    18%{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+    72%{ transform:translate(-50%,-50%) scale(1); opacity:1; }
+    100%{ transform:translate(-50%,-115%) scale(.85); opacity:0; }
+  }
+  #vignette{
+    position:fixed; inset:0; pointer-events:none; z-index:55; opacity:0;
+    box-shadow:inset 0 0 90px 20px rgba(255,60,60,.55);
+    transition:opacity .3s ease;
+  }
+  #vignette.on{ opacity:1; animation:vig 1s ease-in-out infinite; }
+  @keyframes vig{ 50%{ opacity:.35; } }
+
+  /* ================= SLUTTSKJERM ================= */
+  #screen-end{
+    align-items:center; justify-content:center; text-align:center;
+    gap:13px; padding:20px 8px; max-width:560px; margin:0 auto; width:100%;
+  }
+  .rank{
+    font-size:clamp(1.5rem,7.5vw,2.4rem); font-weight:900; letter-spacing:.02em;
+    background:linear-gradient(180deg,var(--ember-hot),var(--ember-deep));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 16px rgba(255,138,43,.5));
+  }
+  .final-score{ font-size:3rem; font-weight:900; color:var(--ember-hot); line-height:1; }
+  .final-score .u{ font-size:1rem; color:var(--muted); letter-spacing:.14em; display:block; margin-top:4px; }
+  .stats{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:8px; width:100%;
+  }
+  .stat-card{
+    background:rgba(255,255,255,.05); border:1px solid #402d5e;
+    border-radius:13px; padding:10px 8px;
+  }
+  .stat-card .k{
+    font-size:.62rem; letter-spacing:.1em; color:var(--muted);
+    font-weight:800; text-transform:uppercase; display:block;
+  }
+  .stat-card .v{ font-size:1.2rem; font-weight:900; margin-top:3px; display:block; }
+  .end-chain{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:5px;
+    max-height:22vh; overflow-y:auto; width:100%;
+    padding:9px; border:1px solid #402d5e; border-radius:13px;
+    background:rgba(0,0,0,.2);
+  }
+  .end-chain .link{ font-size:.8rem; padding:5px 9px; }
+  .best-line{ color:var(--muted); font-weight:700; font-size:.9rem; }
+  .best-line.new{ color:var(--ember-hot); }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *,*::before,*::after{
+      animation-duration:.01ms !important; animation-iteration-count:1 !important;
+      transition-duration:.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- ---------- START ---------- -->
+  <section id="screen-start" class="screen active">
+    <div class="logo">
+      <span class="l1">ORDKJEDE</span>
+      <span class="l2">VERKSTEDET</span>
+    </div>
+    <div class="badge">ARKADE</div>
+    <p class="rule">Smi en kjede av ord! Hvert nye ord må starte med <b>siste bokstav</b> i ordet foran.</p>
+    <div class="demo" aria-hidden="true">
+      <span class="dchip">KAT<em>T</em></span>
+      <span class="dlink">—</span>
+      <span class="dchip">TO<em>G</em></span>
+      <span class="dlink">—</span>
+      <span class="dchip">GU<em>L</em></span>
+    </div>
+    <p class="rule">Lange og vanskelige ord gir flere poeng. Bygg <b>kombo</b> uten feil for å mangedoble alt!</p>
+    <button id="startBtn" class="btn-big" type="button">START</button>
+    <button id="soundBtn" class="sound-toggle" type="button" aria-pressed="true">🔊 Lyd på</button>
+  </section>
+
+  <!-- ---------- SPILL ---------- -->
+  <section id="screen-game" class="screen">
+    <div class="hud">
+      <div class="stat"><span class="k">Poeng</span><span class="v" id="scoreVal">0</span></div>
+      <div class="stat level"><span class="k">Nivå</span><span class="v" id="levelVal">1</span></div>
+      <div class="spacer"></div>
+      <button id="muteBtn" class="icon-btn" type="button" aria-pressed="true" aria-label="Slå lyd av eller på">🔊</button>
+    </div>
+
+    <div class="heat">
+      <div class="heat-track"><div id="heatFill" class="heat-fill"></div></div>
+      <span id="timeVal">20</span>
+    </div>
+
+    <div class="combo" id="comboWrap" aria-hidden="true">
+      <span class="combo-label" id="comboLabel">KOMBO ×2</span>
+      <div class="combo-track"><div class="combo-fill" id="comboFill"></div></div>
+    </div>
+
+    <div class="chain-wrap">
+      <div id="chain" class="chain" role="list" aria-label="Ordkjeden din"></div>
+    </div>
+
+    <div class="feedback">
+      <svg class="mascot" id="mascot" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 4 v7" stroke="#6b4f95" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="32" cy="4" r="3.4" fill="#ff8a2b"/>
+        <rect x="10" y="12" width="44" height="40" rx="12" fill="#3a2856" stroke="#6b4f95" stroke-width="2.5"/>
+        <ellipse id="eyeL" cx="24" cy="30" rx="4" ry="4" fill="#ffd23f"/>
+        <ellipse id="eyeR" cx="40" cy="30" rx="4" ry="4" fill="#ffd23f"/>
+        <path id="mouth" d="M 26 42 Q 32 46 38 42" stroke="#ffd23f" stroke-width="2.6"
+              fill="none" stroke-linecap="round"/>
+      </svg>
+      <div id="msg" role="status" aria-live="polite"></div>
+    </div>
+
+    <form id="wordForm" autocomplete="off">
+      <label for="wordInput" class="sr-only">Skriv neste ord i kjeden</label>
+      <input id="wordInput" type="text" autocomplete="off" autocapitalize="off"
+             autocorrect="off" spellcheck="false" maxlength="40">
+      <button id="addBtn" type="submit">SMI!</button>
+    </form>
+
+    <button id="hintBtn" type="button">💡 Hint (−3 sek) · <span id="hintsLeft">3</span> igjen</button>
+  </section>
+
+  <!-- ---------- SLUTT ---------- -->
+  <section id="screen-end" class="screen">
+    <div class="rank" id="rankTitle">Ordlærling</div>
+    <div class="final-score"><span id="endScore">0</span><span class="u">POENG</span></div>
+    <div class="stats">
+      <div class="stat-card"><span class="k">Ord i kjeden</span><span class="v" id="endWords">0</span></div>
+      <div class="stat-card"><span class="k">Beste kombo</span><span class="v" id="endCombo">×1</span></div>
+      <div class="stat-card"><span class="k">Lengste ord</span><span class="v" id="endLongest">–</span></div>
+      <div class="stat-card"><span class="k">Nivå nådd</span><span class="v" id="endLevel">1</span></div>
+    </div>
+    <div id="endChain" class="end-chain" role="list" aria-label="Ordkjeden din"></div>
+    <div class="best-line" id="bestLine">Beste denne økten: <strong id="bestScoreVal">0</strong></div>
+    <button id="restartBtn" class="btn-big" type="button">SPILL IGJEN</button>
+  </section>
+
+</div>
+<div id="fx"></div>
+<div id="vignette"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =========================================================
+     STARTORD — vanlige, korte og gjenkjennelige ord. Brukes
+     KUN til å trekke rundens åpningsord (og til hint), slik at
+     runden aldri starter på et obskurt fagord.
+     ========================================================= */
+  const SEED_WORDS_RAW = `
+    hus bil katt hund fugl fisk bok stol bord dør
+    vindu skole lærer elev venn familie mor far søster bror
+    barn mann kvinne gutt jente by land verden konge dronning
+    prins prinsesse nabo gjest
+    hav sjø elv fjell skog tre blomst gress sol måne
+    stjerne himmel sky regn snø vind vinter sommer høst vår
+    dag natt morgen kveld time minutt uke måned år klokke
+    øy holme fjord kyst brygge havn ørken jungel dal foss
+    regnskog
+    penn blyant papir bilde farge sekk viskelær linjal saks lim
+    tape tavle kritt datamaskin skjerm tastatur mus hodetelefon telefon kamera
+    ur radio
+    sykkel tog buss fly båt bro vei gate park hage
+    anker seil mast ror kompass kart rakett satellitt planet astronaut
+    kjøkken bad seng sofa lampe speil teppe gulv tak vegg
+    mur stein sand gull sølv veske jakke bukse skjorte genser
+    kjole sko lue skjerf belte ring kjede
+    mat brød melk ost smør egg kjøtt suppe salat frukt
+    eple banan drue potet gulrot løk tomat agurk is kake
+    sjokolade kaffe te saft vann sukker salt pepper olje eddik
+    kniv gaffel skje tallerken kopp glass flaske boks pose ris
+    pasta pizza grøt yoghurt rømme fløte majones ketchup sennep karamell
+    vaffel pannekake jordbær bringebær appelsin
+    øye øre nese munn hånd fot arm bein hode hjerte
+    blod hud hår tann tunge skulder finger negl mage rygg
+    albue kne hake panne kinn lår legg
+    løve tiger bjørn ulv rev elg hjort rein sau geit
+    gris hest ku okse kylling and gås svane ugle kråke
+    måke spurv svale stær due papegøye slange padde frosk mus
+    rotte ekorn pinnsvin flaggermus delfin hval sel oter mår grevling
+    ilder hare kanin ørn
+    lege sykepleier tannlege bonde fisker snekker maler elektriker rørlegger politi
+    brannmann sjåfør pilot kaptein soldat dommer advokat forfatter journalist fotograf
+    kunstner musiker skuespiller danser kokk baker slakter frisør
+    løpe hoppe svømme synge danse spille lese skrive tegne male
+    bygge lage koke steke bake vaske rydde rengjøre sove våkne
+    spise drikke smile le gråte rope hviske snakke lytte høre
+    se kikke titte gå kjøre sykle fly seile ro klatre
+    falle reise sitte stå ligge tenke huske glemme lære undervise
+    forklare spørre svare hjelpe dele gi ta kjøpe selge betale
+    spare bruke finne miste lete søke vinne tape kjempe sy
+    åpne
+    stor liten lang kort bred smal høy lav tung lett
+    rask sen varm kald tørr våt ren skitten pen stygg
+    glad trist sint redd modig snill slem klok dum sterk
+    svak frisk syk rik fattig gammel ung ny grønn blå
+    rød gul hvit svart brun rosa lilla oransje ærlig
+    gård torg plass bibliotek museum sykehus apotek bank post kirke
+    slott tårn tunnel motorvei sti øks åker ål
+    mandag tirsdag onsdag torsdag fredag lørdag søndag
+    januar februar mars april mai juni juli august september oktober november desember
+    fire fem seks sju åtte ni ti elleve tolv tjue hundre tusen
+    navn null nord nøkkel nummer nydelig nyte nakke natur nisse
+    idrett iskrem innsjø internett invitere ingefær istid
+    yoga yr ytterdør
+    esel eik enkel edderkopp energi erte
+  `;
+  const SEED_WORDS = new Set(SEED_WORDS_RAW.trim().split(/\s+/));
+  const SEED_ARR = Array.from(SEED_WORDS);
+
+  /* =========================================================
+     HOVEDORDBOK — hele Norsk Ordbank (bokmål, fullformer) fra
+     Nasjonalbiblioteket/Språkbanken. Deles med den opprinnelige
+     versjonen av spillet for å slippe to kopier av samme 7,6 MB
+     fil i repoet.
+     ========================================================= */
+  const BIG_WORDS = new Set();
+  const HINT_INDEX = new Map();   // førstebokstav -> [korte, brukbare ord]
+  const BIG_WORDLIST_URL = '../ordkjedeverkstedet/ordliste.txt';
+  const BIG_WORDLIST_TIMEOUT_MS = 10000;
+  let bigListStatus = 'loading';
+
+  /* Nettordbok som siste utvei for ord som ikke finnes lokalt. */
+  const DICT_API_URL = 'https://api.ordbokene.no/api/v1/concepts';
+  const DICT_TIMEOUT_MS = 4000;
+  let onlineCheckToken = 0;
+
+  /* --------- spillbalanse --------- */
+  const START_TIME = 20;
+  const MAX_TIME = 20;
+  const TICK_MS = 100;
+  const WORDS_PER_LEVEL = 5;
+  const HINTS_PER_ROUND = 3;
+  const HINT_COST_SEC = 3;
+  const HARD_LETTERS = 'æøåyiuo';               // ord som ENDER slik er sjenerøse mot deg selv
+  const COMBO_TIERS = [3, 6, 10, 15];           // streak-terskler for ×2, ×3, ×4, ×5
+
+  const PRAISE = ['Nydelig!','Sterkt!','Smidig!','Perfekt!','Der satt den!','Rått!','Skarpt!','Glødende!'];
+  const BIG_PRAISE = ['DU BRENNER!','USTOPPELIG!','FANTASTISK!','MESTERSMED!'];
+
+  /* --------- DOM --------- */
+  const $ = (id) => document.getElementById(id);
+  const screens = { start: $('screen-start'), game: $('screen-game'), end: $('screen-end') };
+  const startBtn = $('startBtn'), restartBtn = $('restartBtn');
+  const soundBtn = $('soundBtn'), muteBtn = $('muteBtn'), hintBtn = $('hintBtn'), hintsLeftEl = $('hintsLeft');
+  const wordForm = $('wordForm'), wordInput = $('wordInput'), addBtn = $('addBtn');
+  const msgEl = $('msg'), chainEl = $('chain'), endChainEl = $('endChain');
+  const scoreVal = $('scoreVal'), levelVal = $('levelVal'), timeVal = $('timeVal'), heatFill = $('heatFill');
+  const comboWrap = $('comboWrap'), comboLabel = $('comboLabel'), comboFill = $('comboFill');
+  const fx = $('fx'), vignette = $('vignette'), mascot = $('mascot');
+  const eyeL = $('eyeL'), eyeR = $('eyeR'), mouth = $('mouth');
+
+  const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* --------- tilstand --------- */
+  let chain = [], usedWords = new Set();
+  let score = 0, shownScore = 0, streak = 0, bestCombo = 1, level = 1;
+  let wordsAdded = 0, hintsLeft = HINTS_PER_ROUND;
+  let timeLeft = START_TIME, timerHandle = null, roundActive = false;
+  let bestScore = 0, lastLowBeep = 0;
+  let soundOn = true;
+
+  /* =========================================================
+     LYD — alt syntetisert med WebAudio, ingen lydfiler.
+     ========================================================= */
+  let audioCtx = null;
+  function ensureAudio(){
+    if(audioCtx || !soundOn) return;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return;
+    try { audioCtx = new AC(); } catch(e){ audioCtx = null; }
+  }
+  function tone(freq, startOffset, dur, type, vol){
+    if(!soundOn || !audioCtx) return;
+    const t0 = audioCtx.currentTime + startOffset;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type || 'triangle';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(vol || 0.16, t0 + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }
+  const sfx = {
+    correct(mult){
+      const base = 520 + (mult - 1) * 90;
+      tone(base, 0, .11, 'triangle', .16);
+      tone(base * 1.5, .07, .13, 'triangle', .13);
+    },
+    combo(mult){
+      [0, 1, 2].forEach(i => tone(440 * Math.pow(1.26, i + mult), i * .06, .14, 'square', .1));
+    },
+    error(){
+      tone(150, 0, .16, 'sawtooth', .12);
+      tone(110, .06, .18, 'sawtooth', .1);
+    },
+    level(){
+      [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .085, .2, 'triangle', .14));
+    },
+    hint(){ tone(880, 0, .09, 'sine', .1); tone(1170, .06, .1, 'sine', .08); },
+    over(){ [440, 370, 294, 220].forEach((f, i) => tone(f, i * .13, .3, 'triangle', .15)); },
+    lowTick(){ tone(230, 0, .06, 'square', .07); }
+  };
+  function setSound(on){
+    soundOn = on;
+    soundBtn.setAttribute('aria-pressed', String(on));
+    soundBtn.textContent = on ? '🔊 Lyd på' : '🔇 Lyd av';
+    muteBtn.setAttribute('aria-pressed', String(on));
+    muteBtn.textContent = on ? '🔊' : '🔇';
+    if(on) ensureAudio();
+  }
+
+  /* =========================================================
+     EFFEKTER
+     ========================================================= */
+  function sparkBurst(x, y, count){
+    if(reduceMotion) return;
+    for(let i = 0; i < count; i++){
+      const s = document.createElement('div');
+      s.className = 'spark';
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 40 + Math.random() * 70;
+      s.style.left = x + 'px';
+      s.style.top = y + 'px';
+      s.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+      s.style.setProperty('--dy', (Math.sin(angle) * dist - 25) + 'px');
+      s.style.animationDelay = (Math.random() * .1) + 's';
+      fx.appendChild(s);
+      setTimeout(() => s.remove(), 850);
+    }
+  }
+  function floatPopup(text, x, y, color){
+    const p = document.createElement('div');
+    p.className = 'popup';
+    p.textContent = text;
+    p.style.left = x + 'px';
+    p.style.top = y + 'px';
+    if(color) p.style.color = color;
+    fx.appendChild(p);
+    setTimeout(() => p.remove(), 1000);
+  }
+  function showBanner(text){
+    const b = document.createElement('div');
+    b.className = 'banner';
+    b.textContent = text;
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 1000);
+  }
+
+  const MOODS = {
+    idle:  { r:4,   d:'M 26 42 Q 32 46 38 42' },
+    happy: { r:2.6, d:'M 24 40 Q 32 51 40 40' },
+    wow:   { r:5.6, d:'M 27 42 Q 32 37 37 42 Q 32 52 27 42' },
+    sad:   { r:3.6, d:'M 25 47 Q 32 40 39 47' }
+  };
+  let moodTimer = null;
+  function setMood(name, holdMs){
+    const m = MOODS[name] || MOODS.idle;
+    eyeL.setAttribute('ry', m.r); eyeR.setAttribute('ry', m.r);
+    mouth.setAttribute('d', m.d);
+    mascot.classList.remove('react');
+    void mascot.offsetWidth;
+    mascot.classList.add('react');
+    clearTimeout(moodTimer);
+    if(holdMs) moodTimer = setTimeout(() => setMood('idle'), holdMs);
+  }
+
+  /* =========================================================
+     ORDLISTE
+     ========================================================= */
+  function updateStartAvailability(){
+    const loading = bigListStatus === 'loading';
+    startBtn.disabled = loading;
+    startBtn.textContent = loading ? 'LASTER …' : 'START';
+  }
+
+  function indexHint(word){
+    if(word.length < 3 || word.length > 8) return;
+    const key = word[0];
+    let arr = HINT_INDEX.get(key);
+    if(!arr){ arr = []; HINT_INDEX.set(key, arr); }
+    if(arr.length < 400) arr.push(word);
+  }
+  SEED_ARR.forEach(indexHint);
+
+  function loadBigWordList(){
+    let timedOut = false;
+    const timeoutId = setTimeout(() => {
+      timedOut = true;
+      if(bigListStatus === 'loading'){ bigListStatus = 'error'; updateStartAvailability(); }
+    }, BIG_WORDLIST_TIMEOUT_MS);
+
+    fetch(BIG_WORDLIST_URL)
+      .then(res => { if(!res.ok) throw new Error('http ' + res.status); return res.text(); })
+      .then(text => {
+        if(timedOut) return;
+        clearTimeout(timeoutId);
+        const words = text.split(/\s+/);
+        for(let i = 0; i < words.length; i++){
+          const w = words[i];
+          if(!w) continue;
+          BIG_WORDS.add(w);
+          indexHint(w);
+        }
+        bigListStatus = 'ready';
+        updateStartAvailability();
+      })
+      .catch(() => {
+        if(timedOut) return;
+        clearTimeout(timeoutId);
+        bigListStatus = 'error';
+        updateStartAvailability();
+      });
+  }
+
+  function wordFoundInDictResponse(data, word){
+    if(!data || typeof data !== 'object') return false;
+    const w = word.toLocaleLowerCase('nb-NO');
+    if(data.a && typeof data.a === 'object'){
+      for(const key of Object.keys(data.a)){
+        if(key.toLocaleLowerCase('nb-NO') === w){
+          const hit = data.a[key];
+          if(hit && (!Array.isArray(hit) || hit.length > 0)) return true;
+        }
+      }
+    }
+    if(data.articles && data.articles.bm && Object.keys(data.articles.bm).length > 0) return true;
+    return false;
+  }
+  function checkWordOnline(word){
+    const url = DICT_API_URL + '?w=' + encodeURIComponent(word) + '&dict=bm&scope=e';
+    const controller = ('AbortController' in window) ? new AbortController() : null;
+    const timeoutId = controller ? setTimeout(() => controller.abort(), DICT_TIMEOUT_MS) : null;
+    return fetch(url, controller ? { signal: controller.signal } : {})
+      .then(res => {
+        if(timeoutId) clearTimeout(timeoutId);
+        if(!res.ok) throw new Error('http ' + res.status);
+        return res.json();
+      })
+      .then(data => wordFoundInDictResponse(data, word));
+  }
+
+  /* =========================================================
+     HJELPERE
+     ========================================================= */
+  const normalize = (raw) => raw.trim().toLocaleLowerCase('nb-NO');
+  const lastLetter = (w) => w.charAt(w.length - 1);
+  const upper = (c) => c.toLocaleUpperCase('nb-NO');
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function multiplierFor(st){
+    let m = 1;
+    for(let i = 0; i < COMBO_TIERS.length; i++) if(st >= COMBO_TIERS[i]) m = i + 2;
+    return m;
+  }
+  function wordPoints(word){
+    let pts = 10 + Math.max(0, word.length - 3) * 4;
+    if(HARD_LETTERS.indexOf(lastLetter(word)) !== -1) pts += 15;
+    return pts;
+  }
+  function drainRate(){ return Math.min(2.2, 1 + (level - 1) * 0.12); }
+
+  /* =========================================================
+     RENDERING
+     ========================================================= */
+  function makeLink(word, isCurrent, animate){
+    const el = document.createElement('span');
+    el.className = 'link' + (isCurrent ? ' current' : '') + (animate ? ' pop' : '');
+    el.setAttribute('role', 'listitem');
+    el.innerHTML = escapeHtml(word.slice(0, -1)) + '<span class="hl">' + escapeHtml(word.slice(-1)) + '</span>';
+    return el;
+  }
+  function renderChain(animateLast){
+    chainEl.innerHTML = '';
+    chain.forEach((word, i) => {
+      if(i > 0){
+        const c = document.createElement('span');
+        c.className = 'connector';
+        c.setAttribute('aria-hidden', 'true');
+        chainEl.appendChild(c);
+      }
+      chainEl.appendChild(makeLink(word, i === chain.length - 1, animateLast && i === chain.length - 1));
+    });
+    chainEl.scrollLeft = chainEl.scrollWidth;
+  }
+  function animateScore(){
+    if(shownScore === score){ scoreVal.textContent = String(score); return; }
+    const from = shownScore, diff = score - from, t0 = performance.now();
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / 340);
+      shownScore = Math.round(from + diff * (1 - Math.pow(1 - p, 3)));
+      scoreVal.textContent = String(shownScore);
+      if(p < 1) requestAnimationFrame(step);
+      else shownScore = score;
+    };
+    requestAnimationFrame(step);
+  }
+  function updateTimerUI(){
+    const pct = Math.max(0, Math.min(100, (timeLeft / MAX_TIME) * 100));
+    heatFill.style.width = pct + '%';
+    const low = timeLeft <= 5;
+    heatFill.classList.toggle('low', low);
+    timeVal.classList.toggle('low', low);
+    vignette.classList.toggle('on', low && roundActive);
+    timeVal.textContent = Math.ceil(timeLeft);
+  }
+  function updateComboUI(){
+    const mult = multiplierFor(streak);
+    const maxed = mult >= COMBO_TIERS.length + 1;
+    comboWrap.classList.toggle('on', streak > 0);
+    comboWrap.classList.toggle('maxed', maxed);
+    if(maxed){
+      comboLabel.textContent = 'MAKS KOMBO ×' + mult;
+      comboFill.style.width = '100%';
+      return;
+    }
+    const prev = mult === 1 ? 0 : COMBO_TIERS[mult - 2];
+    const next = COMBO_TIERS[mult - 1];
+    comboLabel.textContent = 'KOMBO ×' + mult;
+    comboFill.style.width = Math.min(100, ((streak - prev) / (next - prev)) * 100) + '%';
+  }
+  function updatePrompt(){
+    const letter = upper(lastLetter(chain[chain.length - 1]));
+    wordInput.placeholder = 'Ord som starter med «' + letter + '» …';
+    wordInput.setAttribute('aria-label', 'Skriv et ord som starter med ' + letter);
+  }
+  function setMsg(text, kind){
+    msgEl.className = kind || '';
+    msgEl.textContent = text || '';
+  }
+  function setBusy(busy){
+    wordInput.disabled = busy;
+    addBtn.disabled = busy;
+    hintBtn.disabled = busy || hintsLeft <= 0;
+    if(busy) setMsg('Sjekker ordet …', 'info');
+  }
+  function resetInput(){
+    wordInput.value = '';
+    if(!wordInput.disabled) wordInput.focus();
+  }
+
+  /* =========================================================
+     RUNDEFLYT
+     ========================================================= */
+  function tick(){
+    timeLeft -= (TICK_MS / 1000) * drainRate();
+    if(timeLeft <= 0){
+      timeLeft = 0;
+      updateTimerUI();
+      endRound();
+      return;
+    }
+    if(timeLeft <= 5){
+      const sec = Math.ceil(timeLeft);
+      if(sec !== lastLowBeep){ lastLowBeep = sec; sfx.lowTick(); }
+    }
+    updateTimerUI();
+  }
+
+  function startRound(){
+    if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
+    onlineCheckToken++;
+    ensureAudio();
+
+    chain = []; usedWords = new Set();
+    score = 0; shownScore = 0; streak = 0; bestCombo = 1;
+    level = 1; wordsAdded = 0; hintsLeft = HINTS_PER_ROUND;
+    timeLeft = START_TIME; lastLowBeep = 0;
+    roundActive = true;
+
+    const startWord = SEED_ARR[Math.floor(Math.random() * SEED_ARR.length)];
+    chain.push(startWord);
+    usedWords.add(startWord);
+
+    scoreVal.textContent = '0';
+    levelVal.textContent = '1';
+    hintsLeftEl.textContent = String(hintsLeft);
+    setBusy(false);
+    setMsg('Smi i vei!', 'info');
+    setMood('idle');
+    renderChain(false);
+    updateTimerUI();
+    updateComboUI();
+    updatePrompt();
+
+    showScreen('game');
+    resetInput();
+    timerHandle = setInterval(tick, TICK_MS);
+  }
+
+  function endRound(){
+    roundActive = false;
+    onlineCheckToken++;
+    if(timerHandle){ clearInterval(timerHandle); timerHandle = null; }
+    setBusy(false);
+    vignette.classList.remove('on');
+    sfx.over();
+
+    const isNewBest = score > bestScore;
+    bestScore = Math.max(bestScore, score);
+
+    let longest = '';
+    chain.forEach(w => { if(w.length > longest.length) longest = w; });
+
+    $('endScore').textContent = String(score);
+    $('endWords').textContent = String(chain.length);
+    $('endCombo').textContent = '×' + bestCombo;
+    $('endLongest').textContent = longest || '–';
+    $('endLevel').textContent = String(level);
+
+    const bestLine = $('bestLine');
+    bestLine.className = 'best-line' + (isNewBest ? ' new' : '');
+    bestLine.textContent = (isNewBest ? '🏆 Ny rekord denne økten: ' : 'Beste denne økten: ');
+    const bestStrong = document.createElement('strong');
+    bestStrong.id = 'bestScoreVal';
+    bestStrong.textContent = String(bestScore);
+    bestLine.appendChild(bestStrong);
+
+    let rank = 'Ordlærling';
+    if(score >= 1000) rank = 'Ordkjede-legende';
+    else if(score >= 600) rank = 'Ordmester';
+    else if(score >= 300) rank = 'Ordsmed';
+    else if(score >= 120) rank = 'Ordsvenn';
+    $('rankTitle').textContent = rank;
+
+    endChainEl.innerHTML = '';
+    chain.forEach(w => endChainEl.appendChild(makeLink(w, false, false)));
+
+    showScreen('end');
+  }
+
+  function showScreen(name){
+    Object.keys(screens).forEach(k => screens[k].classList.toggle('active', k === name));
+  }
+
+  /* =========================================================
+     GODKJENNING
+     ========================================================= */
+  function acceptWord(word){
+    const prevMult = multiplierFor(streak);
+    streak++;
+    wordsAdded++;
+    const mult = multiplierFor(streak);
+    bestCombo = Math.max(bestCombo, mult);
+
+    const gained = wordPoints(word) * mult;
+    score += gained;
+    timeLeft = Math.min(MAX_TIME, timeLeft + 4 + Math.min(3, Math.floor((word.length - 3) / 2)));
+
+    chain.push(word);
+    usedWords.add(word);
+
+    renderChain(true);
+    animateScore();
+    updateTimerUI();
+    updateComboUI();
+    updatePrompt();
+
+    // effekter posisjonert på det nye leddet
+    const rect = chainEl.getBoundingClientRect();
+    const px = Math.min(rect.right - 40, rect.left + rect.width - 60);
+    const py = rect.top + rect.height / 2;
+    sparkBurst(px, py, mult >= 3 ? 16 : 9);
+    // liten spredning så raske treff på rad ikke legger seg oppå hverandre
+    const jitterX = (Math.random() - 0.5) * 46;
+    const jitterY = (Math.random() - 0.5) * 22;
+    floatPopup('+' + gained, px + jitterX, py - 10 + jitterY, mult > 1 ? '#c9a3ff' : null);
+
+    const leveledUp = Math.floor(wordsAdded / WORDS_PER_LEVEL) + 1 > level;
+    if(leveledUp){
+      level = Math.floor(wordsAdded / WORDS_PER_LEVEL) + 1;
+      levelVal.textContent = String(level);
+      showBanner('NIVÅ ' + level + '!');
+      sfx.level();
+      setMood('wow', 900);
+      setMsg('Nivå ' + level + ' – tiden brenner raskere!', 'ok');
+    } else if(mult > prevMult){
+      showBanner('KOMBO ×' + mult);
+      sfx.combo(mult);
+      setMood('wow', 800);
+      setMsg(BIG_PRAISE[Math.floor(Math.random() * BIG_PRAISE.length)], 'ok');
+    } else {
+      sfx.correct(mult);
+      setMood('happy', 700);
+      setMsg(PRAISE[Math.floor(Math.random() * PRAISE.length)], 'ok');
+    }
+    resetInput();
+  }
+
+  function rejectWord(message){
+    streak = 0;
+    updateComboUI();
+    setMsg(message, 'bad');
+    sfx.error();
+    setMood('sad', 800);
+    wordInput.classList.remove('shake');
+    void wordInput.offsetWidth;   // tvinger reflow så risting kan spilles på nytt
+    wordInput.classList.add('shake');
+    resetInput();
+  }
+
+  function submitWord(){
+    if(!roundActive || wordInput.disabled) return;
+    const word = normalize(wordInput.value);
+    if(word === '') return;
+
+    const required = lastLetter(chain[chain.length - 1]);
+    if(word.charAt(0) !== required){
+      rejectWord('Ordet må starte med «' + upper(required) + '»');
+      return;
+    }
+    if(usedWords.has(word)){
+      rejectWord('Dette ordet er allerede brukt');
+      return;
+    }
+    if(SEED_WORDS.has(word) || BIG_WORDS.has(word)){
+      acceptWord(word);
+      return;
+    }
+
+    const myToken = ++onlineCheckToken;
+    setBusy(true);
+    checkWordOnline(word).then(found => {
+      if(myToken !== onlineCheckToken || !roundActive) return;
+      setBusy(false);
+      if(found) acceptWord(word);
+      else rejectWord('Ordet finnes ikke i ordlisten');
+    }).catch(() => {
+      if(myToken !== onlineCheckToken || !roundActive) return;
+      setBusy(false);
+      rejectWord('Fikk ikke sjekket ordet – prøv igjen');
+    });
+  }
+
+  function useHint(){
+    if(!roundActive || hintsLeft <= 0 || wordInput.disabled) return;
+    const required = lastLetter(chain[chain.length - 1]);
+    const pool = HINT_INDEX.get(required) || [];
+    const candidates = pool.filter(w => !usedWords.has(w));
+    if(candidates.length === 0){
+      setMsg('Fant ingen hint denne gangen …', 'info');
+      return;
+    }
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    hintsLeft--;
+    hintsLeftEl.textContent = String(hintsLeft);
+    hintBtn.disabled = hintsLeft <= 0;
+    timeLeft = Math.max(0.4, timeLeft - HINT_COST_SEC);
+    updateTimerUI();
+    sfx.hint();
+    setMood('idle');
+    setMsg('Prøv for eksempel: ' + pick.slice(0, 2) + '…  (' + pick.length + ' bokstaver)', 'info');
+  }
+
+  /* =========================================================
+     HENDELSER
+     ========================================================= */
+  wordForm.addEventListener('submit', (e) => { e.preventDefault(); submitWord(); });
+  startBtn.addEventListener('click', startRound);
+  restartBtn.addEventListener('click', startRound);
+  hintBtn.addEventListener('click', useHint);
+  soundBtn.addEventListener('click', () => setSound(!soundOn));
+  muteBtn.addEventListener('click', () => setSound(!soundOn));
+
+  setSound(true);
+  setMood('idle');
+  updateStartAvailability();
+  loadBigWordList();
+})();
+</script>
+</body>
+</html>
