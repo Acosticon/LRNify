@@ -16,7 +16,7 @@ import { saveChoice } from './device.js';
 function buildDemoTrain(){
   const el = document.getElementById('demoTrain');
   if(!el) return;
-  const demo = [['katt', 'loco'], ['tog', 'freight'], ['gul', 'passenger']];
+  const demo = [['katt', 'loco'], ['tog', 'freight'], ['gul', 'freight']];
   demo.forEach(([word, type], i) => {
     if(i > 0) el.appendChild(buildCoupling());
     el.appendChild(buildCarriage(word, type, { current: i === demo.length - 1 }));
@@ -45,7 +45,9 @@ function trackViewport(){
   window.addEventListener('resize', apply);
 }
 
-/* ---------- togstallen ---------- */
+/* ---------- vognskjulet ---------- */
+let openDepotSheet = () => {};
+
 function wireDepot(renderDepot){
   const btn = document.getElementById('depotBtn');
   const sheet = document.getElementById('depotSheet');
@@ -57,13 +59,17 @@ function wireDepot(renderDepot){
     renderDepot();
     sheet.hidden = false;
     btn.setAttribute('aria-expanded', 'true');
-    close && close.focus();
+    // Er det en pakke å åpne, skal den ha fokus – det er derfor
+    // spilleren kom hit.
+    const crate = sheet.querySelector('.crate');
+    (crate || close || sheet).focus();
   };
   const shut = () => {
     sheet.hidden = true;
     btn.setAttribute('aria-expanded', 'false');
     btn.focus();
   };
+  openDepotSheet = open;
 
   btn.addEventListener('click', open);
   scrim && scrim.addEventListener('click', shut);
@@ -84,6 +90,7 @@ document.querySelectorAll('[data-switch]').forEach(a => {
 createApp({
   haptics: true,
   shortPlaceholder: true,
+  openDepot(){ openDepotSheet(); },
   init({ renderDepot }){
     wireDepot(renderDepot);
   }

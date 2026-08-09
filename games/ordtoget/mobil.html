@@ -34,7 +34,8 @@
         <p class="best-note" id="startBest">&nbsp;</p>
 
         <button id="depotBtn" class="btn-ghost depot-open" type="button" aria-expanded="false">
-          🚃 Togstallen <span id="depotCount" class="depot-count">1/8</span>
+          🚃 Vognskjulet <span id="depotCount" class="depot-count">1/10</span>
+          <span class="dot-badge" data-crate-badge hidden aria-label="Ny pakke venter"></span>
         </button>
       </div>
 
@@ -125,6 +126,9 @@
           <div id="endTrain" class="train" role="list" aria-label="Toget ditt"></div>
         </div>
         <div class="best-line" id="bestLine"></div>
+        <button id="crateHint" class="crate-hint" type="button" hidden>
+          🎁 Ny pakke i vognskjulet – trykk for å pakke opp
+        </button>
       </div>
 
       <div class="end-actions">
@@ -139,9 +143,9 @@
 <!-- Togstallen som bunnark -->
 <div id="depotSheet" class="sheet" hidden>
   <div class="sheet-scrim" id="depotScrim"></div>
-  <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Togstallen">
+  <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Vognskjulet">
     <div class="sheet-grip" aria-hidden="true"></div>
-    <h2 class="sheet-title">Togstallen</h2>
+    <h2 class="sheet-title">Vognskjulet</h2>
     <p class="sheet-sub">Nye vogner låses opp mens du spiller.</p>
     <div class="depot" id="depot"></div>
     <button id="depotClose" class="btn-ghost small" type="button">Lukk</button>

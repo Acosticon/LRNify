@@ -3,76 +3,93 @@
    Hvert ord i kjeden blir en vogn på toget. Vognas lengde
    følger ordets lengde, og vogntypen bestemmes av ordet selv
    (stabil hash) blant de typene spilleren har låst opp.
-   Første ordet er alltid lokomotivet.
+
+   Ordet står på en egen skiltplate inne i vogna. Vognene har
+   svært ulike farger, og uten plata ble teksten uleselig på
+   noen av dem.
    ========================================================= */
 
+/* Alltid med – opptar ingen plass i vognskjulet. */
 export const LOCO = {
   id: 'loco',
   name: 'Damplokomotiv',
   desc: 'Trekker hele toget. Alltid først i rekka.'
 };
-
-/* Gullvogna hører til den gylne bokstaven, ikke til opplåsingen.
-   Den dukker alltid opp på et gyllent ord – ellers ville løftet
-   «GULLVOGN! ×3» vist en helt vanlig vogn. */
 export const GOLD = {
   id: 'gold',
   name: 'Gullvogn',
   desc: 'Kommer av seg selv på gylne ord.'
 };
 
-/* Rekkefølgen her styrer visningen i Togstallen.
-   De to første er åpne fra start, så toget har farge med én gang. */
-export const CARRIAGES = [
-  {
-    id: 'freight', name: 'Godsvogn',
-    desc: 'Solid treverk. Vogna du alltid har.',
-    unlock: null
-  },
+/** Vogna alle starter med. */
+export const START_CARRIAGE = {
+  id: 'freight',
+  name: 'Godsvogn',
+  desc: 'Solid treverk. Vogna du starter med.'
+};
+
+/* =========================================================
+   OPPDRAG
+   Rekkefølgen er opplåsingsrekkefølgen: kun ett oppdrag er
+   aktivt om gangen, og alle tellere måles fra forrige
+   opplåsing. Da kan man aldri låse opp to på én gang.
+   ========================================================= */
+export const MISSIONS = [
   {
     id: 'passenger', name: 'Passasjervogn',
     desc: 'Vinduer og lys. For folk som skal et sted.',
-    unlock: null
+    mission: { type: 'rounds', n: 1, text: 'Kjør én runde' }
+  },
+  {
+    id: 'timber', name: 'Tømmervogn',
+    desc: 'Laster stokker rett fra skogen.',
+    mission: { type: 'rounds', n: 3, text: 'Kjør tre runder til' }
   },
   {
     id: 'tank', name: 'Tankvogn',
     desc: 'Blank sylinder. Frakter noe hemmelig.',
-    unlock: { stat: 'bestWords', n: 10, text: 'Lag et tog med 10 vogner' }
+    mission: { type: 'words', n: 10, text: 'Lag et tog med 10 vogner' }
   },
   {
     id: 'cool', name: 'Kjølevogn',
     desc: 'Iskald. Til det som må holdes friskt.',
-    unlock: { stat: 'longestWordLen', n: 10, text: 'Bruk et ord på 10 bokstaver' }
+    mission: { type: 'longWord', n: 10, text: 'Bruk et ord på 10 bokstaver' }
   },
   {
     id: 'circus', name: 'Sirkusvogn',
     desc: 'Stripete og full av bråk.',
-    unlock: { stat: 'bestCombo', n: 4, text: 'Nå kombo ×4' }
+    mission: { type: 'roundScore', n: 800, text: 'Få 800 poeng i én runde' }
+  },
+  {
+    id: 'container', name: 'Konteinervogn',
+    desc: 'Stablet full av kasser fra hele verden.',
+    mission: { type: 'rounds', n: 10, text: 'Kjør ti runder til' }
   },
   {
     id: 'post', name: 'Postvogn',
     desc: 'Frakter brev til hele landet.',
-    unlock: { stat: 'goldenHits', n: 5, text: 'Treff 5 gylne bokstaver' }
+    mission: { type: 'totalScore', n: 5000, text: 'Samle 5000 poeng' }
   },
   {
     id: 'rocket', name: 'Rakettvogn',
     desc: 'Skal egentlig ikke gå på skinner.',
-    unlock: { stat: 'bestScore', n: 1500, text: 'Få 1500 poeng i én runde' }
+    mission: { type: 'totalScore', n: 10000, text: 'Samle 10 000 poeng' }
+  },
+  {
+    id: 'royal', name: 'Kongevogn',
+    desc: 'Gullkanter og fløyel. Den fineste i skjulet.',
+    mission: { type: 'totalScore', n: 25000, text: 'Samle 25 000 poeng' }
   }
 ];
 
-/** Alt som vises i Togstallen, inkludert de som alltid er med. */
-export const DEPOT_ITEMS = [
-  { ...LOCO, unlock: null, always: true },
-  ...CARRIAGES,
-  { ...GOLD, unlock: null, always: true }
-];
-
 export const CARRIAGE_BY_ID = Object.fromEntries(
-  [...CARRIAGES, LOCO, GOLD].map(c => [c.id, c])
+  [LOCO, GOLD, START_CARRIAGE, ...MISSIONS].map(c => [c.id, c])
 );
 
-/* Stabil hash så et ord alltid gir samme vogntype i samme runde. */
+/** Alt som skal vises som plass i vognskjulet. */
+export const DEPOT_SLOTS = [START_CARRIAGE, ...MISSIONS];
+
+/* Stabil hash så et ord alltid gir samme vogntype. */
 function hash(str){
   let h = 2166136261;
   for(let i = 0; i < str.length; i++){
@@ -84,16 +101,15 @@ function hash(str){
 
 /**
  * Velger vogntype for et ord.
- * @param {string} word
- * @param {object} opts  { index, golden, unlocked:Set }
+ * @param {object} opts { index, golden, unlocked:Set }
  */
 export function pickCarriage(word, opts = {}){
   if(opts.index === 0) return 'loco';
   if(opts.golden) return 'gold';        // alltid gullvogn på gylne ord
 
-  const unlocked = opts.unlocked || new Set(['freight']);
-  const pool = CARRIAGES.filter(c => unlocked.has(c.id)).map(c => c.id);
-  if(pool.length === 0) return 'freight';
+  const unlocked = opts.unlocked || new Set([START_CARRIAGE.id]);
+  const pool = DEPOT_SLOTS.filter(c => unlocked.has(c.id)).map(c => c.id);
+  if(pool.length === 0) return START_CARRIAGE.id;
   return pool[hash(word) % pool.length];
 }
 
@@ -104,9 +120,7 @@ export function wheelCount(word){
 
 /**
  * Bygger DOM for én vogn.
- * @param {string} word
- * @param {string} type   vogntype-id ('loco', 'freight', ...)
- * @param {object} opts   { current, animate }
+ * @param {object} opts { current, animate }
  */
 export function buildCarriage(word, type, opts = {}){
   const wrap = document.createElement('div');
@@ -114,9 +128,7 @@ export function buildCarriage(word, type, opts = {}){
     + (opts.current ? ' current' : '')
     + (opts.animate ? ' arriving' : '');
   wrap.setAttribute('role', 'listitem');
-
-  const label = CARRIAGE_BY_ID[type]?.name || 'Vogn';
-  wrap.setAttribute('aria-label', `${word} – ${label}`);
+  wrap.setAttribute('aria-label', `${word} – ${CARRIAGE_BY_ID[type]?.name || 'Vogn'}`);
 
   if(type === 'loco'){
     const chimney = document.createElement('span');
@@ -132,12 +144,16 @@ export function buildCarriage(word, type, opts = {}){
 
   const body = document.createElement('span');
   body.className = 'body';
-  const head = document.createTextNode(word.slice(0, -1));
+
+  // Skiltplata gir lik lesbarhet uansett hvilken farge vogna har.
+  const plate = document.createElement('span');
+  plate.className = 'plate';
+  plate.appendChild(document.createTextNode(word.slice(0, -1)));
   const tail = document.createElement('em');
   tail.className = 'hl';
   tail.textContent = word.slice(-1);
-  body.appendChild(head);
-  body.appendChild(tail);
+  plate.appendChild(tail);
+  body.appendChild(plate);
   wrap.appendChild(body);
 
   const wheels = document.createElement('span');
