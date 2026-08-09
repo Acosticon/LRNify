@@ -4,18 +4,21 @@
    persondata. Feiler lagringen (privat nettlesermodus), kjører
    spillet videre uten å lagre.
 
-   Opplåsingen er sekvensiell: kun ett oppdrag er aktivt om
-   gangen, og alle tellere måles fra forrige opplåsing (`since`).
-   Da kan man aldri låse opp to vogner på én gang.
+   Oppdragene er sekvensielle: ett aktivt om gangen, og alle
+   tellere måles fra forrige opplåsing (`since`). Da kan man
+   aldri løse to oppdrag på én gang.
 
-   Når et oppdrag fullføres blir vogna ikke gitt med én gang –
-   den legges som en uåpnet pakke (`pendingCrate`) som spilleren
-   må inn i vognskjulet for å pakke opp.
+   Oppdraget bestemmer NÅR du får en pakke. Hva som ligger i
+   den avgjøres først når pakka åpnes, av en vektet trekning
+   blant vognene du ikke har fra før.
    ========================================================= */
 
-import { MISSIONS, START_CARRIAGE } from './carriages.js';
+import { MISSIONS, START_CARRIAGE, CARRIAGES, drawCarriage } from './carriages.js';
 
-const KEY = 'ordtoget-progress-v1';
+/* Nøkkelen er bumpet fra v1: opplåsingen er lagt helt om, og
+   gamle lagringer hadde flere vogner åpne enn den nye modellen
+   tillater. Gammel v1-data blir liggende ubrukt. */
+const KEY = 'ordtoget-progress-v2';
 
 const emptySince = () => ({
   rounds: 0,          // runder spilt siden forrige opplåsing
@@ -31,7 +34,8 @@ const emptyData = () => ({
   rounds: 0,
   bestPerMode: {},
   unlocked: [START_CARRIAGE.id],
-  pendingCrate: null,
+  missionIndex: 0,
+  pendingCrate: false,
   since: emptySince()
 });
 
@@ -46,14 +50,15 @@ export class Progress {
       const raw = localStorage.getItem(KEY);
       if(!raw) return base;
       const p = JSON.parse(raw);
+      const unlocked = Array.from(new Set([START_CARRIAGE.id, ...(p.unlocked || [])]));
       return {
         ...base,
         ...p,
         bestPerMode: { ...(p.bestPerMode || {}) },
-        // Startvogna skal alltid være med, også for spillere som
-        // lagret framgang før opplåsingen ble lagt om.
-        unlocked: Array.from(new Set([START_CARRIAGE.id, ...(p.unlocked || [])])),
-        pendingCrate: p.pendingCrate || null,
+        unlocked,
+        // Oppdragsnummeret skal alltid følge antall vunne vogner.
+        missionIndex: Math.min(MISSIONS.length, unlocked.length - 1),
+        pendingCrate: !!p.pendingCrate,
         since: { ...emptySince(), ...(p.since || {}) }
       };
     } catch(e){
@@ -76,10 +81,16 @@ export class Progress {
     return this.data.bestPerMode[modeId] || { score: 0, words: 0 };
   }
 
-  /** Oppdraget som er aktivt nå, eller null når alt er låst opp. */
+  /** Vogner som ennå ikke er vunnet. */
+  lockedCount(){
+    return CARRIAGES.filter(c => !this.data.unlocked.includes(c.id)).length;
+  }
+
+  /** Oppdraget som er aktivt nå, eller null. */
   currentMission(){
     if(this.data.pendingCrate) return null;      // pakka må åpnes først
-    return MISSIONS.find(m => !this.data.unlocked.includes(m.id)) || null;
+    if(this.lockedCount() === 0) return null;    // alt er vunnet
+    return MISSIONS[this.data.missionIndex] || null;
   }
 
   /** Hvor langt spilleren er kommet i det aktive oppdraget. */
@@ -93,48 +104,48 @@ export class Progress {
       words: s.bestWords,
       longWord: s.longestWordLen,
       roundScore: s.bestRoundScore
-    }[m.mission.type] || 0;
+    }[m.type] || 0;
     return {
-      carriage: m,
-      value: Math.min(value, m.mission.n),
-      goal: m.mission.n,
-      pct: Math.min(100, (value / m.mission.n) * 100),
-      done: value >= m.mission.n
+      mission: m,
+      value: Math.min(value, m.n),
+      goal: m.n,
+      pct: Math.min(100, (value / m.n) * 100),
+      done: value >= m.n
     };
   }
 
   /**
-   * Sjekker om det aktive oppdraget er fullført. Vogna gis ikke
-   * med én gang – den blir liggende som en uåpnet pakke.
-   * @returns {object|null} vogna som venter, hvis oppdraget nettopp ble løst
+   * Sjekker om det aktive oppdraget er fullført. Vogna trekkes
+   * ikke her – pakka legges bare klar til åpning.
+   * @returns {boolean} true hvis oppdraget nettopp ble løst
    */
   _checkMission(){
     const p = this.missionProgress();
-    if(!p || !p.done) return null;
-    this.data.pendingCrate = p.carriage.id;
+    if(!p || !p.done) return false;
+    this.data.pendingCrate = true;
     this.save();
-    return p.carriage;
+    return true;
   }
 
-  /** Uåpnet pakke, hvis det finnes en. */
-  pending(){
-    if(!this.data.pendingCrate) return null;
-    return MISSIONS.find(m => m.id === this.data.pendingCrate) || null;
-  }
+  hasPendingCrate(){ return !!this.data.pendingCrate; }
 
   /**
-   * Pakker opp pakka: vogna låses opp og tellerne nullstilles,
-   * slik at neste oppdrag måles fra dette punktet.
-   * @returns {object|null} vogna som ble låst opp
+   * Åpner pakka: trekker en vogn, låser den opp, går videre til
+   * neste oppdrag og nullstiller tellerne.
+   * @param {function} [rand] injiserbar tilfeldighet (for testing)
+   * @returns {object|null} vogna som ble vunnet
    */
-  openCrate(){
-    const c = this.pending();
-    if(!c) return null;
-    if(!this.data.unlocked.includes(c.id)) this.data.unlocked.push(c.id);
-    this.data.pendingCrate = null;
+  openCrate(rand){
+    if(!this.data.pendingCrate) return null;
+    const won = drawCarriage(this.unlockedSet, rand);
+    this.data.pendingCrate = false;
+    if(!won){ this.save(); return null; }
+
+    this.data.unlocked.push(won.id);
+    this.data.missionIndex = Math.min(MISSIONS.length, this.data.missionIndex + 1);
     this.data.since = emptySince();
     this.save();
-    return c;
+    return won;
   }
 
   /** Kalles underveis i runden. */
@@ -143,7 +154,7 @@ export class Progress {
     let changed = false;
     if(wordLen && wordLen > s.longestWordLen){ s.longestWordLen = wordLen; changed = true; }
     if(words && words > s.bestWords){ s.bestWords = words; changed = true; }
-    if(!changed) return null;
+    if(!changed) return false;
     this.save();
     return this._checkMission();
   }
@@ -166,7 +177,7 @@ export class Progress {
     };
 
     this.save();
-    return { isNewBest, unlockedNow: this._checkMission() };
+    return { isNewBest, missionDone: this._checkMission() };
   }
 
   reset(){

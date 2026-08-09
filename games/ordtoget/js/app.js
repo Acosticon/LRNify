@@ -12,7 +12,7 @@ import { Fx } from './fx.js';
 import { Game, MODES, POWERS, comboProgress } from './game.js';
 import { Progress } from './progress.js';
 import {
-  DEPOT_SLOTS, LOCO, GOLD, CARRIAGE_BY_ID,
+  ALL_SLOTS, CARRIAGES, LOCO, GOLD,
   pickCarriage, buildCarriage, buildCoupling
 } from './carriages.js';
 
@@ -245,7 +245,7 @@ export function createApp(layout = {}){
      som en uåpnet pakke i vognskjulet. Selve belønningen er å
      pakke den opp.
      ========================================================= */
-  function announceMissionDone(carriage){
+  function announceMissionDone(){
     sfx.unlocked();
     haptic([18, 60, 18]);
     const old = document.querySelector('.unlock-toast');
@@ -256,8 +256,8 @@ export function createApp(layout = {}){
     el.className = 'unlock-toast';
     el.setAttribute('role', 'status');
     el.innerHTML = '<span class="crate-mini" aria-hidden="true">🎁</span>'
-      + `<span class="ut"><span class="uk">Oppdrag fullført</span>`
-      + `<span class="un">En pakke venter i vognskjulet</span></span>`;
+      + '<span class="ut"><span class="uk">Oppdrag fullført</span>'
+      + '<span class="un">En pakke venter i vognskjulet</span></span>';
     // Over den tomme himmelen rett over toget – der er det ledig
     // plass både på mobil og PC, og aldri knapper i veien.
     const area = els.train ? els.train.getBoundingClientRect() : null;
@@ -278,7 +278,7 @@ export function createApp(layout = {}){
 
   /** Rød prikk på inngangen til vognskjulet når en pakke venter. */
   function updateCrateBadges(){
-    const waiting = !!progress.pending();
+    const waiting = progress.hasPendingCrate();
     document.querySelectorAll('[data-crate-badge]').forEach(el => {
       el.hidden = !waiting;
     });
@@ -290,54 +290,70 @@ export function createApp(layout = {}){
     if(!els.depot) return;
     els.depot.innerHTML = '';
 
-    const pending = progress.pending();
-    const mission = progress.missionProgress();
+    if(progress.hasPendingCrate()){
+      els.depot.appendChild(buildCrateCard());
+    } else {
+      const m = progress.missionProgress();
+      if(m) els.depot.appendChild(buildMissionCard(m));
+    }
 
-    if(pending) els.depot.appendChild(buildCrateCard(pending));
-
-    DEPOT_SLOTS.forEach(c => {
-      const unlocked = progress.isUnlocked(c.id);
-      const isNext = !!mission && mission.carriage.id === c.id;
-      const item = document.createElement('div');
-      item.className = 'depot-item'
-        + (unlocked ? '' : ' empty')
-        + (isNext ? ' next' : '');
-
-      if(unlocked){
-        item.innerHTML = `<span class="mini type-${c.id}" aria-hidden="true"></span>`
-          + `<span class="dt"><span class="dn">${c.name}</span>`
-          + `<span class="dd">${c.desc}</span></span>`;
-      } else if(isNext){
-        item.innerHTML = '<span class="slot-ghost" aria-hidden="true">?</span>'
-          + `<span class="dt"><span class="dn">Neste vogn</span>`
-          + `<span class="mission-goal">${c.mission.text}</span>`
-          + `<span class="mission-bar"><i style="width:${mission.pct}%"></i></span>`
-          + `<span class="mission-count">${mission.value} / ${mission.goal}</span></span>`;
-      } else {
-        item.innerHTML = '<span class="slot-ghost" aria-hidden="true">?</span>'
-          + '<span class="dt"><span class="dn">Tom plass</span>'
-          + '<span class="dd">Låses opp senere</span></span>';
-      }
-      els.depot.appendChild(item);
+    // Vognene du har vunnet
+    ALL_SLOTS.filter(c => progress.isUnlocked(c.id)).forEach(c => {
+      els.depot.appendChild(depotRow(c.id, c.name, c.desc));
     });
 
-    // Lokomotiv og gullvogn hører ikke til opplåsingen, men vises til slutt.
-    [LOCO, GOLD].forEach(c => {
+    // Tomme plasser for dem som står igjen
+    for(let i = 0; i < progress.lockedCount(); i++){
       const item = document.createElement('div');
-      item.className = 'depot-item';
-      item.innerHTML = `<span class="mini type-${c.id}" aria-hidden="true"></span>`
-        + `<span class="dt"><span class="dn">${c.name}</span>`
-        + `<span class="dd">${c.desc}</span></span>`;
+      item.className = 'depot-item empty';
+      item.innerHTML = '<span class="slot-ghost" aria-hidden="true">?</span>'
+        + '<span class="dt"><span class="dn">Tom plass</span>'
+        + '<span class="dd">Venter på en vogn</span></span>';
       els.depot.appendChild(item);
+    }
+
+    // Lokomotiv og gullvogn hører ikke til opplåsingen.
+    [LOCO, GOLD].forEach(c => {
+      els.depot.appendChild(depotRow(c.id, c.name, c.desc));
     });
 
     if(els.depotCount){
-      const have = DEPOT_SLOTS.filter(c => progress.isUnlocked(c.id)).length;
-      els.depotCount.textContent = `${have}/${DEPOT_SLOTS.length}`;
+      const have = ALL_SLOTS.filter(c => progress.isUnlocked(c.id)).length;
+      els.depotCount.textContent = `${have}/${ALL_SLOTS.length}`;
     }
   }
 
-  function buildCrateCard(carriage){
+  function depotRow(id, name, desc){
+    const item = document.createElement('div');
+    item.className = 'depot-item';
+    item.innerHTML = `<span class="mini type-${id}" aria-hidden="true"></span>`
+      + `<span class="dt"><span class="dn">${name}</span>`
+      + `<span class="dd">${desc}</span></span>`;
+    return item;
+  }
+
+  function buildMissionCard(m){
+    const card = document.createElement('div');
+    card.className = 'mission-card';
+    card.innerHTML = '<span class="mk">Neste oppdrag</span>'
+      + `<span class="mg">${m.mission.text}</span>`
+      + `<span class="mission-bar"><i style="width:${m.pct}%"></i></span>`
+      + `<span class="mission-count">${m.value} / ${m.goal}</span>`
+      + '<span class="mh">Belønning: en tilfeldig vogn</span>';
+    return card;
+  }
+
+  /* =========================================================
+     PAKKE OG VOGNHJUL
+     Hva som ligger i pakka avgjøres først når hjulet stopper.
+     Trekningen er vektet: vanlige vogner er mest sannsynlige
+     tidlig, sjeldne mot slutten – men alt kan komme når som helst.
+     ========================================================= */
+  const REEL_ITEM_H = 62;      // må stemme med .reel-item i CSS
+  const REEL_WINNER_AT = 18;   // hvor mange vogner hjulet ruller forbi
+  const REEL_MS = 2800;
+
+  function buildCrateCard(){
     const card = document.createElement('div');
     card.className = 'crate-card';
     card.innerHTML = '<span class="ck">Uåpnet pakke</span>'
@@ -346,40 +362,85 @@ export function createApp(layout = {}){
       +   '<span class="box"></span><span class="band"></span>'
       + '</button>'
       + '<span class="cs">Trykk for å pakke opp</span>';
-
-    const btn = card.querySelector('.crate');
-    btn.addEventListener('click', () => openCrate(card, btn, carriage));
+    card.querySelector('.crate').addEventListener('click', () => openCrate(card));
     return card;
   }
 
-  function openCrate(card, btn, carriage){
-    if(btn.disabled) return;
+  function openCrate(card){
+    const btn = card.querySelector('.crate');
+    if(!btn || btn.disabled) return;
     btn.disabled = true;
     btn.classList.add('opening');
     sfx.power();
     haptic([10, 40, 10]);
 
     setTimeout(() => {
-      const unlocked = progress.openCrate();
-      if(!unlocked){ renderDepot(); return; }
+      const won = progress.openCrate();
+      if(!won){ renderDepot(); return; }
+      spinReel(card, won);
+    }, 900);
+  }
 
+  /** Slot machine: ruller gjennom vogner og lander på gevinsten. */
+  function spinReel(card, won){
+    card.classList.add('spinning');
+    card.innerHTML = '<span class="ck">Hvilken vogn blir det?</span>'
+      + '<div class="reel-window"><div class="reel"></div>'
+      +   '<span class="reel-marker" aria-hidden="true"></span></div>'
+      + '<span class="cs" id="reelStatus" role="status">Snurrer …</span>';
+
+    const reel = card.querySelector('.reel');
+    const pool = CARRIAGES;
+    for(let i = 0; i <= REEL_WINNER_AT + 3; i++){
+      // Gevinsten plasseres på nøyaktig den plassen hjulet stopper på.
+      const c = i === REEL_WINNER_AT ? won : pool[Math.floor(Math.random() * pool.length)];
+      const item = document.createElement('div');
+      item.className = 'reel-item';
+      item.innerHTML = `<span class="mini type-${c.id}" aria-hidden="true"></span>`
+        + `<span class="rl">${c.name}</span>`;
+      reel.appendChild(item);
+    }
+
+    const land = () => {
+      card.classList.remove('spinning');
+      card.classList.add('landed');
+      sfx.reelStop();
       sfx.unlocked();
       haptic([18, 60, 18, 60, 30]);
 
-      const r = btn.getBoundingClientRect();
+      const r = card.getBoundingClientRect();
       const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       fx.burst(cx, cy, 40, { colors: ['#ffe08a', '#ffc24d', '#fff'], speed: 380 });
       fx.ring(cx, cy, '#ffe08a', 170);
 
       card.innerHTML = '<span class="ck">Ny vogn i skjulet</span>'
-        + `<span class="crate-reveal"><span class="mini type-${unlocked.id}" aria-hidden="true"></span>`
-        + `<span class="rn">${unlocked.name}</span>`
-        + `<span class="rd">${unlocked.desc}</span></span>`;
+        + `<span class="crate-reveal"><span class="mini type-${won.id}" aria-hidden="true"></span>`
+        + `<span class="rn">${won.name}</span>`
+        + `<span class="rd">${won.desc}</span></span>`;
 
       updateCrateBadges();
-      // Lista under skal nå vise vogna som låst opp og neste oppdrag.
-      setTimeout(renderDepot, 2200);
-    }, 950);
+      setTimeout(renderDepot, 2400);
+    };
+
+    if(fx.reduced){
+      // Ingen snurring ved redusert bevegelse – vis resultatet direkte.
+      setTimeout(land, 250);
+      return;
+    }
+
+    reel.style.transition = 'none';
+    reel.style.transform = 'translateY(0)';
+    void reel.offsetWidth;                       // tvinger reflow
+    reel.style.transition = `transform ${REEL_MS}ms cubic-bezier(.1,.62,.14,1)`;
+    reel.style.transform = `translateY(-${REEL_WINNER_AT * REEL_ITEM_H}px)`;
+
+    // Klikk hver gang en vogn passerer markøren. Hjulet bremser, så
+    // tikkene kommer tettere i starten enn på slutten.
+    for(let i = 1; i <= REEL_WINNER_AT; i++){
+      const t = REEL_MS * (1 - Math.pow(1 - i / REEL_WINNER_AT, 1 / 3));
+      setTimeout(() => sfx.reelTick(), t);
+    }
+    setTimeout(land, REEL_MS + 120);
   }
 
   /* =========================================================
@@ -459,11 +520,10 @@ export function createApp(layout = {}){
         else if(data.double){ praise = 'DOBBELT OPP!'; }
         setMsg(praise, kind);
 
-        const done = progress.noteDuringRound({
+        if(progress.noteDuringRound({
           wordLen: data.word.length,
           words: game.chain.length
-        });
-        if(done) announceMissionDone(done);
+        })) announceMissionDone();
 
         if(els.wordInput) els.wordInput.value = '';
         updatePreview();
@@ -595,7 +655,7 @@ export function createApp(layout = {}){
     if(els.vignette) els.vignette.classList.remove('on');
     fx.clear();
 
-    const { isNewBest, unlockedNow } = progress.finishRound({
+    const { isNewBest, missionDone } = progress.finishRound({
       modeId: d.mode.id,
       score: d.score,
       words: d.words
@@ -638,7 +698,7 @@ export function createApp(layout = {}){
       fx.doShake(10);
       haptic([20, 60, 20, 60, 30]);
     }
-    if(unlockedNow) setTimeout(() => announceMissionDone(unlockedNow), 700);
+    if(missionDone) setTimeout(() => announceMissionDone(), 700);
     if(els.restartBtn) els.restartBtn.focus();
   }
 
