@@ -167,9 +167,9 @@
     width: 4.6em; height: 5.6em;
     transform-origin: bottom center;
     filter: drop-shadow(2px 3px 0 rgba(0,0,0,.5));
-    animation: king-idle 2.8s steps(2,end) infinite;
+    animation: king-idle 1.3s steps(2,end) infinite;
   }
-  @keyframes king-idle { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-3px); } }
+  @keyframes king-idle { 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
   .king-body {
     position: absolute; left: .5em; bottom: 0; width: 3.6em; height: 2.6em;
     background: #b91c1c; border: .15em solid var(--line);
@@ -206,10 +206,13 @@
     transform-origin: left center; transform: rotate(-12deg);
     transition: transform .25s ease;
   }
-  .king.cheer  { animation: king-cheer 1.3s steps(5,end); }
-  .king.nod    { animation: king-nod 1s steps(4,end); }
-  .king.wince  { animation: king-wince 1s steps(4,end); }
-  .king.panic  { animation: king-panic 1.3s steps(6,end); }
+  /* Stegantallet er satt slik at hver animasjon lander på ~5–6 bildeskift
+     i sekundet uansett varighet — samme tempo som Brøkeborgens figurer.
+     Med færre steg fryser figuren mellom hvert hopp. */
+  .king.cheer  { animation: king-cheer 1.3s steps(7,end); }
+  .king.nod    { animation: king-nod 1s steps(5,end); }
+  .king.wince  { animation: king-wince 1s steps(5,end); }
+  .king.panic  { animation: king-panic 1.3s steps(8,end); }
   .king.cheer .king-arm { transform: rotate(-105deg); }
   .king.nod   .king-arm { transform: rotate(-45deg); }
   .king.wince .king-arm { transform: rotate(12deg); }
@@ -247,9 +250,13 @@
     z-index: 3; pointer-events: none;
     transform-origin: bottom center;
     filter: drop-shadow(2px 3px 0 rgba(0,0,0,.45));
-    animation: wiz-idle 3s steps(2,end) infinite;
+    animation: wiz-idle 1.5s steps(2,end) infinite;
   }
-  @keyframes wiz-idle { 0%,100%{ transform: translate(-50%,-100%) rotate(0); } 50%{ transform: translate(-50%,-100%) rotate(-1deg); } }
+  /* Pusten må faktisk synes — 1 grad rotasjon forsvant helt. */
+  @keyframes wiz-idle {
+    0%,100% { transform: translate(-50%,-100%) translateY(0); }
+    50%     { transform: translate(-50%,-100%) translateY(-3px); }
+  }
   .wiz-body {
     position: absolute; left: .6em; bottom: 0; width: 3.2em; height: 2.5em;
     background: #2c3e78; border: .15em solid var(--line);
@@ -281,7 +288,7 @@
     content: ''; position: absolute; left: 1.05em; top: .3em; width: .32em; height: .32em;
     background: var(--gold); border: .08em solid var(--line); border-radius: 50%;
   }
-  .wizard.casting { animation: wiz-cast .9s steps(4,end); }
+  .wizard.casting { animation: wiz-cast .9s steps(5,end); }
   @keyframes wiz-cast {
     0%,100% { transform: translate(-50%,-100%) rotate(0) scale(1); }
     30% { transform: translate(-50%,-100%) rotate(-5deg) scale(1.05); }
@@ -416,7 +423,7 @@
 
   .fx-mini {
     position: absolute; font-size: 1.1rem; transform: translate(-50%,-50%);
-    opacity: 0; pointer-events: none;
+    opacity: 0; pointer-events: none; z-index: 7;
   }
   .fx-mini.pop { animation: miniPop .9s ease forwards; }
   @keyframes miniPop {
@@ -473,9 +480,10 @@
       linear-gradient(#ef4444, #7f1d1d);
     border-bottom: .35em solid var(--gold);
     box-shadow: 0 4px 0 var(--line);
+    z-index: 4; /* teppet henger foran folkemengden som faller bak det */
   }
-  .finale-curtain.drop  { animation: curtain-drop 1.7s steps(8,end) forwards; }
-  .finale-curtain.stuck { animation: curtain-stuck 2.4s steps(7,end) forwards; }
+  .finale-curtain.drop  { animation: curtain-drop 1.5s steps(9,end) forwards; }
+  .finale-curtain.stuck { animation: curtain-stuck 2s steps(10,end) forwards; }
   @keyframes curtain-drop  { 0%{ height:0; } 100%{ height:26%; } }
   /* Teppet setter seg fast halvveis og rykker motvillig — poenget er at
      det aldri kommer helt ned. */
@@ -485,21 +493,24 @@
   }
 
   /* Mini-trollmenn som regner ned og danner en jublende folkemengde */
+  /* Folkemengden står på murkanten (samme grunnlinje som trollmannen),
+     ikke nede i selve murbåndet der de forsvant i mørket. Lilla hatt gir
+     nok kontrast mot natthimmelen til at de leser som små trollmenn. */
   .mini-wiz {
-    position: absolute; bottom: 3%; width: 1.1em; height: 1.5em;
-    font-size: clamp(9px, 3vw, 14px);
-    filter: drop-shadow(2px 2px 0 rgba(0,0,0,.5));
+    position: absolute; bottom: 12%; width: 1.1em; height: 1.5em; z-index: 1;
+    font-size: clamp(11px, 3.7vw, 17px);
+    filter: drop-shadow(2px 2px 0 rgba(0,0,0,.55));
   }
   .mini-wiz::before {
-    content: ''; position: absolute; left: .06em; top: 0; width: .95em; height: .75em;
-    background: #2c3e78; border: .14em solid var(--line);
+    content: ''; position: absolute; left: .06em; top: 0; width: .95em; height: .78em;
+    background: var(--magic); border: .14em solid var(--line);
     clip-path: polygon(40% 0, 60% 0, 100% 100%, 0 100%);
   }
   .mini-wiz::after {
-    content: ''; position: absolute; left: .18em; top: .72em; width: .72em; height: .75em;
-    background: #2c3e78; border: .14em solid var(--line);
+    content: ''; position: absolute; left: .18em; top: .75em; width: .72em; height: .75em;
+    background: #3d4d94; border: .14em solid var(--line);
   }
-  .mini-wiz.rain  { animation: mini-rain var(--fall-ms, 1300ms) cubic-bezier(.4,0,.7,1) forwards; }
+  .mini-wiz.rain  { animation: mini-rain var(--fall-ms, 1300ms) steps(14,end) forwards; }
   .mini-wiz.cheer { animation: mini-cheer .5s steps(2,end) infinite; }
   @keyframes mini-rain {
     0%   { transform: translateY(var(--from, -220px)) rotate(0deg); opacity: 0; }
@@ -510,8 +521,8 @@
 
   /* Drager som slår seg ned på murkronen som duer */
   .finale-dragon { z-index: 5; }
-  .finale-dragon.peek { animation: dg-peek 2.4s ease-in-out forwards; }
-  @keyframes dg-peek { 0%{ top: 104%; } 28%,62%{ top: 78%; } 100%{ top: 104%; } }
+  .finale-dragon.peek { animation: dg-peek 1.9s steps(12,end) forwards; }
+  @keyframes dg-peek { 0%{ top: 104%; } 26%,64%{ top: 78%; } 100%{ top: 104%; } }
 
   .stolen-crown {
     position: absolute; width: 1.5em; height: .7em; z-index: 6;
@@ -529,16 +540,16 @@
   }
 
   /* Løkke-varianter av kongens reaksjoner, til finalen */
-  .king.cheer-loop { animation: king-cheer 1.3s steps(5,end) infinite; }
-  .king.clap-loop  { animation: king-nod 1.2s steps(4,end) infinite; }
-  .king.panic-loop { animation: king-panic 1.2s steps(6,end) infinite; }
+  .king.cheer-loop { animation: king-cheer 1.3s steps(7,end) infinite; }
+  .king.clap-loop  { animation: king-nod 1.2s steps(6,end) infinite; }
+  .king.panic-loop { animation: king-panic 1.2s steps(7,end) infinite; }
   .king.cheer-loop .king-arm { transform: rotate(-105deg); }
   .king.clap-loop  .king-arm { transform: rotate(-45deg); }
   .king.panic-loop .king-arm { transform: rotate(-125deg); }
   .king.panic-loop .king-face::after { border-radius: .3em .3em 0 0; background: #16121a; }
   .king.crownless .king-crown { opacity: 0; transition: opacity .25s ease; }
 
-  .wizard.victory { animation: wiz-victory .8s steps(3,end) infinite; }
+  .wizard.victory { animation: wiz-victory .8s steps(4,end) infinite; }
   @keyframes wiz-victory {
     0%,100% { transform: translate(-50%,-100%) translateY(0) rotate(0); }
     50%     { transform: translate(-50%,-100%) translateY(-9px) rotate(-4deg); }
@@ -1308,17 +1319,20 @@ function finaleTriumph() {
   wizardEl.classList.add('victory');
   addCurtain('drop', 250);
 
+  /* Folkemengden må være samlet i god tid før scenen kuttes, ellers
+     rekker den aldri å bli en folkemengde. Siste mini lander ~2,4 s,
+     som gir drøyt ett sekund med full jubel. */
   for (let i = 0; i < 14; i++) {
     setTimeout(() => {
       const m = document.createElement('div');
       m.className = 'mini-wiz rain';
       m.style.left = (5 + Math.random() * 88) + '%';
-      m.style.setProperty('--from', -(150 + Math.random() * 120) + 'px');
-      const fall = 1000 + Math.random() * 700;
+      m.style.setProperty('--from', -(140 + Math.random() * 90) + 'px');
+      const fall = 800 + Math.random() * 450;
       m.style.setProperty('--fall-ms', fall + 'ms');
       finaleLayer.appendChild(m);
       setTimeout(() => { m.classList.remove('rain'); m.classList.add('cheer'); }, fall);
-    }, 500 + i * 110);
+    }, 350 + i * 70);
   }
 
   setTimeout(() => {
@@ -1348,8 +1362,8 @@ function finaleMiddling() {
     d.style.left = '24%';
     d.style.top = '104%';
     finaleLayer.appendChild(d);
-    setTimeout(() => d.remove(), 2500);
-  }, 1250);
+    setTimeout(() => d.remove(), 2000);
+  }, 1150);
 }
 
 function finaleDisaster() {
