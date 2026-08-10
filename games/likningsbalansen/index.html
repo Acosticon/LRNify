@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Likningsbalansen — LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #241b12;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+    --gridline:#e8dfc9;
+
+    --teal: #0d9488;
+    --teal-dark: #0f766e;
+    --pos: #fde68a;
+    --neg: #fda4af;
+    --neg-ink: #7f1d1d;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SCREENS ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .screen-hero { padding: 4px 0 4px; }
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 6px; }
+  .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.9rem,7vw,3rem); }
+  .screen-hero p  {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.9rem,2.4vw,1.05rem); margin-top: 8px; max-width: 440px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; width: 100%;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 12px; }
+
+  button, .btn-primary { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+  .btn-primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .btn-back {
+    font-weight: 800; color: var(--muted); text-decoration: none; font-size: .9rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  /* ══ EKSEMPEL PÅ STARTSKJERM ══ */
+  .example-body { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .example-row { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .example-tag { font-weight: 800; font-size: .95rem; }
+  .example-tiles { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+  .example-group { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; }
+  .example-eq-sign { font-family: 'Chewy', cursive; font-size: 1.2rem; }
+  .example-arrow { font-weight: 800; font-size: .82rem; color: var(--muted); text-align: center; line-height: 1.4; }
+  .example-tiles .tile-x { width: 26px; height: 26px; font-size: .82rem; box-shadow: 0 2px 0 var(--teal-dark); }
+  .example-tiles .tile-unit { width: 20px; height: 20px; font-size: .5rem; box-shadow: 0 1px 0 rgba(0,0,0,.25); }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 40px; }
+  .game-wrap { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; align-items: center; animation: fadeIn .3s ease; }
+
+  .hud {
+    width: 100%;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap; padding-top: 6px;
+  }
+  .hud-target {
+    background: var(--yellow); border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 8px 16px; transform: rotate(-1deg); flex: 1 1 auto; min-width: 220px;
+  }
+  .hud-label { display:block; font-weight:900; font-size:.65rem; text-transform:uppercase; letter-spacing:.06em; opacity:.7; }
+  .hud-eq { font-family: 'Chewy', cursive; font-size: clamp(1.3rem,6vw,1.9rem); display: block; transition: transform .2s ease, color .2s ease; }
+  .hud-eq.eq-pulse { animation: eqPulse .4s ease; }
+  @keyframes eqPulse { 0%{ transform: scale(1.08); color: var(--teal-dark); } 100%{ transform: scale(1); color: var(--ink); } }
+  .hud-right { display: flex; gap: 8px; }
+  .hud-stat {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 6px 12px; text-align: center; min-width: 66px;
+  }
+  .hud-stat-label { display:block; font-weight:900; font-size:.6rem; text-transform:uppercase; letter-spacing:.05em; color: var(--muted); }
+  .hud-stat-val { font-family: 'Chewy', cursive; font-size: 1.1rem; }
+
+  /* ══ VEKTEN ══ */
+  .scale-wrap { width: 100%; max-width: 560px; margin: 0 auto; }
+  .beam-row { position: relative; height: 30px; }
+  .beam { position: absolute; left: 3%; right: 3%; top: 4px; height: 6px; background: var(--ink); border-radius: 3px; }
+  .fulcrum-tri {
+    position: absolute; left: 50%; top: 4px; transform: translateX(-50%);
+    width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent;
+    border-top: 20px solid var(--ink);
+  }
+  .pans-row { display: flex; justify-content: space-between; gap: 14px; margin-top: 0; }
+  .pan-col { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; min-width: 0; }
+  .pan-string { width: 3px; height: 14px; background: var(--ink); }
+  .pan {
+    width: 100%; min-height: 108px; background: var(--card);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 10px 8px; display: flex; flex-wrap: wrap; align-content: flex-start;
+    justify-content: center; gap: 6px; overflow: hidden;
+  }
+  .pan-label { margin-top: 8px; font-weight: 900; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .tile-stack { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-content: flex-start; }
+
+  .tile {
+    display: flex; align-items: center; justify-content: center;
+    border: 3px solid var(--ink); font-weight: 900; user-select: none;
+  }
+  .tile-x {
+    width: clamp(34px,9vw,46px); height: clamp(34px,9vw,46px);
+    background: var(--teal); color: #fff; font-family: 'Chewy', cursive;
+    font-size: 1.15rem; box-shadow: 0 3px 0 var(--teal-dark);
+  }
+  .tile-unit {
+    width: clamp(24px,6.4vw,32px); height: clamp(24px,6.4vw,32px);
+    background: var(--pos); color: var(--ink); font-size: .68rem;
+    box-shadow: 0 2px 0 rgba(0,0,0,.25);
+  }
+  .tile-unit.tile-neg { background: var(--neg); color: var(--neg-ink); }
+  .tile-merged {
+    min-width: clamp(34px,9vw,46px); height: clamp(30px,7.4vw,38px); padding: 0 8px;
+    background: var(--pos); color: var(--ink); font-size: .85rem;
+    box-shadow: 0 2px 0 rgba(0,0,0,.25);
+  }
+  .tile-merged.tile-neg { background: var(--neg); color: var(--neg-ink); }
+
+  @keyframes tileLeave { to { opacity: 0; transform: scale(.4) translateY(6px); } }
+  .tile-leaving { animation: tileLeave .32s ease forwards; }
+  @keyframes tileEnter { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: scale(1); } }
+  .tile-entering { animation: tileEnter .3s ease; }
+  @keyframes tilePulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+  .tile-pulse { animation: tilePulse .26s ease; }
+  .stack-fade-out { transition: opacity .2s ease; opacity: 0; }
+  .stack-fade-in { animation: stackFadeIn .26s ease; }
+  @keyframes stackFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  /* ══ OPERASJONER ══ */
+  .ops-panel { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 420px; margin: 0 auto; }
+  .op-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1rem;
+    min-height: 48px; background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 10px 16px; cursor: pointer; transition: transform .1s, box-shadow .1s, background .1s;
+  }
+  .op-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); background: var(--pos); }
+  .op-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .op-btn:disabled { opacity: .45; cursor: not-allowed; }
+  .op-btn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+  .feedback-row {
+    width: 100%; max-width: 420px; margin: 0 auto; background: var(--card);
+    border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 16px 18px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    text-align: center; opacity: 0; transform: translateY(6px);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .feedback-row[hidden] { display: none; }
+  .feedback-row.show { opacity: 1; transform: translateY(0); }
+  .solved-mark { font-family: 'Chewy', cursive; font-size: 1.3rem; color: var(--green); display: block; }
+  .solved-steps { font-weight: 700; font-size: .85rem; color: var(--muted); display: block; }
+
+  /* ══ SLUTTSKJERM ══ */
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: .95rem; gap: 12px; }
+  .result-row strong { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+
+  footer {
+    text-align: center; padding: 24px; color: var(--muted);
+    font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(43,33,24,.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .hud-eq, .tile-leaving, .tile-entering, .tile-pulse, .stack-fade-in,
+    .feedback-row, .op-btn, .btn-primary {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">⚖️</div>
+      <h1>Likningsbalansen</h1>
+      <p>Gjør samme operasjon på begge sider til du finner x. Vekten holder seg i balanse så lenge du gjør likt på begge sider.</p>
+    </div>
+    <div class="card">
+      <h2>Slik spiller du</h2>
+      <div class="example-body">
+        <div class="example-row">
+          <span class="example-tag">x + 2 = 5</span>
+          <div class="example-tiles" id="exBefore" aria-hidden="true"></div>
+        </div>
+        <div class="example-arrow">1. Trekk fra 2 på begge sider ↓</div>
+        <div class="example-row">
+          <span class="example-tag">2. x = 3</span>
+          <div class="example-tiles" id="exAfter" aria-hidden="true"></div>
+        </div>
+      </div>
+      <p style="font-weight:700; font-size:.9rem; color:var(--muted); margin-top:14px;">
+        10 oppgaver. Du velger en operasjon nederst på skjermen — den utføres alltid på begge sider samtidig.
+      </p>
+    </div>
+    <button class="btn-primary" id="btn-start">Start</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="hud">
+      <div class="hud-target">
+        <span class="hud-label" id="hudTaskLabel">Oppgave 1 av 10</span>
+        <span class="hud-eq" id="eqDisplay">x + 2 = 5</span>
+      </div>
+      <div class="hud-right">
+        <div class="hud-stat">
+          <span class="hud-stat-label">Poeng</span>
+          <span class="hud-stat-val" id="hudScore">0</span>
+        </div>
+        <div class="hud-stat">
+          <span class="hud-stat-label">Steg</span>
+          <span class="hud-stat-val" id="hudSteps">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="scale-wrap">
+      <div class="beam-row"><div class="beam"></div><div class="fulcrum-tri"></div></div>
+      <div class="pans-row">
+        <div class="pan-col">
+          <div class="pan-string"></div>
+          <div class="pan" id="leftPan" aria-hidden="true">
+            <div class="tile-stack" id="leftXStack"></div>
+            <div class="tile-stack" id="leftConstStack"></div>
+          </div>
+          <div class="pan-label">Venstre side</div>
+        </div>
+        <div class="pan-col">
+          <div class="pan-string"></div>
+          <div class="pan" id="rightPan" aria-hidden="true">
+            <div class="tile-stack" id="rightConstStack"></div>
+          </div>
+          <div class="pan-label">Høyre side</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ops-panel" id="opsPanel" role="group" aria-label="Velg en operasjon å utføre på begge sider"></div>
+
+    <div class="feedback-row" id="feedbackRow" hidden>
+      <span class="solved-mark" id="solvedMark">✓ Løst! x = 3</span>
+      <span class="solved-steps" id="solvedSteps">Løst på 1 steg · Korteste løsning: 1 steg</span>
+      <button class="btn-primary" id="btnNext">Neste</button>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">⚖️🎉</div>
+      <h1>Runden er ferdig!</h1>
+      <p>Her er resultatet ditt etter 10 likninger.</p>
+    </div>
+    <div class="card result-card">
+      <div class="result-row"><span>Løste oppgaver</span><strong id="endScore">0 av 10</strong></div>
+      <div class="result-row"><span>Gjennomsnittlig antall steg</span><strong id="endAvg">0</strong></div>
+      <div class="result-row"><span>Løst med korteste løsning</span><strong id="endShortest">0 av 10</strong></div>
+    </div>
+    <button class="btn-primary" id="btn-again">Spill igjen</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const MERGE_THRESHOLD = 6;
+
+/* ══════════════════ LIKNINGSMODELL ══════════════════
+   Tilstand: k*x + m = n
+   k = koeffisient foran x (≥1), m = konstant på venstre side
+   (positiv eller negativ), n = høyresiden (alltid ≥0).
+   Løst når k===1 og m===0 — da er n løsningen.
+   ═══════════════════════════════════════════════════ */
+
+function randInt(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+
+function genTask(index) {
+  let k, m, n, x;
+  if (index < 3) {
+    k = 1;
+    x = randInt(3 + index, 6 + index);
+    const a = randInt(1, 4 + index);
+    if (Math.random() < 0.5) {
+      m = a; n = x + a;
+    } else {
+      const aa = Math.min(a, x - 1);
+      m = -aa; n = x - aa;
+    }
+  } else if (index < 5) {
+    k = randInt(2, 3 + (index - 3));
+    x = randInt(3, 7 + index);
+    m = 0; n = k * x;
+  } else if (index < 8) {
+    k = randInt(2, 5);
+    x = randInt(2, 8);
+    const b = randInt(1, 6);
+    m = b; n = k * x + b;
+  } else {
+    k = randInt(2, 5);
+    x = randInt(3, 9);
+    const bmax = Math.min(8, k * x - 1);
+    const b = randInt(1, Math.max(1, bmax));
+    m = -b; n = k * x - b;
+  }
+  return { k, m, n, x, minSteps: (k === 1) ? 1 : (m === 0 ? 1 : 2) };
+}
+
+function buildSession() {
+  const used = new Set();
+  const tasks = [];
+  for (let i = 0; i < 10; i++) {
+    let t, sig, tries = 0;
+    do {
+      t = genTask(i);
+      sig = t.k + '_' + t.m + '_' + t.n;
+      tries++;
+    } while (used.has(sig) && tries < 30);
+    used.add(sig);
+    tasks.push(t);
+  }
+  return tasks;
+}
+
+function eqString(state) {
+  let left = state.k === 1 ? 'x' : (state.k + 'x');
+  if (state.m > 0) left += ' + ' + state.m;
+  else if (state.m < 0) left += ' − ' + Math.abs(state.m);
+  return left + ' = ' + state.n;
+}
+
+function buildAmounts(amt) {
+  if (amt <= 0) return [];
+  if (amt <= 3) {
+    const arr = [];
+    for (let i = 1; i <= amt; i++) arr.push(i);
+    return arr;
+  }
+  const d1 = 1, d2 = Math.max(2, Math.floor(amt / 2));
+  return Array.from(new Set([d1, d2, amt])).filter(v => v > 0 && v <= amt).sort((a, b) => a - b);
+}
+
+function getOperations(state) {
+  if (state.k === 1 && state.m === 0) return [];
+  if (state.m !== 0) {
+    const positive = state.m > 0;
+    const amt = Math.abs(state.m);
+    return buildAmounts(amt).map(a => ({
+      type: positive ? 'sub' : 'add',
+      amount: a,
+      label: (positive ? '−' : '+') + a + ' på begge sider',
+      sr: (positive ? 'Trekk fra ' : 'Legg til ') + a + ' på begge sider'
+    }));
+  }
+  const divisors = [state.k];
+  for (let d = 2; d < state.k; d++) {
+    if (state.k % d === 0) { divisors.unshift(d); break; }
+  }
+  return divisors.map(d => ({
+    type: 'div', amount: d,
+    label: '÷' + d + ' på begge sider',
+    sr: 'Del med ' + d + ' på begge sider'
+  }));
+}
+
+function applyOp(state, op) {
+  if (op.type === 'sub') return { k: state.k, m: state.m - op.amount, n: state.n - op.amount };
+  if (op.type === 'add') return { k: state.k, m: state.m + op.amount, n: state.n + op.amount };
+  return { k: state.k / op.amount, m: state.m / op.amount, n: state.n / op.amount };
+}
+
+/* ══════════════════ BRIKKER ══════════════════ */
+function makeTileEl(cls, text) {
+  const d = document.createElement('div');
+  d.className = cls;
+  d.textContent = text;
+  return d;
+}
+function makeXTile() { return makeTileEl('tile tile-x', 'x'); }
+function makeUnitTile(sign) { return makeTileEl('tile tile-unit' + (sign === 'neg' ? ' tile-neg' : ''), sign === 'neg' ? '−1' : '1'); }
+function makeMergedTile(sign, count) { return makeTileEl('tile tile-merged' + (sign === 'neg' ? ' tile-neg' : ''), (sign === 'neg' ? '−' : '') + count); }
+
+function appendConstTiles(container, count, sign) {
+  if (count <= 0) return;
+  if (count <= MERGE_THRESHOLD) {
+    for (let i = 0; i < count; i++) container.appendChild(makeUnitTile(sign));
+  } else {
+    container.appendChild(makeMergedTile(sign, count));
+  }
+}
+function appendXTiles(container, count) {
+  for (let i = 0; i < count; i++) container.appendChild(makeXTile());
+}
+
+const leftXStack = $('leftXStack');
+const leftConstStack = $('leftConstStack');
+const rightConstStack = $('rightConstStack');
+const eqDisplayEl = $('eqDisplay');
+const opsPanel = $('opsPanel');
+const srAnnounce = $('srAnnounce');
+
+function updateEqDisplay(state) {
+  eqDisplayEl.textContent = eqString(state);
+}
+
+function renderFullState(state) {
+  leftXStack.innerHTML = ''; leftConstStack.innerHTML = ''; rightConstStack.innerHTML = '';
+  appendXTiles(leftXStack, state.k);
+  if (state.m > 0) appendConstTiles(leftConstStack, state.m, 'pos');
+  else if (state.m < 0) appendConstTiles(leftConstStack, -state.m, 'neg');
+  appendConstTiles(rightConstStack, state.n, 'pos');
+  updateEqDisplay(state);
+}
+
+function diffConstStack(container, oldCount, newCount, sign, onDone) {
+  const merged = c => c > MERGE_THRESHOLD;
+  if (!merged(oldCount) && !merged(newCount)) {
+    if (newCount < oldCount) {
+      const toRemove = Array.from(container.querySelectorAll('.tile-unit')).slice(newCount);
+      if (toRemove.length === 0 || REDUCED_MOTION) { toRemove.forEach(el => el.remove()); onDone && onDone(); return; }
+      let remaining = toRemove.length;
+      toRemove.forEach(el => {
+        el.classList.add('tile-leaving');
+        el.addEventListener('animationend', () => { el.remove(); remaining--; if (remaining <= 0) onDone && onDone(); }, { once: true });
+      });
+    } else if (newCount > oldCount) {
+      const frag = document.createDocumentFragment();
+      for (let i = oldCount; i < newCount; i++) {
+        const el = makeUnitTile(sign);
+        if (!REDUCED_MOTION) el.classList.add('tile-entering');
+        frag.appendChild(el);
+      }
+      container.appendChild(frag);
+      onDone && onDone();
+    } else {
+      onDone && onDone();
+    }
+  } else {
+    const doSwap = () => {
+      container.innerHTML = '';
+      appendConstTiles(container, newCount, sign);
+      container.classList.remove('stack-fade-out');
+      if (!REDUCED_MOTION) container.classList.add('stack-fade-in');
+      onDone && onDone();
+    };
+    if (REDUCED_MOTION) { doSwap(); return; }
+    container.classList.add('stack-fade-out');
+    setTimeout(doSwap, 200);
+  }
+}
+
+function diffXStack(container, oldCount, newCount, onDone) {
+  if (newCount >= oldCount) { onDone && onDone(); return; }
+  const toRemove = Array.from(container.querySelectorAll('.tile-x')).slice(newCount);
+  if (toRemove.length === 0 || REDUCED_MOTION) { toRemove.forEach(el => el.remove()); onDone && onDone(); return; }
+  let remaining = toRemove.length;
+  toRemove.forEach(el => {
+    el.classList.add('tile-leaving');
+    el.addEventListener('animationend', () => { el.remove(); remaining--; if (remaining <= 0) onDone && onDone(); }, { once: true });
+  });
+}
+
+/* ══════════════════ SPILLFLYT ══════════════════ */
+let session = [], taskIndex = 0, current = null;
+let score = 0, stepsThisTask = 0, stepsRecord = [], shortestHits = 0, inputLocked = false;
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+
+function announce(text) {
+  srAnnounce.textContent = '';
+  requestAnimationFrame(() => { srAnnounce.textContent = text; });
+}
+
+function renderOps(state) {
+  const ops = getOperations(state);
+  opsPanel.innerHTML = '';
+  ops.forEach(op => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'op-btn';
+    btn.textContent = op.label;
+    btn.setAttribute('aria-label', op.sr + ' på begge sider');
+    btn.addEventListener('click', () => performOperation(op));
+    opsPanel.appendChild(btn);
+  });
+}
+function setOpsDisabled(disabled) {
+  Array.from(opsPanel.children).forEach(b => { b.disabled = disabled; });
+}
+
+function performOperation(op) {
+  if (inputLocked) return;
+  inputLocked = true;
+  setOpsDisabled(true);
+
+  const oldState = current;
+  const newState = applyOp(oldState, op);
+  stepsThisTask++;
+  $('hudSteps').textContent = String(stepsThisTask);
+
+  if (op.type === 'div') {
+    const allTiles = [...leftXStack.children, ...leftConstStack.children, ...rightConstStack.children];
+    const runDiff = () => {
+      let pending = 2;
+      const check = () => { pending--; if (pending <= 0) afterOperation(newState); };
+      diffXStack(leftXStack, oldState.k, newState.k, check);
+      diffConstStack(rightConstStack, oldState.n, newState.n, 'pos', check);
+    };
+    if (REDUCED_MOTION) { runDiff(); }
+    else {
+      allTiles.forEach(el => el.classList.add('tile-pulse'));
+      setTimeout(() => { allTiles.forEach(el => el.classList.remove('tile-pulse')); runDiff(); }, 260);
+    }
+  } else {
+    let pending = 2;
+    const check = () => { pending--; if (pending <= 0) afterOperation(newState); };
+    const leftSign = op.type === 'sub' ? 'pos' : 'neg';
+    diffConstStack(leftConstStack, Math.abs(oldState.m), Math.abs(newState.m), leftSign, check);
+    diffConstStack(rightConstStack, oldState.n, newState.n, 'pos', check);
+  }
+}
+
+function afterOperation(newState) {
+  current = newState;
+  updateEqDisplay(newState);
+  eqDisplayEl.classList.remove('eq-pulse');
+  void eqDisplayEl.offsetWidth;
+  if (!REDUCED_MOTION) eqDisplayEl.classList.add('eq-pulse');
+  announce('Ny likning: ' + eqString(newState));
+
+  if (newState.k === 1 && newState.m === 0) {
+    solveTask(newState);
+  } else {
+    renderOps(newState);
+    inputLocked = false;
+    setOpsDisabled(false);
+  }
+}
+
+function solveTask(state) {
+  score += 1;
+  $('hudScore').textContent = String(score);
+  stepsRecord.push(stepsThisTask);
+  const task = session[taskIndex];
+  if (stepsThisTask <= task.minSteps) shortestHits++;
+
+  opsPanel.innerHTML = '';
+  $('solvedMark').textContent = '✓ Løst! x = ' + state.n;
+  $('solvedSteps').textContent = 'Løst på ' + stepsThisTask + ' steg · Korteste løsning: ' + task.minSteps + ' steg';
+  const fb = $('feedbackRow');
+  fb.hidden = false;
+  requestAnimationFrame(() => fb.classList.add('show'));
+
+  announce('Løst! x er ' + state.n + '. Løst på ' + stepsThisTask + ' steg. Korteste løsning er ' + task.minSteps + ' steg.');
+  inputLocked = true;
+  $('btnNext').focus();
+}
+
+function loadTask(i) {
+  taskIndex = i;
+  const task = session[i];
+  current = { k: task.k, m: task.m, n: task.n };
+  stepsThisTask = 0;
+  $('hudSteps').textContent = '0';
+  $('hudTaskLabel').textContent = 'Oppgave ' + (i + 1) + ' av ' + session.length;
+
+  renderFullState(current);
+  renderOps(current);
+  inputLocked = false;
+  setOpsDisabled(false);
+
+  const fb = $('feedbackRow');
+  fb.hidden = true;
+  fb.classList.remove('show');
+
+  announce('Oppgave ' + (i + 1) + ' av ' + session.length + '. Likning: ' + eqString(current));
+}
+
+function startGame() {
+  session = buildSession();
+  score = 0; stepsRecord = []; shortestHits = 0;
+  $('hudScore').textContent = '0';
+  showScreen('screen-game');
+  loadTask(0);
+}
+
+function endGame() {
+  $('endScore').textContent = score + ' av ' + session.length;
+  const avg = stepsRecord.length ? (stepsRecord.reduce((a, b) => a + b, 0) / stepsRecord.length) : 0;
+  $('endAvg').textContent = String(Math.round(avg * 10) / 10);
+  $('endShortest').textContent = shortestHits + ' av ' + session.length;
+  showScreen('screen-end');
+}
+
+/* ══════════════════ EKSEMPEL PÅ STARTSKJERM (statisk) ══════════════════ */
+(function buildExample() {
+  function buildRow(container, kVal, mVal, nVal) {
+    container.innerHTML = '';
+    const leftGroup = document.createElement('div');
+    leftGroup.className = 'example-group';
+    for (let i = 0; i < kVal; i++) leftGroup.appendChild(makeXTile());
+    if (mVal > 0) appendConstTiles(leftGroup, mVal, 'pos');
+    const eqSign = document.createElement('span');
+    eqSign.className = 'example-eq-sign';
+    eqSign.textContent = '=';
+    const rightGroup = document.createElement('div');
+    rightGroup.className = 'example-group';
+    appendConstTiles(rightGroup, nVal, 'pos');
+    container.appendChild(leftGroup);
+    container.appendChild(eqSign);
+    container.appendChild(rightGroup);
+  }
+  buildRow($('exBefore'), 1, 2, 5);
+  buildRow($('exAfter'), 1, 0, 3);
+})();
+
+$('btn-start').addEventListener('click', startGame);
+$('btnNext').addEventListener('click', () => {
+  if (taskIndex + 1 >= session.length) endGame();
+  else loadTask(taskIndex + 1);
+});
+$('btn-again').addEventListener('click', startGame);
+</script>
+</body>
+</html>
