@@ -179,6 +179,10 @@
     box-shadow: 0 2px 0 rgba(0,0,0,.25);
   }
   .tile-merged.tile-neg { background: var(--neg); color: var(--neg-ink); }
+  .tile-merged-x {
+    width: auto; min-width: clamp(34px,9vw,46px); padding: 0 10px;
+    font-size: 1.02rem;
+  }
 
   @keyframes tileLeave { to { opacity: 0; transform: scale(.4) translateY(6px); } }
   .tile-leaving { animation: tileLeave .32s ease forwards; }
@@ -412,43 +416,87 @@ function eqString(state) {
   return left + ' = ' + state.n;
 }
 
-function buildAmounts(amt) {
-  if (amt <= 0) return [];
-  if (amt <= 3) {
-    const arr = [];
-    for (let i = 1; i <= amt; i++) arr.push(i);
-    return arr;
+/* Vekstgrenser: hindrer at spillere som bevisst velger "feil" retning
+   gjentatte ganger driver tallene mot uhåndterlige størrelser. Brikkene
+   slås sammen visuelt (MERGE_THRESHOLD) uansett størrelse, men grensene
+   holder oppgaven pedagogisk fornuftig og ×-valget forsvinner når det
+   ikke lenger gir mening å tilby det. */
+const MAX_M = 40;
+const MAX_K = 40;
+const MAX_N = 400;
+
+/* To ledd på venstre side (k*x + m = n, m ≠ 0): spilleren skal alltid
+   ha et reelt valg mellom å legge til og å trekke fra — ikke bare se
+   retningen som løser oppgaven. Det finnes alltid nøyaktig én operasjon
+   som fjerner konstantleddet helt (den "riktige"), pluss minst én i
+   motsatt retning, og — når leddet er stort nok — én som beveger seg
+   riktig vei uten å fullføre det. */
+function buildTwoTermOps(state) {
+  const m = state.m;
+  const amt = Math.abs(m);
+  const correctType = m > 0 ? 'sub' : 'add';
+  const oppositeType = m > 0 ? 'add' : 'sub';
+  const ops = [{ type: correctType, amount: amt }];
+
+  let oppAmt = Math.min(3, MAX_M - amt);
+  /* Trekk fra på begge sider kan aldri ta høyresiden under 0 — det
+     begrenser hvor langt "feil retning" kan presse tallene. */
+  if (oppositeType === 'sub') oppAmt = Math.min(oppAmt, state.n);
+  if (oppAmt >= 1) ops.push({ type: oppositeType, amount: oppAmt });
+
+  if (amt >= 2) {
+    const partial = amt <= 4 ? amt - 1 : Math.max(1, Math.floor(amt / 2));
+    if (partial > 0 && partial < amt) ops.push({ type: correctType, amount: partial });
   }
-  const d1 = 1, d2 = Math.max(2, Math.floor(amt / 2));
-  return Array.from(new Set([d1, d2, amt])).filter(v => v > 0 && v <= amt).sort((a, b) => a - b);
+  return ops;
+}
+
+/* Kun et faktorledd (k*x = n): spilleren skal ikke bare kunne trykke
+   det ene knappen som finnes. +k og −k er alltid lovlige (gir et nytt
+   konstantledd), ×k er lovlig så lenge tallene holder seg håndterlige,
+   og ÷k er alltid den operasjonen som løser oppgaven direkte. */
+function buildFactorOnlyOps(state) {
+  const k = state.k;
+  const ops = [
+    { type: 'sub', amount: k },
+    { type: 'add', amount: k },
+    { type: 'div', amount: k }
+  ];
+  if (k * k <= MAX_K && state.n * k <= MAX_N) {
+    ops.push({ type: 'mul', amount: k });
+  }
+  return ops;
+}
+
+function shuffleArr(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const OP_SYMBOL = { sub: '−', add: '+', mul: '×', div: '÷' };
+const OP_VERB = { sub: 'Trekk fra', add: 'Legg til', mul: 'Multipliser med', div: 'Del med' };
+
+function withLabel(op) {
+  return Object.assign({}, op, {
+    label: OP_SYMBOL[op.type] + op.amount + ' på begge sider',
+    sr: OP_VERB[op.type] + ' ' + op.amount + ' på begge sider'
+  });
 }
 
 function getOperations(state) {
   if (state.k === 1 && state.m === 0) return [];
-  if (state.m !== 0) {
-    const positive = state.m > 0;
-    const amt = Math.abs(state.m);
-    return buildAmounts(amt).map(a => ({
-      type: positive ? 'sub' : 'add',
-      amount: a,
-      label: (positive ? '−' : '+') + a + ' på begge sider',
-      sr: (positive ? 'Trekk fra ' : 'Legg til ') + a + ' på begge sider'
-    }));
-  }
-  const divisors = [state.k];
-  for (let d = 2; d < state.k; d++) {
-    if (state.k % d === 0) { divisors.unshift(d); break; }
-  }
-  return divisors.map(d => ({
-    type: 'div', amount: d,
-    label: '÷' + d + ' på begge sider',
-    sr: 'Del med ' + d + ' på begge sider'
-  }));
+  const raw = state.m !== 0 ? buildTwoTermOps(state) : buildFactorOnlyOps(state);
+  return shuffleArr(raw.map(withLabel));
 }
 
 function applyOp(state, op) {
   if (op.type === 'sub') return { k: state.k, m: state.m - op.amount, n: state.n - op.amount };
   if (op.type === 'add') return { k: state.k, m: state.m + op.amount, n: state.n + op.amount };
+  if (op.type === 'mul') return { k: state.k * op.amount, m: state.m * op.amount, n: state.n * op.amount };
   return { k: state.k / op.amount, m: state.m / op.amount, n: state.n / op.amount };
 }
 
@@ -462,6 +510,7 @@ function makeTileEl(cls, text) {
 function makeXTile() { return makeTileEl('tile tile-x', 'x'); }
 function makeUnitTile(sign) { return makeTileEl('tile tile-unit' + (sign === 'neg' ? ' tile-neg' : ''), sign === 'neg' ? '−1' : '1'); }
 function makeMergedTile(sign, count) { return makeTileEl('tile tile-merged' + (sign === 'neg' ? ' tile-neg' : ''), (sign === 'neg' ? '−' : '') + count); }
+function makeMergedXTile(count) { return makeTileEl('tile tile-x tile-merged-x', count + 'x'); }
 
 function appendConstTiles(container, count, sign) {
   if (count <= 0) return;
@@ -472,7 +521,12 @@ function appendConstTiles(container, count, sign) {
   }
 }
 function appendXTiles(container, count) {
-  for (let i = 0; i < count; i++) container.appendChild(makeXTile());
+  if (count <= 0) return;
+  if (count <= MERGE_THRESHOLD) {
+    for (let i = 0; i < count; i++) container.appendChild(makeXTile());
+  } else {
+    container.appendChild(makeMergedXTile(count));
+  }
 }
 
 const leftXStack = $('leftXStack');
@@ -495,22 +549,37 @@ function renderFullState(state) {
   updateEqDisplay(state);
 }
 
-function diffConstStack(container, oldCount, newCount, sign, onDone) {
+/* Felles diff-logikk for både x-brikker og enhetsbrikker: så lenge
+   verken gammelt eller nytt antall er over MERGE_THRESHOLD, animeres
+   kun differansen (brikker som forsvinner/dukker opp). Krysser antallet
+   sammenslåingsgrensen (typisk etter × på begge sider), toner hele
+   stabelen om i stedet — det unngår rare mellomtilstander med både
+   enkeltbrikker og en sammenslått brikke samtidig. */
+function diffStack(container, oldCount, newCount, selector, makeOne, appendFn, onDone) {
   const merged = c => c > MERGE_THRESHOLD;
   if (!merged(oldCount) && !merged(newCount)) {
     if (newCount < oldCount) {
-      const toRemove = Array.from(container.querySelectorAll('.tile-unit')).slice(newCount);
+      const toRemove = Array.from(container.querySelectorAll(selector)).slice(newCount);
       if (toRemove.length === 0 || REDUCED_MOTION) { toRemove.forEach(el => el.remove()); onDone && onDone(); return; }
       let remaining = toRemove.length;
       toRemove.forEach(el => {
+        /* En brikke som ble lagt til tidligere kan fortsatt bære klassen
+           tile-entering (se append-grenen under) — den definerer også
+           animation-egenskapen og vinner kaskaden over tile-leaving siden
+           den kommer sist i stilarket, så animationend ville aldri
+           utløses for den uten denne opprenskingen. */
+        el.classList.remove('tile-entering');
         el.classList.add('tile-leaving');
         el.addEventListener('animationend', () => { el.remove(); remaining--; if (remaining <= 0) onDone && onDone(); }, { once: true });
       });
     } else if (newCount > oldCount) {
       const frag = document.createDocumentFragment();
       for (let i = oldCount; i < newCount; i++) {
-        const el = makeUnitTile(sign);
-        if (!REDUCED_MOTION) el.classList.add('tile-entering');
+        const el = makeOne();
+        if (!REDUCED_MOTION) {
+          el.classList.add('tile-entering');
+          el.addEventListener('animationend', () => el.classList.remove('tile-entering'), { once: true });
+        }
         frag.appendChild(el);
       }
       container.appendChild(frag);
@@ -521,9 +590,12 @@ function diffConstStack(container, oldCount, newCount, sign, onDone) {
   } else {
     const doSwap = () => {
       container.innerHTML = '';
-      appendConstTiles(container, newCount, sign);
-      container.classList.remove('stack-fade-out');
-      if (!REDUCED_MOTION) container.classList.add('stack-fade-in');
+      appendFn(container, newCount);
+      container.classList.remove('stack-fade-out', 'stack-fade-in');
+      if (!REDUCED_MOTION) {
+        void container.offsetWidth;
+        container.classList.add('stack-fade-in');
+      }
       onDone && onDone();
     };
     if (REDUCED_MOTION) { doSwap(); return; }
@@ -532,15 +604,12 @@ function diffConstStack(container, oldCount, newCount, sign, onDone) {
   }
 }
 
+function diffConstStack(container, oldCount, newCount, sign, onDone) {
+  diffStack(container, oldCount, newCount, '.tile-unit', () => makeUnitTile(sign), (c, n) => appendConstTiles(c, n, sign), onDone);
+}
+
 function diffXStack(container, oldCount, newCount, onDone) {
-  if (newCount >= oldCount) { onDone && onDone(); return; }
-  const toRemove = Array.from(container.querySelectorAll('.tile-x')).slice(newCount);
-  if (toRemove.length === 0 || REDUCED_MOTION) { toRemove.forEach(el => el.remove()); onDone && onDone(); return; }
-  let remaining = toRemove.length;
-  toRemove.forEach(el => {
-    el.classList.add('tile-leaving');
-    el.addEventListener('animationend', () => { el.remove(); remaining--; if (remaining <= 0) onDone && onDone(); }, { once: true });
-  });
+  diffStack(container, oldCount, newCount, '.tile-x:not(.tile-merged-x)', makeXTile, appendXTiles, onDone);
 }
 
 /* ══════════════════ SPILLFLYT ══════════════════ */
@@ -584,7 +653,7 @@ function performOperation(op) {
   stepsThisTask++;
   $('hudSteps').textContent = String(stepsThisTask);
 
-  if (op.type === 'div') {
+  if (op.type === 'div' || op.type === 'mul') {
     const allTiles = [...leftXStack.children, ...leftConstStack.children, ...rightConstStack.children];
     const runDiff = () => {
       let pending = 2;
@@ -600,7 +669,10 @@ function performOperation(op) {
   } else {
     let pending = 2;
     const check = () => { pending--; if (pending <= 0) afterOperation(newState); };
-    const leftSign = op.type === 'sub' ? 'pos' : 'neg';
+    /* Fortegnet på venstre konstantstabel følger fortegnet til det
+       leddet som faktisk finnes (før eller etter) — ikke selve
+       operasjonstypen, siden −k/+k nå også kan brukes fra m===0. */
+    const leftSign = (oldState.m !== 0 ? oldState.m : newState.m) < 0 ? 'neg' : 'pos';
     diffConstStack(leftConstStack, Math.abs(oldState.m), Math.abs(newState.m), leftSign, check);
     diffConstStack(rightConstStack, oldState.n, newState.n, 'pos', check);
   }
