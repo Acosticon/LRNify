@@ -1,7 +1,7 @@
 rules_version = '2';
 
-// Firestore brukes bare av Fjordvokterne-veggen (loype/drobak-akvarium/).
-// Alt annet er stengt.
+// Firestore brukes av Fjordvokterne-veggen (loype/drobak-akvarium/) og av
+// forslagsskjemaet på forsiden (index.html). Alt annet er stengt.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -18,6 +18,34 @@ service cloud.firestore {
                     && request.resource.data.tid is int
                     && request.resource.data.tid <= request.time.toMillis() + 300000;
       allow update, delete: if false;
+    }
+
+    // Forslag/tilbakemeldinger/bestillinger fra forsidens CTA-skjema.
+    // Ingen kan lese listen tilbake (bare LRNify-eier via Firebase-konsollen,
+    // som går utenom disse reglene). "to" er låst til én fast adresse, slik
+    // at feltet ikke kan misbrukes til å sende e-post til andre mottakere —
+    // se firebase/README.md for hvordan "Trigger Email"-utvidelsen bruker
+    // to/message til å videresende innsendinger som e-post.
+    match /feedback/{doc} {
+      allow read: if false;
+      allow update, delete: if false;
+      allow create: if request.resource.data.keys().hasAll(['type', 'melding', 'side', 'opprettet', 'to', 'message'])
+                    && request.resource.data.keys().hasOnly(['type', 'melding', 'kontakt', 'side', 'opprettet', 'to', 'message'])
+                    && request.resource.data.type in ['forslag', 'tilbakemelding', 'bestilling']
+                    && request.resource.data.melding is string
+                    && request.resource.data.melding.size() > 0 && request.resource.data.melding.size() <= 2000
+                    && (!('kontakt' in request.resource.data)
+                        || (request.resource.data.kontakt is string && request.resource.data.kontakt.size() <= 200))
+                    && request.resource.data.side is string && request.resource.data.side.size() <= 200
+                    && request.resource.data.opprettet is int
+                    && request.resource.data.opprettet <= request.time.toMillis() + 300000
+                    && request.resource.data.to is list && request.resource.data.to == ['kontakt@lrnify.no']
+                    && request.resource.data.message is map
+                    && request.resource.data.message.keys().hasOnly(['subject', 'text'])
+                    && request.resource.data.message.subject is string
+                    && request.resource.data.message.subject.size() > 0 && request.resource.data.message.subject.size() <= 200
+                    && request.resource.data.message.text is string
+                    && request.resource.data.message.text.size() > 0 && request.resource.data.message.text.size() <= 3000;
     }
 
     match /{document=**} {

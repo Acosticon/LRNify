@@ -13,6 +13,7 @@ gang uten å la hvem som helst skrive hva som helst.
 | `aktiviteter/genetikhjul/` | Realtime Database | `genetikhjul/{KLASSEKODE}` | Elev sender inn én profil, lærerens tavle nullstiller klassen |
 | `aktiviteter/temaspinner/` | Realtime Database | `temaspinner/{ROMKODE}` | Lærer lager rom, deler ut temaer og styrer klokka; elev melder seg på og ber om bytte |
 | `loype/drobak-akvarium/` | Firestore | `fjordvoktere` | Legger til ett lag på veggen (`{ lag, tid }`) |
+| `index.html` (forsidens CTA-skjema) | Firestore | `feedback` | Besøkende sender inn forslag/tilbakemelding/bestilling |
 
 Ingen av appene ber brukeren logge inn, så reglene kan i hovedsak ikke kreve
 `auth != null`. Sikkerheten ligger i at romkoden må være kjent, og i at reglene
@@ -165,7 +166,48 @@ pålogging blir slått av igjen.
 
 * `fjordvoktere` kan leses av alle og legges til av alle, men eksisterende rader
   kan ikke endres eller slettes. Dokumentet må være nøyaktig `{ lag, tid }`.
+* `feedback` kan bare skrives til, ikke leses (se eget avsnitt under). `to` er
+  låst til nøyaktig `["kontakt@lrnify.no"]`, så feltet ikke kan misbrukes til
+  å sende e-post til andre adresser.
 * Alle andre samlinger er stengt.
+
+## Forslagsskjemaet på forsiden (`feedback`)
+
+Knappen "Send inn forslag →" på `index.html` skriver ett dokument til
+Firestore-samlingen `feedback` per innsending: `{ type, melding, kontakt?,
+side, opprettet, to, message: { subject, text } }`. Ingen pålogging kreves —
+sikkerheten ligger i at reglene låser formen på dokumentet og alltid tvinger
+`to` til `kontakt@lrnify.no` (se `firebase/firestore.rules`).
+
+**Lese innsendinger:** siden `allow read` er `false`, kan ingen på nettsiden
+liste opp innsendte forslag. Du leser dem selv i
+[Firebase Console → Firestore Database → `feedback`](https://console.firebase.google.com/project/poll-c6bd2/firestore/data/feedback).
+
+**Videresend som e-post til kontakt@lrnify.no (valgfritt, gjøres i konsollen):**
+dokumentene er allerede formet slik at de kan konsumeres direkte av Firebases
+offisielle utvidelse [«Trigger Email from Firestore»](https://extensions.dev/extensions/firebase/firestore-send-email)
+— ingen egen kode eller Cloud Function-deploy trengs fra dette repoet.
+
+1. Prosjektet må stå på **Blaze**-planen (pay-as-you-go) for at utvidelser skal
+   kunne installeres — se [console.firebase.google.com/project/poll-c6bd2/usage/details](https://console.firebase.google.com/project/poll-c6bd2/usage/details).
+2. Skaff en SMTP-tilgang til å sende e-post fra (f.eks. et app-passord på et
+   Gmail-abonnement, eller en gratis konto hos en transaksjonell e-posttjeneste
+   som Brevo/SendGrid/Mailgun).
+3. Gå til [Extensions](https://console.firebase.google.com/project/poll-c6bd2/extensions)
+   → **Install extension** → søk opp «Trigger Email from Firestore» → installer.
+4. Under konfigurasjonen:
+   - **SMTP connection URI**: fra steg 2.
+   - **Email documents collection**: sett til `feedback` (ikke standardverdien
+     `mail`) — det er samlingen skjemaet faktisk skriver til.
+   - **Default FROM address**: en avsenderadresse du har tilgang til å sende
+     fra, f.eks. `noreply@lrnify.no` eller den samme som SMTP-kontoen.
+5. Publiser. Fra da av sender utvidelsen automatisk en e-post til
+   `kontakt@lrnify.no` for hver ny rad i `feedback`, og skriver
+   leveringsstatus tilbake i samme dokument (`delivery`-feltet) — de blir
+   liggende i Firestore som en logg i tillegg til e-posten.
+
+Uten dette steget fungerer skjemaet likevel: innsendinger lagres trygt i
+Firestore, du finner dem bare da kun i konsollen, ikke i innboksen.
 
 ## Det reglene ikke løser
 
@@ -184,3 +226,9 @@ pålogging blir slått av igjen.
 * **Fjordvokter-veggen** har ingen pålogging og er fortsatt åpen for påfyll av
   hvem som helst. Rader kan ikke slettes eller endres, så det verste som kan
   skje er tullenavn på lista.
+* **Forslagsskjemaet** har et enkelt honeypot-felt i skjemaet (skjult for
+  mennesker, ofte fylt ut av bots) som stopper de enkleste botene lokalt uten
+  å skrive noe til Firestore. Det stopper ikke noen som skriver et skript mot
+  Firestore direkte — reglene begrenser da bare *formen* på det som kan
+  skrives (tekstlengder, fast mottaker), ikke frekvensen. Blir det et problem,
+  er App Check (se punktet over) samme løsning her som ellers.
