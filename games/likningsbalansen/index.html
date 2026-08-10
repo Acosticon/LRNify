@@ -653,6 +653,15 @@ function renderOps(state) {
     btn.addEventListener('click', () => performOperation(op));
     opsPanel.appendChild(btn);
   });
+  /* Uten dette kan en musepeker som står stille "arve" :hover-stilen
+     til en helt ny knapp som tilfeldigvis dukker opp akkurat der
+     markøren allerede er (typisk rett etter at forrige knapp ble
+     trykket) — knappen ser da valgt ut selv om ingen har trykket eller
+     beveget musen dit. Kort deaktivering av pointer-events tvinger
+     nettleseren til først å regne :hover på nytt idet musen faktisk
+     beveger seg videre. */
+  opsPanel.style.pointerEvents = 'none';
+  requestAnimationFrame(() => { requestAnimationFrame(() => { opsPanel.style.pointerEvents = ''; }); });
 }
 function setOpsDisabled(disabled) {
   Array.from(opsPanel.children).forEach(b => { b.disabled = disabled; });
