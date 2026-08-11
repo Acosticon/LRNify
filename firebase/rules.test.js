@@ -272,5 +272,52 @@ check('kjempelangt tema', false, db(tp(), LARER).write(tPath + '/elever/' + ELEV
 check('urimelig lang varighet', false, db(tp(), LARER).write(tPath + '/varighetMs', 99999999));
 check('skriver rett på /temaspinner', false, db({}, LARER).write('/temaspinner', { evil: true }));
 
+/* ── lrnify-auth.js (auth/lrnify-auth.js): users/, resultater/, og de nye
+   eierUid/delteUider/klasseId-feltene på rooms/. LARER2 er en annen innlogget
+   lærer, brukt til å bekrefte at data er strengt privat per lærer. */
+const LARER2 = { uid: 'larer-2', provider: 'google.com' };
+
+console.log('--- users: lærerens flyt');
+const profilData = { navn: 'Kari Lærer', epost: 'kari@skole.no', opprettet: now };
+const brukerDb = { users: { [LARER.uid]: { profile: profilData } } };
+check('lærer skriver sin egen profil', true, db({}, LARER).write('/users/' + LARER.uid + '/profile', profilData));
+check('lærer leser sin egen profil', true, db(brukerDb, LARER).read('/users/' + LARER.uid + '/profile'));
+check('lærer legger til en klasse', true, db(brukerDb, LARER).write('/users/' + LARER.uid + '/klasser/-Nk1', { navn: '9B', trinn: '9', opprettet: now }));
+check('lærer lagrer spillinnstillinger (fritt innhold)', true, db(brukerDb, LARER).write('/users/' + LARER.uid + '/spillinnstillinger/temaspinner', { favorittTema: 'norsk', dybde: { nivaa: 2 } }));
+
+console.log('--- users: personvern og isolasjon');
+check('annen lærer leser profilen', false, db(brukerDb, LARER2).read('/users/' + LARER.uid + '/profile'));
+check('annen lærer skriver i en annens konto', false, db(brukerDb, LARER2).write('/users/' + LARER.uid + '/profile', profilData));
+check('uinnlogget leser en profil', false, db(brukerDb, null).read('/users/' + LARER.uid + '/profile'));
+check('uinnlogget skriver en profil', false, db({}, null).write('/users/' + LARER.uid + '/profile', profilData));
+check('lister opp /users', false, db(brukerDb, LARER).read('/users'));
+check('profil uten epost', false, db({}, LARER).write('/users/' + LARER.uid + '/profile', { navn: 'Kari', opprettet: now }));
+check('profil med ekstra metadata', false, db({}, LARER).write('/users/' + LARER.uid + '/profile', Object.assign({}, profilData, { skole: 'Eik skole' })));
+check('lærer skriver i en annens klasseliste', false, db(brukerDb, LARER2).write('/users/' + LARER.uid + '/klasser/-Nk2', { navn: '9C', trinn: '9', opprettet: now }));
+
+console.log('--- resultater: aggregert, aldri navngitt');
+const oktData = { dato: now, romkode: 'ABCD', riktige: 12, deltakere: 24 };
+const resultatDb = { resultater: { [LARER.uid]: { temaspinner: { '-No1': oktData } } } };
+check('lærer lagrer en aggregert økt', true, db({}, LARER).write('/resultater/' + LARER.uid + '/temaspinner/-No1', oktData));
+check('lærer leser egne resultater', true, db(resultatDb, LARER).read('/resultater/' + LARER.uid));
+check('annen lærer leser resultatene', false, db(resultatDb, LARER2).read('/resultater/' + LARER.uid));
+check('uinnlogget leser resultater', false, db(resultatDb, null).read('/resultater/' + LARER.uid));
+check('økt uten romkode', false, db({}, LARER).write('/resultater/' + LARER.uid + '/temaspinner/-No2', { dato: now }));
+check('navngitt elevresultat forsøkt lagret', false, db({}, LARER).write('/resultater/' + LARER.uid + '/temaspinner/-No2', Object.assign({}, oktData, { elever: { '-e1': { navn: 'Ida', poeng: 4 } } })));
+
+console.log('--- rooms: eierUid/delteUider/klasseId/spill (lrnify-auth)');
+const eidPollMedEier = Object.assign({}, eidPoll, { eierUid: LARER.uid, spill: 'klassepoll' });
+check('lærer oppretter rom med eierUid + spill (som LRNifyAuth.opprettRom)', true, db({}, LARER).write('/rooms/ABC123', eidPollMedEier));
+check('lærer setter klasseId på eget rom etterpå', true, db({ rooms: { ABC123: eidPollMedEier } }, LARER).write('/rooms/ABC123/klasseId', '-Nk1'));
+check('lærer leser eget klasseId', true, db({ rooms: { ABC123: Object.assign({}, eidPollMedEier, { klasseId: '-Nk1' }) } }, LARER).read('/rooms/ABC123/klasseId'));
+check('elev leser eierUid (offentlig, som resten av rommet)', true, db({ rooms: { ABC123: eidPollMedEier } }, ELEV).read('/rooms/ABC123/eierUid'));
+check('en lærer forsøker å adoptere et allerede eksisterende (anonymt) rom', false, db(nyttRom, LARER2).write('/rooms/ABC123/eierUid', LARER2.uid));
+check('en lærer setter en annens uid som eierUid', false, db({}, LARER2).write('/rooms/ABC123/eierUid', LARER.uid));
+check('en annen lærer setter klasseId på noen andres rom', false, db({ rooms: { ABC123: eidPollMedEier } }, LARER2).write('/rooms/ABC123/klasseId', '-Nk9'));
+check('lærer 2 skriver seg selv inn i delteUider på et rom uten eierUid', false, db(nyttRom, LARER2).write('/rooms/ABC123/delteUider/' + LARER2.uid, true));
+check('ugyldig spillnavn (stor bokstav)', false, db({}, LARER).write('/rooms/ABC123', Object.assign({}, eidPollMedEier, { spill: 'KlassePoll' })));
+check('eier deler rommet med en kollega (forberedt, ikke i bruk i v1-UI)', true, db({ rooms: { ABC123: eidPollMedEier } }, LARER).write('/rooms/ABC123/delteUider/' + LARER2.uid, true));
+check('gammelt rom uten eierUid fungerer fortsatt uendret', true, db({}, null).write('/rooms/ABC123', basePoll));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
