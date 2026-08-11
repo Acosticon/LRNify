@@ -14,6 +14,7 @@ gang uten å la hvem som helst skrive hva som helst.
 | `aktiviteter/temaspinner/` | Realtime Database | `temaspinner/{ROMKODE}` | Lærer lager rom, deler ut temaer og styrer klokka; elev melder seg på og ber om bytte |
 | `loype/drobak-akvarium/` | Firestore | `fjordvoktere` | Legger til ett lag på veggen (`{ lag, tid }`) |
 | `index.html` (forsidens CTA-skjema) | Firestore | `feedback` | Besøkende sender inn forslag/tilbakemelding/bestilling |
+| `bruk/lrnify-bruk.js` (alle sider) | Realtime Database | `bruk/{dato}/{side}/{hendelse}` | Teller opp én sidevisning — anonymt, se `bruk/README.md` |
 
 **`auth/lrnify-auth.js`** (se `auth/README.md`) er en delt innloggingsmodul
 for lærere (Google/e-post) som ikke er koblet til noe spill ennå — den er

@@ -420,5 +420,42 @@ check('annen lærer kan ikke slette mitt rom', false, db(profilKlasseRom, LARER2
 check('annen lærer kan ikke slette min konto-data', false, db(profilKlasseRom, LARER2).write('/users/' + LARER.uid, null));
 check('annen lærer kan ikke slette mine resultater', false, db(profilKlasseRom, LARER2).write('/resultater/' + LARER.uid, null));
 
+/* ── /bruk/: anonym besøksstatistikk (bruk/lrnify-bruk.js) ────────────────
+   Telleren skriver ett tall uten pålogging, og skal ikke kunne brukes til
+   noe annet enn å telle oppover. Ingen kan lese tallene uten admin-flagg,
+   og ingen kan telle ned, sette et vilkårlig tall eller slette historikk
+   — heller ikke den som selv la den inn. */
+console.log('--- bruk: telling (uinnlogget besøkende) ---');
+const IDAG = new Date(now).toISOString().slice(0, 10);
+const P = '/bruk/' + IDAG + '/games-3s1f/visning';
+const tomStat   = {};
+const statMed40 = { bruk: { [IDAG]: { 'games-3s1f': { visning: 40 } } } };
+const ADMIN = { uid: 'admin-1', provider: 'google.com' };
+const medAdmin = Object.assign({ users: { [ADMIN.uid]: { admin: true } } }, statMed40);
+
+check('første besøk oppretter telleren på 1', true, db(tomStat, null).write(P, 1));
+check('neste besøk teller opp med 1', true, db(statMed40, null).write(P, 41));
+check('en ny hendelsestype kan tas i bruk uten regelendring', true, db(statMed40, null).write('/bruk/' + IDAG + '/games-3s1f/runde-fullfort', 1));
+
+console.log('--- bruk: telleren kan ikke misbrukes ---');
+check('oppretter telleren på et vilkårlig tall', false, db(tomStat, null).write(P, 5000));
+check('hopper over flere tall om gangen', false, db(statMed40, null).write(P, 60));
+check('teller nedover', false, db(statMed40, null).write(P, 39));
+check('sletter en dags statistikk', false, db(statMed40, null).write('/bruk/' + IDAG, null));
+check('sletter en enkelt teller', false, db(statMed40, null).write(P, null));
+check('overskriver hele bruk-treet', false, db(statMed40, null).write('/bruk', { x: 1 }));
+check('skriver tekst i stedet for tall', false, db(tomStat, null).write(P, 'mange'));
+check('ugyldig datonøkkel', false, db(tomStat, null).write('/bruk/i-fjor/games-3s1f/visning', 1));
+check('ugyldig sidenøkkel (store bokstaver)', false, db(tomStat, null).write('/bruk/' + IDAG + '/Games-3S1F/visning', 1));
+check('ugyldig hendelsesnøkkel', false, db(tomStat, null).write('/bruk/' + IDAG + '/games-3s1f/visning!', 1));
+check('legger inn et objekt i stedet for en teller', false, db(tomStat, null).write('/bruk/' + IDAG + '/games-3s1f', { visning: 1 }));
+
+console.log('--- bruk: lesing er forbeholdt admin ---');
+check('uinnlogget leser statistikken', false, db(statMed40, null).read('/bruk'));
+check('vanlig innlogget lærer leser statistikken', false, db(medAdmin, LARER).read('/bruk'));
+check('vanlig lærer leser én enkelt teller', false, db(medAdmin, LARER).read(P));
+check('admin leser statistikken', true, db(medAdmin, ADMIN).read('/bruk'));
+check('lærer kan ikke gjøre seg selv til admin', false, db(medAdmin, LARER).write('/users/' + LARER.uid + '/admin', true));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
