@@ -313,6 +313,20 @@
             "opprettet": {
               ".validate": "newData.isNumber() && newData.val() <= now + 300000"
             },
+            "elever": {
+              "$i": {
+                ".validate": "$i.matches(/^[0-9]{1,3}$/) && newData.hasChild('navn')",
+                "navn": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+                },
+                "kjonn": {
+                  ".validate": "newData.isString() && newData.val().matches(/^(j|g|a)$/)"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
             "$other": {
               ".validate": false
             }

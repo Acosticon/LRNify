@@ -295,6 +295,42 @@ check('profil uten epost', false, db({}, LARER).write('/users/' + LARER.uid + '/
 check('profil med ekstra metadata', false, db({}, LARER).write('/users/' + LARER.uid + '/profile', Object.assign({}, profilData, { skole: 'Eik skole' })));
 check('lærer skriver i en annens klasseliste', false, db(brukerDb, LARER2).write('/users/' + LARER.uid + '/klasser/-Nk2', { navn: '9C', trinn: '9', opprettet: now }));
 
+/* ── Klasselister (LRNifyAuth.lagreKlasse/hentKlasser) ─────────────────────
+   Elevfornavn er den eneste elevdataen i hele strukturen, og ligger strengt
+   privat under lærerens konto. Testene under låser formen: navn og kjønn,
+   ingenting mer — særlig ikke relasjoner mellom elever («må ikke sitte
+   sammen»), som skal bli liggende lokalt på lærerens maskin. */
+console.log('--- klasser: lagrede klasselister');
+const klasse9b = {
+  navn: '9B', trinn: '9', opprettet: now,
+  elever: [{ navn: 'Ida', kjonn: 'j' }, { navn: 'Jonas', kjonn: 'g' }, { navn: 'Alex', kjonn: 'a' }]
+};
+const klasseSti = '/users/' + LARER.uid + '/klasser/k1';
+const medKlasse = { users: { [LARER.uid]: { klasser: { k1: klasse9b } } } };
+
+check('lærer lagrer en klasse med elever', true, db({}, LARER).write(klasseSti, klasse9b));
+check('lærer leser sine egne klasser', true, db(medKlasse, LARER).read('/users/' + LARER.uid + '/klasser'));
+check('lærer oppdaterer klassen', true, db(medKlasse, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida', kjonn: 'j' }] })));
+check('lærer sletter klassen', true, db(medKlasse, LARER).write(klasseSti, null));
+check('klasse uten kjønn oppgitt', true, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida' }] })));
+
+console.log('--- klasser: strengt privat');
+check('annen lærer leser klasselista', false, db(medKlasse, LARER2).read('/users/' + LARER.uid + '/klasser'));
+check('annen lærer leser én klasse', false, db(medKlasse, LARER2).read(klasseSti));
+check('uinnlogget leser klasselista', false, db(medKlasse, null).read(klasseSti));
+check('elev (anonym) leser klasselista', false, db(medKlasse, ELEV).read(klasseSti));
+check('annen lærer skriver i klasselista', false, db(medKlasse, LARER2).write(klasseSti, klasse9b));
+
+console.log('--- klasser: formen er låst (ingen sensitive tillegg)');
+check('relasjonsregel «må ikke sitte sammen»', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { ikkeSammen: [['Ida', 'Jonas']] })));
+check('elev med notat om atferd', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida', kjonn: 'j', notat: 'urolig' }] })));
+check('elev med fødselsdato', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida', kjonn: 'j', fodt: '2011-04-02' }] })));
+check('elev uten navn', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ kjonn: 'j' }] })));
+check('tomt elevnavn', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: '', kjonn: 'j' }] })));
+check('ugyldig kjønnsverdi', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida', kjonn: 'jente' }] })));
+check('kjempelangt elevnavn', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'x'.repeat(80), kjonn: 'j' }] })));
+check('klasse uten navn', false, db({}, LARER).write(klasseSti, { trinn: '9', opprettet: now, elever: [{ navn: 'Ida' }] }));
+
 console.log('--- resultater: aggregert, aldri navngitt');
 const oktData = { dato: now, romkode: 'ABCD', riktige: 12, deltakere: 24 };
 const resultatDb = { resultater: { [LARER.uid]: { temaspinner: { '-No1': oktData } } } };

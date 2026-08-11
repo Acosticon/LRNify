@@ -355,6 +355,96 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════════
+     KLASSELISTER
+     Lar læreren slippe å taste inn de samme 28 navnene på nytt for hvert
+     verktøy og hver økt — velg «9B» i stedet.
+
+     Her lagres elevfornavn. Det er den ENESTE elevdataen noe sted i denne
+     strukturen, og den ligger strengt privat under lærerens egen konto.
+     Legg aldri til noe mer om enkeltelever her: ikke etternavn, ikke
+     fødselsdato, ikke vurderinger, og ikke relasjoner mellom elever
+     («må ikke sitte sammen» o.l.) — slikt hører hjemme lokalt på lærerens
+     maskin, ikke i skya. Reglene håndhever formen: hver elev kan bare ha
+     navn og kjønn, ingenting annet.
+     ══════════════════════════════════════════════════════════════════════ */
+
+  // Elever normaliseres til { navn, kjonn } der kjonn er j/g/a (annet).
+  function reinElev(e) {
+    const navn = String((e && (e.navn != null ? e.navn : e.name)) || '').trim();
+    let kjonn = String((e && (e.kjonn != null ? e.kjonn : e.gender)) || 'a').trim().toLowerCase();
+    if (kjonn !== 'j' && kjonn !== 'g') kjonn = 'a';
+    return navn ? { navn: navn.slice(0, 40), kjonn } : null;
+  }
+
+  /**
+   * Lagrer (eller oppdaterer) en klasseliste under lærerens konto.
+   *
+   * @param {{klasseId?: string, navn: string, trinn?: string,
+   *          elever: Array<{navn: string, kjonn?: string}>}} klasse
+   *        Uten klasseId opprettes en ny; med klasseId overskrives den.
+   * @returns {Promise<{klasseId: string}>}
+   */
+  async function lagreKlasse(klasse) {
+    kreverInit();
+    const uid = getCurrentUid();
+    if (!uid) throw new Error('Du må være innlogget for å lagre en klasse.');
+    if (!klasse || !klasse.navn || !String(klasse.navn).trim()) {
+      throw new Error('Klassen må ha et navn, f.eks. «9B».');
+    }
+
+    const elever = (klasse.elever || []).map(reinElev).filter(Boolean);
+    if (!elever.length) throw new Error('Klassen må ha minst én elev.');
+    if (elever.length > 999) throw new Error('Klassen kan ha maks 999 elever.');
+
+    const klasseId = klasse.klasseId || ('k' + Date.now().toString(36));
+    await FB.set(FB.ref(FB.db, 'users/' + uid + '/klasser/' + klasseId), {
+      navn: String(klasse.navn).trim().slice(0, 60),
+      trinn: String(klasse.trinn || '').trim().slice(0, 20),
+      opprettet: Date.now(),
+      elever
+    });
+    return { klasseId };
+  }
+
+  /**
+   * Henter lærerens lagrede klasser, nyeste først.
+   * @returns {Promise<Array<{klasseId, navn, trinn, opprettet, elever}>>}
+   */
+  async function hentKlasser() {
+    kreverInit();
+    const uid = getCurrentUid();
+    if (!uid) return [];
+
+    const snap = await FB.get(FB.ref(FB.db, 'users/' + uid + '/klasser'));
+    if (!snap.exists()) return [];
+
+    const ut = [];
+    snap.forEach(barn => {
+      const v = barn.val() || {};
+      ut.push({
+        klasseId: barn.key,
+        navn: v.navn || '',
+        trinn: v.trinn || '',
+        opprettet: v.opprettet || 0,
+        // RTDB gir arrays tilbake som array, men et hull i indeksene gjør
+        // det til et objekt — normaliser så kalleren alltid får en liste.
+        elever: v.elever ? Object.keys(v.elever).map(k => v.elever[k]).filter(Boolean) : []
+      });
+    });
+    ut.sort((a, b) => b.opprettet - a.opprettet);
+    return ut;
+  }
+
+  /** Sletter en lagret klasse. */
+  async function slettKlasse(klasseId) {
+    kreverInit();
+    const uid = getCurrentUid();
+    if (!uid) throw new Error('Du må være innlogget.');
+    if (!klasseId) throw new Error('slettKlasse: mangler klasseId.');
+    await FB.set(FB.ref(FB.db, 'users/' + uid + '/klasser/' + klasseId), null);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
      UI-KOMPONENT
      Liten, selvstendig login-knapp + modal. Ingen eksterne CSS-rammeverk —
      stilene injiseres i <head> første gang mountLoginWidget() kalles, og
@@ -673,6 +763,9 @@
     opprettRom,
     hentMineRom,
     avsluttRom,
+    lagreKlasse,
+    hentKlasser,
+    slettKlasse,
     mountLoginWidget
   };
 })(window);
