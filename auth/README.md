@@ -5,14 +5,17 @@ e-post/passord — på tvers av alle spillene (Temaspinner, Genetisk hjul,
 KlassePoll, KRLE-terning, osv.), uten at elevene merker noe: de blir med via
 romkode akkurat som i dag.
 
-Denne mappa er levert **isolert**. Ingen eksisterende spillfiler er endret —
-modulen er klar til å limes inn i ett spill om gangen når dere vil.
+**Status:** modulen er i bruk på forsiden og i KlassePoll. De øvrige spillene
+(Temaspinner, Genetisk hjul, KRLE-terningen) er ikke koblet på — de ligger på
+egne Firebase-stier med egne feltkrav, se avsnittet om `opprettRom` under.
 
 ## Filer
 
 | Fil | Hva |
 | --- | --- |
 | `lrnify-auth.js` | Selve modulen. Definerer `window.LRNifyAuth`. |
+| `../aktiviteter/poll/index.html` | KlassePoll — første spill som bruker modulen. Referanseintegrasjon. |
+| `../index.html` | Forsiden — innloggingsknapp i toppen (og i menyskuffen på telefon), med lat lasting. |
 | `../firebase/database.rules.json` | Oppdaterte RTDB-regler (`users/`, `resultater/`, og nye felt på `rooms/`). Samme fil som allerede styrer resten av LRNify sine Firebase-regler — se `firebase/README.md`. |
 
 Det finnes ingen egen `firebase-rules.json` i denne mappa: reglene ligger
@@ -124,6 +127,7 @@ Alt henger på det globale objektet `LRNifyAuth`:
 | `loginEmail(epost, passord)` | E-post/passord-innlogging. Fallback for lærere uten Google-konto. |
 | `logout()` | Logger ut. |
 | `getCurrentUid()` | `uid` for innlogget lærer, eller `null`. |
+| `harLoggetInnFor()` | Om noen har logget inn i denne nettleseren før. Lar en side som laster Firebase lat vite om den bør hente sesjonen med én gang. Gir ingen tilgang — avgjør kun når SDK-en lastes. |
 | `opprettRom(spillnavn, romConfig)` | Oppretter rom under `rooms/{kode}` og en peker under `users/{uid}/rom/`, atomisk i én operasjon. Setter `eierUid` automatisk. Krever innlogging. Returnerer `{ kode }`. |
 | `hentMineRom(spillnavn)` | Lærerens egne rom for et spill, nyeste først. `spillnavn` er påkrevd. Rom som er avsluttet og slettet faller ut av lista. |
 | `avsluttRom(spillnavn, kode)` | Sletter rommet og pekeren i lærerens indeks, atomisk. Uten innlogging slettes bare rommet, som før. |

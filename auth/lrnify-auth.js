@@ -29,6 +29,21 @@
 
   const KILDE = 'https://www.gstatic.com/firebasejs/10.12.2/';
 
+  /* Spor om denne nettleseren har vært innlogget før. Brukes av sider som
+     laster Firebase lat (se mountLoginWidget): har ingen logget inn her,
+     slipper besøkende nedlastingen helt — har noen det, henter sida sesjonen
+     med én gang så læreren ser navnet sitt i stedet for «Logg inn». Sporet
+     er ikke en sesjon og gir ingen tilgang; det avgjør kun når vi laster. */
+  const SPOR = 'lrnify.auth.innlogget';
+  function settSpor(pa) {
+    try { pa ? localStorage.setItem(SPOR, 'ja') : localStorage.removeItem(SPOR); }
+    catch (e) { /* privat modus e.l. — da lastes SDK-en bare litt senere */ }
+  }
+  /** @returns {boolean} om noen har logget inn i denne nettleseren før. */
+  function harLoggetInnFor() {
+    try { return localStorage.getItem(SPOR) === 'ja'; } catch (e) { return false; }
+  }
+
   /* ── Intern tilstand ─────────────────────────────────────────────────── */
   let FB = null;              // { app, db, auth, ...Firebase-funksjoner }
   let lastPromise = null;     // laster SDK-en bare én gang, uansett hvor mange kaller init()
@@ -82,6 +97,7 @@
         ferdigInit = new Promise(losFerdigInit => {
           FB.onAuthStateChanged(FB.auth, async firebaseUser => {
             gjeldendeBruker = firebaseUser ? tilBruker(firebaseUser) : null;
+            settSpor(!!firebaseUser);
             if (firebaseUser) {
               await sikreProfil(firebaseUser).catch(() => { /* ikke nett, ikke kritisk */ });
             }
@@ -513,6 +529,7 @@
     loginEmail,
     logout,
     getCurrentUid,
+    harLoggetInnFor,
     opprettRom,
     hentMineRom,
     avsluttRom,
