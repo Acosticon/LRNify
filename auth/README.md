@@ -16,6 +16,8 @@ egne Firebase-stier med egne feltkrav, se avsnittet om `opprettRom` under.
 | `lrnify-auth.js` | Selve modulen. Definerer `window.LRNifyAuth`. |
 | `../aktiviteter/poll/index.html` | KlassePoll — første spill som bruker modulen. Referanseintegrasjon. |
 | `../index.html` | Forsiden — innloggingsknapp i toppen (og i menyskuffen på telefon), med lat lasting. |
+| `../tools/klassekart/index.html` | Klassekart — lagrer og henter klasselister. |
+| `../tools/elevvelger/index.html` | Elevvelger — henter klasseliste i stedet for å taste navn. |
 | `../firebase/database.rules.json` | Oppdaterte RTDB-regler (`users/`, `resultater/`, og nye felt på `rooms/`). Samme fil som allerede styrer resten av LRNify sine Firebase-regler — se `firebase/README.md`. |
 
 Det finnes ingen egen `firebase-rules.json` i denne mappa: reglene ligger
@@ -125,12 +127,17 @@ Alt henger på det globale objektet `LRNifyAuth`:
 | `onAuthChange(callback)` | `callback(bruker \| null)` — kalles med én gang og på hver endring. `bruker` er `{ uid, navn, epost }`. |
 | `loginGoogle()` | Google-innlogging via popup. Returnerer et Promise med brukeren. |
 | `loginEmail(epost, passord)` | E-post/passord-innlogging. Fallback for lærere uten Google-konto. |
+| `registrerEpost(epost, passord, navn?)` | Oppretter konto med hvilken som helst e-post og selvvalgt passord (minst 6 tegn), og logger inn. |
+| `tilbakestillPassord(epost)` | Sender Firebase sin tilbakestillingslenke. Røper med vilje ikke om adressen har konto. |
 | `logout()` | Logger ut. |
 | `getCurrentUid()` | `uid` for innlogget lærer, eller `null`. |
 | `harLoggetInnFor()` | Om noen har logget inn i denne nettleseren før. Lar en side som laster Firebase lat vite om den bør hente sesjonen med én gang. Gir ingen tilgang — avgjør kun når SDK-en lastes. |
 | `opprettRom(spillnavn, romConfig)` | Oppretter rom under `rooms/{kode}` og en peker under `users/{uid}/rom/`, atomisk i én operasjon. Setter `eierUid` automatisk. Krever innlogging. Returnerer `{ kode }`. |
 | `hentMineRom(spillnavn)` | Lærerens egne rom for et spill, nyeste først. `spillnavn` er påkrevd. Rom som er avsluttet og slettet faller ut av lista. |
 | `avsluttRom(spillnavn, kode)` | Sletter rommet og pekeren i lærerens indeks, atomisk. Uten innlogging slettes bare rommet, som før. |
+| `lagreKlasse({klasseId?, navn, trinn?, elever})` | Lagrer en klasseliste. Uten `klasseId` opprettes en ny. Returnerer `{ klasseId }`. |
+| `hentKlasser()` | Lærerens lagrede klasser, nyeste først. Hver har `{ klasseId, navn, trinn, opprettet, elever }`. |
+| `slettKlasse(klasseId)` | Sletter en lagret klasse. |
 | `mountLoginWidget(container, valg?)` | Tegner en kompakt login-knapp/brukerlinje inn i `container`. Ikke i den opprinnelige kravlista, men nødvendig for UI-kravet — se under. |
 
 `opprettRom` tar et valgfritt tredje argument, `{ romkode }`, så et spill kan
@@ -170,7 +177,10 @@ bygge sin egen knapp med `onAuthChange` fritt kan la være å bruke den.
 ```
 /users/{uid}/
     profile: { navn, epost, opprettet }
-    klasser: { klasseId: { navn, trinn, opprettet } }
+    klasser: { klasseId: { navn, trinn, opprettet, elever: [{navn, kjonn}] } }
+        — «navn» er KLASSENS navn («9B»); «elever» er elevenes fornavn.
+          Dette er den eneste elevdataen i hele strukturen. Se avsnittet
+          om klasselister og personvern under.
     spillinnstillinger: { spillnavn: { ...fritt innhold per spill } }
     rom: { spillnavn: { romkode: { opprettet, klasseId? } } }
         — invertert indeks. /rooms kan ikke listes opp av noen (ellers kunne
@@ -221,8 +231,29 @@ den som lagde det (se reglene og testene for `rooms/$room/eierUid` i
 `firebase/rules.test.js`).
 
 **Personvern:** `profile` inneholder kun navn og e-post — ingen annen
-metadata. Ingen del av modulen skriver elevnavn noe sted; se forbeholdet om
-`resultater` over.
+metadata. Se forbeholdet om `resultater` over.
+
+### Klasselister og personvern
+
+`klasser/{id}/elever` er det **eneste** stedet i strukturen det ligger data
+om elever, og det er bevisst avgrenset: elevens fornavn og eventuelt kjønn,
+strengt privat under lærerens egen konto. Reglene håndhever formen — hver
+elev kan bare ha `navn` og `kjonn`, alt annet avvises.
+
+Det som med vilje IKKE skal lagres her, og som reglene aktivt blokkerer:
+
+- **Relasjoner mellom elever.** «Ida må ikke sitte sammen med Jonas» er en
+  observasjon om to navngitte barn. Klassekart holder sittereglene sine i
+  `localStorage` på lærerens egen maskin, ikke i skya.
+- Etternavn, fødselsdato, vurderinger, atferdsnotater, eller noe annet om
+  enkeltelever. Trenger et verktøy sånt, hører det hjemme lokalt.
+
+Klassekart utelater også sitteregel-markeringene ved utskrift, slik at et
+kart som henges på veggen eller deles ikke røper hvem som er flagget.
+
+Merk at en navneliste med identifiserbare barn er personopplysninger selv om
+den er lite følsom. Det påvirker personvernerklæring og sletting — læreren
+må kunne slette en klasse, og `slettKlasse()` finnes nettopp derfor.
 
 **Rydding:** avslutter læreren et rom, slettes `/rooms/{kode}`, men pekeren
 under `users/{uid}/rom/` blir liggende. `hentMineRom()` filtrerer bort

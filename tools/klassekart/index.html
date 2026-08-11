@@ -16,7 +16,27 @@
   --green:#0F6E56;--green-light:#E1F5EE;
   --red:#b91c1c;--red-light:#fee2e2;
   --r:6px;--rl:10px;
+
+  /* Tilpasser login-widgeten (auth/lrnify-auth.js) til dette verktøyets stil */
+  --lrnauth-ink:#2b2118;--lrnauth-cream:#fff9f0;--lrnauth-muted:#7a6f63;
+  --lrnauth-skygge:0 4px 0;--lrnauth-skygge-stor:0 7px 0;
+  --lrnauth-trykk:translateY(3px);
 }
+
+/* ── MINE KLASSER ── */
+.k-skjult{display:none!important}
+.klasse-topp{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.klasse-hjelp{color:var(--muted);font-size:16px;flex:1 1 220px}
+.klasse-rad{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  border:2px solid var(--ink);border-radius:var(--r);background:var(--cream);
+  padding:10px 14px;margin-top:10px;
+}
+.klasse-rad .k-navn{font-weight:800}
+.klasse-rad .k-antall{color:var(--muted);font-size:15px}
+.klasse-rad .k-knapper{display:flex;gap:8px;flex:0 0 auto}
+.klasse-lagre{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.klasse-lagre input{flex:1 1 200px}
 
 body{font-family:'Nunito',sans-serif;font-size:18px;color:var(--ink);
   background:var(--cream);min-height:100vh;display:flex;flex-direction:column}
@@ -387,8 +407,12 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
   #panel-elever,#panel-innstillinger,#panel-lagrede{display:none!important}
   #panel-kart{display:block!important}
   .map-scroll{overflow:visible}
-  .desk.warn-together{background:var(--yellow)!important}
-  .desk.warn-apart{background:var(--red-light)!important}
+  /* Sitteregler er lærerens interne notater. Et utskrevet eller delt
+     klassekart skal ikke røpe hvilke to elever som ikke kan sitte sammen,
+     så markeringene fjernes ved utskrift — de er et arbeidsverktøy på
+     skjermen, ikke noe som skal henge på veggen. */
+  .desk.warn-together,.desk.warn-apart{background:var(--card)!important}
+  .desk.warn-together .d-name,.desk.warn-apart .d-name{color:var(--ink)!important}
 }
 </style>
 </head>
@@ -408,6 +432,21 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
 
   <!-- ELEVER -->
   <div class="panel active" id="panel-elever">
+    <div>
+      <div class="section-label">Mine klasser</div>
+      <div class="card">
+        <div class="klasse-topp">
+          <div id="larerInnlogging"></div>
+          <div class="klasse-hjelp">Logg inn for å lagre klasselister, så slipper du å taste inn navnene på nytt neste gang.</div>
+        </div>
+        <div id="klasse-liste" class="k-skjult"></div>
+        <div id="klasse-lagre" class="klasse-lagre k-skjult">
+          <input type="text" id="klasse-navn" placeholder="Klassens navn, f.eks. 9B" maxlength="60">
+          <button class="btn-secondary" onclick="lagreKlasseListe()">Lagre klassen</button>
+        </div>
+      </div>
+    </div>
+
     <div>
       <div class="section-label">Elevliste</div>
       <div class="card">
@@ -554,6 +593,10 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Felles lærerinnlogging. Firebase lastes først når noen faktisk logger
+     inn, så klassekart fortsatt virker helt uten nett. -->
+<script src="/auth/lrnify-auth.js"></script>
 
 <script>
 let genderMode = 'bland';
@@ -950,6 +993,121 @@ function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+/* ══ MINE KLASSER ══════════════════════════════════════════════════════
+   Klassekart har alltid virket helt uten nett, og skal fortsette med det.
+   Firebase lastes derfor lat: en lærer som ikke logger inn, laster ingen
+   SDK i det hele tatt, og verktøyet fungerer som før.
+
+   Merk hva som lagres og ikke: elevenes fornavn og kjønn går i skya under
+   lærerens egen konto. Sittereglene («må sitte sammen» / «må IKKE sitte
+   sammen») blir liggende lokalt — de er notater om relasjoner mellom
+   navngitte barn, og har ikke noe på en server å gjøre. Reglene i Firebase
+   avviser dem også aktivt, se firebase/rules.test.js. */
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain:"poll-c6bd2.firebaseapp.com",
+  databaseURL:"https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"poll-c6bd2",
+  storageBucket:"poll-c6bd2.firebasestorage.app",
+  messagingSenderId:"541647069675",
+  appId:"1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+
+// Modulen er en bonus. Lastes den ikke, skal klassekart virke som før.
+const Auth=window.LRNifyAuth||{
+  onAuthChange(){},mountLoginWidget(){},harLoggetInnFor(){return false},
+  getCurrentUid(){return null},hentKlasser(){return Promise.resolve([])},
+  lagreKlasse(){return Promise.reject(new Error('Innlogging er ikke tilgjengelig.'))},
+  slettKlasse(){return Promise.reject(new Error('Innlogging er ikke tilgjengelig.'))},
+  init(){}
+};
+
+let erInnlogget=false;
+Auth.mountLoginWidget(document.getElementById('larerInnlogging'),{firebaseConfig:FIREBASE_CONFIG});
+Auth.onAuthChange(b=>{erInnlogget=!!b;tegnKlasser();});
+if(Auth.harLoggetInnFor()) Auth.init(FIREBASE_CONFIG);
+
+// Klassekart bruker 'n' for «ikke oppgitt», modulen lagrer 'a'.
+const tilLagring=g=>g==='j'||g==='g'?g:'a';
+const fraLagring=k=>k==='j'||k==='g'?k:'n';
+
+async function tegnKlasser(){
+  const liste=document.getElementById('klasse-liste');
+  const lagre=document.getElementById('klasse-lagre');
+  lagre.classList.toggle('k-skjult',!erInnlogget);
+  if(!erInnlogget){liste.classList.add('k-skjult');return;}
+
+  let klasser=[];
+  try{ klasser=await Auth.hentKlasser(); }
+  catch(e){ liste.classList.add('k-skjult'); return; }
+
+  if(!klasser.length){
+    liste.innerHTML='';
+    liste.classList.add('k-skjult');
+    return;
+  }
+  liste.innerHTML='';
+  klasser.forEach(k=>{
+    const rad=document.createElement('div');
+    rad.className='klasse-rad';
+
+    const v=document.createElement('div');
+    const n=document.createElement('div');
+    n.className='k-navn';n.textContent=k.navn+(k.trinn?' · '+k.trinn+'. trinn':'');
+    const a=document.createElement('div');
+    a.className='k-antall';a.textContent=k.elever.length+' elever';
+    v.appendChild(n);v.appendChild(a);
+
+    const knapper=document.createElement('div');
+    knapper.className='k-knapper';
+    const bruk=document.createElement('button');
+    bruk.className='btn-secondary';bruk.style.cssText='padding:8px 14px;font-size:17px';
+    bruk.textContent='Bruk';
+    bruk.onclick=()=>brukKlasse(k);
+    const slett=document.createElement('button');
+    slett.className='btn-danger';slett.style.cssText='padding:8px 14px;font-size:17px';
+    slett.textContent='Slett';
+    slett.onclick=()=>slettKlasseListe(k);
+    knapper.appendChild(bruk);knapper.appendChild(slett);
+
+    rad.appendChild(v);rad.appendChild(knapper);
+    liste.appendChild(rad);
+  });
+  liste.classList.remove('k-skjult');
+}
+
+// Fyller de tre navnefeltene fra en lagret klasse.
+function brukKlasse(k){
+  const bøtte={j:[],g:[],n:[]};
+  k.elever.forEach(e=>bøtte[fraLagring(e.kjonn)].push(e.navn));
+  document.getElementById('jenter-input').value=bøtte.j.join('\n');
+  document.getElementById('gutter-input').value=bøtte.g.join('\n');
+  document.getElementById('annet-input').value=bøtte.n.join('\n');
+  document.getElementById('klasse-navn').value=k.navn;
+  toast('📋 Hentet '+k.navn+' ('+k.elever.length+' elever)');
+}
+
+async function lagreKlasseListe(){
+  const elever=getElever();
+  if(!elever.length){toast('Legg inn elever først.');return;}
+  const navn=document.getElementById('klasse-navn').value.trim();
+  if(!navn){toast('Gi klassen et navn, f.eks. 9B.');return;}
+  try{
+    await Auth.lagreKlasse({
+      navn,
+      elever:elever.map(e=>({navn:e.name,kjonn:tilLagring(e.gender)}))
+    });
+    toast('✅ Lagret '+navn);
+    tegnKlasser();
+  }catch(e){ toast('Fikk ikke lagret: '+e.message); }
+}
+
+async function slettKlasseListe(k){
+  if(!confirm('Slette klassen «'+k.navn+'»? Elevlista i feltene under blir stående.')) return;
+  try{ await Auth.slettKlasse(k.klasseId); tegnKlasser(); }
+  catch(e){ toast('Fikk ikke slettet: '+e.message); }
 }
 
 renderConstraints();
