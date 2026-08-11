@@ -29,21 +29,6 @@
 
   const KILDE = 'https://www.gstatic.com/firebasejs/10.12.2/';
 
-  /* Spor om denne nettleseren har vært innlogget før. Brukes av sider som
-     laster Firebase lat (se mountLoginWidget): har ingen logget inn her,
-     slipper besøkende nedlastingen helt — har noen det, henter sida sesjonen
-     med én gang så læreren ser navnet sitt i stedet for «Logg inn». Sporet
-     er ikke en sesjon og gir ingen tilgang; det avgjør kun når vi laster. */
-  const SPOR = 'lrnify.auth.innlogget';
-  function settSpor(pa) {
-    try { pa ? localStorage.setItem(SPOR, 'ja') : localStorage.removeItem(SPOR); }
-    catch (e) { /* privat modus e.l. — da lastes SDK-en bare litt senere */ }
-  }
-  /** @returns {boolean} om noen har logget inn i denne nettleseren før. */
-  function harLoggetInnFor() {
-    try { return localStorage.getItem(SPOR) === 'ja'; } catch (e) { return false; }
-  }
-
   /* ── Intern tilstand ─────────────────────────────────────────────────── */
   let FB = null;              // { app, db, auth, ...Firebase-funksjoner }
   let lastPromise = null;     // laster SDK-en bare én gang, uansett hvor mange kaller init()
@@ -100,7 +85,6 @@
         ferdigInit = new Promise(losFerdigInit => {
           FB.onAuthStateChanged(FB.auth, async firebaseUser => {
             gjeldendeBruker = firebaseUser ? tilBruker(firebaseUser) : null;
-            settSpor(!!firebaseUser);
             if (firebaseUser) {
               await sikreProfil(firebaseUser).catch(() => { /* ikke nett, ikke kritisk */ });
             }
@@ -572,27 +556,16 @@
    * tilstandene når auth endrer seg. Ikke del av kjerne-API-et over, men
    * nødvendig for kravet om en innebygd UI-komponent — se README.md.
    *
+   * Forutsetter at init() allerede er kalt.
+   *
    * @param {HTMLElement} container
-   * @param {{ tekstInnlogget?: string, tekstUtlogget?: string,
-   *           firebaseConfig?: object }} [valg]
-   *        Sendes firebaseConfig med, lastes Firebase først når noen faktisk
-   *        klikker «Logg inn». Da koster ikke knappen noe for de aller fleste
-   *        besøkende. Har siden allerede kalt init() selv, er dette unødvendig.
+   * @param {{ tekstInnlogget?: string, tekstUtlogget?: string }} [valg]
    */
   function mountLoginWidget(container, valg) {
     if (!container) throw new Error('mountLoginWidget: mangler container-element.');
     settInnStil();
     valg = valg || {};
     container.classList.add('lrnauth');
-
-    // Sikrer at SDK-en er lastet før modalen prøver å logge inn.
-    function sikreLastet() {
-      if (FB) return Promise.resolve();
-      if (!valg.firebaseConfig) {
-        return Promise.reject(new Error('LRNifyAuth: kall init(firebaseConfig), eller send firebaseConfig til mountLoginWidget.'));
-      }
-      return init(valg.firebaseConfig);
-    }
 
     function tegn(bruker) {
       container.innerHTML = '';
@@ -620,14 +593,6 @@
     }
 
     function apneModal() {
-      /* Start nedlastingen med én gang modalen åpnes, ikke først når noen
-         trykker «Fortsett med Google». Venter vi til da, ligger et
-         nettverkskall mellom klikket og signInWithPopup, og nettleseren
-         regner ikke lenger popup-en som utløst av brukeren — den blir
-         blokkert. Er SDK-en allerede lastet når knappen trykkes, løses
-         ventingen i en mikrotask, og klikket teller fortsatt. */
-      sikreLastet().catch(() => { /* vises når brukeren faktisk trykker */ });
-
       const bakteppe = document.createElement('div');
       bakteppe.className = 'lrnauth-bakteppe';
       bakteppe.innerHTML = `
@@ -685,7 +650,7 @@
       felt('glemt').addEventListener('click', () => { modus = 'glemt'; tegnModus(); });
 
       felt('google').addEventListener('click', async () => {
-        try { await sikreLastet(); await loginGoogle(); lukk(); }
+        try { await loginGoogle(); lukk(); }
         catch (e) { visFeil('Fikk ikke logget inn med Google: ' + forklar(e)); }
       });
 
@@ -695,7 +660,6 @@
         const navn = felt('navn').value.trim();
         felt('send').disabled = true;
         try {
-          await sikreLastet();
           if (modus === 'glemt') {
             await tilbakestillPassord(epost);
             visOk('Sjekk innboksen din — vi har sendt en lenke hvis adressen har en konto.');
@@ -759,7 +723,6 @@
     tilbakestillPassord,
     logout,
     getCurrentUid,
-    harLoggetInnFor,
     opprettRom,
     hentMineRom,
     avsluttRom,

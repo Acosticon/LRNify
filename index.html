@@ -711,29 +711,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
 </script>
 
 <!-- ===== LÆRERINNLOGGING =====
-     Widgeten tegnes med én gang, men Firebase-SDK-en lastes først når noen
-     faktisk åpner innloggingsmodalen. Forsiden er landingssida vår, og de
-     aller fleste som kommer hit skal bare velge et spill — de skal ikke
-     betale for en SDK de ikke bruker. (Forslagsskjemaet over bruker
-     compat-buildene; denne modulen bruker de modulære. To kopier er ikke
-     ideelt, men de deler prosjekt og sesjon, og alternativet er å skrive om
-     skjemaet.) -->
+     (Forslagsskjemaet over bruker compat-buildene; denne modulen bruker de
+     modulære. To kopier er ikke ideelt, men de deler prosjekt og sesjon, og
+     alternativet er å skrive om skjemaet.) -->
 <script src="/auth/lrnify-auth.js"></script>
 <script>
-(function(){
-  if(!window.LRNifyAuth) return;   // en halv deploy skal ikke ta ned forsida
-
-  const valg = { firebaseConfig: FIREBASE_CONFIG };
-  const iToppen = document.getElementById('larerInnlogging');
-  const iMenyen = document.getElementById('larerInnloggingMeny');
-  if(iToppen) LRNifyAuth.mountLoginWidget(iToppen, valg);
-  if(iMenyen) LRNifyAuth.mountLoginWidget(iMenyen, valg);
-
-  /* Har noen logget inn i denne nettleseren før, henter vi sesjonen med én
-     gang, så læreren møter navnet sitt og ikke en «Logg inn»-knapp. For alle
-     andre lastes ingenting før de selv trykker. */
-  if(LRNifyAuth.harLoggetInnFor()) LRNifyAuth.init(FIREBASE_CONFIG);
-})();
+LRNifyAuth.init(FIREBASE_CONFIG);
+const iToppen = document.getElementById('larerInnlogging');
+const iMenyen = document.getElementById('larerInnloggingMeny');
+if(iToppen) LRNifyAuth.mountLoginWidget(iToppen);
+if(iMenyen) LRNifyAuth.mountLoginWidget(iMenyen);
 </script>
 </body>
 </html>

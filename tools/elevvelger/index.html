@@ -227,17 +227,13 @@ const FIREBASE_CONFIG={
   messagingSenderId:"541647069675",
   appId:"1:541647069675:web:d8ee426e242e7757dbf9ae"
 };
-const Auth=window.LRNifyAuth||{
-  onAuthChange(){},mountLoginWidget(){},harLoggetInnFor(){return false},
-  hentKlasser(){return Promise.resolve([])},init(){}
-};
-
 let mineKlasser=[];
-Auth.mountLoginWidget(document.getElementById('larerInnlogging'),{firebaseConfig:FIREBASE_CONFIG});
-Auth.onAuthChange(async bruker=>{
+LRNifyAuth.init(FIREBASE_CONFIG);
+LRNifyAuth.mountLoginWidget(document.getElementById('larerInnlogging'));
+LRNifyAuth.onAuthChange(async bruker=>{
   const velger=document.getElementById('klasse-velger');
   if(!bruker){ mineKlasser=[]; velger.classList.add('k-skjult'); return; }
-  try{ mineKlasser=await Auth.hentKlasser(); }catch(e){ mineKlasser=[]; }
+  try{ mineKlasser=await LRNifyAuth.hentKlasser(); }catch(e){ mineKlasser=[]; }
   if(!mineKlasser.length){ velger.classList.add('k-skjult'); return; }
   velger.innerHTML='<option value="">Velg en lagret klasse …</option>';
   mineKlasser.forEach((k,i)=>{
@@ -248,7 +244,6 @@ Auth.onAuthChange(async bruker=>{
   });
   velger.classList.remove('k-skjult');
 });
-if(Auth.harLoggetInnFor()) Auth.init(FIREBASE_CONFIG);
 
 function brukValgtKlasse(){
   const k=mineKlasser[parseInt(document.getElementById('klasse-velger').value,10)];

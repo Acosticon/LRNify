@@ -592,28 +592,12 @@ ensureAuth();
 /* ══ LÆRERINNLOGGING (valgfri) ══
    Uten innlogging fungerer alt nøyaktig som før — rommet får ingen eierUid,
    og reglene behandler det som et vanlig anonymt rom. Logger læreren inn,
-   knyttes rommet til kontoen og dukker opp igjen under «Mine rom».
-
-   Modulen er en bonus, ikke en forutsetning. Blir /auth/lrnify-auth.js
-   liggende utilgjengelig — en halv deploy, en blokkering — skal KlassePoll
-   fortsatt virke nøyaktig som før, inkludert hele elevflyten. Derfor en
-   reserve som svarer «ingen er innlogget» på alt, i stedet for at siden
-   dør på en ReferenceError. */
-const Auth = window.LRNifyAuth || {
-  init() {},
-  onAuthChange() {},
-  mountLoginWidget() {},
-  getCurrentUid() { return null; },
-  hentMineRom() { return Promise.resolve([]); },
-  opprettRom() { return Promise.reject(new Error('Innlogging er ikke tilgjengelig.')); },
-  avsluttRom() { return Promise.reject(new Error('Innlogging er ikke tilgjengelig.')); }
-};
-
-Auth.init(firebaseConfig);
-Auth.mountLoginWidget(document.getElementById('larerInnlogging'));
+   knyttes rommet til kontoen og dukker opp igjen under «Mine rom». */
+LRNifyAuth.init(firebaseConfig);
+LRNifyAuth.mountLoginWidget(document.getElementById('larerInnlogging'));
 
 let erInnlogget = false;
-Auth.onAuthChange(bruker => {
+LRNifyAuth.onAuthChange(bruker => {
   erInnlogget = !!bruker;
   tegnMineRom();
 });
@@ -658,12 +642,12 @@ window.createRoom = async () => {
   if (owner) room.owner = owner;
 
   try {
-    if (Auth.getCurrentUid()) {
+    if (LRNifyAuth.getCurrentUid()) {
       /* Innlogget lærer: opprettRom skriver rommet og en peker under
          lærerens konto i én operasjon, så rommet kan finnes igjen senere.
          Vi sender inn vår egen sekstegns kode — modulens standard er fire,
          og kortere koder kolliderer oftere. */
-      await Auth.opprettRom('klassepoll', room, { romkode: code });
+      await LRNifyAuth.opprettRom('klassepoll', room, { romkode: code });
     } else {
       // Uten innlogging: nøyaktig samme skriving som før.
       await set(ref(db, `rooms/${code}`), room);
@@ -690,7 +674,7 @@ async function tegnMineRom() {
 
   let rom = [];
   try {
-    rom = await Auth.hentMineRom('klassepoll');
+    rom = await LRNifyAuth.hentMineRom('klassepoll');
   } catch (e) {
     kort.classList.add('skjult');
     return;
@@ -776,8 +760,8 @@ function renderChart(options, votes) {
    samme operasjon — ellers ville den blitt liggende igjen som en død
    oppføring for hver eneste økt. */
 async function slettRom(kode) {
-  if (Auth.getCurrentUid()) {
-    await Auth.avsluttRom('klassepoll', kode);
+  if (LRNifyAuth.getCurrentUid()) {
+    await LRNifyAuth.avsluttRom('klassepoll', kode);
   } else {
     await remove(ref(db, `rooms/${kode}`));
   }

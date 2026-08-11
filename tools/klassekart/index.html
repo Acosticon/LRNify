@@ -1015,19 +1015,10 @@ const FIREBASE_CONFIG={
   appId:"1:541647069675:web:d8ee426e242e7757dbf9ae"
 };
 
-// Modulen er en bonus. Lastes den ikke, skal klassekart virke som før.
-const Auth=window.LRNifyAuth||{
-  onAuthChange(){},mountLoginWidget(){},harLoggetInnFor(){return false},
-  getCurrentUid(){return null},hentKlasser(){return Promise.resolve([])},
-  lagreKlasse(){return Promise.reject(new Error('Innlogging er ikke tilgjengelig.'))},
-  slettKlasse(){return Promise.reject(new Error('Innlogging er ikke tilgjengelig.'))},
-  init(){}
-};
-
 let erInnlogget=false;
-Auth.mountLoginWidget(document.getElementById('larerInnlogging'),{firebaseConfig:FIREBASE_CONFIG});
-Auth.onAuthChange(b=>{erInnlogget=!!b;tegnKlasser();});
-if(Auth.harLoggetInnFor()) Auth.init(FIREBASE_CONFIG);
+LRNifyAuth.init(FIREBASE_CONFIG);
+LRNifyAuth.mountLoginWidget(document.getElementById('larerInnlogging'));
+LRNifyAuth.onAuthChange(b=>{erInnlogget=!!b;tegnKlasser();});
 
 // Klassekart bruker 'n' for «ikke oppgitt», modulen lagrer 'a'.
 const tilLagring=g=>g==='j'||g==='g'?g:'a';
@@ -1040,7 +1031,7 @@ async function tegnKlasser(){
   if(!erInnlogget){liste.classList.add('k-skjult');return;}
 
   let klasser=[];
-  try{ klasser=await Auth.hentKlasser(); }
+  try{ klasser=await LRNifyAuth.hentKlasser(); }
   catch(e){ liste.classList.add('k-skjult'); return; }
 
   if(!klasser.length){
@@ -1095,7 +1086,7 @@ async function lagreKlasseListe(){
   const navn=document.getElementById('klasse-navn').value.trim();
   if(!navn){toast('Gi klassen et navn, f.eks. 9B.');return;}
   try{
-    await Auth.lagreKlasse({
+    await LRNifyAuth.lagreKlasse({
       navn,
       elever:elever.map(e=>({navn:e.name,kjonn:tilLagring(e.gender)}))
     });
@@ -1106,7 +1097,7 @@ async function lagreKlasseListe(){
 
 async function slettKlasseListe(k){
   if(!confirm('Slette klassen «'+k.navn+'»? Elevlista i feltene under blir stående.')) return;
-  try{ await Auth.slettKlasse(k.klasseId); tegnKlasser(); }
+  try{ await LRNifyAuth.slettKlasse(k.klasseId); tegnKlasser(); }
   catch(e){ toast('Fikk ikke slettet: '+e.message); }
 }
 

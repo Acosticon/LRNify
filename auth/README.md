@@ -15,7 +15,7 @@ egne Firebase-stier med egne feltkrav, se avsnittet om `opprettRom` under.
 | --- | --- |
 | `lrnify-auth.js` | Selve modulen. Definerer `window.LRNifyAuth`. |
 | `../aktiviteter/poll/index.html` | KlassePoll — første spill som bruker modulen. Referanseintegrasjon. |
-| `../index.html` | Forsiden — innloggingsknapp i toppen (og i menyskuffen på telefon), med lat lasting. |
+| `../index.html` | Forsiden — innloggingsknapp i toppen (og i menyskuffen på telefon). |
 | `../tools/klassekart/index.html` | Klassekart — lagrer og henter klasselister. |
 | `../tools/elevvelger/index.html` | Elevvelger — henter klasseliste i stedet for å taste navn. |
 | `../firebase/database.rules.json` | Oppdaterte RTDB-regler (`users/`, `resultater/`, og nye felt på `rooms/`). Samme fil som allerede styrer resten av LRNify sine Firebase-regler — se `firebase/README.md`. |
@@ -112,10 +112,13 @@ det øyeblikket sida laster. Et blindt `signInAnonymously()` der logger ut en
 lærer som nettopp kom tilbake med Google-kontoen sin. Vent på første
 `onAuthStateChanged` før du bestemmer deg — se `ensureAuth()` i KlassePoll.
 
-**La spillet overleve at modulen ikke lastes.** `/auth/lrnify-auth.js` er en
-bonus, ikke en forutsetning. KlassePoll faller tilbake på et objekt som
-svarer «ingen er innlogget» på alt hvis `window.LRNifyAuth` mangler, slik at
-en halv deploy eller en blokkering ikke tar ned elevflyten med seg.
+**Ingen av spillene trenger å virke uten nett.** Tidligere versjoner av denne
+modulen og integrasjonene lastet Firebase lat og hadde reserveobjekter for
+tilfellet der `/auth/lrnify-auth.js` ikke lastet. Det var overteknisk for et
+verktøy ingen bruker offline, og er fjernet — `init()` kalles rett fram ved
+sidelast. (Unntaket er Temaspinner sin tavlemodus, som er en egen,
+dokumentert funksjon — se `firebase/README.md` — ikke noe denne modulen skal
+etterligne andre steder.)
 
 ## API
 
@@ -131,7 +134,6 @@ Alt henger på det globale objektet `LRNifyAuth`:
 | `tilbakestillPassord(epost)` | Sender Firebase sin tilbakestillingslenke. Røper med vilje ikke om adressen har konto. |
 | `logout()` | Logger ut. |
 | `getCurrentUid()` | `uid` for innlogget lærer, eller `null`. |
-| `harLoggetInnFor()` | Om noen har logget inn i denne nettleseren før. Lar en side som laster Firebase lat vite om den bør hente sesjonen med én gang. Gir ingen tilgang — avgjør kun når SDK-en lastes. |
 | `opprettRom(spillnavn, romConfig)` | Oppretter rom under `rooms/{kode}` og en peker under `users/{uid}/rom/`, atomisk i én operasjon. Setter `eierUid` automatisk. Krever innlogging. Returnerer `{ kode }`. |
 | `hentMineRom(spillnavn)` | Lærerens egne rom for et spill, nyeste først. `spillnavn` er påkrevd. Rom som er avsluttet og slettet faller ut av lista. |
 | `avsluttRom(spillnavn, kode)` | Sletter rommet og pekeren i lærerens indeks, atomisk. Uten innlogging slettes bare rommet, som før. |
@@ -144,11 +146,7 @@ Alt henger på det globale objektet `LRNifyAuth`:
 beholde sin egen kodegenerator — KlassePoll bruker seks tegn, modulens
 standard er fire, og kortere koder kolliderer oftere.
 
-`mountLoginWidget` tar `{ firebaseConfig }` i `valg`. Sendes den med, lastes
-Firebase-SDK-en først når noen faktisk åpner innloggingsmodalen, i stedet for
-ved sidelast. Nedlastingen starter idet modalen åpnes — ikke først når
-Google-knappen trykkes, for da ville et nettverkskall ligget mellom klikket og
-popup-en, og nettleseren ville blokkert den som uønsket popup.
+`mountLoginWidget` forutsetter at `init()` allerede er kalt — kall den først.
 
 ### Tilpasse utseendet
 
