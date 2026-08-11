@@ -13,7 +13,19 @@
   --cream:#fff9f0;--ink:#2b2118;--yellow:#facc15;
   --card:#fff;--muted:#7a6f63;
   --purple:#534AB7;--green:#0F6E56;
+
+  /* Tilpasser login-widgeten (auth/lrnify-auth.js) til dette verktøyets stil */
+  --lrnauth-ink:#2b2118;--lrnauth-cream:#fff9f0;--lrnauth-muted:#7a6f63;
+  --lrnauth-skygge:0 4px 0;--lrnauth-skygge-stor:0 7px 0;
+  --lrnauth-trykk:translateY(3px);
 }
+.klasse-linje{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.klasse-linje select{
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;
+  border:2px solid var(--ink);border-radius:6px;background:var(--card);
+  color:var(--ink);padding:8px 10px;cursor:pointer;flex:1 1 140px;
+}
+.k-skjult{display:none!important}
 body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--ink);
   min-height:100vh;padding:32px 20px 60px;display:flex;flex-direction:column;align-items:center;gap:28px}
 
@@ -153,6 +165,12 @@ textarea:focus{outline:none;border-color:var(--purple)}
 <div class="layout">
   <div class="input-card">
     <div class="card-label">Elever</div>
+    <div class="klasse-linje">
+      <div id="larerInnlogging"></div>
+      <select id="klasse-velger" class="k-skjult" onchange="brukValgtKlasse()">
+        <option value="">Velg en lagret klasse …</option>
+      </select>
+    </div>
     <textarea id="names" placeholder="Emma&#10;Sofia&#10;Nora&#10;Oliver&#10;Liam&#10;Matteo&#10;Leah&#10;Noah&#10;Ingrid&#10;Emil"></textarea>
     <div class="meta" id="meta">0 elever</div>
 
@@ -192,7 +210,48 @@ textarea:focus{outline:none;border-color:var(--purple)}
   </div>
 </div>
 
+<!-- Felles lærerinnlogging. Firebase lastes lat, så elevvelgeren fortsatt
+     virker uten nett for de som ikke logger inn. -->
+<script src="/auth/lrnify-auth.js"></script>
+
 <script>
+/* ══ MINE KLASSER ══
+   Lar læreren hente «9B» i stedet for å taste inn navnene på nytt. Samme
+   klasselister som klassekart bruker — lagret under lærerens egen konto. */
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain:"poll-c6bd2.firebaseapp.com",
+  databaseURL:"https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"poll-c6bd2",
+  storageBucket:"poll-c6bd2.firebasestorage.app",
+  messagingSenderId:"541647069675",
+  appId:"1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+let mineKlasser=[];
+LRNifyAuth.init(FIREBASE_CONFIG);
+LRNifyAuth.mountLoginWidget(document.getElementById('larerInnlogging'));
+LRNifyAuth.onAuthChange(async bruker=>{
+  const velger=document.getElementById('klasse-velger');
+  if(!bruker){ mineKlasser=[]; velger.classList.add('k-skjult'); return; }
+  try{ mineKlasser=await LRNifyAuth.hentKlasser(); }catch(e){ mineKlasser=[]; }
+  if(!mineKlasser.length){ velger.classList.add('k-skjult'); return; }
+  velger.innerHTML='<option value="">Velg en lagret klasse …</option>';
+  mineKlasser.forEach((k,i)=>{
+    const o=document.createElement('option');
+    o.value=String(i);
+    o.textContent=k.navn+' ('+k.elever.length+' elever)';
+    velger.appendChild(o);
+  });
+  velger.classList.remove('k-skjult');
+});
+
+function brukValgtKlasse(){
+  const k=mineKlasser[parseInt(document.getElementById('klasse-velger').value,10)];
+  if(!k) return;
+  document.getElementById('names').value=k.elever.map(e=>e.navn).join('\n');
+  updateMeta();
+}
+
 let history=[];
 let rolling=false;
 let modus='once'; // 'once' | 'free'

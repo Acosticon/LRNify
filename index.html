@@ -34,6 +34,15 @@
     --yellow:#facc15;
     --card:#ffffff;
     --muted:#7a6f63;
+
+    /* Tilpasser login-widgeten (auth/lrnify-auth.js) til forsidens stil:
+       samme blekk, og skygge rett nedover slik resten av knappene har. */
+    --lrnauth-ink:#2b2118;
+    --lrnauth-cream:#fff9f0;
+    --lrnauth-muted:#7a6f63;
+    --lrnauth-skygge:0 5px 0;
+    --lrnauth-skygge-stor:0 7px 0;
+    --lrnauth-trykk:translateY(4px);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;}
@@ -59,6 +68,16 @@
     user-select:none;
   }
   .logo b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400;}
+
+  /* Lærerinnlogging i toppen. Logoen er clamp(2rem,6vw,3rem) og hamburgeren
+     54px, så på telefon er det ikke plass til en tredje knapp — der er
+     «Logg inn» i menyskuffen inngangen i stedet. */
+  .header-hoyre{display:flex;align-items:center;gap:12px;}
+  @media (max-width:600px){ .header-hoyre #larerInnlogging{display:none;} }
+  /* Hvit i toppen: gul rett ved siden av den gule hamburgeren gjør at de to
+     konkurrerer. I menyskuffen er gul derimot riktig — der er den eneste
+     knappen blant lyse lenker, og skal stikke seg ut. */
+  .header-hoyre .lrnauth-knapp{background:var(--card);}
 
   /* hamburger */
   .menu-btn{
@@ -395,9 +414,12 @@
 
   <header>
     <div class="logo">LRN<b>ify</b></div>
-    <button class="menu-btn" id="menuBtn" aria-label="Åpne meny" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
+    <div class="header-hoyre">
+      <div id="larerInnlogging"></div>
+      <button class="menu-btn" id="menuBtn" aria-label="Åpne meny" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </header>
 
   <!-- Voksent innhold gjemt bak meny -->
@@ -410,8 +432,9 @@
     <a href="#laereplan">Læreplan (LK20)</a>
     <a href="#skoler">For skoler</a>
     <a href="#kontakt">Kontakt</a>
-    <!-- Aktiveres i Fase 2 (innlogging): -->
-    <!-- <a class="login" href="#logginn">Logg inn</a> -->
+    <!-- Inngangen for telefon, der toppen ikke har plass til widgeten.
+         Fylles av lrnify-auth.js nederst på sida. -->
+    <div id="larerInnloggingMeny" style="margin-top:10px;"></div>
   </nav>
 
   <section class="hero">
@@ -685,6 +708,25 @@ menuBtn.addEventListener('click',openMenu);
 drawerClose.addEventListener('click',closeMenu);
 scrim.addEventListener('click',closeMenu);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+</script>
+
+<!-- ===== LÆRERINNLOGGING ===== -->
+<script src="/auth/lrnify-auth.js"></script>
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+LRNifyAuth.init(FIREBASE_CONFIG);
+const iToppen = document.getElementById('larerInnlogging');
+const iMenyen = document.getElementById('larerInnloggingMeny');
+if(iToppen) LRNifyAuth.mountLoginWidget(iToppen);
+if(iMenyen) LRNifyAuth.mountLoginWidget(iMenyen);
 </script>
 </body>
 </html>

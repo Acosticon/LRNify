@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Min konto — LRNify</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fff9f0; --ink:#2b2118; --yellow:#facc15; --card:#fff; --muted:#7a6f63;
+    --red:#b91c1c; --red-light:#fee2e2; --green:#166534; --green-light:#dcfce7;
+    --lrnauth-ink:#2b2118; --lrnauth-cream:#fff9f0; --lrnauth-muted:#7a6f63;
+    --lrnauth-skygge:0 4px 0; --lrnauth-skygge-stor:0 7px 0; --lrnauth-trykk:translateY(3px);
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; font-family:'Nunito',sans-serif; background:var(--cream); color:var(--ink);
+    min-height:100vh; padding:20px 16px 60px;
+  }
+  .wrap{ max-width:640px; margin:0 auto; }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:6px 2px 20px; }
+  .logo{ font-family:'Chewy',cursive; font-size:1.8rem; transform:rotate(-2deg); text-decoration:none; color:var(--ink); }
+  .logo b{ color:var(--yellow); -webkit-text-stroke:1.5px var(--ink); font-weight:400; }
+
+  h1{ font-family:'Chewy',cursive; font-weight:400; font-size:clamp(1.9rem,6vw,2.5rem); transform:rotate(-1deg); margin:0 0 22px; }
+  h2{ font-family:'Chewy',cursive; font-weight:400; font-size:1.25rem; color:var(--muted); margin:0 0 12px; }
+
+  .kort{
+    background:var(--card); border:3px solid var(--ink); border-radius:16px;
+    padding:20px 22px; box-shadow:4px 4px 0 var(--ink); margin-bottom:22px;
+  }
+  .kort.faresone{ border-color:var(--red); }
+  .kort.faresone h2{ color:var(--red); }
+
+  label{ display:block; font-weight:800; font-size:.8rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:6px; }
+  input[type=text],input[type=password]{
+    width:100%; border:3px solid var(--ink); border-radius:12px; background:var(--cream);
+    padding:11px 13px; font-family:'Nunito',sans-serif; font-weight:800; font-size:1rem; color:var(--ink);
+  }
+  input:focus{ outline:3px solid var(--yellow); outline-offset:1px; }
+  .felt-rad{ display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; margin-bottom:14px; }
+  .felt-rad > div{ flex:1 1 200px; }
+
+  .info-rad{ display:flex; justify-content:space-between; gap:14px; padding:8px 0; border-bottom:2px solid #efe7d8; font-weight:700; }
+  .info-rad:last-child{ border-bottom:none; }
+  .info-rad .label{ color:var(--muted); }
+
+  button{
+    font-family:'Nunito',sans-serif; font-weight:900; cursor:pointer;
+    border:3px solid var(--ink); border-radius:12px; padding:11px 18px; font-size:.95rem;
+    background:var(--yellow); color:var(--ink); box-shadow:3px 3px 0 var(--ink);
+    transition:transform .08s, box-shadow .08s;
+  }
+  button:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink); }
+  button.hvit{ background:#fff; }
+  button.fare{ background:var(--red); color:#fff; }
+  button:disabled{ opacity:.5; cursor:not-allowed; }
+
+  .rad{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    border:2px solid var(--ink); border-radius:12px; background:var(--cream);
+    padding:11px 14px; margin-top:10px;
+  }
+  .rad .navn{ font-weight:800; }
+  .rad .detalj{ color:var(--muted); font-size:.85rem; font-weight:700; }
+  .rad button{ padding:7px 12px; font-size:.82rem; box-shadow:2px 2px 0 var(--ink); flex:0 0 auto; }
+  .tom{ color:var(--muted); font-weight:700; padding:8px 0; }
+
+  .melding{ font-weight:800; padding:10px 14px; border-radius:12px; margin-top:12px; }
+  .melding.feil{ background:var(--red-light); color:var(--red); border:3px solid var(--red); }
+  .melding.ok{ background:var(--green-light); color:var(--green); border:3px solid var(--green); }
+  .skjult{ display:none !important; }
+
+  .bakteppe{
+    position:fixed; inset:0; background:rgba(43,33,24,.55); z-index:200;
+    display:flex; align-items:center; justify-content:center; padding:16px;
+  }
+  .modal{
+    background:var(--cream); border:4px solid var(--red); border-radius:20px;
+    padding:22px 22px; width:100%; max-width:400px; box-shadow:6px 6px 0 var(--ink);
+  }
+  .modal h2{ color:var(--red); margin-top:0; }
+  .modal .liste{ margin:10px 0 16px; padding-left:20px; font-weight:700; }
+  .modal .knapperad{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+
+  #innloggingskrav{ text-align:center; padding:60px 20px; }
+  #innloggingskrav p{ color:var(--muted); font-weight:700; margin-bottom:20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <a class="logo" href="/">LRN<b>ify</b></a>
+</header>
+
+<div id="innloggingskrav">
+  <p>Logg inn for å se og administrere kontoen din.</p>
+  <div id="larerInnlogging" style="display:inline-block;"></div>
+</div>
+
+<div id="innhold" class="skjult">
+  <h1>👤 Min konto</h1>
+
+  <div class="kort">
+    <h2>Profil</h2>
+    <div class="felt-rad">
+      <div>
+        <label for="felt-navn">Navn</label>
+        <input type="text" id="felt-navn" maxlength="60">
+      </div>
+      <button onclick="lagreNavn()">Lagre navn</button>
+    </div>
+    <div class="info-rad"><span class="label">E-post</span><span id="vis-epost"></span></div>
+    <div class="info-rad"><span class="label">Innloggingsmetode</span><span id="vis-metode"></span></div>
+    <div id="navn-melding"></div>
+  </div>
+
+  <div class="kort">
+    <h2>Mine klasser</h2>
+    <div id="klasse-liste"><div class="tom">Laster …</div></div>
+  </div>
+
+  <div class="kort">
+    <h2>Mine rom</h2>
+    <div id="rom-liste"><div class="tom">Laster …</div></div>
+  </div>
+
+  <div class="kort">
+    <h2>Personvern</h2>
+    <p style="margin:0 0 4px;">Se hva LRNify lagrer og hvorfor i <a href="/personvern/">personvernerklæringen</a>.</p>
+  </div>
+
+  <div class="kort faresone">
+    <h2>⚠️ Faresone</h2>
+    <p style="color:var(--muted);font-weight:700;">Sletter kontoen din permanent, sammen med alle lagrede klasser og rom. Kan ikke angres.</p>
+    <button class="fare" onclick="apneSlettModal()">Slett hele kontoen</button>
+  </div>
+</div>
+
+</div>
+
+<script src="/auth/lrnify-auth.js"></script>
+<script>
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain:"poll-c6bd2.firebaseapp.com",
+  databaseURL:"https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId:"poll-c6bd2",
+  storageBucket:"poll-c6bd2.firebasestorage.app",
+  messagingSenderId:"541647069675",
+  appId:"1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+LRNifyAuth.init(FIREBASE_CONFIG);
+LRNifyAuth.mountLoginWidget(document.getElementById('larerInnlogging'));
+
+let gjeldendeBruker=null;
+LRNifyAuth.onAuthChange(bruker=>{
+  gjeldendeBruker=bruker;
+  document.getElementById('innloggingskrav').classList.toggle('skjult', !!bruker);
+  document.getElementById('innhold').classList.toggle('skjult', !bruker);
+  if(bruker){
+    document.getElementById('felt-navn').value=bruker.navn;
+    document.getElementById('vis-epost').textContent=bruker.epost;
+    document.getElementById('vis-metode').textContent=bruker.innloggingsmetode==='google' ? 'Google' : 'E-post og passord';
+    tegnKlasser();
+    tegnRom();
+  }
+});
+
+// ── PROFIL ──
+async function lagreNavn(){
+  const el=document.getElementById('navn-melding');
+  el.innerHTML='';
+  const navn=document.getElementById('felt-navn').value.trim();
+  try{
+    await LRNifyAuth.oppdaterNavn(navn);
+    el.innerHTML='<div class="melding ok">Navnet er oppdatert.</div>';
+  }catch(e){
+    el.innerHTML='<div class="melding feil">Fikk ikke lagret: '+e.message+'</div>';
+  }
+}
+
+// ── MINE KLASSER ──
+async function tegnKlasser(){
+  const el=document.getElementById('klasse-liste');
+  let klasser=[];
+  try{ klasser=await LRNifyAuth.hentKlasser(); }
+  catch(e){ el.innerHTML='<div class="tom">Fikk ikke hentet klassene dine.</div>'; return; }
+  if(!klasser.length){ el.innerHTML='<div class="tom">Ingen lagrede klasser ennå.</div>'; return; }
+  el.innerHTML='';
+  klasser.forEach(k=>{
+    const rad=document.createElement('div');
+    rad.className='rad';
+    rad.innerHTML=
+      '<div><div class="navn">'+esc(k.navn)+'</div>'+
+      '<div class="detalj">'+k.elever.length+' elever'+(k.trinn?' · '+esc(k.trinn)+'. trinn':'')+'</div></div>';
+    const knapp=document.createElement('button');
+    knapp.className='hvit';
+    knapp.textContent='Slett';
+    knapp.onclick=async ()=>{
+      if(!confirm('Slette klassen «'+k.navn+'»?')) return;
+      try{ await LRNifyAuth.slettKlasse(k.klasseId); tegnKlasser(); }
+      catch(e){ alert('Fikk ikke slettet: '+e.message); }
+    };
+    rad.appendChild(knapp);
+    el.appendChild(rad);
+  });
+}
+
+// ── MINE ROM ──
+async function tegnRom(){
+  const el=document.getElementById('rom-liste');
+  let rom=[];
+  try{ rom=await LRNifyAuth.hentAlleMineRom(); }
+  catch(e){ el.innerHTML='<div class="tom">Fikk ikke hentet rommene dine.</div>'; return; }
+  if(!rom.length){ el.innerHTML='<div class="tom">Ingen aktive rom.</div>'; return; }
+  el.innerHTML='';
+  rom.forEach(r=>{
+    const rad=document.createElement('div');
+    rad.className='rad';
+    rad.innerHTML=
+      '<div><div class="navn">'+esc(r.kode)+'</div>'+
+      '<div class="detalj">'+esc(r.spill||'')+(r.question?' · '+esc(r.question):'')+'</div></div>';
+    const knapp=document.createElement('button');
+    knapp.className='hvit';
+    knapp.textContent='Avslutt';
+    knapp.onclick=async ()=>{
+      if(!confirm('Avslutte rommet «'+r.kode+'»?')) return;
+      try{ await LRNifyAuth.avsluttRom(r.spill, r.kode); tegnRom(); }
+      catch(e){ alert('Fikk ikke avsluttet: '+e.message); }
+    };
+    rad.appendChild(knapp);
+    el.appendChild(rad);
+  });
+}
+
+function esc(s){
+  const d=document.createElement('div');
+  d.textContent=String(s==null?'':s);
+  return d.innerHTML;
+}
+
+// ── SLETT HELE KONTOEN ──
+async function apneSlettModal(){
+  let antKlasser=0, antRom=0;
+  try{ antKlasser=(await LRNifyAuth.hentKlasser()).length; }catch(e){}
+  try{ antRom=(await LRNifyAuth.hentAlleMineRom()).length; }catch(e){}
+
+  const bakteppe=document.createElement('div');
+  bakteppe.className='bakteppe';
+  const erGoogle=gjeldendeBruker && gjeldendeBruker.innloggingsmetode==='google';
+  bakteppe.innerHTML=
+    '<div class="modal" role="dialog" aria-modal="true">'+
+      '<h2>Slett hele kontoen?</h2>'+
+      '<p style="font-weight:700;">Dette sletter for godt:</p>'+
+      '<ul class="liste">'+
+        '<li>'+antKlasser+' lagrede klasse(r)</li>'+
+        '<li>'+antRom+' aktivt rom / aktive rom</li>'+
+        '<li>Profilen og innloggingen din</li>'+
+      '</ul>'+
+      '<p style="font-weight:700;">Dette kan ikke angres.</p>'+
+      (erGoogle
+        ? '<p style="color:var(--muted);font-weight:700;font-size:.85rem;">Vi ber deg bekrefte med Google én gang til, for sikkerhets skyld.</p>'
+        : '<label for="slett-passord">Skriv inn passordet ditt for å bekrefte</label><input type="password" id="slett-passord" autocomplete="current-password">'
+      )+
+      '<div class="melding feil skjult" data-feil></div>'+
+      '<div class="knapperad">'+
+        '<button class="hvit" data-avbryt>Avbryt</button>'+
+        '<button class="fare" data-bekreft>Ja, slett kontoen for godt</button>'+
+      '</div>'+
+    '</div>';
+  document.body.appendChild(bakteppe);
+
+  const feilEl=bakteppe.querySelector('[data-feil]');
+  const visFeil=m=>{ feilEl.textContent=m; feilEl.classList.remove('skjult'); };
+  bakteppe.querySelector('[data-avbryt]').onclick=()=>bakteppe.remove();
+
+  bakteppe.querySelector('[data-bekreft]').addEventListener('click', async ()=>{
+    const knapp=bakteppe.querySelector('[data-bekreft]');
+    knapp.disabled=true;
+    try{
+      const passordFelt=bakteppe.querySelector('#slett-passord');
+      await LRNifyAuth.reautentiser(passordFelt ? passordFelt.value : undefined);
+      await LRNifyAuth.slettHeleKontoen();
+      bakteppe.remove();
+      alert('Kontoen er slettet.');
+      location.href='/';
+    }catch(e){
+      knapp.disabled=false;
+      if(e.code==='auth/wrong-password' || e.code==='auth/invalid-credential'){
+        visFeil('Feil passord.');
+      }else if(e.code==='auth/requires-recent-login'){
+        visFeil('Bekreftelsen var for gammel. Prøv igjen.');
+      }else{
+        visFeil('Fikk ikke slettet kontoen: '+e.message);
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

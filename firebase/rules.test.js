@@ -295,6 +295,42 @@ check('profil uten epost', false, db({}, LARER).write('/users/' + LARER.uid + '/
 check('profil med ekstra metadata', false, db({}, LARER).write('/users/' + LARER.uid + '/profile', Object.assign({}, profilData, { skole: 'Eik skole' })));
 check('lærer skriver i en annens klasseliste', false, db(brukerDb, LARER2).write('/users/' + LARER.uid + '/klasser/-Nk2', { navn: '9C', trinn: '9', opprettet: now }));
 
+/* ── Klasselister (LRNifyAuth.lagreKlasse/hentKlasser) ─────────────────────
+   Elevfornavn er den eneste elevdataen i hele strukturen, og ligger strengt
+   privat under lærerens konto. Testene under låser formen: navn og kjønn,
+   ingenting mer — særlig ikke relasjoner mellom elever («må ikke sitte
+   sammen»), som skal bli liggende lokalt på lærerens maskin. */
+console.log('--- klasser: lagrede klasselister');
+const klasse9b = {
+  navn: '9B', trinn: '9', opprettet: now,
+  elever: [{ navn: 'Ida', kjonn: 'j' }, { navn: 'Jonas', kjonn: 'g' }, { navn: 'Alex', kjonn: 'a' }]
+};
+const klasseSti = '/users/' + LARER.uid + '/klasser/k1';
+const medKlasse = { users: { [LARER.uid]: { klasser: { k1: klasse9b } } } };
+
+check('lærer lagrer en klasse med elever', true, db({}, LARER).write(klasseSti, klasse9b));
+check('lærer leser sine egne klasser', true, db(medKlasse, LARER).read('/users/' + LARER.uid + '/klasser'));
+check('lærer oppdaterer klassen', true, db(medKlasse, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida', kjonn: 'j' }] })));
+check('lærer sletter klassen', true, db(medKlasse, LARER).write(klasseSti, null));
+check('klasse uten kjønn oppgitt', true, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida' }] })));
+
+console.log('--- klasser: strengt privat');
+check('annen lærer leser klasselista', false, db(medKlasse, LARER2).read('/users/' + LARER.uid + '/klasser'));
+check('annen lærer leser én klasse', false, db(medKlasse, LARER2).read(klasseSti));
+check('uinnlogget leser klasselista', false, db(medKlasse, null).read(klasseSti));
+check('elev (anonym) leser klasselista', false, db(medKlasse, ELEV).read(klasseSti));
+check('annen lærer skriver i klasselista', false, db(medKlasse, LARER2).write(klasseSti, klasse9b));
+
+console.log('--- klasser: formen er låst (ingen sensitive tillegg)');
+check('relasjonsregel «må ikke sitte sammen»', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { ikkeSammen: [['Ida', 'Jonas']] })));
+check('elev med notat om atferd', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida', kjonn: 'j', notat: 'urolig' }] })));
+check('elev med fødselsdato', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida', kjonn: 'j', fodt: '2011-04-02' }] })));
+check('elev uten navn', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ kjonn: 'j' }] })));
+check('tomt elevnavn', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: '', kjonn: 'j' }] })));
+check('ugyldig kjønnsverdi', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'Ida', kjonn: 'jente' }] })));
+check('kjempelangt elevnavn', false, db({}, LARER).write(klasseSti, Object.assign({}, klasse9b, { elever: [{ navn: 'x'.repeat(80), kjonn: 'j' }] })));
+check('klasse uten navn', false, db({}, LARER).write(klasseSti, { trinn: '9', opprettet: now, elever: [{ navn: 'Ida' }] }));
+
 console.log('--- resultater: aggregert, aldri navngitt');
 const oktData = { dato: now, romkode: 'ABCD', riktige: 12, deltakere: 24 };
 const resultatDb = { resultater: { [LARER.uid]: { temaspinner: { '-No1': oktData } } } };
@@ -316,8 +352,73 @@ check('en lærer setter en annens uid som eierUid', false, db({}, LARER2).write(
 check('en annen lærer setter klasseId på noen andres rom', false, db({ rooms: { ABC123: eidPollMedEier } }, LARER2).write('/rooms/ABC123/klasseId', '-Nk9'));
 check('lærer 2 skriver seg selv inn i delteUider på et rom uten eierUid', false, db(nyttRom, LARER2).write('/rooms/ABC123/delteUider/' + LARER2.uid, true));
 check('ugyldig spillnavn (stor bokstav)', false, db({}, LARER).write('/rooms/ABC123', Object.assign({}, eidPollMedEier, { spill: 'KlassePoll' })));
+
+/* ── Rom-indeksen (LRNifyAuth.opprettRom / hentMineRom) ────────────────────
+   /rooms kan ikke listes opp av noen, så hentMineRom leser lærerens egen
+   peker-indeks i stedet. Testene under dekker LESE-stien eksplisitt — det
+   var mangelen på nettopp den som gjorde at den første versjonen av
+   hentMineRom (en spørring mot /rooms) alltid ble avvist. */
+console.log('--- rom-indeks: opprettRom skriver atomisk til to steder');
+const pekerSti = '/users/' + LARER.uid + '/rom/klassepoll/ABCD';
+const atomisk = {};
+atomisk['/rooms/ABCD'] = Object.assign({}, eidPollMedEier);
+atomisk[pekerSti] = { opprettet: now };
+check('lærer oppretter rom + peker i én operasjon', true, db({}, LARER).update('/', atomisk));
+
+const medIndeks = {
+  rooms: { ABCD: eidPollMedEier },
+  users: { [LARER.uid]: { rom: { klassepoll: { ABCD: { opprettet: now } } } } }
+};
+check('lærer leser sin egen rom-indeks (det hentMineRom gjør)', true, db(medIndeks, LARER).read('/users/' + LARER.uid + '/rom/klassepoll'));
+check('lærer slår opp rommet pekeren viser til', true, db(medIndeks, LARER).read('/rooms/ABCD'));
+check('lærer fjerner pekeren når rommet avsluttes', true, db(medIndeks, LARER).write(pekerSti, null));
+
+console.log('--- rom-indeks: avsluttRom rydder begge steder');
+const rydd = {};
+rydd['/rooms/ABCD'] = null;
+rydd[pekerSti] = null;
+check('lærer sletter rom + peker i én operasjon', true, db(medIndeks, LARER).update('/', rydd));
+check('annen lærer sletter mitt rom + peker', false, db(medIndeks, LARER2).update('/', rydd));
+
+console.log('--- rom-indeks: fortsatt umulig å ramse opp alle rom');
+check('lister opp /rooms som innlogget lærer', false, db(medIndeks, LARER).read('/rooms'));
+check('annen lærer leser min rom-indeks', false, db(medIndeks, LARER2).read('/users/' + LARER.uid + '/rom/klassepoll'));
+check('uinnlogget leser rom-indeksen', false, db(medIndeks, null).read('/users/' + LARER.uid + '/rom/klassepoll'));
+check('annen lærer skriver peker inn i min indeks', false, db(medIndeks, LARER2).write('/users/' + LARER.uid + '/rom/klassepoll/ZZZZ', { opprettet: now }));
+check('peker uten opprettet', false, db(medIndeks, LARER).write('/users/' + LARER.uid + '/rom/klassepoll/EFGH', { klasseId: '-Nk1' }));
+check('peker med ukjent felt', false, db(medIndeks, LARER).write('/users/' + LARER.uid + '/rom/klassepoll/EFGH', { opprettet: now, hemmelig: 1 }));
+check('peker med ugyldig romkode', false, db(medIndeks, LARER).write('/users/' + LARER.uid + '/rom/klassepoll/ab!', { opprettet: now }));
+check('peker under ugyldig spillnavn', false, db(medIndeks, LARER).write('/users/' + LARER.uid + '/rom/KlassePoll/ABCD', { opprettet: now }));
 check('eier deler rommet med en kollega (forberedt, ikke i bruk i v1-UI)', true, db({ rooms: { ABC123: eidPollMedEier } }, LARER).write('/rooms/ABC123/delteUider/' + LARER2.uid, true));
 check('gammelt rom uten eierUid fungerer fortsatt uendret', true, db({}, null).write('/rooms/ABC123', basePoll));
+
+/* ── /konto/: oppdaterNavn og slettHeleKontoen (LRNifyAuth) ────────────────
+   oppdaterNavn skriver KUN navn-feltet direkte, ikke hele profile-objektet
+   — verifiserer at det målrettede skrivet fortsatt validerer selv om
+   epost/opprettet ikke er med i den enkelte operasjonen (de ligger jo
+   allerede i eksisterende data). slettHeleKontoen sletter tre separate
+   stier i rekkefølge (rom, users/{uid}, resultater/{uid}) — hver må være
+   lov for eieren og forbudt for alle andre. */
+console.log('--- konto: oppdaterNavn (målrettet leaf-write) ---');
+const profilKlasseRom = {
+  users: { [LARER.uid]: {
+    profile: { navn: 'Kari', epost: 'kari@skole.no', opprettet: now },
+    rom: { klassepoll: { ABCD: { opprettet: now } } }
+  } },
+  resultater: { [LARER.uid]: { klassepoll: { o1: { dato: now, romkode: 'ABCD' } } } },
+  rooms: { ABCD: { question: 'q', options: ['a', 'b'], votes: { 0: 0, 1: 0 }, open: true, createdAt: now, owner: LARER.uid, eierUid: LARER.uid, spill: 'klassepoll' } }
+};
+check('lærer endrer bare navn-feltet', true, db(profilKlasseRom, LARER).write('/users/' + LARER.uid + '/profile/navn', 'Kari Ny'));
+check('for langt navn avvist', false, db(profilKlasseRom, LARER).write('/users/' + LARER.uid + '/profile/navn', 'x'.repeat(100)));
+check('annen lærer kan ikke endre mitt navn', false, db(profilKlasseRom, LARER2).write('/users/' + LARER.uid + '/profile/navn', 'Hacket'));
+
+console.log('--- konto: slettHeleKontoen (rom → users → resultater) ---');
+check('lærer sletter sitt eget rom', true, db(profilKlasseRom, LARER).write('/rooms/ABCD', null));
+check('lærer sletter hele users/{uid}', true, db(profilKlasseRom, LARER).write('/users/' + LARER.uid, null));
+check('lærer sletter hele resultater/{uid}', true, db(profilKlasseRom, LARER).write('/resultater/' + LARER.uid, null));
+check('annen lærer kan ikke slette mitt rom', false, db(profilKlasseRom, LARER2).write('/rooms/ABCD', null));
+check('annen lærer kan ikke slette min konto-data', false, db(profilKlasseRom, LARER2).write('/users/' + LARER.uid, null));
+check('annen lærer kan ikke slette mine resultater', false, db(profilKlasseRom, LARER2).write('/resultater/' + LARER.uid, null));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

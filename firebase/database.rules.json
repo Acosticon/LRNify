@@ -4,7 +4,6 @@
     ".write": false,
 
     "rooms": {
-      ".indexOn": ["eierUid"],
       "$room": {
         ".read": true,
         ".write": "!data.exists() || (!newData.exists() && (!data.hasChild('owner') || (auth != null && data.child('owner').val() === auth.uid)))",
@@ -314,6 +313,20 @@
             "opprettet": {
               ".validate": "newData.isNumber() && newData.val() <= now + 300000"
             },
+            "elever": {
+              "$i": {
+                ".validate": "$i.matches(/^[0-9]{1,3}$/) && newData.hasChild('navn')",
+                "navn": {
+                  ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+                },
+                "kjonn": {
+                  ".validate": "newData.isString() && newData.val().matches(/^(j|g|a)$/)"
+                },
+                "$other": {
+                  ".validate": false
+                }
+              }
+            },
             "$other": {
               ".validate": false
             }
@@ -323,6 +336,24 @@
         "spillinnstillinger": {
           "$spillnavn": {
             ".validate": "$spillnavn.matches(/^[a-z0-9-]{1,40}$/)"
+          }
+        },
+
+        "rom": {
+          "$spillnavn": {
+            ".validate": "$spillnavn.matches(/^[a-z0-9-]{1,40}$/)",
+            "$romkode": {
+              ".validate": "$romkode.matches(/^[A-Z0-9]{4,8}$/) && newData.hasChild('opprettet')",
+              "opprettet": {
+                ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+              },
+              "klasseId": {
+                ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
           }
         },
 
