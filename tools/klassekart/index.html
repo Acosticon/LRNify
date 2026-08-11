@@ -433,16 +433,17 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
   <!-- ELEVER -->
   <div class="panel active" id="panel-elever">
     <div>
-      <div class="section-label">Mine klasser</div>
+      <div class="section-label">Mine klasselister</div>
       <div class="card">
         <div class="klasse-topp">
           <div id="larerInnlogging"></div>
-          <div class="klasse-hjelp">Logg inn for å lagre klasselister, så slipper du å taste inn navnene på nytt neste gang.</div>
+          <div id="lagKlasselisteKnapp"></div>
+          <div class="klasse-hjelp">Klasselister er navnene — brukes i Klassekart, Elevvelger og andre verktøy. Klassekart (kartet under) er noe eget: den du selv bygger, printer eller deler med en vikar.</div>
         </div>
         <div id="klasse-liste" class="k-skjult"></div>
         <div id="klasse-lagre" class="klasse-lagre k-skjult">
           <input type="text" id="klasse-navn" placeholder="Klassens navn, f.eks. 9B" maxlength="60">
-          <button class="btn-secondary" onclick="lagreKlasseListe()">Lagre klassen</button>
+          <button class="btn-secondary" onclick="lagreKlasseListe()">Lagre denne som klasseliste</button>
         </div>
       </div>
     </div>
@@ -1018,6 +1019,7 @@ const FIREBASE_CONFIG={
 let erInnlogget=false;
 LRNifyAuth.init(FIREBASE_CONFIG);
 LRNifyAuth.mountLoginWidget(document.getElementById('larerInnlogging'));
+LRNifyAuth.mountKlasselisteKnapp(document.getElementById('lagKlasselisteKnapp'), { onOpprettet: tegnKlasser });
 LRNifyAuth.onAuthChange(b=>{erInnlogget=!!b;tegnKlasser();});
 
 // Klassekart bruker 'n' for «ikke oppgitt», modulen lagrer 'a'.
@@ -1084,7 +1086,7 @@ async function lagreKlasseListe(){
   const elever=getElever();
   if(!elever.length){toast('Legg inn elever først.');return;}
   const navn=document.getElementById('klasse-navn').value.trim();
-  if(!navn){toast('Gi klassen et navn, f.eks. 9B.');return;}
+  if(!navn){toast('Gi klasselisten et navn, f.eks. 9B.');return;}
   try{
     await LRNifyAuth.lagreKlasse({
       navn,
@@ -1096,7 +1098,7 @@ async function lagreKlasseListe(){
 }
 
 async function slettKlasseListe(k){
-  if(!confirm('Slette klassen «'+k.navn+'»? Elevlista i feltene under blir stående.')) return;
+  if(!confirm('Slette klasselisten «'+k.navn+'»? Elevlista i feltene under blir stående.')) return;
   try{ await LRNifyAuth.slettKlasse(k.klasseId); tegnKlasser(); }
   catch(e){ toast('Fikk ikke slettet: '+e.message); }
 }

@@ -120,8 +120,9 @@
   </div>
 
   <div class="kort">
-    <h2>Mine klasser</h2>
+    <h2>Mine klasselister</h2>
     <div id="klasse-liste"><div class="tom">Laster …</div></div>
+    <div id="lagKlasselisteKnapp" style="margin-top:10px;"></div>
   </div>
 
   <div class="kort">
@@ -136,7 +137,7 @@
 
   <div class="kort faresone">
     <h2>⚠️ Faresone</h2>
-    <p style="color:var(--muted);font-weight:700;">Sletter kontoen din permanent, sammen med alle lagrede klasser og rom. Kan ikke angres.</p>
+    <p style="color:var(--muted);font-weight:700;">Sletter kontoen din permanent, sammen med alle lagrede klasselister og rom. Kan ikke angres.</p>
     <button class="fare" onclick="apneSlettModal()">Slett hele kontoen</button>
   </div>
 </div>
@@ -156,6 +157,7 @@ const FIREBASE_CONFIG={
 };
 LRNifyAuth.init(FIREBASE_CONFIG);
 LRNifyAuth.mountLoginWidget(document.getElementById('larerInnlogging'));
+LRNifyAuth.mountKlasselisteKnapp(document.getElementById('lagKlasselisteKnapp'), { onOpprettet: tegnKlasser });
 
 let gjeldendeBruker=null;
 LRNifyAuth.onAuthChange(bruker=>{
@@ -189,7 +191,7 @@ async function tegnKlasser(){
   const el=document.getElementById('klasse-liste');
   let klasser=[];
   try{ klasser=await LRNifyAuth.hentKlasser(); }
-  catch(e){ el.innerHTML='<div class="tom">Fikk ikke hentet klassene dine.</div>'; return; }
+  catch(e){ el.innerHTML='<div class="tom">Fikk ikke hentet klasselistene dine.</div>'; return; }
   if(!klasser.length){ el.innerHTML='<div class="tom">Ingen lagrede klasser ennå.</div>'; return; }
   el.innerHTML='';
   klasser.forEach(k=>{
@@ -202,7 +204,7 @@ async function tegnKlasser(){
     knapp.className='hvit';
     knapp.textContent='Slett';
     knapp.onclick=async ()=>{
-      if(!confirm('Slette klassen «'+k.navn+'»?')) return;
+      if(!confirm('Slette klasselisten «'+k.navn+'»?')) return;
       try{ await LRNifyAuth.slettKlasse(k.klasseId); tegnKlasser(); }
       catch(e){ alert('Fikk ikke slettet: '+e.message); }
     };
@@ -258,7 +260,7 @@ async function apneSlettModal(){
       '<h2>Slett hele kontoen?</h2>'+
       '<p style="font-weight:700;">Dette sletter for godt:</p>'+
       '<ul class="liste">'+
-        '<li>'+antKlasser+' lagrede klasse(r)</li>'+
+        '<li>'+antKlasser+' lagret(e) klasseliste(r)</li>'+
         '<li>'+antRom+' aktivt rom / aktive rom</li>'+
         '<li>Profilen og innloggingen din</li>'+
       '</ul>'+

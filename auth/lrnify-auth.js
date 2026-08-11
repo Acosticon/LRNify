@@ -639,6 +639,18 @@
       }
       .lrnauth-modal input:focus{ outline:3px solid var(--lrnauth-gul,#facc15); outline-offset:1px; }
       .lrnauth-modal .lrnauth-knapp{ width:100%; justify-content:center; margin-bottom:10px; box-sizing:border-box; }
+      .lrnauth-modal textarea{
+        width:100%; box-sizing:border-box; padding:10px 12px; min-height:90px; resize:vertical;
+        border:3px solid var(--lrnauth-ink,#1a1a1a); border-radius:12px;
+        font-family:'Nunito',sans-serif; font-weight:700; font-size:.95rem; line-height:1.5;
+        background:#fff; color:var(--lrnauth-ink,#1a1a1a); margin-bottom:10px;
+      }
+      .lrnauth-modal textarea:focus{ outline:3px solid var(--lrnauth-gul,#facc15); outline-offset:1px; }
+      .lrnauth-modal label{
+        display:block; font-weight:800; font-size:.78rem; text-transform:uppercase;
+        letter-spacing:.04em; color:var(--lrnauth-muted,#7a6f63); margin:6px 0 5px;
+      }
+      .lrnauth-elevgrupper{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
       .lrnauth-skille{
         display:flex; align-items:center; gap:10px; color:var(--lrnauth-muted,#7a6f63); font-weight:800;
         font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; margin:14px 0;
@@ -829,6 +841,105 @@
     onAuthChange(tegn);
   }
 
+  /**
+   * Tegner en «+ Lag klasseliste»-knapp — en egen, opt-in komponent, IKKE
+   * en del av mountLoginWidget(). Grunnen er at ikke alle sider som har
+   * login-knappen faktisk jobber med klasselister (forsiden, KlassePoll) —
+   * bare de som gjør det (Klassekart, Elevvelger, /konto/) skal montere
+   * denne i tillegg, ved siden av login-knappen.
+   *
+   * Utlogget: knappen viser en beskjed om at innlogging trengs, i stedet for
+   * å åpne noe. Innlogget: åpner en modal for å lage en ny klasseliste
+   * (navn, valgfritt trinn, elever gruppert jenter/gutter/annet — samme
+   * inndeling som Klassekart bruker til kjønnsbalanserte grupper), som
+   * lagres med lagreKlasse().
+   *
+   * @param {HTMLElement} container
+   * @param {{ onOpprettet?: (klasse: {klasseId: string}) => void }} [valg]
+   *        onOpprettet kalles etter vellykket lagring, slik at siden kan
+   *        oppdatere sin egen liste over klasselister.
+   */
+  function mountKlasselisteKnapp(container, valg) {
+    if (!container) throw new Error('mountKlasselisteKnapp: mangler container-element.');
+    settInnStil();
+    valg = valg || {};
+    container.classList.add('lrnauth');
+
+    const knapp = document.createElement('button');
+    knapp.type = 'button';
+    knapp.className = 'lrnauth-knapp lrnauth-hvit';
+    knapp.textContent = '+ Lag klasseliste';
+    container.appendChild(knapp);
+
+    const beskjedEl = document.createElement('div');
+    beskjedEl.className = 'lrnauth-feil lrnauth-skjult';
+    container.appendChild(beskjedEl);
+
+    knapp.addEventListener('click', () => {
+      beskjedEl.classList.add('lrnauth-skjult');
+      if (!getCurrentUid()) {
+        beskjedEl.textContent = 'Du må være logget inn for å opprette klasser.';
+        beskjedEl.classList.remove('lrnauth-skjult');
+        return;
+      }
+      apneKlasselisteModal(valg);
+    });
+  }
+
+  function apneKlasselisteModal(valg) {
+    const bakteppe = document.createElement('div');
+    bakteppe.className = 'lrnauth-bakteppe';
+    bakteppe.innerHTML = `
+      <div class="lrnauth-modal" role="dialog" aria-modal="true" aria-label="Lag klasseliste" style="max-width:420px;">
+        <button type="button" class="lrnauth-lukk" aria-label="Lukk">✕</button>
+        <h2>Lag klasseliste</h2>
+        <div class="lrnauth-under">Navnene lagres på kontoen din, og kan brukes i Klassekart, Elevvelger og andre verktøy — uten å tastes inn på nytt.</div>
+        <input type="text" data-navn placeholder="Navn, f.eks. 9B" maxlength="60">
+        <input type="text" data-trinn placeholder="Trinn (valgfritt)" maxlength="20" style="margin-top:-4px;">
+        <div class="lrnauth-elevgrupper">
+          <div><label>Jenter</label><textarea data-jenter placeholder="Ett navn per linje"></textarea></div>
+          <div><label>Gutter</label><textarea data-gutter placeholder="Ett navn per linje"></textarea></div>
+        </div>
+        <label>Ikke oppgitt / annet</label>
+        <textarea data-annet placeholder="Ett navn per linje" style="min-height:50px;"></textarea>
+        <button type="button" class="lrnauth-knapp" data-lagre style="margin-top:12px;">Lagre klasseliste</button>
+        <div class="lrnauth-feil lrnauth-skjult" data-feil></div>
+      </div>
+    `;
+    document.body.appendChild(bakteppe);
+
+    const felt = v => bakteppe.querySelector('[data-' + v + ']');
+    const feilEl = felt('feil');
+    const visFeil = m => { feilEl.textContent = m; feilEl.classList.remove('lrnauth-skjult'); };
+    const lukk = () => bakteppe.remove();
+
+    bakteppe.addEventListener('click', e => { if (e.target === bakteppe) lukk(); });
+    bakteppe.querySelector('.lrnauth-lukk').addEventListener('click', lukk);
+
+    function navnliste(tekst, kjonn) {
+      return String(tekst || '').split('\n').map(s => s.trim()).filter(Boolean).map(navn => ({ navn, kjonn }));
+    }
+
+    felt('lagre').addEventListener('click', async () => {
+      feilEl.classList.add('lrnauth-skjult');
+      const elever = [].concat(
+        navnliste(felt('jenter').value, 'j'),
+        navnliste(felt('gutter').value, 'g'),
+        navnliste(felt('annet').value, 'a')
+      );
+      felt('lagre').disabled = true;
+      try {
+        const resultat = await lagreKlasse({ navn: felt('navn').value, trinn: felt('trinn').value, elever });
+        lukk();
+        if (valg && valg.onOpprettet) valg.onOpprettet(resultat);
+      } catch (e) {
+        visFeil(e.message);
+      } finally {
+        felt('lagre').disabled = false;
+      }
+    });
+  }
+
   /* ══════════════════════════════════════════════════════════════════════
      OFFENTLIG API
      ══════════════════════════════════════════════════════════════════════ */
@@ -851,6 +962,7 @@
     oppdaterNavn,
     reautentiser,
     slettHeleKontoen,
-    mountLoginWidget
+    mountLoginWidget,
+    mountKlasselisteKnapp
   };
 })(window);

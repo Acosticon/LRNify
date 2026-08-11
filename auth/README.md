@@ -163,6 +163,7 @@ Alt henger på det globale objektet `LRNifyAuth`:
 | `reautentiser(passord?)` | Bekrefter identiteten på nytt — Google-popup for Google-kontoer, `passord` påkrevd for e-post-kontoer. Kall denne rett før `slettHeleKontoen()`. |
 | `slettHeleKontoen()` | Sletter ALT — rom, klasser, innstillinger, profil, og selve innloggingen. Kan ikke angres. Kaster `auth/requires-recent-login` uendret hvis økta ikke var fersk nok. |
 | `mountLoginWidget(container, valg?)` | Tegner en kompakt login-knapp/brukerlinje inn i `container`. Ikke i den opprinnelige kravlista, men nødvendig for UI-kravet — se under. |
+| `mountKlasselisteKnapp(container, valg?)` | Tegner en «+ Lag klasseliste»-knapp. Utlogget: viser en beskjed om at innlogging trengs. Innlogget: åpner en modal (navn, trinn, jenter/gutter/annet) som lagrer med `lagreKlasse()`. `valg.onOpprettet(klasse)` kalles etter vellykket lagring. Egen, opt-in komponent — IKKE en del av `mountLoginWidget`, siden ikke alle sider med login-knappen faktisk jobber med klasselister. |
 
 `opprettRom` tar et valgfritt tredje argument, `{ romkode }`, så et spill kan
 beholde sin egen kodegenerator — KlassePoll bruker seks tegn, modulens
@@ -252,6 +253,28 @@ den som lagde det (se reglene og testene for `rooms/$room/eierUid` i
 
 **Personvern:** `profile` inneholder kun navn og e-post — ingen annen
 metadata. Se forbeholdet om `resultater` over.
+
+### «Klasseliste» vs. «klassekart» — bevisst holdt fra hverandre
+
+To ulike ting kan lett blandes sammen, og har derfor fått ulike navn overalt
+i brukergrensesnittet:
+
+- **Klasseliste** — navnene. Delt på tvers av apper (`users/{uid}/klasser`,
+  se under). Opprettes via `mountKlasselisteKnapp()`, brukes av Klassekart
+  og Elevvelger.
+- **Klassekart** — den faktiske plasseringen/gruppeinndelingen en lærer
+  bygger i verktøyet Klassekart, med sitteregler, tenkt printet, lastet ned
+  eller delt med en vikar. Dette er *ikke* en del av `lrnify-auth.js` sin
+  datamodell i det hele tatt — Klassekart lagrer sine kart lokalt
+  (`localStorage`), helt uavhengig av klasselistene. Se «Lagrede
+  klassekart»-fanen i `tools/klassekart/index.html`.
+
+Klassekart har derfor to atskilte «lagre»-knapper som gjør forskjellige
+ting til forskjellige steder: «Lagre denne som klasseliste» (navnene, til
+skyen, gjenbrukbare andre steder) og «Lagre kart» (selve oppsettet, lokalt,
+knyttet til akkurat dette verktøyet). Ikke slå dem sammen — det var
+nettopp forvekslingen som gjorde at klasselistene fikk sitt eget,
+utvetydige navn.
 
 ### Klasselister og personvern
 

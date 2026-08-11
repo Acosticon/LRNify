@@ -167,8 +167,9 @@ textarea:focus{outline:none;border-color:var(--purple)}
     <div class="card-label">Elever</div>
     <div class="klasse-linje">
       <div id="larerInnlogging"></div>
+      <div id="lagKlasselisteKnapp"></div>
       <select id="klasse-velger" class="k-skjult" onchange="brukValgtKlasse()">
-        <option value="">Velg en lagret klasse …</option>
+        <option value="">Velg en lagret klasseliste …</option>
       </select>
     </div>
     <textarea id="names" placeholder="Emma&#10;Sofia&#10;Nora&#10;Oliver&#10;Liam&#10;Matteo&#10;Leah&#10;Noah&#10;Ingrid&#10;Emil"></textarea>
@@ -230,12 +231,17 @@ const FIREBASE_CONFIG={
 let mineKlasser=[];
 LRNifyAuth.init(FIREBASE_CONFIG);
 LRNifyAuth.mountLoginWidget(document.getElementById('larerInnlogging'));
-LRNifyAuth.onAuthChange(async bruker=>{
+LRNifyAuth.mountKlasselisteKnapp(document.getElementById('lagKlasselisteKnapp'), { onOpprettet: oppdaterKlasseVelger });
+LRNifyAuth.onAuthChange(bruker=>{
+  if(!bruker){ mineKlasser=[]; document.getElementById('klasse-velger').classList.add('k-skjult'); return; }
+  oppdaterKlasseVelger();
+});
+
+async function oppdaterKlasseVelger(){
   const velger=document.getElementById('klasse-velger');
-  if(!bruker){ mineKlasser=[]; velger.classList.add('k-skjult'); return; }
   try{ mineKlasser=await LRNifyAuth.hentKlasser(); }catch(e){ mineKlasser=[]; }
   if(!mineKlasser.length){ velger.classList.add('k-skjult'); return; }
-  velger.innerHTML='<option value="">Velg en lagret klasse …</option>';
+  velger.innerHTML='<option value="">Velg en lagret klasseliste …</option>';
   mineKlasser.forEach((k,i)=>{
     const o=document.createElement('option');
     o.value=String(i);
@@ -243,7 +249,7 @@ LRNifyAuth.onAuthChange(async bruker=>{
     velger.appendChild(o);
   });
   velger.classList.remove('k-skjult');
-});
+}
 
 function brukValgtKlasse(){
   const k=mineKlasser[parseInt(document.getElementById('klasse-velger').value,10)];
