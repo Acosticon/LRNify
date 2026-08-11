@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Personvern — LRNify</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --cream:#fff9f0; --ink:#2b2118; --yellow:#facc15; --muted:#7a6f63; --card:#fff; --red:#b91c1c; --red-light:#fee2e2; }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Nunito',sans-serif; background:var(--cream); color:var(--ink);
+    padding:32px 20px 60px; line-height:1.6;
+  }
+  .wrap{ max-width:760px; margin:0 auto; }
+  h1{ font-family:'Chewy',cursive; font-weight:400; font-size:clamp(2rem,6vw,2.8rem); transform:rotate(-1deg); margin:0 0 6px; }
+  .oppdatert{ color:var(--muted); font-weight:700; font-size:.9rem; margin-bottom:28px; }
+  h2{ font-family:'Chewy',cursive; font-weight:400; font-size:1.4rem; margin:36px 0 10px; }
+  p, li{ margin:0 0 12px; }
+  ul{ padding-left:22px; }
+  a{ color:var(--ink); }
+  .kort{ background:var(--card); border:3px solid var(--ink); border-radius:14px; padding:18px 20px; box-shadow:4px 4px 0 var(--ink); margin:0 0 12px; }
+  .varsel{
+    background:var(--red-light); border:3px solid var(--red); border-radius:14px;
+    padding:16px 18px; font-weight:700; color:var(--red); margin-bottom:28px;
+  }
+  .fyllinn{ background:#fff3c4; padding:1px 5px; border-radius:4px; font-weight:800; }
+  code{ background:#efe7d8; padding:2px 6px; border-radius:5px; font-size:.92em; }
+  footer{ text-align:center; margin-top:48px; color:var(--muted); font-size:.85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>🔒 Personvern</h1>
+<div class="oppdatert">Sist oppdatert: <span class="fyllinn">[fyll inn dato]</span></div>
+
+<div class="varsel">
+  Dette er et UTKAST — ikke publisert. Feltene merket <span class="fyllinn">gult</span>
+  må fylles ut, og siden bør leses av noen med kjennskap til norsk
+  personvernregelverk før den legges ut, siden LRNify (indirekte, via
+  lærere) behandler opplysninger om barn. Se «Om dette utkastet» nederst.
+</div>
+
+<p>
+  LRNify er gratis læringsspill og klasseromsverktøy for norsk skole. Denne
+  siden forklarer hvilke opplysninger vi lagrer, hvorfor, og hvordan du får
+  kontroll over dem.
+</p>
+
+<h2>Behandlingsansvarlig</h2>
+<div class="kort">
+  <p style="margin:0"><span class="fyllinn">[Navn på ansvarlig / foretak]</span><br>
+  <span class="fyllinn">[Adresse, org.nr. hvis foretak]</span><br>
+  E-post: <a href="mailto:kontakt@lrnify.no">kontakt@lrnify.no</a></p>
+</div>
+
+<h2>Elever logger aldri inn</h2>
+<p>
+  Elever bruker LRNify uten konto, uten navn og uten noen identifiserbar
+  informasjon — de blir med i en aktivitet ved å taste inn en romkode
+  læreren har fått opp på skjermen. Vi lagrer aldri elevers etternavn,
+  fødselsdato, karakterer eller resultater knyttet til en navngitt elev.
+</p>
+
+<h2>Hva vi lagrer om lærere som logger inn</h2>
+<p>Innlogging er valgfritt og gir tilgang til å lagre og gjenbruke ting på tvers av økter. Logger du inn (med Google, eller e-post og selvvalgt passord), lagrer vi:</p>
+<ul>
+  <li><strong>Navn og e-postadresse</strong> — hentet fra innloggingen din, brukes til å vise hvem som er innlogget.</li>
+  <li><strong>Klasselister du velger å lagre</strong> — elevenes <em>fornavn</em>, og valgfritt kjønn (for kjønnsbalanserte grupper). Dette er den eneste elevrelaterte informasjonen som lagres hos oss, og den lagres fordi <em>du</em> aktivt velger å lagre den, for å slippe å taste inn de samme navnene på nytt i hvert verktøy.</li>
+  <li><strong>Rom du oppretter</strong> (f.eks. i KlassePoll) — knyttet til kontoen din slik at du finner dem igjen, med aggregerte tall (f.eks. antall stemmer per svaralternativ) — aldri navngitte enkeltsvar.</li>
+</ul>
+<p>
+  Vi lagrer <strong>ikke</strong>: elevers etternavn, fødselsdato, adresse,
+  vurderinger/karakterer, eller notater om enkeltelever (f.eks. hvem som
+  ikke bør sitte sammen — dette holdes lokalt på din egen maskin, se under).
+</p>
+
+<h2>Hva som lagres lokalt på din maskin, ikke hos oss</h2>
+<p>
+  Enkelte verktøy (f.eks. Klassekart) lar deg lagre ting som blir liggende
+  <em>kun i nettleseren din</em> («localStorage») og aldri sendes til våre
+  servere — blant annet regler om hvilke elever som bør eller ikke bør sitte
+  sammen. Dette forsvinner hvis du tømmer nettleserdata, eller bytter
+  maskin.
+</p>
+
+<h2>Hvorfor (behandlingsgrunnlag)</h2>
+<p>
+  Vi behandler lærerens navn og e-post for å levere tjenesten lærer har bedt
+  om (opprette og logge inn på en konto). Klasselister lagres kun fordi og
+  når læreren selv aktivt oppretter dem — <span class="fyllinn">[vurder om
+  dette skal begrunnes som berettiget interesse, samtykke, eller avtale
+  med skoleeier — bør avklares juridisk]</span>.
+</p>
+
+<h2>Hvor lagres opplysningene</h2>
+<p>
+  Vi bruker Google Firebase (Realtime Database og Authentication), med data
+  lagret i Google sin <code>europe-west1</code>-region (Belgia, EU/EØS).
+  Google er vår databehandler. <span class="fyllinn">[legg ved / lenk til
+  databehandleravtale med Google, hvis en er inngått]</span>.
+</p>
+
+<h2>Hvor lenge</h2>
+<p>
+  Så lenge kontoen din er aktiv. Du kan slette en lagret klasse eller et
+  lagret rom selv, når som helst, i verktøyet du opprettet dem i. Ønsker du
+  hele kontoen slettet: <span class="fyllinn">[beskriv rutine — i dag finnes
+  ingen «slett konto»-knapp i grensesnittet; til noen har bedt om det, må
+  det gjøres manuelt av oss på e-post-forespørsel til kontakt@lrnify.no]</span>.
+</p>
+
+<h2>Dine rettigheter</h2>
+<p>Du har rett til innsyn, retting og sletting av opplysningene vi har om deg, og til å klage til <a href="https://www.datatilsynet.no" target="_blank" rel="noopener">Datatilsynet</a>. Ta kontakt på <a href="mailto:kontakt@lrnify.no">kontakt@lrnify.no</a>.</p>
+
+<h2>Informasjonskapsler (cookies)</h2>
+<p>
+  LRNify bruker ikke sporings- eller annonsecookies. Nettleseren din lagrer
+  enkelte innstillinger lokalt (lydvalg, husket romkode, klasselister du
+  jobber med) for at verktøyene skal huske valgene dine mellom besøk.
+</p>
+
+<h2>Om dette utkastet</h2>
+<p>
+  Denne siden er skrevet som et startpunkt basert på hva systemet faktisk
+  lagrer i dag (se <code>auth/README.md</code> i kildekoden for den tekniske
+  beskrivelsen), ikke som et ferdig juridisk dokument. Før publisering bør
+  noen med kjennskap til norsk personvernrett (personopplysningsloven/GDPR)
+  særlig vurdere: (1) behandlingsgrunnlaget for elevfornavn i klasselister,
+  gitt at disse gjelder barn, (2) om det trengs en databehandleravtale eller
+  informasjon rettet mot skoleeiere/rektorer som lar lærere bruke verktøyet,
+  og (3) en reell rutine for sletting av hele kontoer.
+</p>
+
+<footer>LRNify · <a href="/">Tilbake til forsiden</a></footer>
+</div>
+</body>
+</html>
