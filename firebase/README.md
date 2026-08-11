@@ -15,7 +15,15 @@ gang uten å la hvem som helst skrive hva som helst.
 | `loype/drobak-akvarium/` | Firestore | `fjordvoktere` | Legger til ett lag på veggen (`{ lag, tid }`) |
 | `index.html` (forsidens CTA-skjema) | Firestore | `feedback` | Besøkende sender inn forslag/tilbakemelding/bestilling |
 
-Ingen av appene ber brukeren logge inn, så reglene kan i hovedsak ikke kreve
+**`auth/lrnify-auth.js`** (se `auth/README.md`) er en delt innloggingsmodul
+for lærere (Google/e-post) som ikke er koblet til noe spill ennå — den er
+levert isolert, klar til integrasjon. Reglene under er likevel allerede
+oppdatert for den: `users/{uid}` og `resultater/{uid}` er nye topp-nivå-stier,
+og `rooms/{ROMKODE}` har fått tre nye, valgfrie felt (`eierUid`,
+`delteUider`, `klasseId`) i tillegg til de eksisterende poll-feltene.
+
+Ingen av spillene over ber brukeren logge inn, så reglene for dem kan i
+hovedsak ikke kreve
 `auth != null`. Sikkerheten ligger i at romkoden må være kjent, og i at reglene
 låser *formen* på det som kan skrives.
 
@@ -161,6 +169,14 @@ pålogging blir slått av igjen.
   så et rom som er i bruk ikke kan overskrives midt i en økt.
 * Lengdegrenser på all tekst (spørsmål 300, alternativ 200, svar 500, lagnavn
   24 tegn, tema 120 tegn), og ukjente felt avvises.
+* `rooms/{ROMKODE}/eierUid`: kan bare settes til egen `uid`, og bare idet
+  rommet opprettes — aldri leggs til eller overtas i etterkant, heller ikke
+  av eieren selv på et annet rom. `klasseId`, `delteUider` og `spill` kan
+  bare skrives av den `eierUid`en peker på. Se `auth/README.md`.
+* `users/{uid}` og `resultater/{uid}`: bare den innloggede læreren selv kan
+  lese eller skrive sin egen gren. `resultater/{uid}/{spillnavn}/{oktId}`
+  tillater kun tallverdier/tekst/boolean ut over `dato`/`romkode` — aldri et
+  nøstet objekt, så et navngitt elevresultat kan ikke lagres der.
 
 **Firestore**
 

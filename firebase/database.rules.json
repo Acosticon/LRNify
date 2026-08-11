@@ -4,10 +4,30 @@
     ".write": false,
 
     "rooms": {
+      ".indexOn": ["eierUid"],
       "$room": {
         ".read": true,
         ".write": "!data.exists() || (!newData.exists() && (!data.hasChild('owner') || (auth != null && data.child('owner').val() === auth.uid)))",
         ".validate": "$room.matches(/^[A-Z0-9]{4,8}$/) && newData.hasChildren(['question', 'options', 'votes', 'open', 'createdAt'])",
+
+        "eierUid": {
+          ".write": "auth != null && newData.val() === auth.uid && !data.parent().exists()",
+          ".validate": "newData.isString() && newData.val() === auth.uid"
+        },
+        "delteUider": {
+          "$deltUid": {
+            ".write": "auth != null && newData.parent().parent().child('eierUid').val() === auth.uid",
+            ".validate": "newData.isBoolean() && newData.val() === true"
+          }
+        },
+        "klasseId": {
+          ".write": "auth != null && newData.parent().child('eierUid').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+        },
+        "spill": {
+          ".write": "auth != null && newData.parent().child('eierUid').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9-]{1,40}$/)"
+        },
 
         "question": {
           ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 300"
@@ -257,6 +277,79 @@
 
         "$other": {
           ".validate": false
+        }
+      }
+    },
+
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+
+        "profile": {
+          ".validate": "newData.hasChildren(['navn', 'epost', 'opprettet'])",
+          "navn": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+          },
+          "epost": {
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 254"
+          },
+          "opprettet": {
+            ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
+
+        "klasser": {
+          "$klasseId": {
+            ".validate": "newData.hasChildren(['navn', 'trinn', 'opprettet'])",
+            "navn": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+            },
+            "trinn": {
+              ".validate": "newData.isString() && newData.val().length <= 20"
+            },
+            "opprettet": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "spillinnstillinger": {
+          "$spillnavn": {
+            ".validate": "$spillnavn.matches(/^[a-z0-9-]{1,40}$/)"
+          }
+        },
+
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+
+    "resultater": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+
+        "$spillnavn": {
+          "$oktId": {
+            ".validate": "newData.hasChildren(['dato', 'romkode'])",
+            "dato": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "romkode": {
+              ".validate": "newData.isString() && newData.val().length <= 12"
+            },
+            "$other": {
+              ".validate": "newData.isNumber() || newData.isString() || newData.isBoolean()"
+            }
+          }
         }
       }
     }
