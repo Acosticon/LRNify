@@ -19,7 +19,41 @@
     --c2: #2563eb;
     --c3: #ec4899;
     --c4: #16a34a;
+
+    /* Tilpasser login-widgeten (auth/lrnify-auth.js) til denne sidas stil:
+       samme blekk, og skygge rett nedover i stedet for på skrå. */
+    --lrnauth-ink: #2b2118;
+    --lrnauth-cream: #fff9f0;
+    --lrnauth-muted: #7a6f63;
+    --lrnauth-skygge: 0 5px 0;
+    --lrnauth-skygge-stor: 0 7px 0;
+    --lrnauth-trykk: translateY(4px);
   }
+
+  /* ── Lærerinnlogging (valgfri) ── */
+  .larer-topp {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    margin-bottom: 18px; text-align: center;
+  }
+  .larer-hjelp { color: var(--muted); font-size: .85rem; font-weight: 700; max-width: 34ch; }
+  .rom-rad {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    border: 3px solid var(--ink); border-radius: 12px; background: var(--cream);
+    padding: 10px 14px; margin-top: 10px; text-align: left;
+  }
+  .rom-rad .rom-kode {
+    font-family: 'Chewy', cursive; font-size: 1.3rem; letter-spacing: .08em; line-height: 1;
+  }
+  .rom-rad .rom-sporsmal {
+    font-size: .85rem; font-weight: 700; color: var(--muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 22ch;
+  }
+  .rom-rad button {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .85rem;
+    border: 3px solid var(--ink); border-radius: 10px; background: var(--yellow);
+    padding: 8px 12px; cursor: pointer; color: var(--ink); flex: 0 0 auto;
+  }
+  .skjult { display: none !important; }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -410,6 +444,14 @@
 
 <!-- ── LÆRER: OPPSETT ── -->
 <div class="screen" id="screen-teacher-setup">
+  <div class="larer-topp">
+    <div id="larerInnlogging"></div>
+    <div class="larer-hjelp">Logger du inn, finner du igjen rommene dine senere. Elevene trenger ingen konto.</div>
+  </div>
+  <div class="card skjult" id="mineRomKort">
+    <h2>Mine rom</h2>
+    <div id="mineRomListe"></div>
+  </div>
   <div class="card">
     <h2>Spørsmål</h2>
     <textarea id="questionInput" placeholder="Skriv spørsmålet her…" rows="2"></textarea>
@@ -488,12 +530,18 @@
   <div id="voteStatus" class="status" style="display:none;"></div>
 </div>
 
+<!-- Felles lærerinnlogging. Klassisk script, så window.LRNifyAuth finnes før
+     modulen under kjører (moduler er utsatt som standard). Den laster samme
+     Firebase-versjon fra samme URL som importene under, så nettleseren
+     gjenbruker modulene og initializeApp får den appen som allerede finnes. -->
+<script src="/auth/lrnify-auth.js"></script>
+
 <script type="module">
 import { initializeApp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getDatabase, ref, set, get, update, onValue, off, remove }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getAuth, signInAnonymously }
+import { getAuth, signInAnonymously, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
@@ -514,19 +562,61 @@ const db  = getDatabase(app);
    stemme per enhet. Slår den feil — eller er anonym pålogging ikke skrudd
    på i Firebase — går alt som før, bare uten den ekstra beskyttelsen. */
 const auth = getAuth(app);
-let uid = null;
 let paalogging = null;
-function ensureAuth() {
-  if (uid) return Promise.resolve(uid);
+
+/* Firebase henter en lagret sesjon fra IndexedDB asynkront, så auth.currentUser
+   er alltid null i det øyeblikket denne fila kjører. Kalte vi signInAnonymously
+   med én gang, ville vi logget ut en lærer som nettopp kom tilbake med
+   Google-kontoen sin — den anonyme sesjonen erstatter den innloggede. Vi venter
+   derfor på første tilstandsvarsel før vi bestemmer oss. */
+const authAvklart = new Promise(losne => {
+  const stopp = onAuthStateChanged(auth, bruker => { stopp(); losne(bruker); });
+});
+
+/* Returnerer alltid uid-en til den som er pålogget NÅ. Logger læreren seg inn
+   med Google etter at en anonym sesjon er opprettet, bytter uid — og det er
+   riktig: rommet skal eies av lærerkontoen, ikke av den anonyme. */
+async function ensureAuth() {
+  await authAvklart;
+  if (auth.currentUser) return auth.currentUser.uid;
   // Bare én innlogging av gangen; feiler den, kan neste kall prøve på nytt.
   if (!paalogging) {
     paalogging = signInAnonymously(auth)
-      .then(cred => (uid = cred.user.uid))
+      .then(cred => cred.user.uid)
       .catch(() => { paalogging = null; return null; });
   }
   return paalogging;
 }
 ensureAuth();
+
+/* ══ LÆRERINNLOGGING (valgfri) ══
+   Uten innlogging fungerer alt nøyaktig som før — rommet får ingen eierUid,
+   og reglene behandler det som et vanlig anonymt rom. Logger læreren inn,
+   knyttes rommet til kontoen og dukker opp igjen under «Mine rom».
+
+   Modulen er en bonus, ikke en forutsetning. Blir /auth/lrnify-auth.js
+   liggende utilgjengelig — en halv deploy, en blokkering — skal KlassePoll
+   fortsatt virke nøyaktig som før, inkludert hele elevflyten. Derfor en
+   reserve som svarer «ingen er innlogget» på alt, i stedet for at siden
+   dør på en ReferenceError. */
+const Auth = window.LRNifyAuth || {
+  init() {},
+  onAuthChange() {},
+  mountLoginWidget() {},
+  getCurrentUid() { return null; },
+  hentMineRom() { return Promise.resolve([]); },
+  opprettRom() { return Promise.reject(new Error('Innlogging er ikke tilgjengelig.')); },
+  avsluttRom() { return Promise.reject(new Error('Innlogging er ikke tilgjengelig.')); }
+};
+
+Auth.init(firebaseConfig);
+Auth.mountLoginWidget(document.getElementById('larerInnlogging'));
+
+let erInnlogget = false;
+Auth.onAuthChange(bruker => {
+  erInnlogget = !!bruker;
+  tegnMineRom();
+});
 
 let currentRoom    = null;
 let currentListener = null;
@@ -558,7 +648,6 @@ window.createRoom = async () => {
   if (opts.filter(Boolean).length < 2)       { alert('Du trenger minst 2 svaralternativer.'); return; }
 
   const code = makeCode();
-  currentRoom = code;
 
   const room = {
     question, options: opts,
@@ -568,14 +657,82 @@ window.createRoom = async () => {
   const owner = await ensureAuth();
   if (owner) room.owner = owner;
 
-  await set(ref(db, `rooms/${code}`), room);
+  try {
+    if (Auth.getCurrentUid()) {
+      /* Innlogget lærer: opprettRom skriver rommet og en peker under
+         lærerens konto i én operasjon, så rommet kan finnes igjen senere.
+         Vi sender inn vår egen sekstegns kode — modulens standard er fire,
+         og kortere koder kolliderer oftere. */
+      await Auth.opprettRom('klassepoll', room, { romkode: code });
+    } else {
+      // Uten innlogging: nøyaktig samme skriving som før.
+      await set(ref(db, `rooms/${code}`), room);
+    }
+  } catch (e) {
+    alert('Fikk ikke opprettet rommet: ' + e.message);
+    return;
+  }
 
+  currentRoom = code;
   document.getElementById('roomCodeDisplay').textContent = code;
   document.getElementById('liveQuestion').textContent    = question;
   renderChart(opts, { 0:0, 1:0, 2:0, 3:0 });
   showScreen('screen-teacher-live');
   startTeacherListener(code);
 };
+
+/* «Mine rom» — bare synlig for innloggede lærere. Lista kommer fra lærerens
+   egen indeks; rom som er avsluttet er allerede filtrert bort av modulen. */
+async function tegnMineRom() {
+  const kort  = document.getElementById('mineRomKort');
+  const liste = document.getElementById('mineRomListe');
+  if (!erInnlogget) { kort.classList.add('skjult'); return; }
+
+  let rom = [];
+  try {
+    rom = await Auth.hentMineRom('klassepoll');
+  } catch (e) {
+    kort.classList.add('skjult');
+    return;
+  }
+  if (!rom.length) { kort.classList.add('skjult'); return; }
+
+  liste.innerHTML = '';
+  rom.forEach(r => {
+    const rad = document.createElement('div');
+    rad.className = 'rom-rad';
+
+    const venstre = document.createElement('div');
+    const kode = document.createElement('div');
+    kode.className = 'rom-kode';
+    kode.textContent = r.kode;
+    const sporsmal = document.createElement('div');
+    sporsmal.className = 'rom-sporsmal';
+    sporsmal.textContent = r.question || '';
+    venstre.appendChild(kode);
+    venstre.appendChild(sporsmal);
+
+    const knapp = document.createElement('button');
+    knapp.type = 'button';
+    knapp.textContent = 'Åpne';
+    knapp.addEventListener('click', () => gjenopptaRom(r));
+
+    rad.appendChild(venstre);
+    rad.appendChild(knapp);
+    liste.appendChild(rad);
+  });
+  kort.classList.remove('skjult');
+}
+
+// Hopper rett inn i lærervisningen for et rom som allerede finnes.
+function gjenopptaRom(rom) {
+  currentRoom = rom.kode;
+  document.getElementById('roomCodeDisplay').textContent = rom.kode;
+  document.getElementById('liveQuestion').textContent    = rom.question || '';
+  renderChart(rom.options || [], rom.votes || { 0:0,1:0,2:0,3:0 });
+  showScreen('screen-teacher-live');
+  startTeacherListener(rom.kode);
+}
 
 function startTeacherListener(code) {
   if (currentListener) off(ref(db, `rooms/${currentRoom}`), 'value', currentListener);
@@ -615,14 +772,26 @@ function renderChart(options, votes) {
   });
 }
 
+/* Sletter rommet. Er læreren innlogget, fjernes pekeren i lærerens indeks i
+   samme operasjon — ellers ville den blitt liggende igjen som en død
+   oppføring for hver eneste økt. */
+async function slettRom(kode) {
+  if (Auth.getCurrentUid()) {
+    await Auth.avsluttRom('klassepoll', kode);
+  } else {
+    await remove(ref(db, `rooms/${kode}`));
+  }
+}
+
 window.newQuestion = async () => {
   if (!currentRoom) return;
   if (!confirm('Start ny runde? Alle svar nullstilles.')) return;
   if (currentListener) { off(ref(db, `rooms/${currentRoom}`), 'value', currentListener); currentListener = null; }
-  await remove(ref(db, `rooms/${currentRoom}`));
+  await slettRom(currentRoom);
   currentRoom = null;
   document.getElementById('questionInput').value = '';
   [1,2,3,4].forEach(n => document.getElementById('opt'+n).value = '');
+  tegnMineRom();
   showScreen('screen-teacher-setup');
 };
 
@@ -630,8 +799,9 @@ window.closeRoom = async () => {
   if (!currentRoom) return;
   if (!confirm('Avslutt rommet for alle?')) return;
   if (currentListener) { off(ref(db, `rooms/${currentRoom}`), 'value', currentListener); currentListener = null; }
-  await remove(ref(db, `rooms/${currentRoom}`));
+  await slettRom(currentRoom);
   currentRoom = null;
+  tegnMineRom();
   showScreen('screen-role');
 };
 

@@ -337,6 +337,13 @@ check('lærer leser sin egen rom-indeks (det hentMineRom gjør)', true, db(medIn
 check('lærer slår opp rommet pekeren viser til', true, db(medIndeks, LARER).read('/rooms/ABCD'));
 check('lærer fjerner pekeren når rommet avsluttes', true, db(medIndeks, LARER).write(pekerSti, null));
 
+console.log('--- rom-indeks: avsluttRom rydder begge steder');
+const rydd = {};
+rydd['/rooms/ABCD'] = null;
+rydd[pekerSti] = null;
+check('lærer sletter rom + peker i én operasjon', true, db(medIndeks, LARER).update('/', rydd));
+check('annen lærer sletter mitt rom + peker', false, db(medIndeks, LARER2).update('/', rydd));
+
 console.log('--- rom-indeks: fortsatt umulig å ramse opp alle rom');
 check('lister opp /rooms som innlogget lærer', false, db(medIndeks, LARER).read('/rooms'));
 check('annen lærer leser min rom-indeks', false, db(medIndeks, LARER2).read('/users/' + LARER.uid + '/rom/klassepoll'));

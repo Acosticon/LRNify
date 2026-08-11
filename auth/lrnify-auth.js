@@ -205,15 +205,23 @@
    * @param {string} spillnavn   F.eks. "klassepoll". Må matche [a-z0-9-]{1,40}.
    * @param {object} romConfig   Feltene DET spillet krever (spørsmål,
    *                             alternativer, faser, osv.).
+   * @param {{romkode?: string}} [valg]  Egen romkode. Spillene har ulike
+   *                             kodekonvensjoner (KlassePoll bruker seks
+   *                             tegn, Temaspinner fire), og et spill som
+   *                             allerede har en generator bør beholde den —
+   *                             kortere koder kolliderer oftere.
    * @returns {Promise<{kode: string}>}
    */
-  async function opprettRom(spillnavn, romConfig) {
+  async function opprettRom(spillnavn, romConfig, valg) {
     kreverInit();
     const uid = getCurrentUid();
     if (!uid) throw new Error('Du må være innlogget for å opprette et rom med lærerkonto.');
     if (!spillnavn) throw new Error('opprettRom: mangler spillnavn.');
 
-    const kode = lagRomkode();
+    const kode = (valg && valg.romkode) ? valg.romkode : lagRomkode();
+    if (!/^[A-Z0-9]{4,8}$/.test(kode)) {
+      throw new Error('opprettRom: romkoden må være 4–8 tegn A–Z/0–9, fikk "' + kode + '".');
+    }
     const rom = Object.assign({}, romConfig, { eierUid: uid, spill: spillnavn });
 
     const endring = {};
@@ -257,6 +265,33 @@
     return rom.filter(Boolean);
   }
 
+  /**
+   * Avslutter et rom læreren eier: sletter både rommet og pekeren i
+   * lærerens indeks, atomisk. Uten dette blir pekeren liggende igjen som
+   * en «død» oppføring — hentMineRom() filtrerer den riktignok bort, men
+   * de hoper seg opp for hver økt.
+   *
+   * Er ingen lærer innlogget, slettes bare selve rommet, slik at spillets
+   * eksisterende anonyme flyt oppfører seg nøyaktig som før.
+   *
+   * @param {string} spillnavn
+   * @param {string} kode
+   */
+  async function avsluttRom(spillnavn, kode) {
+    kreverInit();
+    if (!spillnavn || !kode) throw new Error('avsluttRom: mangler spillnavn eller kode.');
+    const uid = getCurrentUid();
+
+    if (!uid) {
+      await FB.set(FB.ref(FB.db, 'rooms/' + kode), null);
+      return;
+    }
+    const endring = {};
+    endring['rooms/' + kode] = null;
+    endring['users/' + uid + '/rom/' + spillnavn + '/' + kode] = null;
+    await FB.update(FB.ref(FB.db), endring);
+  }
+
   /* ══════════════════════════════════════════════════════════════════════
      UI-KOMPONENT
      Liten, selvstendig login-knapp + modal. Ingen eksterne CSS-rammeverk —
@@ -281,56 +316,79 @@
       document.head.appendChild(forbind2);
       document.head.appendChild(font);
     }
+    /* Fargene og skyggene er CSS-variabler med innebygd reserveverdi, aldri
+       definert av oss. Da kan en side overstyre dem i sitt eget stilark
+       (f.eks. :root{--lrnauth-ink:#2b2118}) uten at rekkefølgen på stilarkene
+       avgjør hvem som vinner — dette arket legges inn sist og ville ellers
+       overkjørt sida. Sett ingenting, og standarden gjelder.
+
+       Nyttige å overstyre: --lrnauth-ink, --lrnauth-gul, --lrnauth-cream,
+       --lrnauth-muted, --lrnauth-skygge (f.eks. "0 5px 0" for rett
+       nedover-skygge), --lrnauth-skygge-stor og --lrnauth-trykk. */
     const stil = document.createElement('style');
     stil.id = STIL_ID;
     stil.textContent = `
       .lrnauth{ font-family:'Nunito',sans-serif; }
       .lrnauth-knapp{
-        display:inline-flex; align-items:center; gap:8px; border:3px solid #1a1a1a;
-        border-radius:14px; background:#facc15; font-family:'Nunito',sans-serif;
+        display:inline-flex; align-items:center; gap:8px;
+        border:3px solid var(--lrnauth-ink,#1a1a1a);
+        border-radius:14px; background:var(--lrnauth-gul,#facc15);
+        font-family:'Nunito',sans-serif;
         font-weight:900; font-size:.95rem; padding:9px 16px; cursor:pointer;
-        box-shadow:3px 3px 0 #1a1a1a; transition:transform .08s, box-shadow .08s;
-        color:#1a1a1a;
+        box-shadow:var(--lrnauth-skygge,3px 3px 0) var(--lrnauth-ink,#1a1a1a);
+        transition:transform .08s, box-shadow .08s;
+        color:var(--lrnauth-ink,#1a1a1a);
       }
-      .lrnauth-knapp:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 #1a1a1a; }
-      .lrnauth-knapp.lrnauth-hvit{ background:#fff9f0; }
+      .lrnauth-knapp:active{
+        transform:var(--lrnauth-trykk,translate(2px,2px));
+        box-shadow:0 0 0 var(--lrnauth-ink,#1a1a1a);
+      }
+      .lrnauth-knapp.lrnauth-hvit{ background:var(--lrnauth-cream,#fff9f0); }
       .lrnauth-brukerlinje{
-        display:inline-flex; align-items:center; gap:10px; background:#fff9f0;
-        border:3px solid #1a1a1a; border-radius:14px; padding:6px 8px 6px 14px;
-        box-shadow:3px 3px 0 #1a1a1a; font-weight:800; font-size:.9rem; color:#1a1a1a;
+        display:inline-flex; align-items:center; gap:10px;
+        background:var(--lrnauth-cream,#fff9f0);
+        border:3px solid var(--lrnauth-ink,#1a1a1a); border-radius:14px;
+        padding:6px 8px 6px 14px;
+        box-shadow:var(--lrnauth-skygge,3px 3px 0) var(--lrnauth-ink,#1a1a1a);
+        font-weight:800; font-size:.9rem; color:var(--lrnauth-ink,#1a1a1a);
       }
       .lrnauth-brukerlinje .lrnauth-navn{ max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
       .lrnauth-brukerlinje button{
-        border:2px solid #1a1a1a; border-radius:10px; background:#fff; font-family:'Nunito',sans-serif;
-        font-weight:800; font-size:.8rem; padding:6px 10px; cursor:pointer; color:#1a1a1a;
+        border:2px solid var(--lrnauth-ink,#1a1a1a); border-radius:10px; background:#fff;
+        font-family:'Nunito',sans-serif;
+        font-weight:800; font-size:.8rem; padding:6px 10px; cursor:pointer;
+        color:var(--lrnauth-ink,#1a1a1a);
       }
       .lrnauth-bakteppe{
         position:fixed; inset:0; background:rgba(26,26,26,.55); z-index:200;
         display:flex; align-items:center; justify-content:center; padding:16px;
       }
       .lrnauth-modal{
-        font-family:'Nunito',sans-serif; background:#fff9f0; border:4px solid #1a1a1a;
+        font-family:'Nunito',sans-serif; background:var(--lrnauth-cream,#fff9f0);
+        border:4px solid var(--lrnauth-ink,#1a1a1a);
         border-radius:22px; padding:24px 22px; width:100%; max-width:340px;
-        box-shadow:6px 6px 0 #1a1a1a; position:relative;
+        box-shadow:var(--lrnauth-skygge-stor,6px 6px 0) var(--lrnauth-ink,#1a1a1a);
+        position:relative;
       }
       .lrnauth-modal h2{
         font-family:'Chewy',cursive; font-weight:400; font-size:1.6rem; margin:0 0 4px;
-        color:#1a1a1a; transform:rotate(-1deg);
+        color:var(--lrnauth-ink,#1a1a1a); transform:rotate(-1deg);
       }
-      .lrnauth-modal .lrnauth-under{ color:#7a6f63; font-size:.85rem; font-weight:700; margin-bottom:16px; }
+      .lrnauth-modal .lrnauth-under{ color:var(--lrnauth-muted,#7a6f63); font-size:.85rem; font-weight:700; margin-bottom:16px; }
       .lrnauth-lukk{
         position:absolute; top:14px; right:14px; border:none; background:none; cursor:pointer;
-        font-size:1.2rem; line-height:1; color:#7a6f63; font-weight:900;
+        font-size:1.2rem; line-height:1; color:var(--lrnauth-muted,#7a6f63); font-weight:900;
       }
       .lrnauth-modal input{
-        width:100%; box-sizing:border-box; padding:11px 13px; border:3px solid #1a1a1a;
+        width:100%; box-sizing:border-box; padding:11px 13px;
+        border:3px solid var(--lrnauth-ink,#1a1a1a);
         border-radius:12px; font-family:'Nunito',sans-serif; font-weight:800; font-size:1rem;
-        background:#fff; color:#1a1a1a; margin-bottom:10px;
+        background:#fff; color:var(--lrnauth-ink,#1a1a1a); margin-bottom:10px;
       }
-      .lrnauth-modal input:focus{ outline:3px solid #facc15; outline-offset:1px; }
+      .lrnauth-modal input:focus{ outline:3px solid var(--lrnauth-gul,#facc15); outline-offset:1px; }
       .lrnauth-modal .lrnauth-knapp{ width:100%; justify-content:center; margin-bottom:10px; box-sizing:border-box; }
       .lrnauth-skille{
-        display:flex; align-items:center; gap:10px; color:#7a6f63; font-weight:800;
+        display:flex; align-items:center; gap:10px; color:var(--lrnauth-muted,#7a6f63); font-weight:800;
         font-size:.75rem; text-transform:uppercase; letter-spacing:.04em; margin:14px 0;
       }
       .lrnauth-skille::before, .lrnauth-skille::after{ content:''; flex:1; height:2px; background:#e4dccb; }
@@ -350,13 +408,26 @@
    * nødvendig for kravet om en innebygd UI-komponent — se README.md.
    *
    * @param {HTMLElement} container
-   * @param {{ tekstInnlogget?: string, tekstUtlogget?: string }} [valg]
+   * @param {{ tekstInnlogget?: string, tekstUtlogget?: string,
+   *           firebaseConfig?: object }} [valg]
+   *        Sendes firebaseConfig med, lastes Firebase først når noen faktisk
+   *        klikker «Logg inn». Da koster ikke knappen noe for de aller fleste
+   *        besøkende. Har siden allerede kalt init() selv, er dette unødvendig.
    */
   function mountLoginWidget(container, valg) {
     if (!container) throw new Error('mountLoginWidget: mangler container-element.');
     settInnStil();
     valg = valg || {};
     container.classList.add('lrnauth');
+
+    // Sikrer at SDK-en er lastet før modalen prøver å logge inn.
+    function sikreLastet() {
+      if (FB) return Promise.resolve();
+      if (!valg.firebaseConfig) {
+        return Promise.reject(new Error('LRNifyAuth: kall init(firebaseConfig), eller send firebaseConfig til mountLoginWidget.'));
+      }
+      return init(valg.firebaseConfig);
+    }
 
     function tegn(bruker) {
       container.innerHTML = '';
@@ -384,6 +455,14 @@
     }
 
     function apneModal() {
+      /* Start nedlastingen med én gang modalen åpnes, ikke først når noen
+         trykker «Fortsett med Google». Venter vi til da, ligger et
+         nettverkskall mellom klikket og signInWithPopup, og nettleseren
+         regner ikke lenger popup-en som utløst av brukeren — den blir
+         blokkert. Er SDK-en allerede lastet når knappen trykkes, løses
+         ventingen i en mikrotask, og klikket teller fortsatt. */
+      sikreLastet().catch(() => { /* vises når brukeren faktisk trykker */ });
+
       const bakteppe = document.createElement('div');
       bakteppe.className = 'lrnauth-bakteppe';
       bakteppe.innerHTML = `
@@ -391,7 +470,7 @@
           <button type="button" class="lrnauth-lukk" aria-label="Lukk">✕</button>
           <h2>Lærerinnlogging</h2>
           <div class="lrnauth-under">Én konto på tvers av alle LRNify-spill. Elevene trenger ikke logge inn.</div>
-          <button type="button" class="lrnauth-knapp" data-google>🇬 Fortsett med Google</button>
+          <button type="button" class="lrnauth-knapp" data-google>Fortsett med Google</button>
           <div class="lrnauth-skille">eller</div>
           <input type="email" data-epost placeholder="E-post" autocomplete="username">
           <input type="password" data-passord placeholder="Passord" autocomplete="current-password">
@@ -409,13 +488,13 @@
       bakteppe.querySelector('.lrnauth-lukk').addEventListener('click', lukk);
 
       bakteppe.querySelector('[data-google]').addEventListener('click', async () => {
-        try { await loginGoogle(); lukk(); }
+        try { await sikreLastet(); await loginGoogle(); lukk(); }
         catch (e) { visFeil('Fikk ikke logget inn med Google: ' + e.message); }
       });
       bakteppe.querySelector('[data-epostknapp]').addEventListener('click', async () => {
         const epost = bakteppe.querySelector('[data-epost]').value.trim();
         const passord = bakteppe.querySelector('[data-passord]').value;
-        try { await loginEmail(epost, passord); lukk(); }
+        try { await sikreLastet(); await loginEmail(epost, passord); lukk(); }
         catch (e) { visFeil('Fikk ikke logget inn: ' + e.message); }
       });
     }
@@ -436,6 +515,7 @@
     getCurrentUid,
     opprettRom,
     hentMineRom,
+    avsluttRom,
     mountLoginWidget
   };
 })(window);

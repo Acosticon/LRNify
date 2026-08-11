@@ -88,12 +88,29 @@ document.getElementById('opprett-rom').addEventListener('click', async () => {
 const mineRom = await LRNifyAuth.hentMineRom('klassepoll');
 ```
 
+KlassePoll er integrert på nøyaktig denne måten — se
+`aktiviteter/poll/index.html` for den faktiske, fungerende koden, inkludert
+«Mine rom»-lista og oppryddingen ved avslutting.
+
 **Andre spill kan ikke bruke `opprettRom` som den står.** Temaspinner,
 Genetisk hjul og KRLE-terningen ligger på egne topp-nivå-stier
 (`temaspinner/`, `genetikhjul/`, `krle/`) med egne feltkrav i
 `firebase/database.rules.json`. Å ta modulen i bruk der krever enten at
 spillet flyttes til `rooms/{kode}`, eller at `eierUid` støttes på spillets
 egen sti — begge er egne jobber, og ingen av dem er gjort her.
+
+### To ting som er lette å tråkke i
+
+**Ikke kall `signInAnonymously()` uten å sjekke først.** Firebase henter en
+lagret sesjon fra IndexedDB asynkront, så `auth.currentUser` er alltid `null`
+det øyeblikket sida laster. Et blindt `signInAnonymously()` der logger ut en
+lærer som nettopp kom tilbake med Google-kontoen sin. Vent på første
+`onAuthStateChanged` før du bestemmer deg — se `ensureAuth()` i KlassePoll.
+
+**La spillet overleve at modulen ikke lastes.** `/auth/lrnify-auth.js` er en
+bonus, ikke en forutsetning. KlassePoll faller tilbake på et objekt som
+svarer «ingen er innlogget» på alt hvis `window.LRNifyAuth` mangler, slik at
+en halv deploy eller en blokkering ikke tar ned elevflyten med seg.
 
 ## API
 
@@ -109,7 +126,35 @@ Alt henger på det globale objektet `LRNifyAuth`:
 | `getCurrentUid()` | `uid` for innlogget lærer, eller `null`. |
 | `opprettRom(spillnavn, romConfig)` | Oppretter rom under `rooms/{kode}` og en peker under `users/{uid}/rom/`, atomisk i én operasjon. Setter `eierUid` automatisk. Krever innlogging. Returnerer `{ kode }`. |
 | `hentMineRom(spillnavn)` | Lærerens egne rom for et spill, nyeste først. `spillnavn` er påkrevd. Rom som er avsluttet og slettet faller ut av lista. |
+| `avsluttRom(spillnavn, kode)` | Sletter rommet og pekeren i lærerens indeks, atomisk. Uten innlogging slettes bare rommet, som før. |
 | `mountLoginWidget(container, valg?)` | Tegner en kompakt login-knapp/brukerlinje inn i `container`. Ikke i den opprinnelige kravlista, men nødvendig for UI-kravet — se under. |
+
+`opprettRom` tar et valgfritt tredje argument, `{ romkode }`, så et spill kan
+beholde sin egen kodegenerator — KlassePoll bruker seks tegn, modulens
+standard er fire, og kortere koder kolliderer oftere.
+
+`mountLoginWidget` tar `{ firebaseConfig }` i `valg`. Sendes den med, lastes
+Firebase-SDK-en først når noen faktisk åpner innloggingsmodalen, i stedet for
+ved sidelast. Nedlastingen starter idet modalen åpnes — ikke først når
+Google-knappen trykkes, for da ville et nettverkskall ligget mellom klikket og
+popup-en, og nettleseren ville blokkert den som uønsket popup.
+
+### Tilpasse utseendet
+
+Widgeten leser CSS-variabler med innebygd reserveverdi, og definerer dem
+aldri selv. En side kan derfor overstyre dem i sitt eget stilark uten at
+rekkefølgen på stilarkene avgjør hvem som vinner:
+
+```css
+:root {
+  --lrnauth-ink: #2b2118;      /* KlassePoll og forsiden bruker denne, ikke #1a1a1a */
+  --lrnauth-skygge: 0 5px 0;   /* skygge rett nedover i stedet for på skrå */
+  --lrnauth-skygge-stor: 0 7px 0;
+  --lrnauth-trykk: translateY(4px);
+}
+```
+
+Øvrige: `--lrnauth-gul`, `--lrnauth-cream`, `--lrnauth-muted`.
 
 `mountLoginWidget` er lagt til utover den oppgitte API-lista fordi kravet om
 en «liten, innebygd login-knapp/modal» trenger et sted å henge seg på. Den
