@@ -105,6 +105,7 @@ export const EVENTS = [
 
   {
     id: 'energy_crisis',
+    escalatesTo: 'economic_stagnation',
     type: 'A',
     region: 'nordkysten',
     title: 'Strømkrise',
@@ -137,6 +138,7 @@ export const EVENTS = [
 
   {
     id: 'housing_shortage',
+    escalatesTo: 'big_protests',
     type: 'A',
     region: 'sentrum',
     title: 'Boligmangel',
@@ -169,6 +171,7 @@ export const EVENTS = [
 
   {
     id: 'fish_farm_expansion',
+    escalatesTo: 'salmon_lice',
     type: 'A',
     region: 'vesthavet',
     title: 'Oppdrettsutvidelse',
@@ -201,6 +204,7 @@ export const EVENTS = [
 
   {
     id: 'nurse_shortage',
+    escalatesTo: 'health_crisis',
     type: 'A',
     region: 'sentrum',
     title: 'Sykepleiermangel',
@@ -233,6 +237,7 @@ export const EVENTS = [
 
   {
     id: 'logging_demand',
+    escalatesTo: 'owl_disappears',
     type: 'A',
     region: 'skoglandet',
     title: 'Hogstpress',
@@ -265,6 +270,7 @@ export const EVENTS = [
 
   {
     id: 'industrial_relocation',
+    escalatesTo: 'economic_stagnation',
     type: 'A',
     region: 'havnebyen',
     title: 'Ny fabrikk vil etablere seg',
@@ -297,6 +303,7 @@ export const EVENTS = [
 
   {
     id: 'agriculture_subsidy',
+    escalatesTo: 'economic_stagnation',
     type: 'A',
     region: 'fjordbygdene',
     title: 'Bønder krever støtte',
@@ -346,6 +353,7 @@ export const EVENTS = [
     title: 'Hubroen forsvinner',
     newsHeadline: 'Hubroen er nesten utryddet',
     newsIngress: 'Biologer registrerer at hubro ikke lenger hekker i Skoglandet. Bestanden har falt med over 80 prosent på få år.',
+    ignoreEffect: { effects: { biodiversity: -8, trust: -3 }, meterEffects: { nature: -7 } },
     choices: [
       {
         text: 'Iverksett akutt verneplan',
@@ -377,6 +385,7 @@ export const EVENTS = [
     title: 'Lakselus sprer seg',
     newsHeadline: 'Katastrofe i fjordene',
     newsIngress: 'Villfisken sliter. Lakselus fra oppdrettsanleggene som {navn} godkjente, har nå bredt seg til nærliggende fjorder og truer hele bestanden.',
+    ignoreEffect: { effects: { oceanEnv: -10, biodiversity: -4, jobs: -5 }, meterEffects: { nature: -8, business: -4 } },
     choices: [
       {
         text: 'Steng ned anlegg midlertidig',
@@ -410,6 +419,7 @@ export const EVENTS = [
     title: 'Helsekrise i Sentrum',
     newsHeadline: 'Folk dør i kø',
     newsIngress: 'Den private klinikken betjener bare betalende pasienter. Sykehuset er overbelastet, og folk med dårlig råd faller utenfor – en direkte følge av privatiseringen {navn} innførte.',
+    ignoreEffect: { effects: { health: -12, trust: -8 }, meterEffects: { people: -11 } },
     choices: [
       {
         text: 'Gjenkommunaliser helsetilbudet',
@@ -439,6 +449,7 @@ export const EVENTS = [
     title: 'Store protester',
     description: 'Innbyggerne er lei av å ikke bli hørt. Tusenvis marsjerer gjennom Sentrum.',
     ignoreEffect: { effects: { trust: -12, treasury: -5 }, meterEffects: { people: -10 } },
+    ignoreEffect: { effects: { trust: -12, treasury: -5 }, meterEffects: { people: -9, business: -4 } },
     choices: [
       {
         text: 'Hold folkemøter og lytt',
@@ -466,6 +477,7 @@ export const EVENTS = [
     title: 'Øya stagnerer',
     description: 'Unge flytter ut i hopetall. Butikker stenger. Øya trenger et løft – men hva slags?',
     ignoreEffect: { effects: { jobs: -6, trust: -5 }, meterEffects: { business: -6, people: -3 } },
+    ignoreEffect: { effects: { jobs: -10, treasury: -8 }, meterEffects: { business: -10 } },
     choices: [
       {
         text: 'Tiltrekk ny teknologiindustri',
@@ -590,6 +602,7 @@ export const EVENTS = [
 
   {
     id: 'pesticide_debate',
+    escalatesTo: 'pesticide_bees',
     type: 'A',
     region: 'fjordbygdene',
     title: 'Pesticid-striden',
@@ -622,6 +635,7 @@ export const EVENTS = [
 
   {
     id: 'drought_response',
+    escalatesTo: 'nature_collapse',
     type: 'A',
     region: 'fjordbygdene',
     title: 'Tørke truer avlingen',
@@ -654,6 +668,7 @@ export const EVENTS = [
 
   {
     id: 'rural_school',
+    escalatesTo: 'health_crisis',
     type: 'A',
     region: 'fjordbygdene',
     title: 'Bygdeskolen legges ned',
@@ -688,6 +703,7 @@ export const EVENTS = [
 
   {
     id: 'fishing_quota',
+    escalatesTo: 'overfishing_collapse',
     type: 'A',
     region: 'vesthavet',
     title: 'Fiskekvote-konflikt',
@@ -720,6 +736,7 @@ export const EVENTS = [
 
   {
     id: 'marine_reserve',
+    escalatesTo: 'overfishing_collapse',
     type: 'A',
     region: 'vesthavet',
     title: 'Marint verneområde',
@@ -754,6 +771,7 @@ export const EVENTS = [
 
   {
     id: 'rewilding',
+    escalatesTo: 'rewilding_livestock',
     type: 'A',
     region: 'skoglandet',
     title: 'Villmark-prosjekt',
@@ -786,6 +804,7 @@ export const EVENTS = [
 
   {
     id: 'mining_concession',
+    escalatesTo: 'mine_water',
     type: 'A',
     region: 'skoglandet',
     title: 'Gruveselskap vil inn',
@@ -820,6 +839,7 @@ export const EVENTS = [
 
   {
     id: 'port_expansion',
+    escalatesTo: 'port_neighborhood',
     type: 'A',
     region: 'havnebyen',
     title: 'Havneutvidelse',
@@ -852,6 +872,7 @@ export const EVENTS = [
 
   {
     id: 'air_quality',
+    escalatesTo: 'coal_smog',
     type: 'A',
     region: 'havnebyen',
     title: 'Luftkvaliteten er kritisk',
@@ -886,6 +907,7 @@ export const EVENTS = [
 
   {
     id: 'youth_crisis',
+    escalatesTo: 'health_crisis',
     type: 'A',
     region: 'sentrum',
     title: 'Ungdomskrisen',
@@ -918,6 +940,7 @@ export const EVENTS = [
 
   {
     id: 'school_reform',
+    escalatesTo: 'health_crisis',
     type: 'A',
     region: 'sentrum',
     title: 'Skolestruktur til debatt',
@@ -962,6 +985,7 @@ export const EVENTS = [
     title: 'Trekkfuglene forsvinner',
     newsHeadline: 'Millioner av trekkfugler omkom',
     newsIngress: 'Ornitologer melder om dramatisk nedgang i trekkfuglbestander langs Nordkysten. Solcelleanlegget som {navn} godkjente, dekker nøkkelområder for mat og hvile.',
+    ignoreEffect: { effects: { biodiversity: -9, trust: -2 }, meterEffects: { nature: -7 } },
     choices: [
       {
         text: 'Lag fuglevennlige korridorer gjennom anlegget',
@@ -993,6 +1017,7 @@ export const EVENTS = [
     title: 'Smog over Havnebyen',
     newsHeadline: 'Sykehusinnleggelser doblet etter kullstart',
     newsIngress: 'Luftkvaliteten i Havnebyen er nå blant de dårligste i landet. Legevakten melder om dramatisk økning – en direkte konsekvens av kullkraftverket {navn} valgte å reaktivere.',
+    ignoreEffect: { effects: { health: -10, emissions: 8 }, meterEffects: { people: -8, nature: -6 } },
     choices: [
       {
         text: 'Steng kullkraftverket umiddelbart',
@@ -1025,6 +1050,7 @@ export const EVENTS = [
     title: 'Fiskebestanden kollapser',
     newsHeadline: 'Tomt hav – fiskeriene stanser',
     newsIngress: 'Det havforskerne advarte mot har skjedd: bestanden er under kritisk nivå. Fiskerne som {navn} ville beskytte, har nå ingen fisk å fange.',
+    ignoreEffect: { effects: { oceanEnv: -12, jobs: -10 }, meterEffects: { nature: -9, business: -8 } },
     choices: [
       {
         text: 'Innfør totalfredning i fem år',
@@ -1056,6 +1082,7 @@ export const EVENTS = [
     title: 'Birøkterne mister biene',
     newsHeadline: 'Katastrofe for pollinatorene',
     newsIngress: 'Birøktere i Fjordbygdene rapporterer om massedød i kubene. Eksperter peker på sprøytemidlene {navn} tillot. Uten pollinering trues matproduksjonen.',
+    ignoreEffect: { effects: { biodiversity: -10, health: -4 }, meterEffects: { nature: -8, people: -3 } },
     choices: [
       {
         text: 'Forbud mot de aktuelle midlene',
@@ -1088,6 +1115,7 @@ export const EVENTS = [
     title: 'Gruveavfall i grunnvannet',
     newsHeadline: 'Drikkevannet er forurenset',
     newsIngress: 'Laboratorieprøver viser tungmetaller i drikkevann fra Skoglandet. Konsesjonen {navn} ga har fått alvorlige konsekvenser for folk og fauna.',
+    ignoreEffect: { effects: { biodiversity: -9, health: -8, trust: -5 }, meterEffects: { nature: -8, people: -7 } },
     choices: [
       {
         text: 'Steng gruven og iverksett opprydding',
@@ -1119,6 +1147,7 @@ export const EVENTS = [
     title: 'Havnebyen raser',
     newsHeadline: 'Naboer flykter fra havneområdet',
     newsIngress: 'Beboere nær havnen sover ikke lenger. Barnefamilier pakker og drar. Eiendomsprisene stuper. Utvidelsen {navn} godkjente har forandret hverdagen for tusenvis.',
+    ignoreEffect: { effects: { trust: -9, health: -5 }, meterEffects: { people: -8 } },
     choices: [
       {
         text: 'Kjøp ut beboerne og eksproprier',
@@ -1149,6 +1178,7 @@ export const EVENTS = [
     title: 'Ulv tar buskap',
     newsHeadline: 'Bøndene krever {navn} tar ansvar',
     newsIngress: 'Tre gårdsbruk i Fjordbygdene har mistet dyr til ulv de siste månedene. Rewilding-prosjektet {navn} godkjente sender sjokkbølger gjennom landbrukssamfunnet.',
+    ignoreEffect: { effects: { trust: -8, jobs: -4 }, meterEffects: { people: -7, business: -3 } },
     choices: [
       {
         text: 'Tillat skadefelling av ulv',
@@ -1178,6 +1208,7 @@ export const EVENTS = [
     title: 'Ekstremflom i Sentrum',
     description: 'Klimaendringene har kommet til øya. En ekstremnedbør har oversvømt deler av Sentrum. Kjellerene er fulle, veiene er stengt, og eldre innbyggere er evakuert.',
     ignoreEffect: { effects: { health: -8, housing: -10, trust: -8 }, meterEffects: { people: -9, business: -5 } },
+    ignoreEffect: { effects: { housing: -12, health: -8, treasury: -12 }, meterEffects: { people: -12, business: -6 } },
     choices: [
       {
         text: 'Bygg flomvern og klimatilpass Sentrum',
@@ -1205,6 +1236,7 @@ export const EVENTS = [
     title: 'Naturkrisen er her',
     description: 'Biologer erklærer naturkrise på øya. Insektbestander er nede med 60 %. Fuglearter forsvinner. Pollinering svikter. Matproduksjonen rammes.',
     ignoreEffect: { effects: { biodiversity: -8, health: -6, jobs: -5 }, meterEffects: { nature: -10, people: -5 } },
+    ignoreEffect: { effects: { biodiversity: -12, oceanEnv: -6 }, meterEffects: { nature: -12 } },
     choices: [
       {
         text: 'Nasjonalpark og streng vernestatus',
@@ -1232,6 +1264,7 @@ export const EVENTS = [
     title: 'Tillitskrisen',
     description: 'Øyas innbyggere har mistet troen på lederskapet. Valgdeltagelsen har stupt. Lokalavisen kjører sak etter sak. Noe dramatisk må skje.',
     ignoreEffect: { effects: { trust: -15, treasury: -6 }, meterEffects: { people: -12, business: -5 } },
+    ignoreEffect: { effects: { trust: -15, education: -4 }, meterEffects: { people: -12, business: -4 } },
     choices: [
       {
         text: 'Kunngjør full gjennomsiktighet – offentliggjør alle beslutninger',
@@ -1249,73 +1282,386 @@ export const EVENTS = [
       },
     ],
   },
+
+  // ─── TYPE D: SENE VEIVALG ─────────────────────────────
+  // Dukker opp fra år 7 og er betinget av hva øya faktisk har blitt.
+  // Flere av dem utløses av gode valg – også suksess får konsekvenser.
+
+  {
+    id: 'nature_tourism_pressure',
+    type: 'D',
+    minYear: 7,
+    region: 'skoglandet',
+    requires: { flags: ['forestProtection', 'nationalPark', 'rewilding', 'ecoRestoration', 'partialRewilding'], any: true },
+    title: 'Verneområdene slites ned',
+    description: 'Naturen du vernet er blitt en turistmagnet. Stiene eroderer, dyrelivet forstyrres – men reiselivet gir bygdene inntekt for første gang på tiår.',
+    ignoreEffect: { effects: { biodiversity: -8, trust: -3 }, meterEffects: { nature: -6 } },
+    choices: [
+      {
+        text: 'Innfør besøksgrense og kanaliser ferdselen',
+        shortLabel: 'Besøksgrense',
+        effects: { biodiversity: 9, treasury: -6, jobs: -4 },
+        meterEffects: { nature: 8, business: -4 },
+        flags: ['visitorCap'],
+      },
+      {
+        text: 'Bygg ut for flere besøkende',
+        shortLabel: 'Bygg ut',
+        effects: { jobs: 10, treasury: 9, biodiversity: -11, areaPress: 8 },
+        meterEffects: { business: 9, nature: -9 },
+        flags: ['massTourism'],
+      },
+      {
+        text: 'Krev naturavgift som finansierer skjøtsel',
+        shortLabel: 'Naturavgift',
+        effects: { biodiversity: 5, treasury: 5, trust: -3, jobs: 2 },
+        meterEffects: { nature: 4, business: 2, people: -2 },
+        flags: ['natureFee'],
+      },
+    ],
+  },
+
+  {
+    id: 'green_industry_boom',
+    type: 'D',
+    minYear: 7,
+    region: 'havnebyen',
+    requires: { flags: ['greenPriority', 'cleanPort', 'greenPort', 'techInvestment', 'conditionalIndustry'], any: true },
+    title: 'Grønn industri vil ekspandere',
+    description: 'Satsingen har gitt øya et rykte. Nå vil tre selskaper etablere seg samtidig – men de trenger kraft, areal og folk øya knapt har.',
+    ignoreEffect: { effects: { jobs: -8, treasury: -5, trust: -3 }, meterEffects: { business: -8 } },
+    choices: [
+      {
+        text: 'Slipp alle tre inn',
+        shortLabel: 'Slipp alle inn',
+        effects: { jobs: 16, treasury: 12, energy: -12, areaPress: 10, housing: -6 },
+        meterEffects: { business: 13, people: -4, nature: -5 },
+        flags: ['industrialBoom'],
+      },
+      {
+        text: 'Velg ett selskap og gjør det ordentlig',
+        shortLabel: 'Velg ett',
+        effects: { jobs: 8, treasury: 6, energy: -4, education: 4 },
+        meterEffects: { business: 7, people: 2 },
+        flags: ['selectiveGrowth'],
+      },
+    ],
+  },
+
+  {
+    id: 'energy_surplus',
+    type: 'D',
+    minYear: 7,
+    region: 'nordkysten',
+    requires: { variable: 'energy', above: 68 },
+    title: 'Kraftoverskudd',
+    description: 'For første gang produserer øya mer kraft enn den bruker. Kabelen til fastlandet kan gi eksportinntekter – eller kraften kan bli her og lokke til seg industri.',
+    ignoreEffect: { effects: { energy: -6, treasury: -4 }, meterEffects: { business: -4 } },
+    choices: [
+      {
+        text: 'Eksporter overskuddet',
+        shortLabel: 'Eksporter',
+        effects: { treasury: 14, jobs: 2, energy: -8 },
+        meterEffects: { business: 9 },
+        flags: ['powerExport'],
+      },
+      {
+        text: 'Hold kraften på øya til ny industri',
+        shortLabel: 'Behold kraften',
+        effects: { jobs: 11, energy: -6, areaPress: 5 },
+        meterEffects: { business: 7, nature: -3 },
+        flags: ['powerLocal'],
+      },
+      {
+        text: 'Senk strømprisen for innbyggerne',
+        shortLabel: 'Billig strøm',
+        effects: { trust: 12, treasury: -8, energy: -5 },
+        meterEffects: { people: 10, business: -4 },
+        flags: ['cheapPower'],
+      },
+    ],
+  },
+
+  {
+    id: 'fish_stock_recovery',
+    type: 'D',
+    minYear: 7,
+    region: 'vesthavet',
+    requires: { flags: ['marineReserve', 'fishingQuota', 'marineZones', 'fjordProtection', 'gradualQuota'], any: true },
+    title: 'Bestanden er tilbake',
+    description: 'Vernet virket. Havforskerne melder om bestander man ikke har sett siden 80-tallet. Fiskerne vil ha kvotene tilbake – forskerne ber om tålmodighet.',
+    ignoreEffect: { effects: { trust: -6, jobs: -5 }, meterEffects: { business: -5, people: -3 } },
+    choices: [
+      {
+        text: 'Åpne for fiske igjen, i full skala',
+        shortLabel: 'Åpne helt',
+        effects: { jobs: 13, treasury: 8, oceanEnv: -13 },
+        meterEffects: { business: 11, nature: -10 },
+        flags: ['reopenFishing'],
+      },
+      {
+        text: 'Åpne forsiktig, med forskningsbasert kvote',
+        shortLabel: 'Forsiktig åpning',
+        effects: { jobs: 7, treasury: 4, oceanEnv: -3, trust: 5 },
+        meterEffects: { business: 6, people: 3, nature: -2 },
+        flags: ['scienceQuota'],
+      },
+      {
+        text: 'Hold vernet – bestanden trenger flere år',
+        shortLabel: 'Hold vernet',
+        effects: { oceanEnv: 10, biodiversity: 5, jobs: -6, trust: -5 },
+        meterEffects: { nature: 9, business: -5, people: -3 },
+        flags: ['permanentReserve'],
+      },
+    ],
+  },
+
+  {
+    id: 'generation_shift',
+    type: 'D',
+    minYear: 7,
+    region: 'fjordbygdene',
+    title: 'Hvem skal overta gårdene?',
+    description: 'Halvparten av bøndene er over seksti. De unge vil gjerne overta, men har hverken kapital eller sikkerhet for lån. Om ti år avgjøres det om bygdene fortsatt er levende.',
+    ignoreEffect: { effects: { jobs: -8, trust: -6, areaPress: -3 }, meterEffects: { business: -6, people: -6 } },
+    choices: [
+      {
+        text: 'Etabler et generasjonsfond med billige lån',
+        shortLabel: 'Generasjonsfond',
+        effects: { jobs: 9, trust: 10, treasury: -14, education: 3 },
+        meterEffects: { people: 9, business: 4 },
+        flags: ['generationFund'],
+      },
+      {
+        text: 'La markedet avgjøre – de sterkeste brukene overlever',
+        shortLabel: 'La markedet styre',
+        effects: { jobs: -5, treasury: 4, trust: -8, areaPress: -5 },
+        meterEffects: { business: 2, people: -8, nature: 3 },
+        flags: ['farmConsolidation'],
+      },
+      {
+        text: 'Satse på andelslandbruk og deleide bruk',
+        shortLabel: 'Andelslandbruk',
+        effects: { jobs: 5, trust: 7, biodiversity: 4, treasury: -6 },
+        meterEffects: { people: 6, nature: 3, business: 1 },
+        flags: ['communityFarming'],
+      },
+    ],
+  },
+
+  {
+    id: 'budget_reckoning',
+    type: 'D',
+    minYear: 8,
+    region: 'sentrum',
+    requires: { variable: 'treasury', below: 38 },
+    title: 'Statskassen er tom',
+    description: 'Regnskapet går ikke opp lenger. Revisoren er tydelig: enten øker inntektene, eller så må noe kuttes. Det finnes ingen tredje utvei i år.',
+    ignoreEffect: { effects: { treasury: -12, trust: -8, health: -5 }, meterEffects: { business: -8, people: -7 } },
+    choices: [
+      {
+        text: 'Øk eiendomsskatten',
+        shortLabel: 'Øk skatten',
+        effects: { treasury: 16, trust: -9 },
+        meterEffects: { business: 4, people: -7 },
+        flags: ['taxRise'],
+      },
+      {
+        text: 'Kutt i tjenestene',
+        shortLabel: 'Kutt tjenester',
+        effects: { treasury: 14, health: -9, education: -7, trust: -6 },
+        meterEffects: { business: 5, people: -11 },
+        flags: ['austerity'],
+      },
+      {
+        text: 'Selg kommunal eiendom til utbyggere',
+        shortLabel: 'Selg eiendom',
+        effects: { treasury: 13, housing: -5, areaPress: 9, trust: -4 },
+        meterEffects: { business: 6, people: -5, nature: -4 },
+        flags: ['assetSale'],
+      },
+    ],
+  },
+
+  {
+    id: 'legacy_infrastructure',
+    type: 'D',
+    minYear: 8,
+    region: 'havnebyen',
+    requires: { variable: 'jobs', above: 58 },
+    title: 'Vekstårenes regning',
+    description: 'Kaiene, veiene og rørene fra oppgangstiden er slitt ut samtidig. Ingenting har kollapset ennå. Det er nettopp derfor det er lett å utsette.',
+    ignoreEffect: { effects: { jobs: -9, treasury: -6, health: -4 }, meterEffects: { business: -9, people: -4 } },
+    choices: [
+      {
+        text: 'Full oppgradering nå',
+        shortLabel: 'Full oppgradering',
+        effects: { jobs: 8, treasury: -18, energy: 4, emissions: -4 },
+        meterEffects: { business: 7, nature: 3, people: 2 },
+        flags: ['infraRenewal'],
+      },
+      {
+        text: 'Lapp det mest kritiske',
+        shortLabel: 'Lapping',
+        effects: { jobs: 2, treasury: -6 },
+        meterEffects: { business: 2 },
+        flags: ['infraPatch'],
+      },
+    ],
+  },
+
+  {
+    id: 'island_referendum',
+    type: 'D',
+    minYear: 9,
+    region: 'sentrum',
+    title: 'Folkeavstemning om øyas framtid',
+    description: 'Et innbyggerinitiativ krever folkeavstemning om hvilken retning øya skal ta de neste tjue årene. Du kan la den gå – eller styre unna.',
+    ignoreEffect: { effects: { trust: -11, education: -3 }, meterEffects: { people: -9 } },
+    choices: [
+      {
+        text: 'Gjennomfør avstemningen og følg resultatet',
+        shortLabel: 'Følg folket',
+        effects: { trust: 15, education: 5, treasury: -5 },
+        meterEffects: { people: 12, business: -2 },
+        flags: ['referendumHeld'],
+      },
+      {
+        text: 'Hold den rådgivende – du beholder siste ord',
+        shortLabel: 'Rådgivende',
+        effects: { trust: 4, treasury: -3 },
+        meterEffects: { people: 3 },
+        flags: ['referendumAdvisory'],
+      },
+      {
+        text: 'Avvis initiativet',
+        shortLabel: 'Avvis',
+        effects: { trust: -14, treasury: 2 },
+        meterEffects: { people: -11, business: 2 },
+        flags: ['referendumRejected'],
+      },
+    ],
+  },
 ];
 
-// ─── Trekk aktive regioner for et år ─────────────────
-// year: nåværende år (1–15)
-export function drawYearRegions(variables, flags, usedEventIds, year = 1) {
-  const regionIds = Object.keys(REGIONS);
+// ─── Oppslag ──────────────────────────────────────────
+export const EVENT_BY_ID = Object.fromEntries(EVENTS.map(e => [e.id, e]));
 
-  const regionEventMap = {};
-  for (const regionId of regionIds) {
-    const candidates = EVENTS.filter(ev => {
-      if (ev.region !== regionId) return false;
-      if (usedEventIds.has(ev.id)) return false;
+// ─── Årets rytme ──────────────────────────────────────
+// Spillet er 10 år. Antall saker vokser, mens tidsbudsjettet står stille –
+// det er den klemmen som tvinger fram prioritering.
+export const TOTAL_YEARS = 10;
 
-      // minYear-filter
-      if (ev.minYear && year < ev.minYear) return false;
-
-      // Type B og C skal ikke konkurrere med A i starten
-      // (dette er allerede håndtert av minYear, men dobbeltsjekk)
-      if (ev.type === 'B' && year < 4) return false;
-      if (ev.type === 'C' && year < 9) return false;
-
-      if (ev.requires) {
-        if (ev.requires.flags) {
-          const { flags: reqFlags, any } = ev.requires;
-          const hasFlag = reqFlags.some(f => flags.includes(f));
-          if (any && !hasFlag) return false;
-          if (!any && !reqFlags.every(f => flags.includes(f))) return false;
-        }
-        if (ev.requires.variable) {
-          const val = variables[ev.requires.variable] ?? 50;
-          if (ev.requires.below !== undefined && val >= ev.requires.below) return false;
-          if (ev.requires.above !== undefined && val <= ev.requires.above) return false;
-        }
-      }
-      return true;
-    });
-
-    // Vektlegging: år 11–15 prioriterer C sterkt, år 6–10 prioriterer B
-    const weighted = [];
-    for (const ev of candidates) {
-      let w = 1;
-      if (ev.type === 'C' && year >= 11) w = 4;
-      else if (ev.type === 'C' && year >= 9) w = 2;
-      else if (ev.type === 'B' && year >= 6) w = 2;
-      for (let i = 0; i < w; i++) weighted.push(ev);
-    }
-
-    if (weighted.length > 0) {
-      regionEventMap[regionId] = weighted[Math.floor(Math.random() * weighted.length)];
-    }
-  }
-
-  const available = Object.keys(regionEventMap);
-  const shuffled = available.sort(() => Math.random() - 0.5);
-  const picked = shuffled.slice(0, 3);
-
-  const result = {};
-  for (const r of picked) result[r] = regionEventMap[r];
-  return result;
+export function sakerForYear(year) {
+  if (year <= 3) return 3;   // etableringsfasen: du rekker omtrent alt
+  if (year <= 7) return 4;   // konsekvensene melder seg: du må velge bort
+  return 3;                  // sluttspillet: færre, men tyngre og dyrere saker
 }
 
-// ════════════════════════════════════════════════════════
-// NYE HENDELSER – runde 2
-// ════════════════════════════════════════════════════════
+// Hvor mange måneder lederen rår over i året.
+export const MONTHS_PER_YEAR = 12;
 
-// Legg til i FLAG_MAP_ICONS og CONSEQUENCE_MAP_ICONS ovenfor ved neste revisjon.
-// Nye flagg: solarFarm, coalPlant, fishingQuota, marineReserve, pesticides,
-//            organicFarming, schoolReform, youthCenter, roadExpansion, portExpansion,
-//            miningConcession, rewilder, floodBarrier, droughtResponse, airQualityLaw
+// ─── Kandidatfilter ───────────────────────────────────
+function meetsRequirements(ev, variables, flags, year) {
+  if (ev.minYear && year < ev.minYear) return false;
 
+  // Fasegating: de første årene er det bare grunnhendelser.
+  if (ev.type === 'B' && year < 4) return false;
+  if (ev.type === 'C' && year < 6) return false;
+  if (ev.type === 'D' && year < 7) return false;
+
+  if (ev.requires) {
+    if (ev.requires.flags) {
+      const { flags: reqFlags, any } = ev.requires;
+      if (any) {
+        if (!reqFlags.some(f => flags.includes(f))) return false;
+      } else if (!reqFlags.every(f => flags.includes(f))) {
+        return false;
+      }
+    }
+    if (ev.requires.variable) {
+      const val = variables[ev.requires.variable] ?? 50;
+      if (ev.requires.below !== undefined && val >= ev.requires.below) return false;
+      if (ev.requires.above !== undefined && val <= ev.requires.above) return false;
+    }
+  }
+  return true;
+}
+
+// Vekting: sent i spillet skal kriser fortrenge grunnhendelser.
+function weightFor(ev, year) {
+  if (ev.type === 'C') return year >= 8 ? 6 : 4;
+  if (ev.type === 'B') return year >= 7 ? 4 : year >= 5 ? 2 : 1;
+  if (ev.type === 'D') return 3;            // sene veivalg, tilgjengelig fra år 7
+  return year >= 7 ? 1 : 2;                 // type A blir sjeldnere til slutt
+}
+
+// ─── Trekk årets saker ────────────────────────────────
+// ctx: { variables, flags, usedEventIds, year, neglect, forcedEvents }
+// Returnerer { regionId: event }. Forsømte saker kommer alltid tilbake og
+// opptar sin regions plass – de fortrenger nye saker helt av seg selv.
+export function drawYearRegions(ctx) {
+  const {
+    variables = {},
+    flags = [],
+    usedEventIds = new Set(),
+    year = 1,
+    neglect = {},
+    forcedEvents = [],
+  } = ctx;
+
+  const slots = sakerForYear(year);
+  const result = {};
+
+  // 1. Forsømte saker først – de slipper ikke taket.
+  for (const id of Object.keys(neglect)) {
+    if (Object.keys(result).length >= slots) break;
+    const ev = EVENT_BY_ID[id];
+    if (!ev || usedEventIds.has(id) || result[ev.region]) continue;
+    result[ev.region] = ev;
+  }
+
+  // 2. Kriser som vedvarende forsømmelse har tvunget fram – de hopper over
+  //    sine egne vilkår, for årsaken er allerede inntruffet.
+  for (const id of forcedEvents) {
+    if (Object.keys(result).length >= slots) break;
+    const ev = EVENT_BY_ID[id];
+    if (!ev || usedEventIds.has(id) || result[ev.region]) continue;
+    if (Object.values(result).some(e => e.id === id)) continue;
+    result[ev.region] = ev;
+  }
+
+  // 3. Fyll resten med ett trekk per ledig region.
+  const openRegions = Object.keys(REGIONS).filter(r => !result[r]);
+  const drawn = [];
+
+  for (const regionId of openRegions) {
+    const candidates = EVENTS.filter(ev =>
+      ev.region === regionId &&
+      !usedEventIds.has(ev.id) &&
+      !neglect[ev.id] &&
+      !Object.values(result).some(e => e.id === ev.id) &&
+      meetsRequirements(ev, variables, flags, year)
+    );
+    if (candidates.length === 0) continue;
+
+    const weighted = [];
+    for (const ev of candidates) {
+      const w = weightFor(ev, year);
+      for (let i = 0; i < w; i++) weighted.push(ev);
+    }
+    drawn.push(weighted[Math.floor(Math.random() * weighted.length)]);
+  }
+
+  // Prioriter kriser når det er flere kandidater enn ledige plasser.
+  const typeRank = { C: 0, B: 1, A: 2 };
+  drawn.sort((a, b) => (typeRank[a.type] - typeRank[b.type]) || (Math.random() - 0.5));
+
+  for (const ev of drawn) {
+    if (Object.keys(result).length >= slots) break;
+    if (result[ev.region]) continue;
+    result[ev.region] = ev;
+  }
+
+  return result;
+}
