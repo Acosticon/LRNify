@@ -316,6 +316,36 @@ check('en lærer setter en annens uid som eierUid', false, db({}, LARER2).write(
 check('en annen lærer setter klasseId på noen andres rom', false, db({ rooms: { ABC123: eidPollMedEier } }, LARER2).write('/rooms/ABC123/klasseId', '-Nk9'));
 check('lærer 2 skriver seg selv inn i delteUider på et rom uten eierUid', false, db(nyttRom, LARER2).write('/rooms/ABC123/delteUider/' + LARER2.uid, true));
 check('ugyldig spillnavn (stor bokstav)', false, db({}, LARER).write('/rooms/ABC123', Object.assign({}, eidPollMedEier, { spill: 'KlassePoll' })));
+
+/* ── Rom-indeksen (LRNifyAuth.opprettRom / hentMineRom) ────────────────────
+   /rooms kan ikke listes opp av noen, så hentMineRom leser lærerens egen
+   peker-indeks i stedet. Testene under dekker LESE-stien eksplisitt — det
+   var mangelen på nettopp den som gjorde at den første versjonen av
+   hentMineRom (en spørring mot /rooms) alltid ble avvist. */
+console.log('--- rom-indeks: opprettRom skriver atomisk til to steder');
+const pekerSti = '/users/' + LARER.uid + '/rom/klassepoll/ABCD';
+const atomisk = {};
+atomisk['/rooms/ABCD'] = Object.assign({}, eidPollMedEier);
+atomisk[pekerSti] = { opprettet: now };
+check('lærer oppretter rom + peker i én operasjon', true, db({}, LARER).update('/', atomisk));
+
+const medIndeks = {
+  rooms: { ABCD: eidPollMedEier },
+  users: { [LARER.uid]: { rom: { klassepoll: { ABCD: { opprettet: now } } } } }
+};
+check('lærer leser sin egen rom-indeks (det hentMineRom gjør)', true, db(medIndeks, LARER).read('/users/' + LARER.uid + '/rom/klassepoll'));
+check('lærer slår opp rommet pekeren viser til', true, db(medIndeks, LARER).read('/rooms/ABCD'));
+check('lærer fjerner pekeren når rommet avsluttes', true, db(medIndeks, LARER).write(pekerSti, null));
+
+console.log('--- rom-indeks: fortsatt umulig å ramse opp alle rom');
+check('lister opp /rooms som innlogget lærer', false, db(medIndeks, LARER).read('/rooms'));
+check('annen lærer leser min rom-indeks', false, db(medIndeks, LARER2).read('/users/' + LARER.uid + '/rom/klassepoll'));
+check('uinnlogget leser rom-indeksen', false, db(medIndeks, null).read('/users/' + LARER.uid + '/rom/klassepoll'));
+check('annen lærer skriver peker inn i min indeks', false, db(medIndeks, LARER2).write('/users/' + LARER.uid + '/rom/klassepoll/ZZZZ', { opprettet: now }));
+check('peker uten opprettet', false, db(medIndeks, LARER).write('/users/' + LARER.uid + '/rom/klassepoll/EFGH', { klasseId: '-Nk1' }));
+check('peker med ukjent felt', false, db(medIndeks, LARER).write('/users/' + LARER.uid + '/rom/klassepoll/EFGH', { opprettet: now, hemmelig: 1 }));
+check('peker med ugyldig romkode', false, db(medIndeks, LARER).write('/users/' + LARER.uid + '/rom/klassepoll/ab!', { opprettet: now }));
+check('peker under ugyldig spillnavn', false, db(medIndeks, LARER).write('/users/' + LARER.uid + '/rom/KlassePoll/ABCD', { opprettet: now }));
 check('eier deler rommet med en kollega (forberedt, ikke i bruk i v1-UI)', true, db({ rooms: { ABC123: eidPollMedEier } }, LARER).write('/rooms/ABC123/delteUider/' + LARER2.uid, true));
 check('gammelt rom uten eierUid fungerer fortsatt uendret', true, db({}, null).write('/rooms/ABC123', basePoll));
 

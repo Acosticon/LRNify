@@ -75,12 +75,7 @@
         ref: dbMod.ref,
         set: dbMod.set,
         update: dbMod.update,
-        get: dbMod.get,
-        push: dbMod.push,
-        query: dbMod.query,
-        orderByChild: dbMod.orderByChild,
-        equalTo: dbMod.equalTo,
-        serverTimestamp: dbMod.serverTimestamp
+        get: dbMod.get
       };
 
       if (!ferdigInit) {
@@ -197,13 +192,19 @@
 
   /**
    * Oppretter et rom under /rooms/{kode} og setter eierUid til innlogget
-   * lærer automatisk. Krever at en lærer er innlogget (bruk elevenes
+   * lærer automatisk. Krever at en lærer er innlogget (bruk spillets
    * eksisterende, anonyme romflyt for rom uten lærerkonto).
    *
-   * @param {string} spillnavn   F.eks. "temaspinner" — lagres som eget felt
-   *                             så samme lærer sine rom kan skilles per spill.
-   * @param {object} romConfig   Feltene DET spillet krever i tillegg
-   *                             (spørsmål/alternativer, faser, osv.).
+   * Skriver to steder i ÉN atomisk operasjon: selve rommet, og en peker
+   * under lærerens egen konto. Pekeren er det hentMineRom() leser — /rooms
+   * kan ikke listes opp av noen (det er med vilje, ellers ville hvem som
+   * helst kunne ramse opp alle aktive rom), så en spørring mot eierUid der
+   * ville alltid blitt avvist. Går den ene skrivingen gjennom uten den
+   * andre, ville rommet blitt usynlig for læreren — derfor multi-path.
+   *
+   * @param {string} spillnavn   F.eks. "klassepoll". Må matche [a-z0-9-]{1,40}.
+   * @param {object} romConfig   Feltene DET spillet krever (spørsmål,
+   *                             alternativer, faser, osv.).
    * @returns {Promise<{kode: string}>}
    */
   async function opprettRom(spillnavn, romConfig) {
@@ -213,17 +214,25 @@
     if (!spillnavn) throw new Error('opprettRom: mangler spillnavn.');
 
     const kode = lagRomkode();
-    const data = Object.assign({}, romConfig, {
-      eierUid: uid,
-      spill: spillnavn
-    });
-    await FB.set(FB.ref(FB.db, 'rooms/' + kode), data);
+    const rom = Object.assign({}, romConfig, { eierUid: uid, spill: spillnavn });
+
+    const endring = {};
+    endring['rooms/' + kode] = rom;
+    endring['users/' + uid + '/rom/' + spillnavn + '/' + kode] = { opprettet: Date.now() };
+    if (romConfig && romConfig.klasseId) {
+      endring['users/' + uid + '/rom/' + spillnavn + '/' + kode].klasseId = romConfig.klasseId;
+    }
+
+    await FB.update(FB.ref(FB.db), endring);
     return { kode };
   }
 
   /**
-   * Henter innlogget lærers egne rom for et gitt spill, nyeste først om
-   * romConfig inneholder createdAt/opprettet.
+   * Henter innlogget lærers egne rom for et gitt spill, nyeste først.
+   * Leser lærerens egen indeks (se opprettRom) og slår deretter opp hvert
+   * rom for seg. Rom som er avsluttet og slettet faller ut av lista, men
+   * pekeren blir liggende — se ryddeNotat i README.
+   *
    * @param {string} spillnavn
    * @returns {Promise<Array<object & {kode: string}>>}
    */
@@ -231,19 +240,21 @@
     kreverInit();
     const uid = getCurrentUid();
     if (!uid) return [];
+    if (!spillnavn) throw new Error('hentMineRom: mangler spillnavn.');
 
-    const q = FB.query(FB.ref(FB.db, 'rooms'), FB.orderByChild('eierUid'), FB.equalTo(uid));
-    const snap = await FB.get(q);
+    const snap = await FB.get(FB.ref(FB.db, 'users/' + uid + '/rom/' + spillnavn));
     if (!snap.exists()) return [];
 
-    const rom = [];
-    snap.forEach(barn => {
-      const verdi = barn.val();
-      if (!spillnavn || verdi.spill === spillnavn) {
-        rom.push(Object.assign({ kode: barn.key }, verdi));
-      }
-    });
-    return rom;
+    const pekere = [];
+    snap.forEach(barn => { pekere.push({ kode: barn.key, opprettet: (barn.val() || {}).opprettet || 0 }); });
+    pekere.sort((a, b) => b.opprettet - a.opprettet);
+
+    const rom = await Promise.all(pekere.map(async p => {
+      const romSnap = await FB.get(FB.ref(FB.db, 'rooms/' + p.kode));
+      if (!romSnap.exists()) return null; // rommet er avsluttet/slettet
+      return Object.assign({ kode: p.kode }, romSnap.val());
+    }));
+    return rom.filter(Boolean);
   }
 
   /* ══════════════════════════════════════════════════════════════════════

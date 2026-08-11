@@ -64,40 +64,36 @@ Samme `firebaseConfig`-objekt som resten av LRNify allerede bruker mot
 
 ### Eksempel: Temaspinner (referanse, ikke lagt inn i selve spillet ennå)
 
-Temaspinner sitt lærer-oppsett (`skjerm-larer-oppsett` i
-`aktiviteter/temaspinner/index.html`) oppretter i dag et rom direkte mot
-`temaspinner/{kode}` med anonym pålogging. Slik ville en fremtidig
-integrasjon sett ut for et spill som i stedet bruker den delte
-`rooms/{kode}`-samlingen:
+`opprettRom` skriver til den delte `rooms/{kode}`-samlingen, og den samlingen
+har KlassePolls skjema: reglene krever `question`, `options`, `votes`, `open`
+og `createdAt`. Et rom uten de feltene blir avvist. Derfor er KlassePoll det
+eneste spillet `opprettRom` passer til i dag:
 
 ```js
 document.getElementById('opprett-rom').addEventListener('click', async () => {
-  const uid = LRNifyAuth.getCurrentUid();
-  if (!uid) { visFeil('feil-opprett', 'Logg inn som lærer først.'); return; }
+  if (!LRNifyAuth.getCurrentUid()) { visFeil('Logg inn som lærer først.'); return; }
 
-  const { kode } = await LRNifyAuth.opprettRom('temaspinner', {
-    opprettet: Date.now(),
-    fase: 'lobby',
-    temaListe: romTema.hent(),
-    byttBillettPa: romBytte.hent() === 'ja',
-    varighetMs: NIVAAER[romNiva.hent()]
+  const { kode } = await LRNifyAuth.opprettRom('klassepoll', {
+    question: sporsmal,
+    options: alternativer,
+    votes: { 0: 0, 1: 0, 2: 0, 3: 0 },
+    open: true,
+    createdAt: Date.now(),
+    owner: anonymUid      // den eksisterende, anonyme rom-kontrollen — se under
   });
-  startLarerLobby(kode);
+  visLobby(kode);
 });
 
-// Lærerens «mine rom»-liste, f.eks. på en fremtidig dashboard-side:
-const mineRom = await LRNifyAuth.hentMineRom('temaspinner');
+// Lærerens «mine rom»-liste:
+const mineRom = await LRNifyAuth.hentMineRom('klassepoll');
 ```
 
-**Viktig ved faktisk integrasjon:** `opprettRom` skriver til den delte
-`rooms/{kode}`-samlingen (samme sti KlassePoll bruker i dag), og legger bare
-på `eierUid`/`spill` i tillegg til det du sender inn i `romConfig`. Andre
-spill (Temaspinner, Genetisk hjul, KRLE-terningen) bruker i dag *egne*
-topp-nivå-stier (`temaspinner/`, `genetikhjul/`, `krle/`) med sine egne
-regler og feltkrav i `firebase/database.rules.json`. Å faktisk flytte et
-sånt spill over til `rooms/{kode}` — eller å gi det sin egen `eierUid`-støtte
-på sin egen sti i stedet — er en egen jobb som hører til selve
-integrasjonen, og er ikke gjort her.
+**Andre spill kan ikke bruke `opprettRom` som den står.** Temaspinner,
+Genetisk hjul og KRLE-terningen ligger på egne topp-nivå-stier
+(`temaspinner/`, `genetikhjul/`, `krle/`) med egne feltkrav i
+`firebase/database.rules.json`. Å ta modulen i bruk der krever enten at
+spillet flyttes til `rooms/{kode}`, eller at `eierUid` støttes på spillets
+egen sti — begge er egne jobber, og ingen av dem er gjort her.
 
 ## API
 
@@ -111,8 +107,8 @@ Alt henger på det globale objektet `LRNifyAuth`:
 | `loginEmail(epost, passord)` | E-post/passord-innlogging. Fallback for lærere uten Google-konto. |
 | `logout()` | Logger ut. |
 | `getCurrentUid()` | `uid` for innlogget lærer, eller `null`. |
-| `opprettRom(spillnavn, romConfig)` | Oppretter rom under `rooms/{kode}`, setter `eierUid` automatisk. Krever innlogging. Returnerer `{ kode }`. |
-| `hentMineRom(spillnavn)` | Henter innlogget lærers egne rom for et spill (filtrert på `eierUid`). |
+| `opprettRom(spillnavn, romConfig)` | Oppretter rom under `rooms/{kode}` og en peker under `users/{uid}/rom/`, atomisk i én operasjon. Setter `eierUid` automatisk. Krever innlogging. Returnerer `{ kode }`. |
+| `hentMineRom(spillnavn)` | Lærerens egne rom for et spill, nyeste først. `spillnavn` er påkrevd. Rom som er avsluttet og slettet faller ut av lista. |
 | `mountLoginWidget(container, valg?)` | Tegner en kompakt login-knapp/brukerlinje inn i `container`. Ikke i den opprinnelige kravlista, men nødvendig for UI-kravet — se under. |
 
 `mountLoginWidget` er lagt til utover den oppgitte API-lista fordi kravet om
@@ -127,6 +123,11 @@ bygge sin egen knapp med `onAuthChange` fritt kan la være å bruke den.
     profile: { navn, epost, opprettet }
     klasser: { klasseId: { navn, trinn, opprettet } }
     spillinnstillinger: { spillnavn: { ...fritt innhold per spill } }
+    rom: { spillnavn: { romkode: { opprettet, klasseId? } } }
+        — invertert indeks. /rooms kan ikke listes opp av noen (ellers kunne
+          hvem som helst ramse opp alle aktive rom), så en spørring på
+          eierUid der vil alltid avvises. hentMineRom() leser denne i
+          stedet, og slår så opp hvert rom for seg.
 
 /rooms/{roomCode}/
     eierUid: "{uid}"       — ny. Kobler rommet til en innlogget lærer.
@@ -144,10 +145,15 @@ bygge sin egen knapp med `onAuthChange` fritt kan la være å bruke den.
 
 /resultater/{uid}/{spillnavn}/{oktId}/
     dato, romkode, ...aggregerte tall
-    — aldri navngitte elevresultater. Reglene håndhever dette: hvert felt ut
-      over dato/romkode må være tall, tekst eller boolean — aldri et objekt
-      (som et navngitt elevsvar ville vært).
+    — ment for aggregerte tall, aldri navngitte elevresultater.
 ```
+
+**Om personvern-garantien i `resultater`:** reglene avviser nøstede objekter
+under en økt, altså akkurat den formen en elevliste ville hatt. Men de kan
+ikke hindre at et *flatt* felt inneholder et navn — `{ dato, romkode,
+bestElev: "Ida Hansen" }` går gjennom. Reglene er altså et rekkverk mot den
+åpenbare feilen, ikke en garanti. Ansvaret for å ikke skrive elevnavn dit
+ligger fortsatt hos spillet som kaller.
 
 **`eierUid` vs. det eldre `owner`-feltet på rom:** Flere spill (KlassePoll,
 KRLE-terningen, Temaspinner) bruker fra før anonym pålogging og et
@@ -166,20 +172,29 @@ den som lagde det (se reglene og testene for `rooms/$room/eierUid` i
 `firebase/rules.test.js`).
 
 **Personvern:** `profile` inneholder kun navn og e-post — ingen annen
-metadata. Elevnavn lagres aldri noe sted i denne strukturen; `resultater`
-tillater kun aggregerte tall/tekst, ikke navngitte elevsvar.
+metadata. Ingen del av modulen skriver elevnavn noe sted; se forbeholdet om
+`resultater` over.
+
+**Rydding:** avslutter læreren et rom, slettes `/rooms/{kode}`, men pekeren
+under `users/{uid}/rom/` blir liggende. `hentMineRom()` filtrerer bort
+pekere uten rom, så lista blir riktig — men pekerne hoper seg opp over tid.
+Sletter spillet rommet, bør det slette pekeren i samme slengen (se
+KlassePoll-integrasjonen i `aktiviteter/poll/index.html`).
 
 ## Sikkerhetsregler
 
 Se `firebase/database.rules.json` (seksjonene `users`, `resultater`, og de
 nye feltene under `rooms/$room`). Kort oppsummert:
 
-- En lærer kan lese/skrive kun sin egen `/users/{eget uid}/...`.
+- En lærer kan lese/skrive kun sin egen `/users/{eget uid}/...`, inkludert
+  rom-indeksen.
 - En lærer kan sette `eierUid` til sin egen `uid` når et rom opprettes, og
   deretter styre `klasseId`/`delteUider` på akkurat det rommet.
 - Elever (uinnlogget) leser fortsatt romdata via romkode som før, uten noen
   tilgang til `/users/` eller `/resultater/`.
 - En lærer kan ikke lese en annen lærers `/resultater/{uid}/...`.
+- `/rooms` kan fortsatt ikke listes opp av noen — heller ikke av en innlogget
+  lærer. Det er den begrensningen rom-indeksen finnes for å jobbe rundt.
 
 Kjør `node firebase/rules.test.js` (krever `npm install targaryen`) for å
 verifisere reglene — inkludert alle de nye testene for `users/`,
