@@ -84,6 +84,9 @@
         GoogleAuthProvider: authMod.GoogleAuthProvider,
         signInWithPopup: authMod.signInWithPopup,
         signInWithEmailAndPassword: authMod.signInWithEmailAndPassword,
+        createUserWithEmailAndPassword: authMod.createUserWithEmailAndPassword,
+        sendPasswordResetEmail: authMod.sendPasswordResetEmail,
+        updateProfile: authMod.updateProfile,
         onAuthStateChanged: authMod.onAuthStateChanged,
         signOut: authMod.signOut,
         // database
@@ -181,6 +184,49 @@
     if (!epost || !passord) throw new Error('Fyll ut både e-post og passord.');
     const resultat = await FB.signInWithEmailAndPassword(FB.auth, epost, passord);
     return tilBruker(resultat.user);
+  }
+
+  /**
+   * Oppretter en ny lærerkonto med e-post og selvvalgt passord. Læreren blir
+   * logget inn med det samme. Enhver e-postadresse går — vi stiller ingen
+   * krav om skoledomene.
+   *
+   * @param {string} epost
+   * @param {string} passord  Firebase krever minst 6 tegn.
+   * @param {string} [navn]   Vises i innloggingsmerket. Uten dette brukes
+   *                          delen foran @ i e-posten.
+   */
+  async function registrerEpost(epost, passord, navn) {
+    kreverInit();
+    if (!epost || !passord) throw new Error('Fyll ut både e-post og passord.');
+    if (passord.length < 6) throw new Error('Passordet må ha minst 6 tegn.');
+
+    const resultat = await FB.createUserWithEmailAndPassword(FB.auth, epost, passord);
+    if (navn) {
+      // Settes før profilen skrives, så /users/{uid}/profile får riktig navn
+      // med én gang og ikke «epost-delen før krøllalfa».
+      try { await FB.updateProfile(resultat.user, { displayName: navn }); } catch (e) { /* ikke kritisk */ }
+    }
+    return tilBruker(resultat.user);
+  }
+
+  /**
+   * Sender en tilbakestillingslenke til e-posten. Firebase håndterer selve
+   * skjemaet der læreren velger nytt passord — vi trenger ingen egen side.
+   *
+   * Merk at vi med vilje IKKE forteller om adressen finnes fra før: da kunne
+   * hvem som helst brukt knappen til å finne ut hvem som har konto.
+   * @param {string} epost
+   */
+  async function tilbakestillPassord(epost) {
+    kreverInit();
+    if (!epost) throw new Error('Skriv inn e-postadressen din først.');
+    try {
+      await FB.sendPasswordResetEmail(FB.auth, epost);
+    } catch (e) {
+      if (e && e.code === 'auth/user-not-found') return; // se kommentaren over
+      throw e;
+    }
   }
 
   /** Logger ut gjeldende lærer. */
@@ -412,6 +458,19 @@
         color:#dc2626; font-weight:800; font-size:.85rem; background:#fee2e2;
         border:3px solid #dc2626; border-radius:12px; padding:8px 10px; margin-top:4px;
       }
+      .lrnauth-ok{
+        color:#166534; font-weight:800; font-size:.85rem; background:#dcfce7;
+        border:3px solid #16a34a; border-radius:12px; padding:8px 10px; margin-top:4px;
+      }
+      .lrnauth-lenker{
+        display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:2px;
+      }
+      .lrnauth-lenker button{
+        background:none; border:none; padding:4px 0; cursor:pointer;
+        font-family:'Nunito',sans-serif; font-weight:800; font-size:.82rem;
+        color:var(--lrnauth-muted,#7a6f63); text-decoration:underline;
+      }
+      .lrnauth-lenker button:hover{ color:var(--lrnauth-ink,#1a1a1a); }
       .lrnauth-skjult{ display:none !important; }
     `;
     document.head.appendChild(stil);
@@ -484,35 +543,114 @@
       bakteppe.innerHTML = `
         <div class="lrnauth-modal" role="dialog" aria-modal="true" aria-label="Logg inn">
           <button type="button" class="lrnauth-lukk" aria-label="Lukk">✕</button>
-          <h2>Lærerinnlogging</h2>
-          <div class="lrnauth-under">Én konto på tvers av alle LRNify-spill. Elevene trenger ikke logge inn.</div>
+          <h2 data-tittel>Lærerinnlogging</h2>
+          <div class="lrnauth-under" data-undertekst>Én konto på tvers av alle LRNify-spill. Elevene trenger ikke logge inn.</div>
           <button type="button" class="lrnauth-knapp" data-google>Fortsett med Google</button>
           <div class="lrnauth-skille">eller</div>
+          <input type="text" data-navn placeholder="Navnet ditt" autocomplete="name" class="lrnauth-skjult">
           <input type="email" data-epost placeholder="E-post" autocomplete="username">
           <input type="password" data-passord placeholder="Passord" autocomplete="current-password">
-          <button type="button" class="lrnauth-knapp lrnauth-hvit" data-epostknapp>Logg inn med e-post</button>
+          <button type="button" class="lrnauth-knapp lrnauth-hvit" data-send>Logg inn med e-post</button>
+          <div class="lrnauth-lenker">
+            <button type="button" data-bytt>Ny bruker? Lag konto</button>
+            <button type="button" data-glemt>Glemt passord?</button>
+          </div>
           <div class="lrnauth-feil lrnauth-skjult" data-feil></div>
+          <div class="lrnauth-ok lrnauth-skjult" data-ok></div>
         </div>
       `;
       document.body.appendChild(bakteppe);
 
-      const feilEl = bakteppe.querySelector('[data-feil]');
-      const visFeil = melding => { feilEl.textContent = melding; feilEl.classList.remove('lrnauth-skjult'); };
+      const felt = v => bakteppe.querySelector('[data-' + v + ']');
+      const feilEl = felt('feil'), okEl = felt('ok');
+      const visFeil = m => { okEl.classList.add('lrnauth-skjult'); feilEl.textContent = m; feilEl.classList.remove('lrnauth-skjult'); };
+      const visOk = m => { feilEl.classList.add('lrnauth-skjult'); okEl.textContent = m; okEl.classList.remove('lrnauth-skjult'); };
+      const nullstillMelding = () => { feilEl.classList.add('lrnauth-skjult'); okEl.classList.add('lrnauth-skjult'); };
       const lukk = () => bakteppe.remove();
+
+      /* Tre moduser i samme panel: 'inn' (logg inn), 'ny' (lag konto) og
+         'glemt' (tilbakestill). Å bytte mellom dem skjuler/viser felter
+         i stedet for å bygge tre ulike modaler. */
+      let modus = 'inn';
+      function tegnModus() {
+        nullstillMelding();
+        const nyKonto = modus === 'ny', glemt = modus === 'glemt';
+        felt('tittel').textContent = nyKonto ? 'Lag lærerkonto' : glemt ? 'Glemt passord' : 'Lærerinnlogging';
+        felt('undertekst').textContent = nyKonto
+          ? 'Bruk den e-posten du vil, og velg et passord på minst 6 tegn.'
+          : glemt
+            ? 'Vi sender en lenke der du kan velge nytt passord.'
+            : 'Én konto på tvers av alle LRNify-spill. Elevene trenger ikke logge inn.';
+        felt('navn').classList.toggle('lrnauth-skjult', !nyKonto);
+        felt('passord').classList.toggle('lrnauth-skjult', glemt);
+        felt('passord').setAttribute('autocomplete', nyKonto ? 'new-password' : 'current-password');
+        felt('send').textContent = nyKonto ? 'Lag konto' : glemt ? 'Send lenke' : 'Logg inn med e-post';
+        felt('bytt').textContent = nyKonto ? '← Tilbake til innlogging' : 'Ny bruker? Lag konto';
+        felt('glemt').classList.toggle('lrnauth-skjult', glemt);
+      }
 
       bakteppe.addEventListener('click', e => { if (e.target === bakteppe) lukk(); });
       bakteppe.querySelector('.lrnauth-lukk').addEventListener('click', lukk);
+      felt('bytt').addEventListener('click', () => { modus = (modus === 'ny') ? 'inn' : 'ny'; tegnModus(); });
+      felt('glemt').addEventListener('click', () => { modus = 'glemt'; tegnModus(); });
 
-      bakteppe.querySelector('[data-google]').addEventListener('click', async () => {
+      felt('google').addEventListener('click', async () => {
         try { await sikreLastet(); await loginGoogle(); lukk(); }
-        catch (e) { visFeil('Fikk ikke logget inn med Google: ' + e.message); }
+        catch (e) { visFeil('Fikk ikke logget inn med Google: ' + forklar(e)); }
       });
-      bakteppe.querySelector('[data-epostknapp]').addEventListener('click', async () => {
-        const epost = bakteppe.querySelector('[data-epost]').value.trim();
-        const passord = bakteppe.querySelector('[data-passord]').value;
-        try { await sikreLastet(); await loginEmail(epost, passord); lukk(); }
-        catch (e) { visFeil('Fikk ikke logget inn: ' + e.message); }
+
+      felt('send').addEventListener('click', async () => {
+        const epost = felt('epost').value.trim();
+        const passord = felt('passord').value;
+        const navn = felt('navn').value.trim();
+        felt('send').disabled = true;
+        try {
+          await sikreLastet();
+          if (modus === 'glemt') {
+            await tilbakestillPassord(epost);
+            visOk('Sjekk innboksen din — vi har sendt en lenke hvis adressen har en konto.');
+          } else if (modus === 'ny') {
+            await registrerEpost(epost, passord, navn);
+            lukk();
+          } else {
+            await loginEmail(epost, passord);
+            lukk();
+          }
+        } catch (e) {
+          visFeil(forklar(e));
+        } finally {
+          felt('send').disabled = false;
+        }
       });
+
+      // Enter i et felt gjør det samme som å trykke hovedknappen
+      bakteppe.querySelectorAll('input').forEach(i => {
+        i.addEventListener('keydown', e => { if (e.key === 'Enter') felt('send').click(); });
+      });
+
+      tegnModus();
+    }
+
+    /* Firebase sine feilkoder er engelske og lite hjelpsomme for en lærer
+       midt i en time. De vanligste oversettes; resten faller tilbake på
+       den opprinnelige teksten så ingenting blir borte. */
+    function forklar(e) {
+      const kode = (e && e.code) || '';
+      switch (kode) {
+        case 'auth/invalid-email':          return 'E-postadressen ser ikke riktig ut.';
+        case 'auth/missing-password':       return 'Skriv inn passordet ditt.';
+        case 'auth/weak-password':          return 'Passordet må ha minst 6 tegn.';
+        case 'auth/email-already-in-use':   return 'Det finnes allerede en konto med denne e-posten. Prøv å logge inn i stedet.';
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':         return 'Feil e-post eller passord.';
+        case 'auth/too-many-requests':      return 'For mange forsøk. Vent litt og prøv igjen.';
+        case 'auth/popup-blocked':          return 'Nettleseren blokkerte innloggingsvinduet. Tillat popup for denne sida, eller bruk e-post.';
+        case 'auth/popup-closed-by-user':   return 'Innloggingsvinduet ble lukket.';
+        case 'auth/network-request-failed': return 'Fikk ikke kontakt med nettet. Sjekk tilkoblingen og prøv igjen.';
+        case 'auth/operation-not-allowed':  return 'Denne innloggingsmåten er ikke skrudd på i Firebase ennå.';
+        default: return (e && e.message) || 'Ukjent feil.';
+      }
     }
 
     tegn(gjeldendeBruker);
@@ -527,6 +665,8 @@
     onAuthChange,
     loginGoogle,
     loginEmail,
+    registrerEpost,
+    tilbakestillPassord,
     logout,
     getCurrentUid,
     harLoggetInnFor,
