@@ -4,21 +4,33 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>3S1F – Tre stemmer, én framtid</title>
-  <meta name="description" content="Du er leder for en øy i 15 år. Valgene dine påvirker næringslivet, innbyggerne og naturen.">
+  <meta name="description" content="Du er leder for en øy i 10 år. Valgene dine påvirker næringslivet, innbyggerne og naturen – og du rekker aldri alt.">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
   <!-- ─── TITTELSKJERM ─────────────────────────────────── -->
   <main id="screen-title" class="screen active" role="main">
-    <p class="title-eyebrow">Et spill om bærekraft 1640</p>
+    <p class="title-eyebrow">Et spill om bærekraft</p>
     <h1 class="title-main">Tre<em> stemmer</em><br>én&nbsp;framtid</h1>
-    <p class="title-sub">Du er leder for en øy i 15 år.<br>Hvert år møter du saker som krever beslutninger.<br>Ingen svar er åpenbart riktige.</p>
+    <p class="title-sub">Du er leder for en øy i ti år.<br>
+      Hvert år møter du flere saker enn du har tid til.<br>
+      Det du lar ligge, blir ikke borte.</p>
+
     <div class="title-voices">
       <div class="voice-pill">💰 Næringslivet</div>
       <div class="voice-pill">👥 Innbyggerne</div>
       <div class="voice-pill">🌳 Naturen</div>
     </div>
+
+    <div id="resume-banner" class="resume-banner" hidden>
+      <p class="resume-text"></p>
+      <div class="resume-actions">
+        <button id="btn-resume" class="btn-primary btn-small">Fortsett spillet</button>
+        <button id="btn-discard" class="btn-secondary btn-small">Start på nytt</button>
+      </div>
+    </div>
+
     <div class="name-input-wrap">
       <label class="name-label" for="player-name-input">Hva heter lederen?</label>
       <input id="player-name-input" class="name-input" type="text"
@@ -37,49 +49,63 @@
         <div class="meter-track"><div class="meter-fill" style="height:50%"></div></div>
         <div class="meter-icon" aria-hidden="true">💰</div>
         <div class="meter-value" aria-live="polite">50</div>
+        <div class="meter-name">Næring</div>
       </div>
       <div class="meter-wrap" data-meter="people" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Innbyggere">
         <div class="meter-track"><div class="meter-fill" style="height:50%"></div></div>
         <div class="meter-icon" aria-hidden="true">👥</div>
         <div class="meter-value" aria-live="polite">50</div>
+        <div class="meter-name">Folk</div>
       </div>
       <div class="meter-wrap" data-meter="nature" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Natur">
         <div class="meter-track"><div class="meter-fill" style="height:50%"></div></div>
         <div class="meter-icon" aria-hidden="true">🌳</div>
         <div class="meter-value" aria-live="polite">50</div>
+        <div class="meter-name">Natur</div>
       </div>
     </aside>
 
-    <!-- Midten: kart + panel -->
+    <!-- Midten -->
     <div class="main-content">
       <header class="game-header">
-        <span class="game-title">Tre stemmer, én framtid</span>
-        <div class="year-display">
-          <span class="year-label">År</span>
-          <span class="year-number">1</span>
-          <span class="years-left">av 15</span>
+        <div class="header-left">
+          <span class="game-title">Tre stemmer, én framtid</span>
+          <div class="year-display">
+            <span class="year-label">År</span>
+            <span class="year-number">1</span>
+            <span class="years-left">av 10</span>
+          </div>
         </div>
+        <div class="time-meter" aria-label="Tidsbudsjett"></div>
         <span class="player-name-display"></span>
       </header>
 
-      <section class="map-area" aria-label="Øyakart">
-        <div class="map-container">
-          <p class="map-title">Klikk på et utropstegn for å se saken</p>
-          <div id="map-svg-wrap"></div>
-        </div>
-      </section>
+      <div class="game-grid">
+        <div class="grid-col grid-col-map">
+          <section class="map-area" aria-label="Øyakart">
+            <div class="map-container">
+              <p class="map-title">Klikk et utropstegn for å åpne saken</p>
+              <div id="map-svg-wrap"></div>
+            </div>
+          </section>
 
-      <section class="log-area">
-        <p class="log-title">Historikk</p>
-        <div class="log-entries" aria-live="polite"></div>
-      </section>
-
-      <section class="events-area">
-        <div class="event-panel"></div>
-        <div class="next-year-wrap">
-          <button id="btn-next-year" class="btn-primary" disabled>Neste år →</button>
+          <section class="log-area" aria-label="Historikk">
+            <p class="log-title">Historikk</p>
+            <div class="log-entries" aria-live="polite"></div>
+          </section>
         </div>
-      </section>
+
+        <div class="grid-col grid-col-events">
+          <section class="events-area">
+            <div class="event-panel"></div>
+          </section>
+
+          <div class="end-year-wrap">
+            <span class="end-year-hint"></span>
+            <button id="btn-end-year" class="btn-primary">Avslutt året →</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Høyre sidebar -->
@@ -93,11 +119,9 @@
 
 
   <!-- ─── OVERLAYS ────────────────────────────────────── -->
+  <div id="news-overlay" class="paper-overlay" role="dialog" aria-modal="true" aria-label="Nyhetsoppslag"></div>
+  <div id="year-summary-overlay" class="paper-overlay" role="dialog" aria-modal="true" aria-label="Årsoppsummering"></div>
 
-  <!-- Nyhetsoverlay for type B-hendelser -->
-  <div id="news-overlay" role="dialog" aria-modal="true" aria-label="Nyhetsoppslag"></div>
-
-  <!-- År-overgang -->
   <div id="year-transition" role="status" aria-live="polite">
     <span class="transition-year"></span>
     <span class="transition-sub"></span>

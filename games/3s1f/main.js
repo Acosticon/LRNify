@@ -6,9 +6,16 @@ import {
   selectRegion,
   dismissNewsSplash,
   applyChoice,
-  ignoreRegion,
+  deferRegion,
+  endYear,
+  dismissYearSummary,
   advanceYear,
-  allRegionsHandled,
+  isYearExhausted,
+  outstandingRegions,
+  saveGame,
+  loadGame,
+  clearSave,
+  getEpithet,
   TOTAL_YEARS,
 } from './game.js';
 
@@ -17,8 +24,9 @@ import {
   updateYearDisplay,
   renderMap,
   renderNewsSplash,
+  renderYearSummary,
   renderEventPanel,
-  updateNextYearBtn,
+  updateEndYearBtn,
   renderSidebar,
   updateLog,
   showToast,
@@ -27,8 +35,9 @@ import {
 
 import { generateReport, renderReport } from './report.js';
 
-// ─── State ────────────────────────────────────────────
 let state = createInitialState();
+
+const handlers = { onChoice, onDefer, onNextCase };
 
 // ─── Skjerm ───────────────────────────────────────────
 function showScreen(id) {
@@ -36,131 +45,185 @@ function showScreen(id) {
   document.getElementById(`screen-${id}`)?.classList.add('active');
 }
 
-// ─── Spillstart ───────────────────────────────────────
+// ─── Start ────────────────────────────────────────────
 function startGame() {
-  const nameInput = document.getElementById('player-name-input');
-  const name = nameInput?.value.trim() || 'Lederen';
+  const name = document.getElementById('player-name-input')?.value.trim() || 'Lederen';
   state = initYear(createInitialState(name));
+  clearSave();
+  openFirstPendingRegion();
+  showScreen('game');
+  renderAll();
+  saveGame(state);
+}
+
+function resumeGame(saved) {
+  state = saved;
   showScreen('game');
   renderAll();
 }
 
-// ─── Render alt ───────────────────────────────────────
-function renderAll() {
-  updateMeters(state);
+// ─── Render ───────────────────────────────────────────
+function renderAll(deltas = null) {
+  updateMeters(state, deltas);
   updateYearDisplay(state);
   renderMap(state, onRegionClick);
   renderSidebar(state);
-  renderEventPanel(state, onChoiceMade, onIgnore);
-  updateNextYearBtn(state);
+  renderEventPanel(state, handlers);
+  updateEndYearBtn(state);
   updateLog(state);
   renderNewsSplash(state, onDismissNews);
+  renderYearSummary(state, onContinueFromSummary);
 }
 
-// ─── Region klikket ───────────────────────────────────
+// ─── Interaksjon ──────────────────────────────────────
 function onRegionClick(regionId) {
   state = selectRegion(state, regionId);
   renderMap(state, onRegionClick);
   renderSidebar(state);
-  renderEventPanel(state, onChoiceMade, onIgnore);
+  renderEventPanel(state, handlers);
   renderNewsSplash(state, onDismissNews);
 }
 
-// ─── Lukk nyhetsoverlay ───────────────────────────────
 function onDismissNews() {
   state = dismissNewsSplash(state);
   renderNewsSplash(state, onDismissNews);
+  renderEventPanel(state, handlers);
 }
 
-// ─── Valg tatt ────────────────────────────────────────
-function onChoiceMade(regionId, choiceIndex) {
-  state = applyChoice(state, regionId, choiceIndex);
-  afterDecision();
-}
+function onChoice(regionId, choiceIndex) {
+  const before = { ...state.meters };
+  const next = applyChoice(state, regionId, choiceIndex);
+  if (next === state) {
+    showToast('Du har ikke nok tid igjen i år til dette tiltaket.');
+    return;
+  }
+  state = next;
 
-// ─── Sak ignorert ─────────────────────────────────────
-function onIgnore(regionId) {
-  state = ignoreRegion(state, regionId);
-  afterDecision();
-}
+  const deltas = {
+    business: state.meters.business - before.business,
+    people:   state.meters.people   - before.people,
+    nature:   state.meters.nature   - before.nature,
+  };
 
-function afterDecision() {
-  updateMeters(state);
-  updateLog(state);
-  renderMap(state, onRegionClick);
-  renderSidebar(state);
-  renderEventPanel(state, onChoiceMade, onIgnore);
-  updateNextYearBtn(state);
+  renderAll(deltas);
+  saveGame(state);
 
-  // Toast med meter-deltas
-  const last = state.choiceHistory[state.choiceHistory.length - 1];
-  if (last?.meterDeltas) {
-    const deltas = Object.entries(last.meterDeltas)
-      .filter(([,v]) => v !== 0)
-      .map(([k, v]) => {
-        const icons = { business:'💰', people:'👥', nature:'🌳' };
-        return `${icons[k]} ${v > 0 ? '+' : ''}${v}`;
-      });
-    if (deltas.length) showToast(deltas.join('  '));
+  if (isYearExhausted(state) && outstandingRegions(state).length > 0) {
+    showToast('Tiden er ute for i år. Resten blir liggende.');
   }
 }
 
-// ─── Neste år ─────────────────────────────────────────
-function goToNextYear() {
-  if (state.year >= TOTAL_YEARS) {
+function onDefer(regionId) {
+  state = deferRegion(state, regionId);
+  openFirstPendingRegion();
+  renderAll();
+  saveGame(state);
+}
+
+function onNextCase() {
+  openFirstPendingRegion();
+  renderAll();
+}
+
+// ─── Årsslutt ─────────────────────────────────────────
+function onEndYear() {
+  state = endYear(state);
+  renderAll();
+  saveGame(state);
+}
+
+function onContinueFromSummary() {
+  const wasFinal = state.yearSummary?.isFinalYear;
+  state = dismissYearSummary(state);
+  renderYearSummary(state, onContinueFromSummary);   // lukker avisen
+
+  if (wasFinal) {
     endGame();
     return;
   }
+
   showYearTransition(state.year + 1, state.playerName, () => {
     state = advanceYear(state);
+    openFirstPendingRegion();
     renderAll();
+    saveGame(state);
   });
+}
+
+// Åpner årets første ubehandlede sak, så hendelsespanelet aldri står tomt.
+function openFirstPendingRegion() {
+  const [first] = outstandingRegions(state);
+  if (first) state = selectRegion(state, first);
 }
 
 // ─── Sluttrapport ─────────────────────────────────────
 async function endGame() {
+  clearSave();
   showScreen('report');
-  const reportScreen = document.getElementById('screen-report');
-  reportScreen.innerHTML = `
+  const screen = document.getElementById('screen-report');
+  const epithet = getEpithet(state);
+
+  screen.innerHTML = `
     <div class="report-inner">
-      <p class="report-eyebrow">Balanseposten · Etter ${TOTAL_YEARS} år</p>
-      <h1 class="report-headline" style="color:var(--muted)">Analyserer ${state.playerName}s tid ved makten…</h1>
-      <div class="report-voices">
-        ${['💰 Næringslivet','👥 Innbyggerne','🌳 Naturen'].map(() =>
-          `<div class="voice-card"><p class="voice-text loading">Henter stemme…</p></div>`
-        ).join('')}
+      <p class="report-eyebrow">Øyposten · Etter ${TOTAL_YEARS} år</p>
+      <div class="epithet">
+        <p class="epithet-frame">${epithet.frame}</p>
+        <h1 class="epithet-title">${epithet.title}</h1>
       </div>
+      <p class="report-loading">Setter sammen ettermælet …</p>
     </div>`;
 
   await generateReport(state, ({ status, data }) => {
-    if (status === 'done') {
-      reportScreen.innerHTML = renderReport(state, data);
-      setupReportListeners();
-    }
+    if (status !== 'done') return;
+    screen.innerHTML = renderReport(state, data);
+    setupReportListeners();
+    screen.scrollTo?.({ top: 0 });
   });
 }
 
 function setupReportListeners() {
-  document.getElementById('btn-restart')?.addEventListener('click', () => showScreen('title'));
+  document.getElementById('btn-restart')?.addEventListener('click', () => {
+    clearSave();
+    showScreen('title');
+  });
+
   document.getElementById('btn-share-result')?.addEventListener('click', () => {
     const { business, people, nature } = state.meters;
-    const text = `${state.playerName} styrte øya i ${TOTAL_YEARS} år.\n💰 Næringsliv: ${business}\n👥 Innbyggere: ${people}\n🌳 Natur: ${nature}\n\n3S1F – Tre stemmer, én framtid`;
+    const epithet = getEpithet(state);
+    const text = `${epithet.frame} ${epithet.title}.\n\n`
+      + `💰 Næringsliv: ${business}\n👥 Innbyggere: ${people}\n🌳 Natur: ${nature}\n\n`
+      + `3S1F – Tre stemmer, én framtid`;
     if (navigator.share) navigator.share({ text }).catch(() => {});
     else navigator.clipboard?.writeText(text).then(() => showToast('Kopiert!'));
   });
 }
 
-// ─── Sidebar region-klikk ────────────────────────────
+// ─── Init ─────────────────────────────────────────────
 document.addEventListener('regionClick', e => onRegionClick(e.detail));
 
-// ─── Init ─────────────────────────────────────────────
-// ES-moduler er alltid defer – DOMContentLoaded kan allerede ha kjørt.
 function init() {
   document.getElementById('btn-start')?.addEventListener('click', startGame);
   document.getElementById('player-name-input')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') startGame();
   });
-  document.getElementById('btn-next-year')?.addEventListener('click', goToNextYear);
+  document.getElementById('btn-end-year')?.addEventListener('click', onEndYear);
+
+  // Tilbud om å fortsette et påbegynt spill
+  const saved = loadGame();
+  if (saved && saved.year <= TOTAL_YEARS) {
+    const banner = document.getElementById('resume-banner');
+    if (banner) {
+      banner.hidden = false;
+      banner.querySelector('.resume-text').textContent =
+        `${saved.playerName} står midt i år ${saved.year} av ${TOTAL_YEARS}.`;
+      banner.querySelector('#btn-resume')?.addEventListener('click', () => resumeGame(saved));
+      banner.querySelector('#btn-discard')?.addEventListener('click', () => {
+        clearSave();
+        banner.hidden = true;
+      });
+    }
+  }
+
   showScreen('title');
 }
 
