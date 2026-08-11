@@ -27,9 +27,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-<!-- Firebase (compat) — brukes bare til å sende inn forslagsskjemaet (#fbForm) -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --cream:#fff9f0;
@@ -363,6 +360,7 @@
     padding:14px 22px;
     cursor:pointer;
     text-align:center;
+    text-decoration:none;
     white-space:nowrap;
     transition:transform .12s ease,box-shadow .12s ease;
   }
@@ -391,48 +389,6 @@
   .cta-banner .btn-sticker{background:var(--ink);color:var(--yellow);box-shadow:0 6px 0 rgba(43,33,24,.5);flex:0 0 auto;}
   .cta-banner .btn-sticker:hover,.cta-banner .btn-sticker:focus-visible{box-shadow:0 8px 0 rgba(43,33,24,.5);}
   .cta-banner .btn-sticker:active{box-shadow:0 2px 0 rgba(43,33,24,.5);}
-
-  .fb-overlay{
-    position:fixed;inset:0;z-index:60;
-    background:rgba(43,33,24,.5);
-    display:flex;align-items:center;justify-content:center;padding:20px;
-    opacity:0;pointer-events:none;transition:opacity .2s ease;
-  }
-  .fb-overlay.open{opacity:1;pointer-events:auto;}
-  .fb-modal{
-    position:relative;
-    background:var(--card);
-    border:4px solid var(--ink);
-    box-shadow:0 10px 0 var(--ink);
-    max-width:440px;width:100%;
-    max-height:90vh;overflow-y:auto;
-    padding:26px 24px 24px;
-  }
-  .fb-modal h2{font-family:'Chewy',cursive;font-size:1.5rem;}
-  .fb-modal .fb-lead{font-weight:600;color:var(--muted);font-size:.88rem;margin-top:6px;line-height:1.4;}
-  .fb-close{
-    position:absolute;top:10px;right:12px;
-    background:none;border:none;cursor:pointer;
-    font-family:'Chewy',cursive;font-size:1.7rem;color:var(--muted);line-height:1;
-  }
-  .fb-close:hover,.fb-close:focus-visible{color:var(--ink);outline:none;}
-  .fb-field{margin-top:14px;}
-  .fb-field label{display:block;font-weight:800;font-size:.85rem;margin-bottom:6px;}
-  .fb-field select,.fb-field textarea,.fb-field input{
-    width:100%;
-    border:3px solid var(--ink);
-    background:var(--cream);color:var(--ink);
-    font-family:'Nunito',sans-serif;font-weight:700;font-size:.95rem;
-    padding:10px 12px;
-  }
-  .fb-field select:focus-visible,.fb-field textarea:focus-visible,.fb-field input:focus-visible{outline:3px solid var(--yellow);outline-offset:1px;}
-  .fb-field textarea{resize:vertical;min-height:100px;}
-  .fb-honey{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}
-  .fb-submit{margin-top:18px;width:100%;}
-  .fb-status{margin-top:12px;font-weight:800;font-size:.88rem;line-height:1.4;}
-  .fb-status.error{color:#b91c1c;}
-  .fb-status.success{color:#15803d;}
-  .fb-status a{color:inherit;}
 </style>
 </head>
 <body>
@@ -479,45 +435,13 @@
         <p class="cta-banner-title">💡 Savner du et spill eller verktøy?</p>
         <p class="cta-banner-sub">Send oss forslag, tilbakemeldinger eller bestillinger – vi leser alt som kommer inn!</p>
       </div>
-      <button type="button" class="btn-sticker" id="fbOpenBtn">Send inn forslag →</button>
+      <a class="btn-sticker" href="mailto:kontakt@lrnify.no?subject=Forslag%2Ftilbakemelding%20til%20LRNify">Send inn forslag →</a>
     </div>
   </section>
 
   <main>
     <div class="grid" id="grid" role="list" aria-label="Spill"></div>
   </main>
-
-  <div class="fb-overlay" id="fbOverlay">
-    <div class="fb-modal" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
-      <button type="button" class="fb-close" id="fbClose" aria-label="Lukk">✕</button>
-      <h2 id="fbTitle">Send oss en beskjed</h2>
-      <p class="fb-lead">Forslag til nytt spill eller verktøy, tilbakemelding på noe som finnes, eller rett og slett en bestilling – alt er velkomment.</p>
-      <form id="fbForm">
-        <div class="fb-field">
-          <label for="fbType">Hva gjelder det?</label>
-          <select id="fbType" name="type" required>
-            <option value="forslag">Forslag til nytt spill/verktøy</option>
-            <option value="tilbakemelding">Tilbakemelding på noe som finnes</option>
-            <option value="bestilling">Bestilling / ønske</option>
-          </select>
-        </div>
-        <div class="fb-field">
-          <label for="fbMessage">Melding</label>
-          <textarea id="fbMessage" name="message" required minlength="5" maxlength="2000" placeholder="Skriv her..."></textarea>
-        </div>
-        <div class="fb-field">
-          <label for="fbContact">E-post (valgfritt, hvis du vil ha svar)</label>
-          <input type="email" id="fbContact" name="contact" maxlength="200" placeholder="din@epost.no">
-        </div>
-        <div class="fb-honey" aria-hidden="true">
-          <label for="fbWebsite">Nettside</label>
-          <input type="text" id="fbWebsite" name="website" tabindex="-1" autocomplete="off">
-        </div>
-        <button type="submit" class="btn-sticker fb-submit" id="fbSubmitBtn">Send</button>
-        <p class="fb-status" id="fbStatus" role="status" aria-live="polite"></p>
-      </form>
-    </div>
-  </div>
 
   <section class="info-sections">
     <div class="info-block" id="om">
@@ -762,115 +686,6 @@ menuBtn.addEventListener('click',openMenu);
 drawerClose.addEventListener('click',closeMenu);
 scrim.addEventListener('click',closeMenu);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
-
-/* =========================================================
-   FORSLAGSSKJEMA — lagrer i Firestore-samlingen "feedback".
-   Se firebase/firestore.rules for hva som godtas, og
-   firebase/README.md for hvordan innsendinger videresendes
-   som e-post til kontakt@lrnify.no.
-   ========================================================= */
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
-  authDomain: "poll-c6bd2.firebaseapp.com",
-  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "poll-c6bd2",
-  storageBucket: "poll-c6bd2.firebasestorage.app",
-  messagingSenderId: "541647069675",
-  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
-};
-const FEEDBACK_TYPE_LABELS = {
-  forslag: "Forslag til nytt spill/verktøy",
-  tilbakemelding: "Tilbakemelding",
-  bestilling: "Bestilling / ønske"
-};
-
-let fbDb = null;
-function initFeedbackDb(){
-  if(!fbDb){
-    if(!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-    fbDb = firebase.firestore();
-  }
-  return fbDb;
-}
-
-const fbOpenBtn = document.getElementById('fbOpenBtn');
-const fbOverlay = document.getElementById('fbOverlay');
-const fbClose = document.getElementById('fbClose');
-const fbForm = document.getElementById('fbForm');
-const fbSubmitBtn = document.getElementById('fbSubmitBtn');
-const fbStatus = document.getElementById('fbStatus');
-
-function openFeedback(){
-  fbOverlay.classList.add('open');
-  document.getElementById('fbMessage').focus();
-}
-function closeFeedback(){ fbOverlay.classList.remove('open'); }
-
-fbOpenBtn.addEventListener('click', openFeedback);
-fbClose.addEventListener('click', closeFeedback);
-fbOverlay.addEventListener('click', e=>{ if(e.target === fbOverlay) closeFeedback(); });
-document.addEventListener('keydown', e=>{ if(e.key === 'Escape' && fbOverlay.classList.contains('open')) closeFeedback(); });
-
-fbForm.addEventListener('submit', async e=>{
-  e.preventDefault();
-
-  // Enkel honeypot: usynlig felt for mennesker, ofte utfylt av bots.
-  if(document.getElementById('fbWebsite').value.trim()){
-    fbForm.reset();
-    fbStatus.className = 'fb-status success';
-    fbStatus.textContent = 'Takk! Vi har mottatt meldingen din.';
-    setTimeout(closeFeedback, 1400);
-    return;
-  }
-
-  const type = document.getElementById('fbType').value;
-  const melding = document.getElementById('fbMessage').value.trim().slice(0,2000);
-  const kontakt = document.getElementById('fbContact').value.trim().slice(0,200);
-
-  if(!melding){
-    fbStatus.className = 'fb-status error';
-    fbStatus.textContent = 'Skriv gjerne litt om hva du tenker på først.';
-    return;
-  }
-
-  fbSubmitBtn.disabled = true;
-  fbStatus.className = 'fb-status';
-  fbStatus.textContent = 'Sender...';
-
-  const label = FEEDBACK_TYPE_LABELS[type] || type;
-  const doc = {
-    type,
-    melding,
-    side: location.pathname,
-    opprettet: Date.now(),
-    to: ['kontakt@lrnify.no'],
-    message: {
-      subject: 'LRNify – ' + label,
-      text: [
-        label,
-        '',
-        melding,
-        '',
-        kontakt ? 'Svar til: ' + kontakt : 'Ingen e-post oppgitt for svar.',
-        'Side: ' + location.href
-      ].join('\n')
-    }
-  };
-  if(kontakt) doc.kontakt = kontakt;
-
-  try{
-    await initFeedbackDb().collection('feedback').add(doc);
-    fbForm.reset();
-    fbStatus.className = 'fb-status success';
-    fbStatus.textContent = 'Takk! Vi har mottatt meldingen din. 🎉';
-    setTimeout(closeFeedback, 1600);
-  }catch(err){
-    fbStatus.className = 'fb-status error';
-    fbStatus.innerHTML = 'Fikk ikke sendt akkurat nå. Prøv igjen, eller send e-post direkte til <a href="mailto:kontakt@lrnify.no">kontakt@lrnify.no</a>.';
-  }finally{
-    fbSubmitBtn.disabled = false;
-  }
-});
 </script>
 </body>
 </html>
