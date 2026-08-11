@@ -187,9 +187,17 @@ pålogging blir slått av igjen.
   å sende e-post til andre adresser.
 * Alle andre samlinger er stengt.
 
-## Forslagsskjemaet på forsiden (`feedback`)
+## Forslagsskjemaet på forsiden (`feedback`) — foreløpig satt på pause
 
-Knappen "Send inn forslag →" på `index.html` skriver ett dokument til
+**Status:** knappen "Send inn forslag →" på `index.html` er nå en enkel
+`mailto:kontakt@lrnify.no`-lenke, ikke skjemaet beskrevet under. Firestore-
+skjemaet under ble bygget, men koblet fra fordi oppsettet av e-postutsending
+(Trigger Email-utvidelsen) krever et Google-prosjekt du er komfortabel med at
+er offentlig knyttet til deg — se avsnittet om det til slutt her. Koden for
+skjemaet ligger fortsatt i git-historikken og kan kobles inn igjen når det er
+avklart.
+
+Knappen "Send inn forslag →" skrev ett dokument til
 Firestore-samlingen `feedback` per innsending: `{ type, melding, kontakt?,
 side, opprettet, to, message: { subject, text } }`. Ingen pålogging kreves —
 sikkerheten ligger i at reglene låser formen på dokumentet og alltid tvinger
@@ -224,6 +232,31 @@ offisielle utvidelse [«Trigger Email from Firestore»](https://extensions.dev/e
 
 Uten dette steget fungerer skjemaet likevel: innsendinger lagres trygt i
 Firestore, du finner dem bare da kun i konsollen, ikke i innboksen.
+
+### Prosjektet `poll-c6bd2` eies av en privat Google-konto
+
+Det er verdt å rydde opp i før dette (eller noe annet i prosjektet) vokser:
+prosjektet ble opprettet på en personlig konto, og eierskap/fakturering i
+Firebase/Google Cloud Console er ikke noe besøkende på nettsiden ser — men
+alle med tilgang til konsollen (fremtidige medhjelpere, support) ser det.
+To måter å rydde i det på, uten å måtte gjenskape prosjektet eller endre
+noe i koden (API-nøkler/prosjekt-ID forblir de samme):
+
+1. **Overfør eierskap av det eksisterende prosjektet** til en ny, dedikert
+   Google-konto (f.eks. `lrnify.dev@gmail.com` eller lignende, ikke koblet
+   til privatpersonen). Gjøres via Firebase Console → Project settings →
+   Users and permissions → legg til den nye kontoen som Owner → fjern den
+   private kontoen (eller behold den som Editor om ønskelig). Ren og varig
+   løsning, lav innsats siden ingenting annet i prosjektet trenger å flyttes.
+2. **Løs bare selve e-post-avsenderen separat**, uten å røre prosjekteier­
+   skapet: bruk en transaksjonell e-posttjeneste (Brevo/Resend/Mailgun har
+   gratisnivåer) med en avsenderadresse verifisert mot `lrnify.no`-domenet,
+   i stedet for å legge inn et personlig Gmail-passord som SMTP-legitimasjon
+   i utvidelsen. Løser kun bekymringen om at et privat Gmail-navn skal dukke
+   opp som avsender i e-postene — ikke det bredere eierskaps-spørsmålet.
+
+Anbefaling: gjør begge — punkt 1 når det er tid til det (det haster ikke),
+og pass uansett på å ikke bruke personlig Gmail-SMTP i punkt 4 i steget over.
 
 ## Det reglene ikke løser
 
