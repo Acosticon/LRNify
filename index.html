@@ -710,12 +710,18 @@ scrim.addEventListener('click',closeMenu);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
 </script>
 
-<!-- ===== LÆRERINNLOGGING =====
-     (Forslagsskjemaet over bruker compat-buildene; denne modulen bruker de
-     modulære. To kopier er ikke ideelt, men de deler prosjekt og sesjon, og
-     alternativet er å skrive om skjemaet.) -->
+<!-- ===== LÆRERINNLOGGING ===== -->
 <script src="/auth/lrnify-auth.js"></script>
 <script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
 LRNifyAuth.init(FIREBASE_CONFIG);
 const iToppen = document.getElementById('larerInnlogging');
 const iMenyen = document.getElementById('larerInnloggingMeny');

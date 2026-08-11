@@ -18,6 +18,7 @@ egne Firebase-stier med egne feltkrav, se avsnittet om `opprettRom` under.
 | `../index.html` | Forsiden — innloggingsknapp i toppen (og i menyskuffen på telefon). |
 | `../tools/klassekart/index.html` | Klassekart — lagrer og henter klasselister. |
 | `../tools/elevvelger/index.html` | Elevvelger — henter klasseliste i stedet for å taste navn. |
+| `../konto/index.html` | Profilside — endre navn, se/slette lagrede klasser og rom, slette hele kontoen. |
 | `../firebase/database.rules.json` | Oppdaterte RTDB-regler (`users/`, `resultater/`, og nye felt på `rooms/`). Samme fil som allerede styrer resten av LRNify sine Firebase-regler — se `firebase/README.md`. |
 
 Det finnes ingen egen `firebase-rules.json` i denne mappa: reglene ligger
@@ -120,6 +121,23 @@ sidelast. (Unntaket er Temaspinner sin tavlemodus, som er en egen,
 dokumentert funksjon — se `firebase/README.md` — ikke noe denne modulen skal
 etterligne andre steder.)
 
+**`slettHeleKontoen()` sletter databasen FØR selve innloggingen, aldri
+omvendt.** Fjerner du Firebase-brukeren først, mister du samtidig
+`auth.uid`-en reglene bruker til å avgjøre om du eier dataene — resten av
+slettingen ville blitt avvist. `/konto/`-sida ber derfor alltid om
+`reautentiser()` FØR den i det hele tatt viser «slett»-knappen som aktiv,
+i stedet for å reagere på `auth/requires-recent-login` etterpå: skjer
+feilen midtveis (økta utløper akkurat mens brukeren leser advarselen), er
+databasedata allerede slettet mens selve kontoen består — ikke katastrofalt
+(dataene er borte, som var poenget), men et unødvendig unntak å designe seg
+inn i når det er billig å unngå.
+
+**Ingen «endre passord».** Vurdert og bevisst utelatt — samme
+`requires-recent-login`-krav som sletting, men uten den opplagte
+brukerforventningen om at det haster («jeg har allerede glemt hva jeg skrev
+sist»). `tilbakestillPassord()` dekker det reelle behovet (glemt passord)
+uten ekstra reautentiseringsflyt i grensesnittet.
+
 ## API
 
 Alt henger på det globale objektet `LRNifyAuth`:
@@ -140,6 +158,10 @@ Alt henger på det globale objektet `LRNifyAuth`:
 | `lagreKlasse({klasseId?, navn, trinn?, elever})` | Lagrer en klasseliste. Uten `klasseId` opprettes en ny. Returnerer `{ klasseId }`. |
 | `hentKlasser()` | Lærerens lagrede klasser, nyeste først. Hver har `{ klasseId, navn, trinn, opprettet, elever }`. |
 | `slettKlasse(klasseId)` | Sletter en lagret klasse. |
+| `hentAlleMineRom()` | Som `hentMineRom()`, men på tvers av alle spill — til en profilside, ikke inne i ett enkelt spill. |
+| `oppdaterNavn(navn)` | Endrer visningsnavnet. Krever IKKE fersk innlogging (bare passord/e-post/sletting gjør det). |
+| `reautentiser(passord?)` | Bekrefter identiteten på nytt — Google-popup for Google-kontoer, `passord` påkrevd for e-post-kontoer. Kall denne rett før `slettHeleKontoen()`. |
+| `slettHeleKontoen()` | Sletter ALT — rom, klasser, innstillinger, profil, og selve innloggingen. Kan ikke angres. Kaster `auth/requires-recent-login` uendret hvis økta ikke var fersk nok. |
 | `mountLoginWidget(container, valg?)` | Tegner en kompakt login-knapp/brukerlinje inn i `container`. Ikke i den opprinnelige kravlista, men nødvendig for UI-kravet — se under. |
 
 `opprettRom` tar et valgfritt tredje argument, `{ romkode }`, så et spill kan

@@ -392,5 +392,33 @@ check('peker under ugyldig spillnavn', false, db(medIndeks, LARER).write('/users
 check('eier deler rommet med en kollega (forberedt, ikke i bruk i v1-UI)', true, db({ rooms: { ABC123: eidPollMedEier } }, LARER).write('/rooms/ABC123/delteUider/' + LARER2.uid, true));
 check('gammelt rom uten eierUid fungerer fortsatt uendret', true, db({}, null).write('/rooms/ABC123', basePoll));
 
+/* ── /konto/: oppdaterNavn og slettHeleKontoen (LRNifyAuth) ────────────────
+   oppdaterNavn skriver KUN navn-feltet direkte, ikke hele profile-objektet
+   — verifiserer at det målrettede skrivet fortsatt validerer selv om
+   epost/opprettet ikke er med i den enkelte operasjonen (de ligger jo
+   allerede i eksisterende data). slettHeleKontoen sletter tre separate
+   stier i rekkefølge (rom, users/{uid}, resultater/{uid}) — hver må være
+   lov for eieren og forbudt for alle andre. */
+console.log('--- konto: oppdaterNavn (målrettet leaf-write) ---');
+const profilKlasseRom = {
+  users: { [LARER.uid]: {
+    profile: { navn: 'Kari', epost: 'kari@skole.no', opprettet: now },
+    rom: { klassepoll: { ABCD: { opprettet: now } } }
+  } },
+  resultater: { [LARER.uid]: { klassepoll: { o1: { dato: now, romkode: 'ABCD' } } } },
+  rooms: { ABCD: { question: 'q', options: ['a', 'b'], votes: { 0: 0, 1: 0 }, open: true, createdAt: now, owner: LARER.uid, eierUid: LARER.uid, spill: 'klassepoll' } }
+};
+check('lærer endrer bare navn-feltet', true, db(profilKlasseRom, LARER).write('/users/' + LARER.uid + '/profile/navn', 'Kari Ny'));
+check('for langt navn avvist', false, db(profilKlasseRom, LARER).write('/users/' + LARER.uid + '/profile/navn', 'x'.repeat(100)));
+check('annen lærer kan ikke endre mitt navn', false, db(profilKlasseRom, LARER2).write('/users/' + LARER.uid + '/profile/navn', 'Hacket'));
+
+console.log('--- konto: slettHeleKontoen (rom → users → resultater) ---');
+check('lærer sletter sitt eget rom', true, db(profilKlasseRom, LARER).write('/rooms/ABCD', null));
+check('lærer sletter hele users/{uid}', true, db(profilKlasseRom, LARER).write('/users/' + LARER.uid, null));
+check('lærer sletter hele resultater/{uid}', true, db(profilKlasseRom, LARER).write('/resultater/' + LARER.uid, null));
+check('annen lærer kan ikke slette mitt rom', false, db(profilKlasseRom, LARER2).write('/rooms/ABCD', null));
+check('annen lærer kan ikke slette min konto-data', false, db(profilKlasseRom, LARER2).write('/users/' + LARER.uid, null));
+check('annen lærer kan ikke slette mine resultater', false, db(profilKlasseRom, LARER2).write('/resultater/' + LARER.uid, null));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

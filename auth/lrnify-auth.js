@@ -74,6 +74,10 @@
         updateProfile: authMod.updateProfile,
         onAuthStateChanged: authMod.onAuthStateChanged,
         signOut: authMod.signOut,
+        reauthenticateWithPopup: authMod.reauthenticateWithPopup,
+        reauthenticateWithCredential: authMod.reauthenticateWithCredential,
+        EmailAuthProvider: authMod.EmailAuthProvider,
+        deleteUser: authMod.deleteUser,
         // database
         ref: dbMod.ref,
         set: dbMod.set,
@@ -102,10 +106,12 @@
   }
 
   function tilBruker(firebaseUser) {
+    const google = (firebaseUser.providerData || []).some(p => p.providerId === 'google.com');
     return {
       uid: firebaseUser.uid,
       navn: firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'Lærer'),
-      epost: firebaseUser.email || ''
+      epost: firebaseUser.email || '',
+      innloggingsmetode: google ? 'google' : 'epost'
     };
   }
 
@@ -312,6 +318,34 @@
   }
 
   /**
+   * Som hentMineRom(), men på tvers av ALLE spill — til bruk på en
+   * profilside, ikke inne i ett enkelt spill (der er man alltid ute etter
+   * «mine rom i DETTE spillet», derfor er hentMineRom() over fortsatt den
+   * som skal brukes der).
+   * @returns {Promise<Array<object & {kode: string, spill: string}>>}
+   */
+  async function hentAlleMineRom() {
+    kreverInit();
+    const uid = getCurrentUid();
+    if (!uid) return [];
+
+    const snap = await FB.get(FB.ref(FB.db, 'users/' + uid + '/rom'));
+    if (!snap.exists()) return [];
+
+    const pekere = [];
+    snap.forEach(perSpill => {
+      perSpill.forEach(barn => { pekere.push({ kode: barn.key }); });
+    });
+
+    const rom = await Promise.all(pekere.map(async p => {
+      const romSnap = await FB.get(FB.ref(FB.db, 'rooms/' + p.kode));
+      if (!romSnap.exists()) return null;
+      return Object.assign({ kode: p.kode }, romSnap.val());
+    }));
+    return rom.filter(Boolean).sort((a, b) => (b.opprettet || b.createdAt || 0) - (a.opprettet || a.createdAt || 0));
+  }
+
+  /**
    * Avslutter et rom læreren eier: sletter både rommet og pekeren i
    * lærerens indeks, atomisk. Uten dette blir pekeren liggende igjen som
    * en «død» oppføring — hentMineRom() filtrerer den riktignok bort, men
@@ -429,6 +463,84 @@
   }
 
   /* ══════════════════════════════════════════════════════════════════════
+     PROFIL OG KONTO
+     ══════════════════════════════════════════════════════════════════════ */
+
+  /**
+   * Endrer visningsnavnet. Krever IKKE fersk innlogging — Firebase reserverer
+   * det kravet for sensitive endringer (passord, e-post, sletting), og
+   * displayName er ikke en av dem.
+   * @param {string} navn
+   */
+  async function oppdaterNavn(navn) {
+    kreverInit();
+    if (!FB.auth.currentUser) throw new Error('Du må være innlogget.');
+    navn = String(navn || '').trim();
+    if (!navn) throw new Error('Navnet kan ikke være tomt.');
+    if (navn.length > 60) throw new Error('Navnet er for langt (maks 60 tegn).');
+
+    await FB.updateProfile(FB.auth.currentUser, { displayName: navn });
+    await FB.set(FB.ref(FB.db, 'users/' + FB.auth.currentUser.uid + '/profile/navn'), navn);
+
+    // updateProfile endrer auth.currentUser i det stille — ingen
+    // onAuthStateChanged-hendelse fyres av dette. Oppdater derfor selv, så
+    // widgeten og resten av siden viser det nye navnet med én gang.
+    gjeldendeBruker = tilBruker(FB.auth.currentUser);
+    lyttere.forEach(cb => { try { cb(gjeldendeBruker); } catch (e) { /* ikke vårt problem */ } });
+  }
+
+  /**
+   * Bekrefter identiteten til innlogget bruker på nytt — Firebase krever
+   * dette rett før en sensitiv operasjon (i denne modulen: sletting av
+   * kontoen) hvis økta ikke er «fersk». Uten dette ville en lærer som logget
+   * inn for lenge siden få «requires-recent-login» og ikke forstå hvorfor.
+   *
+   * @param {string} [passord]  Påkrevd for e-post/passord-kontoer. Ignoreres
+   *                            (og trengs ikke) for Google-kontoer, som i
+   *                            stedet ber om en ny Google-popup.
+   */
+  async function reautentiser(passord) {
+    kreverInit();
+    const bruker = FB.auth.currentUser;
+    if (!bruker) throw new Error('Du må være innlogget.');
+
+    if (gjeldendeBruker && gjeldendeBruker.innloggingsmetode === 'google') {
+      await FB.reauthenticateWithPopup(bruker, new FB.GoogleAuthProvider());
+    } else {
+      if (!passord) throw new Error('Skriv inn passordet ditt for å bekrefte.');
+      const cred = FB.EmailAuthProvider.credential(bruker.email, passord);
+      await FB.reauthenticateWithCredential(bruker, cred);
+    }
+  }
+
+  /**
+   * Sletter ALT — lagrede klasser, rom, innstillinger, profil, og selve
+   * innloggingen. Kan ikke angres. Krever fersk innlogging (se
+   * reautentiser()); kaster videre Firebase sin 'auth/requires-recent-login'
+   * uendret hvis økta likevel ikke var fersk nok, slik at kalleren kan be om
+   * bekreftelse på nytt og prøve igjen.
+   *
+   * Rekkefølgen er ikke tilfeldig: databasedataene slettes MENS vi fortsatt
+   * er innlogget (alt annet ville reglene avvist), og selve
+   * innloggingskontoen slettes sist — fjernes den før, mister vi tilgangen
+   * til å slette resten.
+   */
+  async function slettHeleKontoen() {
+    kreverInit();
+    const uid = getCurrentUid();
+    if (!uid) throw new Error('Du må være innlogget.');
+
+    const rom = await hentAlleMineRom();
+    await Promise.all(rom.map(r =>
+      FB.set(FB.ref(FB.db, 'rooms/' + r.kode), null).catch(() => { /* allerede borte — fint */ })
+    ));
+
+    await FB.set(FB.ref(FB.db, 'users/' + uid), null);
+    await FB.set(FB.ref(FB.db, 'resultater/' + uid), null);
+    await FB.deleteUser(FB.auth.currentUser);
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
      UI-KOMPONENT
      Liten, selvstendig login-knapp + modal. Ingen eksterne CSS-rammeverk —
      stilene injiseres i <head> første gang mountLoginWidget() kalles, og
@@ -488,7 +600,11 @@
         box-shadow:var(--lrnauth-skygge,3px 3px 0) var(--lrnauth-ink,#1a1a1a);
         font-weight:800; font-size:.9rem; color:var(--lrnauth-ink,#1a1a1a);
       }
-      .lrnauth-brukerlinje .lrnauth-navn{ max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .lrnauth-brukerlinje .lrnauth-navn{
+        max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        color:var(--lrnauth-ink,#1a1a1a); text-decoration:none;
+      }
+      .lrnauth-brukerlinje .lrnauth-navn:hover{ text-decoration:underline; }
       .lrnauth-brukerlinje button{
         border:2px solid var(--lrnauth-ink,#1a1a1a); border-radius:10px; background:#fff;
         font-family:'Nunito',sans-serif;
@@ -572,8 +688,10 @@
       if (bruker) {
         const linje = document.createElement('div');
         linje.className = 'lrnauth-brukerlinje';
-        const navn = document.createElement('span');
+        const navn = document.createElement('a');
         navn.className = 'lrnauth-navn';
+        navn.href = '/konto/';
+        navn.title = 'Min konto';
         navn.textContent = '👋 ' + (valg.tekstInnlogget || bruker.navn);
         const utKnapp = document.createElement('button');
         utKnapp.type = 'button';
@@ -725,10 +843,14 @@
     getCurrentUid,
     opprettRom,
     hentMineRom,
+    hentAlleMineRom,
     avsluttRom,
     lagreKlasse,
     hentKlasser,
     slettKlasse,
+    oppdaterNavn,
+    reautentiser,
+    slettHeleKontoen,
     mountLoginWidget
   };
 })(window);
