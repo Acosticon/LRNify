@@ -4,6 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Kartografen – hele verden i ett spill</title>
+<meta name="description" content="Klikk på riktig fylke eller land på kartet – Norge, Europa, Afrika, Asia, Amerika og Oseania i ett spill. Fylker, land, hovedsteder og flagg, med ledertavle og passbok.">
+<link rel="canonical" href="https://lrnify.no/games/geografi/kartografen/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Kartografen – LRNify">
+<meta property="og:description" content="Klikk på riktig fylke eller land på kartet – Norge, Europa, Afrika, Asia, Amerika og Oseania i ett spill. Fylker, land, hovedsteder og flagg, med ledertavle og passbok.">
+<meta property="og:image" content="https://lrnify.no/media/cards/kartografen.png">
+<meta property="og:url" content="https://lrnify.no/games/geografi/kartografen/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kartografen – LRNify">
+<meta name="twitter:description" content="Klikk på riktig fylke eller land på kartet – Norge, Europa, Afrika, Asia, Amerika og Oseania i ett spill. Fylker, land, hovedsteder og flagg, med ledertavle og passbok.">
+<meta name="twitter:image" content="https://lrnify.no/media/cards/kartografen.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -1358,6 +1371,13 @@ document.querySelectorAll('#endOverlay .tab').forEach(t=>t.addEventListener('cli
 /* ---------------- oppstart ---------------- */
 renderHub();
 $('hubScreen').classList.remove('hidden');
+/* ?region=europa åpner oppsettskjermen for den regionen direkte – brukt av
+   viderekoblingen fra det nedlagte spillet Land i Europa, og fint for
+   lærere som vil dele en lenke rett til én region. */
+(function(){
+  const region=new URLSearchParams(location.search).get('region');
+  if(region && REGION_ORDER.includes(region)) openSetup(region);
+})();
 
 /* ---------------- test-hooks ---------------- */
 window.__game={
@@ -1376,5 +1396,6 @@ window.__game={
 })();
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
 </body>
 </html>
