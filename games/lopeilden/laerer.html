@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Løpeilden – lærerveiledning</title>
+<meta name="description" content="Lærerveiledning til Løpeilden: undervisningsopplegg om desinformasjon for ungdomsskole og videregående. Økter, differensiering, refleksjonsspørsmål og vurdering.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --blekk:#1B1714; --papir:#FBF8F4; --papir2:#F2ECE4;
+    --ild:#C2521F; --glo:#B07A12; --tillit:#2C7A6C; --kant:#DDD2C6; --dempet:#6E6259;
+    --fd:'Fraunces',Georgia,serif; --fu:'Inter',system-ui,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--papir);color:var(--blekk);font-family:var(--fu);line-height:1.6;font-size:16px}
+  .ark{max-width:860px;margin:0 auto;padding:3rem 1.25rem 5rem}
+  h1{font-family:var(--fd);font-size:clamp(2.2rem,7vw,3.2rem);line-height:1.05;margin-bottom:.4rem}
+  h2{font-family:var(--fd);font-size:1.6rem;margin:2.5rem 0 .8rem;padding-top:1.2rem;border-top:2px solid var(--kant)}
+  h3{font-size:1.08rem;margin:1.4rem 0 .5rem}
+  p,li{margin-bottom:.6rem}
+  ul,ol{margin-left:1.3rem}
+  a{color:var(--ild)}
+  .stikk{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dempet);margin-bottom:.6rem}
+  .ingress{font-size:1.15rem;color:#443A33;margin-bottom:1.5rem}
+  .fakta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem;margin:1.5rem 0}
+  .fakta div{background:var(--papir2);border:1px solid var(--kant);border-radius:10px;padding:.8rem}
+  .fakta strong{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dempet)}
+  .fakta span{font-size:1rem;font-weight:600}
+  .boks{background:var(--papir2);border:1px solid var(--kant);border-radius:12px;padding:1.2rem;margin:1.2rem 0}
+  .boks.viktig{border-left:4px solid var(--ild);background:#FDF1EB}
+  .boks.tips{border-left:4px solid var(--tillit);background:#EDF6F4}
+  table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.93rem}
+  th,td{text-align:left;padding:.6rem .55rem;border-bottom:1px solid var(--kant);vertical-align:top}
+  th{font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--dempet)}
+  .okt{display:flex;gap:.9rem;margin-bottom:.9rem;align-items:flex-start}
+  .okt-tid{flex:0 0 68px;font-weight:700;color:var(--ild);font-variant-numeric:tabular-nums;font-size:.92rem;padding-top:.1rem}
+  .okt-inn strong{display:block}
+  .okt-inn span{color:var(--dempet);font-size:.93rem}
+  .to-spalter{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
+  .knapper{display:flex;gap:.6rem;flex-wrap:wrap;margin:2rem 0}
+  .knapp{background:var(--ild);color:#fff;text-decoration:none;padding:.7rem 1.3rem;border-radius:9px;font-weight:600;font-size:.95rem}
+  .knapp.sek{background:transparent;color:var(--blekk);border:1px solid var(--kant)}
+  .fot{margin-top:3rem;padding-top:1.2rem;border-top:2px solid var(--kant);color:var(--dempet);font-size:.88rem}
+  @media(max-width:620px){.to-spalter{grid-template-columns:1fr}}
+  @media print{
+    body{background:#fff;font-size:11.5pt}
+    .ark{padding:0;max-width:100%}
+    .knapper{display:none}
+    h2{page-break-after:avoid}
+    .boks,table{page-break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="ark">
+
+  <p class="stikk">Lærerveiledning</p>
+  <h1>Løpeilden</h1>
+  <p class="ingress">Et undervisningsspill om hvordan desinformasjon lages, hvorfor den virker, og hvordan den avsløres. Elevene spiller først som den som sprer et rykte – og må hele veien bytte stol og avsløre noen andre.</p>
+
+  <div class="fakta">
+    <div><strong>Trinn</strong><span>8.–10. og vgs.</span></div>
+    <div><strong>Spilletid</strong><span>20–30 minutter</span></div>
+    <div><strong>Full økt</strong><span>60–90 minutter</span></div>
+    <div><strong>Utstyr</strong><span>Én skjerm per elev eller par</span></div>
+    <div><strong>Fag</strong><span>Samfunnsfag, norsk, KRLE</span></div>
+    <div><strong>Innlogging</strong><span>Ingen</span></div>
+  </div>
+
+  <div class="knapper">
+    <a class="knapp" href="index.html">Åpne spillet</a>
+    <a class="knapp sek" href="kortspill.html">Kortspill til utskrift</a>
+    <a class="knapp sek" href="#" onclick="window.print();return false">Skriv ut denne siden</a>
+  </div>
+
+  <h2>Hva elevene gjør</h2>
+  <p>Spillet foregår i den oppdiktede kommunen <strong>Fagerli</strong>. Eleven har startet et rykte om at garderobene på skolen skal låses. Ryktet er ikke sant. Gjennom seks runder skal det spres.</p>
+  <p>Hver runde har tre slag:</p>
+  <ol>
+    <li><strong>Trekket.</strong> Eleven velger hvordan ryktet skal skyves videre. Ett av valgene er alltid ærlig.</li>
+    <li><strong>Ekkoet.</strong> Nettverket svarer. Et tilfeldig hendelseskort trekkes, og målerne beveger seg.</li>
+    <li><strong>Motgiften.</strong> Eleven bytter stol og skal avsløre den samme teknikken i en <em>annen</em> sak.</li>
+  </ol>
+  <p>Etter hver runde låses et teknikkort opp med navn på teknikken, hvorfor den virker, og tre konkrete måter å oppdage den på. Til slutt kommer et oppgjør: poengsum, hvem som ble rammet, hvilke merker eleven fikk, og refleksjonsspørsmål.</p>
+
+  <div class="boks viktig">
+    <h3>Det viktigste designvalget – og hvorfor du bør nevne det</h3>
+    <p><strong>Man får ikke poeng for å manipulere godt.</strong> De tre målerne (spredning, troverdighet, skade) er fortelling. Den eneste poengsummen som teller, <em>innsiktspoeng</em>, får eleven bare for å avsløre andres triks.</p>
+    <p>Si dette høyt før dere begynner. Da slutter elevene å lete etter «den beste måten å lyge på», og begynner å lete etter mønsteret. Det er hele forskjellen på et spill som lærer bort manipulasjon og et som vaksinerer mot den.</p>
+  </div>
+
+  <h2>De seks teknikkene</h2>
+  <table>
+    <tr><th>Runde</th><th>Teknikk</th><th>Kort forklart</th><th>Motgiften elevene øver på</th></tr>
+    <tr><td>1</td><td><strong>Etterligning</strong></td><td>Gi seg ut for å være en avsender folk stoler på</td><td>Lese brukernavnet tegn for tegn, sjekke kontoens alder og historikk</td></tr>
+    <tr><td>2</td><td><strong>Følelseskroken</strong></td><td>Velge ordene som gir sterkest sinne eller frykt</td><td>Finne det ladede ordet, bytte det ut, se om påstanden står igjen</td></tr>
+    <tr><td>3</td><td><strong>Halvsannheten</strong></td><td>Ekte bilde eller tall i feil sammenheng</td><td>Spørre «når og hvor?» og bruke omvendt bildesøk</td></tr>
+    <tr><td>4</td><td><strong>Falskt flertall</strong></td><td>Få det til å se ut som om alle er enige</td><td>Klikke på kontoene i kommentarfeltet i stedet for å telle dem</td></tr>
+    <tr><td>5</td><td><strong>Mistenkeliggjøring</strong></td><td>Angripe den som sjekker, ikke det som ble sjekket</td><td>Skille svar om saken fra svar om personen</td></tr>
+    <tr><td>6</td><td><strong>Polarisering</strong></td><td>Dele folk i to leirer som slutter å høre på hverandre</td><td>Lete etter dem som ikke passer i noen leir</td></tr>
+  </table>
+
+  <h2>Forslag til økt (90 minutter)</h2>
+  <div class="okt"><span class="okt-tid">0–8</span><div class="okt-inn"><strong>Åpning uten forklaring</strong><span>Skriv én påstand på tavla: «Skolen vurderer å fjerne alle friminutt etter jul.» Be elevene rekke opp hånda hvis de tror det. Be dem så si hva de trenger for å finne ut av det. Skriv ned forslagene. Dere kommer tilbake til lista.</span></div></div>
+  <div class="okt"><span class="okt-tid">8–15</span><div class="okt-inn"><strong>Rammesetting</strong><span>Fortell at alt i spillet er oppdiktet, og at poeng bare gis for å avsløre. Vær tydelig på at spillet ikke handler om ekte politikk eller ekte personer.</span></div></div>
+  <div class="okt"><span class="okt-tid">15–45</span><div class="okt-inn"><strong>Spilling</strong><span>Én skjerm per elev, eller helst per par. Par gir bedre læring fordi de må begrunne valgene for hverandre. Be dem notere ned én ting som overrasket dem.</span></div></div>
+  <div class="okt"><span class="okt-tid">45–60</span><div class="okt-inn"><strong>Sammenlikning</strong><span>Skriv innsiktspoeng og skadetall på tavla. Spør: hvem fikk høyest innsikt med lavest skade? Hvorfor er ikke de to tallene knyttet sammen?</span></div></div>
+  <div class="okt"><span class="okt-tid">60–80</span><div class="okt-inn"><strong>Samtale</strong><span>Bruk refleksjonsspørsmålene under. Ta to eller tre, ikke alle.</span></div></div>
+  <div class="okt"><span class="okt-tid">80–90</span><div class="okt-inn"><strong>Tilbake til tavla</strong><span>Se på lista fra åpningen. Hva ville elevene lagt til nå? Dette er den beste enkeltmålingen på om økta virket.</span></div></div>
+
+  <div class="boks tips">
+    <h3>Har du bare 45 minutter?</h3>
+    <p>Kutt åpningen til to minutter, spill i 25, og bruk resten på tavlesammenlikningen og to refleksjonsspørsmål. Sluttutfordringen i spillet («Nå snur vi spillet») fungerer i seg selv som en oppsummering.</p>
+  </div>
+
+  <h2>Differensiering</h2>
+  <div class="to-spalter">
+    <div>
+      <h3>Ungdomsskole (8.–10.)</h3>
+      <ul>
+        <li>La elevene spille <strong>i par</strong>. Kravet om å bli enige før de klikker, er der læringen skjer.</li>
+        <li>Stopp felles etter runde 3 og la et par forklare et teknikkort for klassen.</li>
+        <li>Bruk de fire første refleksjonsspørsmålene under «For deg selv». De er konkrete og personlige.</li>
+        <li>Etteroppgave: finn ett eksempel på en overskrift i spørsmålsform i en ekte feed. Ikke vurder om den er sann – bare legg merke til formen.</li>
+        <li>Kortspillversjonen fungerer godt som repetisjon uken etter.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Videregående</h3>
+      <ul>
+        <li>La elevene spille <strong>alene</strong> og føre logg over hvert valg og hvorfor de tok det.</li>
+        <li>Legg til begrepene: <em>prebunking</em>, <em>bekreftelsestendens</em>, <em>filterboble</em>, <em>astroturfing</em>. Be dem koble hvert begrep til en runde.</li>
+        <li>Diskuter <strong>plattformansvar</strong>: i runde 4 kan man kjøpe rekkevidde helt lovlig. Hvem har ansvaret da?</li>
+        <li>Skriveoppgave: en argumenterende tekst om påstanden «Rettelsen fikk 40 delinger. Feilen fikk 3 000. Da er det ikke noe poeng i å rette.»</li>
+        <li>Utvidelse: la elevene lage sitt eget teknikkort for en teknikk spillet ikke dekker (f.eks. drukning i støy, konspirasjonskobling, falsk balanse).</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Klassevarianter</h2>
+  <h3>Lagkonkurranse</h3>
+  <p>Del i lag på tre. Ett lag spiller på storskjerm. Laget må bli enige høyt før hvert klikk. De andre lagene skriver ned sitt eget svar på motgiften først – ett poeng til hvert lag som hadde riktig før det ble avslørt.</p>
+
+  <h3>Redaksjonsmøte</h3>
+  <p>Etter runde 5 (der lokalavisa faktasjekker eleven): stopp spillet. Del klassen i en «redaksjon» som skal bestemme om saken skal publiseres, og hva de trenger for å bestemme seg. Ti minutter. Fortsett spillet etterpå.</p>
+
+  <h3>Speilrunden</h3>
+  <p>La to elever spille hver sin gjennomkjøring med motsatt strategi: den ene velger alltid det mest manipulerende, den andre alltid det ærligste. Sammenlikn oppgjørene side ved side. Forskjellen i «Sporet du la igjen» pleier å sitte lenge.</p>
+
+  <h2>Refleksjonsspørsmål</h2>
+  <h3>For deg selv</h3>
+  <ol>
+    <li>Hvilket valg var lettest å ta i spillet? Hvorfor tror du det var det?</li>
+    <li>Var det noe du valgte fordi det ga størst utslag, selv om du visste bedre?</li>
+    <li>Hvilken av de seks teknikkene tror du du selv er mest mottakelig for?</li>
+    <li>Har du delt noe du senere fant ut ikke stemte? Hva gjorde du da?</li>
+  </ol>
+  <h3>I klassen</h3>
+  <ol>
+    <li>Rettelsen fikk 40 delinger. Feilen fikk 3 000. Er det da noe poeng i å rette?</li>
+    <li>Hvem har ansvaret når et rykte sprer seg: den som fant det på, den som delte det videre, eller appen som viste det til flere?</li>
+    <li>I runde 4 kunne du be seks ekte venner kommentere det samme. Er det juks? Hvor går grensa mellom å engasjere og å manipulere?</li>
+    <li>Nora fikk klippet et sitat. Hva burde skolen gjort dagen etter?</li>
+    <li>Finnes det tilfeller der «bare å stille spørsmål» er helt greit? Hva er forskjellen?</li>
+    <li>Hva ville skjedd hvis alle på trinnet brukte de tre sjekkene fra spillet i én uke?</li>
+  </ol>
+
+  <h2>Koblinger til læreplanen</h2>
+  <p>Spillet arbeider direkte med det tverrfaglige temaet <strong>demokrati og medborgerskap</strong> og med den delen av overordnet del som handler om kritisk tenkning og etisk bevissthet.</p>
+  <p>Aktuelle kompetansemål å knytte opplegget til (formuleringene er forkortet – slå opp den fullstendige ordlyden på <a href="https://www.udir.no/lk20/">udir.no</a> før du fører det opp i planen din):</p>
+  <ul>
+    <li><strong>Samfunnsfag, 10. trinn:</strong> vurdere hvordan ulike kilder gir informasjon om et samfunnsfaglig tema, og reflektere over hvordan algoritmer, ensrettede kilder eller mangel på kilder kan prege forståelsen vår.</li>
+    <li><strong>Samfunnsfag, 10. trinn:</strong> utforske og reflektere over egne digitale spor, og over retten til privatliv.</li>
+    <li><strong>Norsk, 10. trinn:</strong> bruke kilder på en kritisk måte og vise til kilder på en etterrettelig måte.</li>
+    <li><strong>Samfunnskunnskap (vgs.):</strong> utforske og presentere dagsaktuelle tema ved bruk av samfunnsfaglige metoder og kilder, og vurdere hvordan meninger dannes og påvirkes.</li>
+    <li><strong>Norsk (vgs.):</strong> bruke retorisk kunnskap til å analysere og vurdere tekster.</li>
+  </ul>
+
+  <h2>Vurdering</h2>
+  <p>Spillets poengsum egner seg <em>ikke</em> til karaktersetting. Den måler hvor raskt eleven fant riktig svar i seks flervalgsoppgaver, ikke forståelse. Bruk den som samtalestarter.</p>
+  <p>Vil du ha noe å vurdere, be om ett av disse i stedet:</p>
+  <ul>
+    <li><strong>Teknikkortet.</strong> Eleven lager sitt eget kort for en teknikk spillet ikke dekker: navn, hvorfor det virker, tre måter å oppdage det på. Avslører forståelse på en helt annen måte enn et kryss.</li>
+    <li><strong>Avsløringsloggen.</strong> Eleven finner tre poster i sin egen hverdag (ikke nødvendigvis falske) og beskriver hvilke virkemidler som er i bruk.</li>
+    <li><strong>Rettelsen.</strong> Eleven skriver rettelsen ryktet i spillet burde fått: hva som var galt, hva som stemmer, og hvordan man beklager uten å bortforklare.</li>
+  </ul>
+
+  <h2>Ting som kan gå galt</h2>
+  <div class="boks">
+    <p><strong>«Dette er jo bare en oppskrift på hvordan man lyger.»</strong><br>
+    Det er den viktigste innvendingen, og den er verdt å ta på alvor i klassen. Svaret ligger i forskningen på prebunking: å møte en svekket versjon av et manipulasjonsgrep <em>før</em> man møter det i det fri, gjør folk bedre til å kjenne det igjen. Derfor gir spillet null poeng for manipulasjon, viser alltid konsekvensene for navngitte personer, og navngir teknikken rett etterpå.</p>
+    <p><strong>Elever som vil «vinne» ved å maksimere spredning.</strong><br>
+    La dem. Sammenlikn så oppgjøret deres med en som spilte ærlig. Skadeledgeren gjør poenget bedre enn du klarer.</p>
+    <p><strong>Elever som kjenner seg igjen i offerrollen.</strong><br>
+    Noen har vært utsatt for rykter selv. Si på forhånd at man kan sitte over uten å måtte forklare hvorfor, og ha en plan for hvem eleven kan snakke med etterpå.</p>
+    <p><strong>Sammenlikning med ekte politikk.</strong><br>
+    Spillet unngår ekte politiske konflikter med vilje. Kommer klassen dit av seg selv, styr samtalen mot <em>teknikken</em> og ikke mot standpunktet: «hvilket grep er i bruk her?» virker langt bedre enn «hvem har rett?».</p>
+  </div>
+
+  <h2>Om innholdet</h2>
+  <p>Alt i spillet er oppdiktet: kommunen Fagerli, lokalavisa Fagerli-Nytt, appene Snutt og Ringen, faktasjekktjenesten Sjekket.no og samtlige personer. Det er et bevisst valg – elevene skal øve på å kjenne igjen <em>formen</em>, ikke lære utenat en påstand om noe som finnes.</p>
+  <p>Vil du lage din egen versjon med saker fra din egen skole? Alt innhold ligger i fila <code>content.js</code>. Bytt ut tekstene der, så tilpasser resten av spillet seg.</p>
+
+  <div class="knapper">
+    <a class="knapp" href="index.html">Åpne spillet</a>
+    <a class="knapp sek" href="kortspill.html">Kortspill til utskrift</a>
+  </div>
+
+  <p class="fot">Løpeilden · LRNify · Gratis å bruke i undervisning. Alle personer, steder og saker er oppdiktet.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Løpeilden – et spill om desinformasjon</title>
+  <meta name="description" content="Undervisningsspill for ungdomsskole og videregående. Du sprer et rykte i den oppdiktede kommunen Fagerli – og må avsløre desinformasjon underveis. 20–30 minutter.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ─── STARTSKJERM ────────────────────────────────── -->
+  <main id="skjerm-start" class="skjerm aktiv">
+    <div class="start-inner">
+      <p class="start-eyebrow">Et spill om desinformasjon</p>
+      <h1 class="start-tittel">Løpe<em>ilden</em></h1>
+      <p class="start-under">
+        Et rykte tar fyr i den lille kommunen Fagerli.<br>
+        Du er den som tenner det – og den som må slukke det.
+      </p>
+
+      <div class="start-slag">
+        <div class="slag-boks"><span>🔥</span><strong>Trekket</strong><small>Du velger hvordan ryktet skyves videre</small></div>
+        <div class="slag-boks"><span>📡</span><strong>Ekkoet</strong><small>Nettverket svarer, og noen betaler</small></div>
+        <div class="slag-boks"><span>🛡️</span><strong>Motgiften</strong><small>Du bytter stol og avslører et annet triks</small></div>
+      </div>
+
+      <p class="start-advarsel">
+        Alt i spillet er oppdiktet. Fagerli finnes ikke, og ingen av personene er ekte.
+        Teknikkene er derimot ekte – og det er dem du skal lære å kjenne igjen.
+      </p>
+
+      <div id="fortsett-banner" class="fortsett-banner" hidden>
+        <p class="fortsett-tekst"></p>
+        <div class="fortsett-knapper">
+          <button id="btn-fortsett" class="btn-primar btn-liten">Fortsett</button>
+          <button id="btn-forkast" class="btn-sekundar btn-liten">Start på nytt</button>
+        </div>
+      </div>
+
+      <div class="navn-felt-wrap">
+        <label class="navn-etikett" for="navn-felt">Hva heter du i spillet?</label>
+        <input id="navn-felt" class="navn-felt" type="text" placeholder="Skriv et navn"
+               maxlength="24" autocomplete="off">
+      </div>
+
+      <button id="btn-start" class="btn-primar btn-stor">Start spillet</button>
+
+      <p class="start-tid">6 runder · 20–30 minutter · ingen innlogging</p>
+      <p class="start-lenker">
+        <a href="laerer.html">Lærerveiledning</a> ·
+        <a href="kortspill.html">Kortspill til utskrift</a> ·
+        <a href="../../index.html">Flere spill på LRNify</a>
+      </p>
+    </div>
+  </main>
+
+  <!-- ─── SPILLSKJERM ────────────────────────────────── -->
+  <div id="skjerm-spill" class="skjerm">
+
+    <header class="topplinje">
+      <div class="malere" aria-label="Tilstand">
+        <div class="maler" data-maler="spredning" role="progressbar"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="5" aria-label="Spredning">
+          <span class="maler-ikon" aria-hidden="true">📡</span>
+          <span class="maler-navn">Spredning</span>
+          <span class="maler-spor"><span class="maler-fyll"></span></span>
+          <span class="maler-tall">5</span>
+        </div>
+        <div class="maler" data-maler="troverdighet" role="progressbar"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="Troverdighet">
+          <span class="maler-ikon" aria-hidden="true">🤝</span>
+          <span class="maler-navn">Troverdighet</span>
+          <span class="maler-spor"><span class="maler-fyll"></span></span>
+          <span class="maler-tall">50</span>
+        </div>
+        <div class="maler er-skade" data-maler="skade" role="progressbar"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Skade">
+          <span class="maler-ikon" aria-hidden="true">💔</span>
+          <span class="maler-navn">Skade</span>
+          <span class="maler-spor"><span class="maler-fyll"></span></span>
+          <span class="maler-tall">0</span>
+        </div>
+      </div>
+
+      <div class="topp-hoyre">
+        <div class="innsikt-boks" title="Den eneste poengsummen som teller">
+          <span class="innsikt-etikett">Innsikt</span>
+          <span id="innsikt-tall" class="innsikt-tall">0</span>
+        </div>
+        <div class="runde-boks">
+          <span class="runde-etikett">Runde</span>
+          <span id="runde-tall" class="runde-teller">1/6</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="slaglinje" aria-hidden="true">
+      <span class="slag-prikk" data-slag="trekk">Trekket</span>
+      <span class="slag-prikk" data-slag="ekko">Ekkoet</span>
+      <span class="slag-prikk" data-slag="motgift">Motgiften</span>
+      <span class="slag-prikk" data-slag="laering">Teknikken</span>
+    </div>
+
+    <div class="spillflate">
+      <section id="scene" class="scene" aria-live="polite"></section>
+      <section id="handling" class="handling" aria-live="polite"></section>
+    </div>
+
+    <footer class="samlingslinje">
+      <span class="samling-etikett">Teknikkort</span>
+      <div id="samling" class="samling"></div>
+    </footer>
+  </div>
+
+  <!-- ─── OPPGJØR ────────────────────────────────────── -->
+  <div id="skjerm-oppgjor" class="skjerm"></div>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
