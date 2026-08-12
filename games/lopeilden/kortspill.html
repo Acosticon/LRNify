@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Løpeilden – kortspill til utskrift</title>
+<meta name="description" content="Utskriftsvennlig bordversjon av Løpeilden: teknikkort, sakskort, hendelseskort og regler. Klipp ut og spill i grupper på 3–6.">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap');
+  :root{
+    --blekk:#1B1714; --papir:#FBF8F4; --papir2:#F2ECE4;
+    --ild:#C2521F; --tillit:#2C7A6C; --glo:#B07A12;
+    --kant:#CFC3B5; --dempet:#6E6259;
+    --fd:'Fraunces',Georgia,serif; --fu:'Inter',system-ui,sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--papir);color:var(--blekk);font-family:var(--fu);line-height:1.55}
+  .ark{max-width:900px;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+
+  h1{font-family:var(--fd);font-size:clamp(2rem,6vw,2.9rem);line-height:1.05;margin-bottom:.3rem}
+  h2{font-family:var(--fd);font-size:1.5rem;margin:2.2rem 0 .7rem;padding-top:1rem;border-top:2px solid var(--kant)}
+  h3{font-size:1.02rem;margin:1.1rem 0 .4rem}
+  p,li{margin-bottom:.55rem}
+  ol,ul{margin-left:1.3rem}
+  a{color:var(--ild)}
+  .stikk{font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dempet)}
+  .ingress{font-size:1.1rem;color:#443A33;margin:.5rem 0 1.2rem}
+
+  .knapper{display:flex;gap:.6rem;flex-wrap:wrap;margin:1.5rem 0 2rem}
+  .knapp{background:var(--ild);color:#fff;text-decoration:none;padding:.7rem 1.3rem;border-radius:9px;font-weight:600;font-size:.95rem;border:none;cursor:pointer;font-family:inherit}
+  .knapp.sek{background:transparent;color:var(--blekk);border:1px solid var(--kant)}
+
+  .boks{background:var(--papir2);border:1px solid var(--kant);border-radius:12px;padding:1.1rem;margin:1rem 0}
+  .boks.tips{border-left:4px solid var(--tillit)}
+  .fakta{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.6rem;margin:1.2rem 0}
+  .fakta div{background:var(--papir2);border:1px solid var(--kant);border-radius:10px;padding:.7rem}
+  .fakta strong{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--dempet)}
+  .fakta span{font-weight:600}
+
+  /* ─── Kortark ─────────────────────────────────────── */
+  .kortark{margin-top:1.5rem}
+  .kortark > h2{border-top:none;padding-top:0}
+  .kortnett{display:grid;grid-template-columns:repeat(3,1fr);gap:4mm}
+  .kortnett.to{grid-template-columns:repeat(2,1fr)}
+
+  .kort{
+    border:1.2pt dashed var(--kant);border-radius:3mm;
+    padding:5mm;min-height:62mm;background:#fff;
+    display:flex;flex-direction:column;
+  }
+  .kort-topp{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:7.5pt;letter-spacing:.1em;text-transform:uppercase;color:var(--dempet);margin-bottom:2mm}
+  .kort-ikon{font-size:15pt;line-height:1}
+  .kort-navn{font-family:var(--fd);font-size:13pt;font-weight:700;line-height:1.15;margin:1mm 0 2mm}
+  .kort-kort{font-size:9pt;font-weight:600;margin-bottom:2mm}
+  .kort-hvorfor{font-size:8pt;color:#4A403A;margin-bottom:2mm}
+  .kort-liste{margin:0 0 0 4mm;font-size:8pt;color:#4A403A}
+  .kort-liste li{margin-bottom:1mm}
+  .kort-fot{margin-top:auto;padding-top:2mm;border-top:1px solid var(--kant);
+    font-size:7pt;color:var(--dempet);letter-spacing:.05em}
+
+  .kort.sak{min-height:38mm}
+  .kort.sak .kort-navn{font-size:11pt}
+  .sak-nr{font-family:var(--fd);font-size:20pt;color:var(--kant);line-height:1}
+  .sak-note{font-size:7.5pt;color:var(--dempet);margin-top:auto;padding-top:2mm}
+
+  .kort.hendelse{min-height:42mm;border-style:dotted}
+  .kort.hendelse .kort-navn{font-size:10.5pt}
+  .hendelse-effekt{font-size:8pt;color:var(--ild);font-weight:600;margin-top:auto;padding-top:2mm}
+
+  .kort.dilemma{min-height:48mm;border-color:var(--glo);border-style:solid}
+  .kort.dilemma .kort-topp{color:var(--glo)}
+
+  /* Poengark */
+  .poengark{width:100%;border-collapse:collapse;font-size:9.5pt}
+  .poengark th,.poengark td{border:1px solid var(--kant);padding:3mm 2mm;text-align:center}
+  .poengark th{background:var(--papir2);font-size:7.5pt;text-transform:uppercase;letter-spacing:.06em;color:var(--dempet)}
+  .poengark td.navn{text-align:left;min-width:34mm}
+  .poengark tr{height:11mm}
+
+  .fot{margin-top:2.5rem;padding-top:1rem;border-top:2px solid var(--kant);color:var(--dempet);font-size:.85rem}
+
+  @media(max-width:700px){ .kortnett{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:480px){ .kortnett,.kortnett.to{grid-template-columns:1fr} }
+
+  @media print{
+    @page{size:A4;margin:10mm}
+    body{background:#fff;font-size:10pt}
+    .ark{padding:0;max-width:100%}
+    .knapper,.skjermbare{display:none}
+    .kortark{page-break-before:always}
+    .kortark:first-of-type{page-break-before:auto}
+    .kortnett{gap:3mm}
+    .kort{page-break-inside:avoid;border-color:#999}
+    h2{page-break-after:avoid}
+    .boks,.poengark{page-break-inside:avoid}
+    a{color:inherit;text-decoration:none}
+  }
+</style>
+</head>
+<body>
+<div class="ark">
+
+  <p class="stikk">Bordversjon · klipp og spill</p>
+  <h1>Løpeilden – kortspillet</h1>
+  <p class="ingress">Samme idé som det digitale spillet, men rundt et bord: én spiller vrir en kjedelig sannhet, resten skal avsløre hvilket grep som ble brukt. Poeng gis bare for å avsløre.</p>
+
+  <div class="fakta">
+    <div><strong>Spillere</strong><span>3–6 per gruppe</span></div>
+    <div><strong>Tid</strong><span>25–35 minutter</span></div>
+    <div><strong>Trinn</strong><span>8.–10. og vgs.</span></div>
+    <div><strong>Utskrift</strong><span>4 A4-ark</span></div>
+  </div>
+
+  <div class="knapper skjermbare">
+    <button class="knapp" onclick="window.print()">Skriv ut kortene</button>
+    <a class="knapp sek" href="index.html">Digital versjon</a>
+    <a class="knapp sek" href="laerer.html">Lærerveiledning</a>
+  </div>
+
+  <div class="boks skjermbare">
+    <h3>Slik skriver du ut</h3>
+    <p>Trykk «Skriv ut kortene». Reglene kommer på første ark, deretter ett ark med teknikkort, ett med sakskort og ett med hendelses- og dilemmakort. Klipp langs de stiplede linjene. Ett sett per gruppe på 3–6 elever.</p>
+    <p>Tips: skriv ut teknikkortene på tykkere papir – de skal ligge framme hele spillet og brukes som oppslagsverk.</p>
+  </div>
+
+  <h2>Regler</h2>
+
+  <h3>Forberedelse</h3>
+  <ol>
+    <li>Legg de <strong>seks teknikkortene</strong> synlig på bordet. Alle skal kunne lese dem hele tiden. De er ikke en hemmelighet – de er fasiten.</li>
+    <li>Stokk <strong>sakskortene</strong> i én bunke og <strong>hendelseskortene</strong> i en annen.</li>
+    <li>Hver spiller trenger papir og blyant, eller poengarket på siste side.</li>
+    <li>Bli enige om hvem som starter som <strong>Spreder</strong>. Alle andre er <strong>Sjekkere</strong>.</li>
+  </ol>
+
+  <h3>En runde</h3>
+  <ol>
+    <li><strong>Saken.</strong> Sprederen trekker et sakskort og leser det høyt. Alle sakskort er sanne og fullstendig kjedelige.</li>
+    <li><strong>Grepet.</strong> Sprederen velger i hemmelighet ett av de seks teknikkortene og får <strong>60 sekunder</strong> på å lage en post ut av saken – muntlig, som om den ble lest opp fra en telefon. Posten skal bruke det valgte grepet.</li>
+    <li><strong>Sjekken.</strong> Sjekkerne skriver hver for seg ned hvilken teknikk de tror ble brukt. Ingen snakker sammen.</li>
+    <li><strong>Avsløringen.</strong> Alle viser svaret samtidig. Sprederen sier hvilket kort det var.
+      <ul>
+        <li>Hver Sjekker med riktig svar: <strong>+2 innsiktspoeng</strong>.</li>
+        <li>Klarte <em>ingen</em> å avsløre grepet: Sprederen får <strong>1 spredningsbrikke</strong> og <strong>1 skadebrikke</strong>.</li>
+        <li>Klarte <em>alle</em> å avsløre det: Sprederen får <strong>+1 innsiktspoeng</strong> for å ha spilt tydelig.</li>
+      </ul>
+    </li>
+    <li><strong>Motgiften.</strong> Sjekkeren til venstre for Sprederen sier høyt <em>én konkret ting</em> man kunne gjort for å sjekke posten i virkeligheten. «Sjekke kilden» teller ikke – det må være noe man kan gjøre på under et minutt. De andre stemmer med tommelen. Godkjent: <strong>+2 innsiktspoeng</strong>.</li>
+    <li><strong>Hendelsen.</strong> Annenhver runde trekkes et hendelseskort. Det leses høyt og gjelder fra nå av.</li>
+    <li>Rollen som Spreder går videre til venstre.</li>
+  </ol>
+
+  <h3>Slutt og oppgjør</h3>
+  <p>Spillet er slutt når alle har vært Spreder <strong>to ganger</strong>.</p>
+  <ol>
+    <li>Tell innsiktspoeng. Flest poeng vinner.</li>
+    <li>Tell skadebrikker. Den med flest leser høyt: <em>«Ryktet mitt gikk lengst. Det er ingen som vet at det kom fra meg – og ingen som vet at det ikke var sant.»</em></li>
+    <li>Ta runden rundt bordet: hver spiller sier <strong>én teknikk de tror de selv går på</strong>.</li>
+  </ol>
+
+  <div class="boks tips">
+    <h3>Hvorfor gir det ikke poeng å lure de andre?</h3>
+    <p>Fordi det er hele poenget. Sprederen tjener ingenting på å manipulere godt – bare en skadebrikke. Alle poeng kommer fra å <em>avsløre</em> og fra å <em>foreslå en sjekk</em>. Nevn dette før dere begynner, ellers bruker elevene runden på å bli flinkere til å lyge.</p>
+  </div>
+
+  <div class="boks">
+    <h3>Varianter</h3>
+    <p><strong>Lettere (8.–9. trinn):</strong> Sprederen trekker teknikkortet tilfeldig i stedet for å velge, og bruk bare fire teknikker: Etterligning, Følelseskroken, Halvsannheten og Falskt flertall.</p>
+    <p><strong>Vanskeligere (vgs.):</strong> Sprederen kan kombinere <em>to</em> teknikker. Sjekkerne må finne begge for full pott, og får ett poeng for én av dem.</p>
+    <p><strong>Skriftlig:</strong> Postene skrives på lapper i stedet for å sies høyt, og legges midt på bordet. Tar lengre tid, men gjør ordvalget mye lettere å analysere etterpå.</p>
+    <p><strong>Mot klokka:</strong> 30 sekunder i stedet for 60. Da forsvinner de forsiktige formuleringene, og grepene blir grovere og lettere å se – bra for en første runde.</p>
+  </div>
+
+  <!-- ─── ARK 2: TEKNIKKORT ────────────────────────── -->
+  <div class="kortark">
+    <h2>Teknikkort <span class="stikk">— klipp ut, legg synlig på bordet</span></h2>
+    <div class="kortnett">
+
+      <div class="kort">
+        <div class="kort-topp"><span>Teknikk 1</span><span class="kort-ikon">🎭</span></div>
+        <p class="kort-navn">Etterligning</p>
+        <p class="kort-kort">Du gir deg ut for å være en avsender folk allerede stoler på.</p>
+        <p class="kort-hvorfor">Virker fordi vi leser navnet, ikke adressen. En logo kjennes igjen på under et halvt sekund.</p>
+        <ul class="kort-liste">
+          <li>Les brukernavnet tegn for tegn</li>
+          <li>Se når kontoen ble opprettet</li>
+          <li>Søk opp den ekte kilden selv</li>
+        </ul>
+        <p class="kort-fot">Løpeilden · LRNify</p>
+      </div>
+
+      <div class="kort">
+        <div class="kort-topp"><span>Teknikk 2</span><span class="kort-ikon">🪝</span></div>
+        <p class="kort-navn">Følelseskroken</p>
+        <p class="kort-kort">Du velger ordene som gir sterkest sinne, frykt eller forakt.</p>
+        <p class="kort-hvorfor">Virker fordi sterke følelser slår ut ettertanken. Sinne er det som deles mest.</p>
+        <ul class="kort-liste">
+          <li>Kjenn etter: blir du rasende?</li>
+          <li>Bytt ladede ord med nøytrale</li>
+          <li>Vent ti sekunder før du deler</li>
+        </ul>
+        <p class="kort-fot">Løpeilden · LRNify</p>
+      </div>
+
+      <div class="kort">
+        <div class="kort-topp"><span>Teknikk 3</span><span class="kort-ikon">🖼️</span></div>
+        <p class="kort-navn">Halvsannheten</p>
+        <p class="kort-kort">Du bruker noe helt ekte – bilde, tall, sitat – i feil sammenheng.</p>
+        <p class="kort-hvorfor">Virker fordi bevis føles ekte. Vi sjekker sjelden hvor og når det kom fra.</p>
+        <ul class="kort-liste">
+          <li>Spør «når og hvor?» først</li>
+          <li>Bruk omvendt bildesøk</li>
+          <li>Tenk på hva som er utenfor kanten</li>
+        </ul>
+        <p class="kort-fot">Løpeilden · LRNify</p>
+      </div>
+
+      <div class="kort">
+        <div class="kort-topp"><span>Teknikk 4</span><span class="kort-ikon">👥</span></div>
+        <p class="kort-navn">Falskt flertall</p>
+        <p class="kort-kort">Du får det til å se ut som om alle er enige med deg.</p>
+        <p class="kort-hvorfor">Virker fordi vi følger flokken når vi er usikre. Ti like kommentarer føles som et folkekrav.</p>
+        <ul class="kort-liste">
+          <li>Klikk deg inn på kontoene</li>
+          <li>Se etter gjentatte formuleringer</li>
+          <li>Tell hvor mange det egentlig er</li>
+        </ul>
+        <p class="kort-fot">Løpeilden · LRNify</p>
+      </div>
+
+      <div class="kort">
+        <div class="kort-topp"><span>Teknikk 5</span><span class="kort-ikon">🫵</span></div>
+        <p class="kort-navn">Mistenkeliggjøring</p>
+        <p class="kort-kort">Du angriper den som sjekker, i stedet for det som ble sjekket.</p>
+        <p class="kort-hvorfor">Virker fordi vi slipper å vurdere innholdet hvis kilden virker råtten.</p>
+        <ul class="kort-liste">
+          <li>Spør: saken eller personen?</li>
+          <li>Merk deg «jeg bare spør»</li>
+          <li>Se om noen svarer på selve funnet</li>
+        </ul>
+        <p class="kort-fot">Løpeilden · LRNify</p>
+      </div>
+
+      <div class="kort">
+        <div class="kort-topp"><span>Teknikk 6</span><span class="kort-ikon">⚡</span></div>
+        <p class="kort-navn">Polarisering</p>
+        <p class="kort-kort">Du deler folk i to leirer som slutter å høre på hverandre.</p>
+        <p class="kort-hvorfor">Virker fordi vi forsvarer laget vårt før vi vurderer fakta.</p>
+        <ul class="kort-liste">
+          <li>Let etter «vi mot dem»-ord</li>
+          <li>Finn ut hva sidene er enige om</li>
+          <li>Les hele sitatet, ikke klippet</li>
+        </ul>
+        <p class="kort-fot">Løpeilden · LRNify</p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── ARK 3: SAKSKORT ──────────────────────────── -->
+  <div class="kortark">
+    <h2>Sakskort <span class="stikk">— alle er sanne og helt kjedelige</span></h2>
+    <div class="kortnett">
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">1</span></div><p class="kort-navn">Skolen har bestilt nye låser til garderobene. De gamle var ødelagte.</p><p class="sak-note">Kilde: referat fra driftsmøtet</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">2</span></div><p class="kort-navn">Kantina bytter leverandør av yoghurt fra nyttår.</p><p class="sak-note">Kilde: oppslag på kantinedøra</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">3</span></div><p class="kort-navn">Bussrute 41 flytter holdeplassen 80 meter nedover veien.</p><p class="sak-note">Kilde: skilt på holdeplassen</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">4</span></div><p class="kort-navn">Fotballaget har fått nye drakter i en annen farge enn før.</p><p class="sak-note">Kilde: bilde på lagets side</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">5</span></div><p class="kort-navn">Biblioteket stenger en time tidligere på fredager i vinter.</p><p class="sak-note">Kilde: åpningstidene på døra</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">6</span></div><p class="kort-navn">Det settes opp et nytt sykkelstativ bak gymsalen.</p><p class="sak-note">Kilde: en gravemaskin</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">7</span></div><p class="kort-navn">Russestyret har flyttet et arrangement fra lørdag til søndag.</p><p class="sak-note">Kilde: melding i gruppa</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">8</span></div><p class="kort-navn">En lærer bytter klasse midt i skoleåret.</p><p class="sak-note">Kilde: beskjed i timen</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">9</span></div><p class="kort-navn">Gymsalen er stengt i to uker fordi gulvet skal slipes.</p><p class="sak-note">Kilde: lapp på døra</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">10</span></div><p class="kort-navn">Skolen tar i bruk et nytt digitalt system for fravær.</p><p class="sak-note">Kilde: e-post til foresatte</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">11</span></div><p class="kort-navn">Idrettslaget øker medlemskontingenten med 50 kroner.</p><p class="sak-note">Kilde: årsmøtet</p></div>
+      <div class="kort sak"><div class="kort-topp"><span>Sak</span><span class="sak-nr">12</span></div><p class="kort-navn">Lokalavisa har lansert ny nettside.</p><p class="sak-note">Kilde: lokalavisa</p></div>
+    </div>
+  </div>
+
+  <!-- ─── ARK 4: HENDELSER OG DILEMMAER ────────────── -->
+  <div class="kortark">
+    <h2>Hendelseskort <span class="stikk">— trekkes annenhver runde</span></h2>
+    <div class="kortnett">
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">🧑‍🏫</span></div><p class="kort-navn">En lærer deler posten i foreldregruppa. Uten å sjekke.</p><p class="hendelse-effekt">Sprederen får 1 ekstra spredningsbrikke denne runden.</p></div>
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">📸</span></div><p class="kort-navn">Noen tar skjermbilde. Nå lever posten videre uansett.</p><p class="hendelse-effekt">Ingen kan kvitte seg med skadebrikker resten av spillet.</p></div>
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">🔍</span></div><p class="kort-navn">Faktasjekkerne merker posten som «mangler dekning».</p><p class="hendelse-effekt">Sprederen mister 1 spredningsbrikke. Alle Sjekkere får +1 innsiktspoeng.</p></div>
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">📈</span></div><p class="kort-navn">Algoritmen tester posten på 200 nye personer.</p><p class="hendelse-effekt">Neste runde er alle poeng doble.</p></div>
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">❓</span></div><p class="kort-navn">Den mest likte kommentaren er på ett ord: «Kilde?»</p><p class="hendelse-effekt">Neste Spreder må oppgi en «kilde» i posten sin.</p></div>
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">🗣️</span></div><p class="kort-navn">Saken diskuteres av folk som aldri så posten. Ryktet har løsnet fra kilden.</p><p class="hendelse-effekt">Alle med minst én skadebrikke får en til.</p></div>
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">🌧️</span></div><p class="kort-navn">Det høljer ned. Hele bygda ser på noe annet i tre timer.</p><p class="hendelse-effekt">Denne runden gis ingen spredningsbrikker.</p></div>
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">✂️</span></div><p class="kort-navn">En annen konto klipper posten og fjerner forbeholdet du hadde skrevet.</p><p class="hendelse-effekt">Sprederen får 1 skadebrikke, uansett om noen avslørte grepet.</p></div>
+      <div class="kort hendelse"><div class="kort-topp"><span>Hendelse</span><span class="kort-ikon">🕵️</span></div><p class="kort-navn">Noen begynner å gjette hvem som står bak kontoen.</p><p class="hendelse-effekt">Sprederen må si posten sin på nytt – nå med eget navn under.</p></div>
+    </div>
+
+    <h2 style="margin-top:2rem">Dilemmakort <span class="stikk">— legg inn når som helst. Ett minutt diskusjon, ingen poeng.</span></h2>
+    <div class="kortnett">
+      <div class="kort dilemma"><div class="kort-topp"><span>Dilemma</span><span class="kort-ikon">⚖️</span></div><p class="kort-navn">Rettelsen fikk 40 delinger. Feilen fikk 3 000.</p><p class="kort-kort">Er det da noe poeng i å rette?</p><p class="kort-fot">Ett minutt. Alle skal si noe.</p></div>
+      <div class="kort dilemma"><div class="kort-topp"><span>Dilemma</span><span class="kort-ikon">⚖️</span></div><p class="kort-navn">Du ber seks ekte venner kommentere det samme.</p><p class="kort-kort">Er det juks? Hvor går grensa mellom å engasjere og å manipulere?</p><p class="kort-fot">Ett minutt. Alle skal si noe.</p></div>
+      <div class="kort dilemma"><div class="kort-topp"><span>Dilemma</span><span class="kort-ikon">⚖️</span></div><p class="kort-navn">Et rykte om en på trinnet sprer seg. Det er ikke sant.</p><p class="kort-kort">Hvem har ansvaret: den som fant det på, den som delte, eller appen som viste det til flere?</p><p class="kort-fot">Ett minutt. Alle skal si noe.</p></div>
+    </div>
+  </div>
+
+  <!-- ─── POENGARK ─────────────────────────────────── -->
+  <div class="kortark">
+    <h2>Poengark</h2>
+    <p>Sett én strek per poeng. Innsiktspoeng avgjør hvem som vinner. Skadebrikker avgjør ingenting – de bare står der.</p>
+    <table class="poengark">
+      <tr>
+        <th class="navn">Navn</th>
+        <th>Innsiktspoeng</th>
+        <th>Spredningsbrikker</th>
+        <th>Skadebrikker</th>
+        <th>Teknikken jeg tror jeg går på</th>
+      </tr>
+      <tr><td class="navn">&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="navn">&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="navn">&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="navn">&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="navn">&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+      <tr><td class="navn">&nbsp;</td><td></td><td></td><td></td><td></td></tr>
+    </table>
+    <p style="margin-top:1rem;font-size:.9rem;color:var(--dempet)">
+      Alle saker, personer og steder i Løpeilden er oppdiktet. Løpeilden · LRNify · gratis å bruke i undervisning.
+    </p>
+  </div>
+
+  <p class="fot skjermbare">
+    <a href="index.html">Digital versjon</a> ·
+    <a href="laerer.html">Lærerveiledning</a> ·
+    <a href="../../index.html">Flere spill på LRNify</a>
+  </p>
+</div>
+</body>
+</html>
