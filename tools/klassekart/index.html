@@ -715,7 +715,7 @@ const PULT_B=140, PULT_H=88;   // må stemme med .fdesk i CSS
 const RUTE=20;                 // bakgrunnsrutenett å snappe mot
 const SNAPP=22;                // hvor nær en nabo må være for å feste seg
 const VINKELSTEG=15;           // rotasjon låses til hele 15°
-const NABO=1.2;                // slingringsmonn før to pulter ikke lenger er naboer
+const BEROR=10;                // pikslers slark rundt faktisk kant-kontakt (dekker snap-avrunding, ikke mer)
 
 let modus='gruppe';            // 'gruppe' | 'fri'
 let friPulter=[];              // {id,x,y,rot,elev} – x/y er pultens midtpunkt
@@ -1280,16 +1280,25 @@ function beregnSnapp(pult,x,y){
    oppsett, og gjør at reglene virker likt uansett hvordan rommet er satt. */
 function pultForNavn(n){return friPulter.find(p=>p.elev&&norm(p.elev.name)===n)||null}
 
-/* En pult er 140×88, så en sirkel rundt midtpunktet treffer dårlig: den ville
-   enten miste naboen rett over, eller dra med seg pulten to plasser bortenfor.
-   Vi måler derfor i pultens eget koordinatsystem, med hver sin akse. Da holder
-   det samme målet også når pultene står på skrå, f.eks. i en hestesko. */
-function naboSett(a,b){
+/* «Sitter sammen» = pultene faktisk berører hverandre, ikke bare står i
+   nærheten. Det er det logiske valget her: læreren har allerede et presist
+   verktøy for å sette pulter inntil hverandre (snap mot naboens kant), så
+   reglene bør lese av akkurat det – ikke gjette ut fra en skjønnsmessig
+   avstand. BEROR er bare til for å ta høyde for at et snap kan lande noen
+   få piksler unna eksakt kontakt, ikke for å telle et synlig mellomrom
+   som «sammen».
+
+   En sirkel rundt midtpunktet ville treffe dårlig: den ville enten miste
+   naboen rett over, eller dra med seg pulten to plasser bortenfor. Vi måler
+   derfor kant-avstand i pultens eget koordinatsystem, akse for akse – to
+   rektangler overlapper eller berører hverandre når begge akseprojeksjonene
+   gjør det. Det holder også når pultene står på skrå, som i en hestesko. */
+function beror(a,b){
   const rad=a.rot*Math.PI/180, cos=Math.cos(rad), sin=Math.sin(rad);
   const dx=b.x-a.x, dy=b.y-a.y;
-  return Math.abs(dx*cos+dy*sin)<PULT_B*NABO && Math.abs(-dx*sin+dy*cos)<PULT_H*NABO;
+  return Math.abs(dx*cos+dy*sin)<PULT_B+BEROR && Math.abs(-dx*sin+dy*cos)<PULT_H+BEROR;
 }
-function sitterSammen(a,b){return naboSett(a,b)||naboSett(b,a)}
+function sitterSammen(a,b){return beror(a,b)||beror(b,a)}
 
 function friBrudd(){
   const ut=[];
