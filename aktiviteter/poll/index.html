@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KlassePoll — LRNify</title>
+<meta name="description" content="Lag en avstemning med inntil fire svaralternativer, del romkoden med elevene, og se resultatene oppdateres live.">
+<link rel="canonical" href="https://lrnify.no/aktiviteter/poll/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Poll – LRNify">
+<meta property="og:description" content="Lag en avstemning med inntil fire svaralternativer, del romkoden med elevene, og se resultatene oppdateres live.">
+<meta property="og:image" content="https://lrnify.no/media/aktiviteter/poll.png">
+<meta property="og:url" content="https://lrnify.no/aktiviteter/poll/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Poll – LRNify">
+<meta name="twitter:description" content="Lag en avstemning med inntil fire svaralternativer, del romkoden med elevene, og se resultatene oppdateres live.">
+<meta name="twitter:image" content="https://lrnify.no/media/aktiviteter/poll.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -624,6 +637,15 @@ window.showScreen = id => {
 window.goTeacher = () => showScreen('screen-teacher-setup');
 window.goStudent = () => showScreen('screen-student-join');
 
+/* Delelenken fra "Del"-knappen har romkoden med seg (?kode=ABC123), så en
+   elev slipper å skrive den av tavla. */
+(function prefillKodeFraUrl(){
+  const fraUrl = (new URLSearchParams(location.search).get('kode') || '').trim().toUpperCase();
+  if(!fraUrl) return;
+  goStudent();
+  document.getElementById('joinCodeInput').value = fraUrl;
+})();
+
 /* ══ LÆRER ══ */
 window.createRoom = async () => {
   const question = document.getElementById('questionInput').value.trim();
@@ -719,6 +741,7 @@ function gjenopptaRom(rom) {
 }
 
 function startTeacherListener(code) {
+  if (typeof LRNifyDeling !== 'undefined') LRNifyDeling.setRomkode(code);
   if (currentListener) off(ref(db, `rooms/${currentRoom}`), 'value', currentListener);
   currentListener = onValue(ref(db, `rooms/${code}`), snap => {
     if (!snap.exists()) return;
@@ -896,5 +919,6 @@ async function sendVote(index) {
 }
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
 </body>
 </html>

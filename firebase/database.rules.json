@@ -376,6 +376,19 @@
       }
     },
 
+    "deling": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('admin').val() === true",
+
+      "$dato": {
+        "$side": {
+          "$knapp": {
+            ".write": "$dato.matches(/^20[2-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $side.matches(/^[a-z0-9-]{1,60}$/) && $knapp.matches(/^[a-z0-9-]{1,24}$/) && ((!data.exists() && newData.val() === 1) || newData.val() === data.val() + 1)",
+            ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 100000000"
+          }
+        }
+      }
+    },
+
     "resultater": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
