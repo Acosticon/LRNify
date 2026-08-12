@@ -275,26 +275,26 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
   cursor:default;background:var(--cream);
 }
 .desk.empty:hover{border-color:var(--green);box-shadow:0 0 0 3px var(--green-light)}
-.desk .d-name{
+.desk .d-name,.fdesk .d-name{
   font-size:17px;font-weight:700;
   text-align:center;padding:0 8px;line-height:1.25;color:var(--ink);
   font-family:'Nunito',sans-serif;
 }
-.desk .d-gender{font-size:14px;position:absolute;top:5px;right:7px;color:var(--faint)}
+.desk .d-gender,.fdesk .d-gender{font-size:14px;position:absolute;top:5px;right:7px;color:var(--faint)}
 
 /* Constraint highlights – LRNify farger */
-.desk.warn-together{
+.desk.warn-together,.fdesk.warn-together{
   background:var(--yellow);
   border-color:var(--ink)!important;
   border-width:2.5px!important;
 }
-.desk.warn-together .d-name{color:var(--ink)}
-.desk.warn-apart{
+.desk.warn-together .d-name,.fdesk.warn-together .d-name{color:var(--ink)}
+.desk.warn-apart,.fdesk.warn-apart{
   background:var(--red-light);
   border-color:var(--red)!important;
   border-width:2.5px!important;
 }
-.desk.warn-apart .d-name{color:var(--red)}
+.desk.warn-apart .d-name,.fdesk.warn-apart .d-name{color:var(--red)}
 
 .empty-state{
   display:flex;flex-direction:column;align-items:center;
@@ -309,10 +309,82 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
 
 /* Elevperspektiv: 180° rotasjon av hele griddet = korrekt horisontal+vertikal flip.
    Tekst motroteres så den er lesbar. Data/gIdx røres aldri. */
-.classroom-grid.elev-perspektiv{transform:rotate(180deg)}
+.classroom-grid.elev-perspektiv,
+.fri-canvas.elev-perspektiv{transform:rotate(180deg)}
 .classroom-grid.elev-perspektiv .d-name,
 .classroom-grid.elev-perspektiv .d-gender,
-.classroom-grid.elev-perspektiv .group-number{transform:rotate(180deg)}
+.classroom-grid.elev-perspektiv .group-number,
+.fri-canvas.elev-perspektiv .d-name,
+.fri-canvas.elev-perspektiv .d-gender{transform:rotate(180deg)}
+
+/* ── FRI PLASSERING ──
+   Pultene er egne objekter med fri posisjon; eleven er en egenskap ved pulten.
+   Derfor følger eleven automatisk med når pulten dras – ingen egen logikk. */
+.fri-canvas{
+  position:relative;margin:0 auto;
+  background-color:var(--cream);
+  background-image:radial-gradient(circle,rgba(43,33,24,.14) 1.4px,transparent 1.4px);
+  background-size:20px 20px;
+  border:2px dashed var(--faint);border-radius:var(--rl);
+  touch-action:none;
+}
+.fdesk{
+  position:absolute;width:140px;height:88px;
+  border-radius:var(--r);border:2px solid var(--ink);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  user-select:none;touch-action:none;cursor:grab;
+  overflow:hidden;
+}
+.fdesk:hover{border-color:var(--purple)}
+.fdesk.tom{border-style:dashed;border-color:var(--faint);background:var(--cream)}
+.fdesk.valgt{border-color:var(--purple);box-shadow:0 0 0 3px var(--purple-light)}
+.fdesk.drar{cursor:grabbing;z-index:50;box-shadow:0 6px 0 rgba(43,33,24,.18)}
+.fdesk.snapp-mot{box-shadow:0 0 0 3px var(--yellow)}
+.fdesk.mottak{
+  border-color:var(--green);box-shadow:0 0 0 3px var(--green-light);
+  background:var(--green-light);
+}
+/* Verktøy på valgt pult. Ligger utenfor pulten så den slipper rotasjonen. */
+.pult-verkt{
+  position:absolute;display:flex;gap:6px;z-index:60;
+  transform:translate(-50%,-50%);
+}
+.fri-canvas.elev-perspektiv .pult-verkt{transform:translate(-50%,-50%) rotate(180deg)}
+.pult-verkt button{
+  border:2px solid var(--ink);background:var(--card);border-radius:var(--r);
+  width:36px;height:36px;font-size:16px;cursor:pointer;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 0 var(--ink);padding:0;
+}
+.pult-verkt button:hover{background:var(--yellow)}
+.pult-verkt button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+
+/* ── SIDEPANEL ──
+   Innstillingene hører til rutenett-genereringen, ikke til kartet som helhet.
+   De bor derfor i et panel som bare finnes i Grupper-modus. */
+.side-backdrop{position:fixed;inset:0;background:rgba(43,33,24,.35);z-index:300;display:none}
+.side-backdrop.open{display:block}
+.side-panel{
+  position:fixed;top:0;right:0;bottom:0;width:min(430px,94vw);
+  background:var(--card);border-left:4px solid var(--ink);
+  z-index:301;transform:translateX(100%);
+  transition:transform .18s ease;
+  display:flex;flex-direction:column;
+}
+.side-panel.open{transform:translateX(0)}
+.side-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:18px 22px;border-bottom:3px solid var(--ink);
+  font-family:'Chewy',cursive;font-size:22px;flex-shrink:0;background:var(--yellow);
+}
+.side-body{padding:22px;overflow-y:auto;display:flex;flex-direction:column;gap:22px}
+.side-close{
+  border:2px solid var(--ink);background:var(--card);border-radius:var(--r);
+  font-size:17px;line-height:1;padding:7px 13px;cursor:pointer;font-weight:800;
+  font-family:'Nunito',sans-serif;
+}
+.side-close:hover{background:var(--cream)}
+.side-panel .setting-row>label{min-width:100%}
 
 /* ── LAGREDE ── */
 .saves-list{display:flex;flex-direction:column;gap:10px}
@@ -401,12 +473,14 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
 /* ── PRINT ── */
 @media print{
   body{background:#fff;min-height:auto}
-  .app-header,.kart-header,.kart-name-row,.stat-bar,.legend,#toast,.modal-bg{display:none!important}
+  .app-header,.kart-header,.kart-name-row,.stat-bar,.legend,#toast,.modal-bg,
+  .side-panel,.side-backdrop,.pult-verkt{display:none!important}
   .panels,.panel{overflow:visible;display:block}
   .panel{max-width:none;padding:0}
-  #panel-elever,#panel-innstillinger,#panel-lagrede{display:none!important}
+  #panel-elever,#panel-lagrede{display:none!important}
   #panel-kart{display:block!important}
   .map-scroll{overflow:visible}
+  .fri-canvas{border:none;background-image:none}
   /* Sitteregler er lærerens interne notater. Et utskrevet eller delt
      klassekart skal ikke røpe hvilke to elever som ikke kan sitte sammen,
      så markeringene fjernes ved utskrift — de er et arbeidsverktøy på
@@ -421,10 +495,9 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
 <div class="app-header">
   <div class="app-title">Klasse<b>kart</b></div>
   <div class="tabs">
-    <button class="tab active" onclick="showTab('elever',this)">👥 Elever</button>
-    <button class="tab" onclick="showTab('innstillinger',this)">⚙️ Innstillinger</button>
-    <button class="tab" onclick="showTab('kart',this)">🗺️ Kart</button>
-    <button class="tab" onclick="showTab('lagrede',this)">💾 Lagrede</button>
+    <button class="tab active" id="tab-elever" onclick="showTab('elever')">👥 Elever</button>
+    <button class="tab" id="tab-kart" onclick="showTab('kart')">🗺️ Kart</button>
+    <button class="tab" id="tab-lagrede" onclick="showTab('lagrede')">💾 Lagrede</button>
   </div>
 </div>
 
@@ -484,73 +557,48 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
     </div>
   </div>
 
-  <!-- INNSTILLINGER -->
-  <div class="panel" id="panel-innstillinger">
-    <div class="card">
-      <div class="settings-grid">
-        <div class="setting-row">
-          <label>Gruppestørrelse</label>
-          <select id="group-size" onchange="updateInfoBox()">
-            <option value="1">1 – individuelt (rader og kolonner)</option>
-            <option value="2">2 – par</option>
-            <option value="3">3 – tripler</option>
-            <option value="4" selected>4 – grupper</option>
-            <option value="6">6 – større grupper</option>
-          </select>
-        </div>
-        <div class="setting-row">
-          <label>Antall kolonner</label>
-          <input type="number" id="cols" value="3" min="1" max="10" style="width:80px">
-        </div>
-        <div class="setting-row">
-          <label>Kjønnsfordeling</label>
-          <div class="seg-group">
-            <button class="seg-btn active" id="gm-bland" onclick="setGender('bland')">Bland alltid</button>
-            <button class="seg-btn" id="gm-skil" onclick="setGender('skil')">Skill kjønn</button>
-            <button class="seg-btn" id="gm-rand" onclick="setGender('rand')">Tilfeldig</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <label>Overskytende elever</label>
-          <div class="seg-group">
-            <button class="seg-btn active" id="of-smaller" onclick="setOverflow('smaller')">Lag mindre grupper</button>
-            <button class="seg-btn" id="of-spread" onclick="setOverflow('spread')">Fordel på eksist. grupper</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <label>Ingen alene</label>
-          <div style="display:flex;align-items:center;gap:10px">
-            <input type="checkbox" id="no-alone" checked>
-            <span style="font-size:18px;color:var(--text-muted)">Slå grupper på 1 elev inn i naboen</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="info-box" id="info-box">Hver gruppe har 4 elever.</div>
-  </div>
-
   <!-- KART -->
   <div class="panel" id="panel-kart" style="gap:12px;max-width:none">
     <div class="kart-name-row">
       <label for="kart-name">Kartnavn:</label>
       <input type="text" id="kart-name" placeholder="F.eks. 8A – høst 2025" style="max-width:320px">
+      <div class="seg-group" style="margin-left:auto">
+        <button class="seg-btn active" id="md-gruppe" onclick="setModus('gruppe')">📐 Grupper</button>
+        <button class="seg-btn" id="md-fri" onclick="setModus('fri')">✋ Fri plassering</button>
+      </div>
     </div>
+
+    <!-- Handlinger som gjelder i begge modus -->
     <div class="kart-header">
-      <button class="btn-primary" onclick="genererKart()">🔀 Generer tilfeldig</button>
+      <div id="verkt-gruppe" style="display:contents">
+        <button class="btn-primary" onclick="genererKart()">🔀 Generer tilfeldig</button>
+        <button class="btn-secondary" onclick="nyGruppe()">➕ Lag ny gruppe</button>
+        <button class="btn-secondary" id="btn-innst" onclick="åpneInnstillinger()">⚙️ Innstillinger</button>
+      </div>
+      <div id="verkt-fri" style="display:none">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn-primary" onclick="fyllInnElever()">👥 Plasser elevene</button>
+          <button class="btn-secondary" onclick="leggTilPult()">➕ Legg til pult</button>
+          <div class="seg-group">
+            <button class="seg-btn active" id="fv-flytt" onclick="setFriVerktoy('flytt')">✋ Flytt pulter</button>
+            <button class="seg-btn" id="fv-elever" onclick="setFriVerktoy('elever')">🔁 Bytt elever</button>
+          </div>
+        </div>
+      </div>
       <button class="btn-secondary" onclick="lagreKart()">💾 Lagre kart</button>
-      <button class="btn-secondary" onclick="nyGruppe()">➕ Lag ny gruppe</button>
       <button class="btn-secondary" id="btn-perspektiv" onclick="byttPerspektiv()">👩‍🏫 Lærerperspektiv</button>
       <button class="btn-secondary" onclick="skrivUt()">🖨️ Skriv ut / PDF</button>
       <button class="btn-secondary" onclick="åpneFullskjerm()">⛶ Fullskjerm</button>
       <button class="btn-danger" onclick="toemKart()">🗑️ Tøm</button>
     </div>
+
     <div class="stat-bar">
       <span>👤 <span id="stat-elever">–</span></span>
       <span>📦 <span id="stat-grupper">–</span></span>
-      <span class="stat-hint">↕ Dra og slipp for å bytte plasser</span>
+      <span class="stat-hint" id="stat-hint">↕ Dra og slipp for å bytte plasser</span>
     </div>
     <div class="legend" id="legend" style="display:none">
-      <span class="legend-item"><span class="legend-swatch" style="background:var(--amber-light);border-color:var(--amber)"></span>Skal sitte sammen, men er skilt</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--yellow);border-color:var(--ink)"></span>Skal sitte sammen, men er skilt</span>
       <span class="legend-item"><span class="legend-swatch" style="background:var(--red-light);border-color:var(--red)"></span>Skal IKKE sitte sammen</span>
     </div>
     <div id="blackboard-top" class="blackboard" style="display:none">▬▬  Tavle / Lærer  ▬▬</div>
@@ -561,6 +609,7 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
           <p>Legg inn elever under «Elever» og trykk «Generer tilfeldig»</p>
         </div>
       </div>
+      <div class="fri-canvas" id="fri-canvas" style="display:none"></div>
       <div id="blackboard-bottom" class="blackboard" style="margin:20px 20px 4px">▬▬  Tavle / Lærer  ▬▬</div>
     </div>
   </div>
@@ -574,6 +623,56 @@ input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--in
   </div>
 
 </div>
+
+<!-- INNSTILLINGER (sidepanel) – styrer bare rutenett-genereringen i Grupper-modus -->
+<div class="side-backdrop" id="side-backdrop" onclick="lukkInnstillinger()"></div>
+<aside class="side-panel" id="side-innstillinger" aria-hidden="true">
+  <div class="side-head">
+    <span>⚙️ Innstillinger</span>
+    <button class="side-close" onclick="lukkInnstillinger()">Lukk ✕</button>
+  </div>
+  <div class="side-body">
+    <div class="settings-grid">
+      <div class="setting-row">
+        <label>Gruppestørrelse</label>
+        <select id="group-size" onchange="updateInfoBox()">
+          <option value="1">1 – individuelt (rader og kolonner)</option>
+          <option value="2">2 – par</option>
+          <option value="3">3 – tripler</option>
+          <option value="4" selected>4 – grupper</option>
+          <option value="6">6 – større grupper</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <label>Antall kolonner</label>
+        <input type="number" id="cols" value="3" min="1" max="10" style="width:80px">
+      </div>
+      <div class="setting-row">
+        <label>Kjønnsfordeling</label>
+        <div class="seg-group">
+          <button class="seg-btn active" id="gm-bland" onclick="setGender('bland')">Bland alltid</button>
+          <button class="seg-btn" id="gm-skil" onclick="setGender('skil')">Skill kjønn</button>
+          <button class="seg-btn" id="gm-rand" onclick="setGender('rand')">Tilfeldig</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Overskytende elever</label>
+        <div class="seg-group">
+          <button class="seg-btn active" id="of-smaller" onclick="setOverflow('smaller')">Lag mindre grupper</button>
+          <button class="seg-btn" id="of-spread" onclick="setOverflow('spread')">Fordel på eksist. grupper</button>
+        </div>
+      </div>
+      <div class="setting-row">
+        <label>Ingen alene</label>
+        <div style="display:flex;align-items:center;gap:10px">
+          <input type="checkbox" id="no-alone" checked>
+          <span style="font-size:17px;color:var(--muted);font-weight:700">Slå grupper på 1 elev inn i naboen</span>
+        </div>
+      </div>
+    </div>
+    <div class="info-box" id="info-box">Hver gruppe har 4 elever.</div>
+  </div>
+</aside>
 
 <!-- FULLSKJERM OVERLAY -->
 <div id="fs-overlay" style="display:none">
@@ -606,13 +705,43 @@ let apartRules = [];
 let currentMap = [];
 let dragSrc = null, dragSrcGroup = -1, dragSrcSlot = -1;
 
+/* ── FRI PLASSERING: modell ──────────────────────────────────────────────
+   I Grupper-modus er en pult bare en indeks i currentMap[gruppe][plass].
+   I fri plassering er pulten et eget objekt med egen posisjon og vinkel,
+   og eleven er en egenskap ved pulten. Det er hele poenget med skillet:
+   fordi eleven henger på pult-objektet og ikke på en rutenett-posisjon,
+   blir eleven automatisk med når læreren drar pulten rundt i rommet. */
+const PULT_B=140, PULT_H=88;   // må stemme med .fdesk i CSS
+const RUTE=20;                 // bakgrunnsrutenett å snappe mot
+const SNAPP=22;                // hvor nær en nabo må være for å feste seg
+const VINKELSTEG=15;           // rotasjon låses til hele 15°
+const BEROR=10;                // pikslers slark rundt faktisk kant-kontakt (dekker snap-avrunding, ikke mer)
+
+let modus='gruppe';            // 'gruppe' | 'fri'
+let friPulter=[];              // {id,x,y,rot,elev} – x/y er pultens midtpunkt
+let friVerktoy='flytt';        // 'flytt' = dra pulter, 'elever' = bytt hvem som sitter hvor
+let valgtPult=null;
+let pultTeller=1;
+
 // ── TABS ──
-function showTab(id, btn) {
+function showTab(id) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
-  if(btn) btn.classList.add('active');
+  document.getElementById('tab-'+id)?.classList.add('active');
   if(id==='lagrede') renderSaves();
+}
+
+// ── INNSTILLINGER (sidepanel) ──
+function åpneInnstillinger(){
+  document.getElementById('side-innstillinger').classList.add('open');
+  document.getElementById('side-backdrop').classList.add('open');
+  document.getElementById('side-innstillinger').setAttribute('aria-hidden','false');
+}
+function lukkInnstillinger(){
+  document.getElementById('side-innstillinger').classList.remove('open');
+  document.getElementById('side-backdrop').classList.remove('open');
+  document.getElementById('side-innstillinger').setAttribute('aria-hidden','true');
 }
 
 // ── SETTINGS ──
@@ -640,13 +769,19 @@ function removeConstraint(type,id){
   if(type==='together') togetherRules=togetherRules.filter(r=>r.id!==id);
   else apartRules=apartRules.filter(r=>r.id!==id);
   renderConstraints();
-  if(currentMap.length) applyConstraintHighlights();
+  oppfriskRegler();
 }
 function updateConstraint(type,id,field,val){
   const arr=type==='together'?togetherRules:apartRules;
   const r=arr.find(x=>x.id===id);
   if(r) r[field]=val;
-  if(currentMap.length) applyConstraintHighlights();
+  oppfriskRegler();
+}
+// Reglene markeres ulikt i de to modusene: grupper slår opp i currentMap,
+// fri plassering måler avstand mellom pultene.
+function oppfriskRegler(){
+  if(modus==='fri'){ if(friPulter.length) friHighlights(); }
+  else if(currentMap.length) applyConstraintHighlights();
 }
 function renderConstraints(){
   renderList('together',togetherRules,'badge-grønn','🟢 Må sitte sammen');
@@ -871,6 +1006,355 @@ function onDrop(e){
   renderMap();
 }
 
+/* ══ FRI PLASSERING ═══════════════════════════════════════════════════════
+   Bruker pointer events (ikke HTML5 drag & drop som i Grupper-modus), fordi
+   fri plassering trenger løpende koordinater for å kunne snappe underveis. */
+
+function setModus(m){
+  if(m===modus) return;
+  // Første gang læreren går over til fri plassering tar vi utgangspunkt i
+  // kartet hun allerede ser, i stedet for å møte henne med et tomt rom.
+  if(m==='fri' && !friPulter.length && currentMap.length) friPulter=friFraGruppe();
+  modus=m;
+  valgtPult=null;
+  ['gruppe','fri'].forEach(x=>document.getElementById('md-'+x).classList.toggle('active',x===m));
+  document.getElementById('classroom-grid').style.display = m==='gruppe'?'':'none';
+  document.getElementById('fri-canvas').style.display     = m==='fri'?'':'none';
+  document.getElementById('verkt-gruppe').style.display   = m==='gruppe'?'contents':'none';
+  document.getElementById('verkt-fri').style.display      = m==='fri'?'':'none';
+  if(m==='gruppe') lukkInnstillinger();
+  document.getElementById('stat-hint').textContent = m==='fri'
+    ? '↔ Dra pulten – eleven blir med. Klikk en pult for å rotere eller fjerne den.'
+    : '↕ Dra og slipp for å bytte plasser';
+  if(m==='fri') renderFri(); else renderMap();
+}
+
+function setFriVerktoy(v){
+  friVerktoy=v;
+  ['flytt','elever'].forEach(x=>document.getElementById('fv-'+x).classList.toggle('active',x===v));
+}
+
+// Leser av hvor pultene faktisk står i rutenettet, så overgangen blir sømløs.
+function friFraGruppe(){
+  const grid=document.getElementById('classroom-grid');
+  const desker=[...grid.querySelectorAll('.desk')];
+  if(!desker.length) return [];
+  // Elevperspektivet er en ren CSS-rotasjon. Den må av mens vi måler,
+  // ellers leser vi av speilvendte koordinater.
+  const snudd=grid.classList.contains('elev-perspektiv');
+  if(snudd) grid.classList.remove('elev-perspektiv');
+  const gr=grid.getBoundingClientRect();
+  const ut=desker.map(d=>{
+    const r=d.getBoundingClientRect();
+    const g=+d.dataset.g, s=+d.dataset.s;
+    return {
+      id:'p'+(pultTeller++),
+      x:Math.round(r.left-gr.left+r.width/2),
+      y:Math.round(r.top-gr.top+r.height/2),
+      rot:0,
+      elev:(currentMap[g]&&currentMap[g][s])||null
+    };
+  });
+  if(snudd) grid.classList.add('elev-perspektiv');
+  return ut;
+}
+
+function renderFri(){
+  const c=document.getElementById('fri-canvas');
+  c.innerHTML='';
+  c.classList.toggle('elev-perspektiv', elevPerspektiv);
+
+  if(!friPulter.length){
+    c.style.width='';c.style.height='';
+    c.innerHTML='<div class="empty-state"><div class="es-icon">✋</div>'+
+      '<p>Trykk «Legg til pult» og bygg rommet slik det faktisk ser ut.</p></div>';
+    oppdaterStatFri();
+    return;
+  }
+
+  let maksX=900, maksY=520;
+  friPulter.forEach(p=>{
+    maksX=Math.max(maksX,p.x+PULT_B);
+    maksY=Math.max(maksY,p.y+PULT_H);
+  });
+  c.style.width=(maksX+80)+'px';
+  c.style.height=(maksY+80)+'px';
+
+  friPulter.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='fdesk'+(p.elev?'':' tom')+(valgtPult===p.id?' valgt':'');
+    d.dataset.id=p.id;
+    d.style.left=p.x+'px';
+    d.style.top=p.y+'px';
+    d.style.transform=`translate(-50%,-50%) rotate(${p.rot}deg)`;
+    if(p.elev){
+      const kj=p.elev.gender==='j'?'♀':p.elev.gender==='g'?'♂':'';
+      d.innerHTML=`<span class="d-name">${esc(p.elev.name)}</span><span class="d-gender">${kj}</span>`;
+    }
+    d.addEventListener('pointerdown',friPekerNed);
+    c.appendChild(d);
+  });
+
+  if(valgtPult) tegnPultVerktoy();
+  friHighlights();
+  oppdaterStatFri();
+}
+
+function oppdaterStatFri(){
+  if(modus!=='fri') return;
+  const n=friPulter.filter(p=>p.elev).length;
+  document.getElementById('stat-elever').textContent=n+' elever';
+  document.getElementById('stat-grupper').textContent=friPulter.length+' pulter';
+}
+
+// ── VELG / ROTER / FJERN ──
+function tegnPultVerktoy(){
+  const p=friPulter.find(x=>x.id===valgtPult);
+  if(!p) return;
+  const v=document.createElement('div');
+  v.className='pult-verkt';
+  v.style.left=p.x+'px';
+  // I elevperspektiv er kartet snudd 180°, så «over pulten» ligger motsatt vei.
+  v.style.top=(elevPerspektiv ? p.y+PULT_H/2+30 : p.y-PULT_H/2-30)+'px';
+  const rot=document.createElement('button');
+  rot.textContent='🔄';
+  rot.title='Roter – dra rundt, eller klikk for '+VINKELSTEG+'°';
+  rot.addEventListener('pointerdown',startRotasjon);
+  const slett=document.createElement('button');
+  slett.textContent='✕';
+  slett.title='Fjern pulten';
+  slett.addEventListener('click',()=>slettPult(p.id));
+  v.appendChild(rot);v.appendChild(slett);
+  document.getElementById('fri-canvas').appendChild(v);
+}
+
+function startRotasjon(e){
+  e.preventDefault();e.stopPropagation();
+  const p=friPulter.find(x=>x.id===valgtPult);
+  if(!p) return;
+  const d=document.querySelector(`.fdesk[data-id="${p.id}"]`);
+  const r=d.getBoundingClientRect();
+  const cx=r.left+r.width/2, cy=r.top+r.height/2;
+  const v0=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI;
+  const start=p.rot;
+  let dradd=false;
+
+  const flytt=ev=>{
+    const v=Math.atan2(ev.clientY-cy,ev.clientX-cx)*180/Math.PI;
+    if(!dradd && Math.abs(v-v0)<4) return;
+    dradd=true;
+    p.rot=normVinkel(Math.round((start+(v-v0))/VINKELSTEG)*VINKELSTEG);
+    d.style.transform=`translate(-50%,-50%) rotate(${p.rot}deg)`;
+  };
+  const slipp=()=>{
+    window.removeEventListener('pointermove',flytt);
+    window.removeEventListener('pointerup',slipp);
+    if(!dradd) p.rot=normVinkel(p.rot+VINKELSTEG);   // rent klikk = ett steg
+    renderFri();
+  };
+  window.addEventListener('pointermove',flytt);
+  window.addEventListener('pointerup',slipp);
+}
+function normVinkel(v){return((Math.round(v)%360)+360)%360}
+
+function leggTilPult(){
+  const pos=ledigPlass();
+  friPulter.push({id:'p'+(pultTeller++),x:pos.x,y:pos.y,rot:0,elev:null});
+  renderFri();
+}
+function ledigPlass(){
+  for(let rad=0;rad<24;rad++){
+    for(let kol=0;kol<12;kol++){
+      const x=110+kol*(PULT_B+20), y=90+rad*(PULT_H+20);
+      if(!friPulter.some(p=>Math.abs(p.x-x)<PULT_B&&Math.abs(p.y-y)<PULT_H)) return{x,y};
+    }
+  }
+  return{x:110,y:90};
+}
+function slettPult(id){
+  const p=friPulter.find(x=>x.id===id);
+  if(p&&p.elev&&!confirm(`Fjerne pulten til ${p.elev.name}? Eleven blir da stående uten plass.`)) return;
+  friPulter=friPulter.filter(x=>x.id!==id);
+  if(valgtPult===id) valgtPult=null;
+  renderFri();
+}
+
+// ── DRA PULT / BYTT ELEV ──
+function friPekerNed(e){
+  if(e.button) return;
+  const el=this;
+  const p=friPulter.find(x=>x.id===el.dataset.id);
+  if(!p) return;
+  e.preventDefault();
+
+  const byttElev = friVerktoy==='elever';
+  if(byttElev && !p.elev) return;
+
+  // Elevperspektivet snur kartet 180°, altså peker skjermens x/y motsatt vei.
+  const vend = elevPerspektiv ? -1 : 1;
+  const px=e.clientX, py=e.clientY, x0=p.x, y0=p.y;
+  let dradd=false;
+
+  const flytt=ev=>{
+    const dx=(ev.clientX-px)*vend, dy=(ev.clientY-py)*vend;
+    if(!dradd && Math.hypot(dx,dy)<4) return;
+    dradd=true;
+    if(byttElev){
+      el.style.pointerEvents='none';
+      el.classList.add('drar');
+      const over=pultUnder(ev.clientX,ev.clientY);
+      document.querySelectorAll('.fdesk.mottak').forEach(d=>d.classList.remove('mottak'));
+      if(over&&over.id!==p.id)
+        document.querySelector(`.fdesk[data-id="${over.id}"]`)?.classList.add('mottak');
+    } else {
+      el.classList.add('drar');
+      const s=beregnSnapp(p,x0+dx,y0+dy);
+      p.x=s.x;p.y=s.y;
+      el.style.left=p.x+'px';el.style.top=p.y+'px';
+      document.querySelectorAll('.fdesk.snapp-mot').forEach(d=>d.classList.remove('snapp-mot'));
+      if(s.mot) document.querySelector(`.fdesk[data-id="${s.mot}"]`)?.classList.add('snapp-mot');
+    }
+  };
+
+  const slipp=ev=>{
+    window.removeEventListener('pointermove',flytt);
+    window.removeEventListener('pointerup',slipp);
+    el.style.pointerEvents='';
+    if(byttElev && dradd){
+      const over=pultUnder(ev.clientX,ev.clientY);
+      if(over&&over.id!==p.id){const t=p.elev;p.elev=over.elev;over.elev=t;}
+    }
+    if(!dradd) valgtPult = (valgtPult===p.id?null:p.id);   // rent klikk = velg
+    renderFri();
+  };
+
+  window.addEventListener('pointermove',flytt);
+  window.addEventListener('pointerup',slipp);
+}
+
+function pultUnder(cx,cy){
+  const el=document.elementFromPoint(cx,cy);
+  const d=el&&el.closest?el.closest('.fdesk'):null;
+  return d?friPulter.find(x=>x.id===d.dataset.id)||null:null;
+}
+
+/* Snapping. Nøkkelen til at dette holder seg enkelt: vi snapper bare mot
+   pulter som allerede står i samme vinkel. Da kan vi regne i pultens eget
+   koordinatsystem, og kant-mot-kant blir vanlig aksejustert matematikk –
+   i stedet for generell geometri mellom vilkårlig roterte rektangler.
+   Finnes ingen nabo i nærheten, faller vi tilbake på bakgrunnsrutenettet. */
+function beregnSnapp(pult,x,y){
+  const rad=pult.rot*Math.PI/180, cos=Math.cos(rad), sin=Math.sin(rad);
+  const tilLokal=(px,py)=>({u:px*cos+py*sin, v:-px*sin+py*cos});
+  const tilVerden=(u,v)=>({x:u*cos-v*sin, y:u*sin+v*cos});
+
+  const meg=tilLokal(x,y);
+  let bestU=null,bestV=null,dU=SNAPP,dV=SNAPP,mot=null;
+
+  for(const n of friPulter){
+    if(n.id===pult.id) continue;
+    if(n.rot%180 !== pult.rot%180) continue;   // ulik vinkel – ikke snapp
+    const nl=tilLokal(n.x,n.y);
+    for(const k of [nl.u-PULT_B, nl.u, nl.u+PULT_B]){
+      const d=Math.abs(meg.u-k);
+      if(d<dU){dU=d;bestU=k;mot=n.id}
+    }
+    for(const k of [nl.v-PULT_H, nl.v, nl.v+PULT_H]){
+      const d=Math.abs(meg.v-k);
+      if(d<dV){dV=d;bestV=k;mot=n.id}
+    }
+  }
+
+  if(bestU===null && bestV===null)
+    return {x:Math.round(x/RUTE)*RUTE, y:Math.round(y/RUTE)*RUTE, mot:null};
+
+  const u = bestU!==null?bestU:Math.round(meg.u/RUTE)*RUTE;
+  const v = bestV!==null?bestV:Math.round(meg.v/RUTE)*RUTE;
+  const w = tilVerden(u,v);
+  return {x:Math.round(w.x), y:Math.round(w.y), mot};
+}
+
+/* ── REGLER I FRI PLASSERING ──
+   Uten grupper å slå opp i avgjør avstanden mellom pultene hvem som
+   «sitter sammen». Det er godt nok til å fange både naboer og skråstilte
+   oppsett, og gjør at reglene virker likt uansett hvordan rommet er satt. */
+function pultForNavn(n){return friPulter.find(p=>p.elev&&norm(p.elev.name)===n)||null}
+
+/* «Sitter sammen» = pultene faktisk berører hverandre, ikke bare står i
+   nærheten. Det er det logiske valget her: læreren har allerede et presist
+   verktøy for å sette pulter inntil hverandre (snap mot naboens kant), så
+   reglene bør lese av akkurat det – ikke gjette ut fra en skjønnsmessig
+   avstand. BEROR er bare til for å ta høyde for at et snap kan lande noen
+   få piksler unna eksakt kontakt, ikke for å telle et synlig mellomrom
+   som «sammen».
+
+   En sirkel rundt midtpunktet ville treffe dårlig: den ville enten miste
+   naboen rett over, eller dra med seg pulten to plasser bortenfor. Vi måler
+   derfor kant-avstand i pultens eget koordinatsystem, akse for akse – to
+   rektangler overlapper eller berører hverandre når begge akseprojeksjonene
+   gjør det. Det holder også når pultene står på skrå, som i en hestesko. */
+function beror(a,b){
+  const rad=a.rot*Math.PI/180, cos=Math.cos(rad), sin=Math.sin(rad);
+  const dx=b.x-a.x, dy=b.y-a.y;
+  return Math.abs(dx*cos+dy*sin)<PULT_B+BEROR && Math.abs(-dx*sin+dy*cos)<PULT_H+BEROR;
+}
+function sitterSammen(a,b){return beror(a,b)||beror(b,a)}
+
+function friBrudd(){
+  const ut=[];
+  for(const r of togetherRules){
+    if(!r.a||!r.b) continue;
+    const pa=pultForNavn(norm(r.a)), pb=pultForNavn(norm(r.b));
+    if(pa&&pb&&!sitterSammen(pa,pb)) ut.push({pa,pb,type:'warn-together'});
+  }
+  for(const r of apartRules){
+    if(!r.a||!r.b) continue;
+    const pa=pultForNavn(norm(r.a)), pb=pultForNavn(norm(r.b));
+    if(pa&&pb&&sitterSammen(pa,pb)) ut.push({pa,pb,type:'warn-apart'});
+  }
+  return ut;
+}
+function friHighlights(){
+  const c=document.getElementById('fri-canvas');
+  c.querySelectorAll('.fdesk').forEach(d=>d.classList.remove('warn-together','warn-apart'));
+  friBrudd().forEach(b=>[b.pa,b.pb].forEach(p=>
+    c.querySelector(`.fdesk[data-id="${p.id}"]`)?.classList.add(b.type)));
+  const harRegler=togetherRules.some(r=>r.a&&r.b)||apartRules.some(r=>r.a&&r.b);
+  document.getElementById('legend').style.display=harRegler?'flex':'none';
+}
+
+/* Fyller pultene med elever. Trekker først tilfeldig, og bytter så to og to
+   så lenge det gir færre regelbrudd. Enkelt, men rydder opp i praksis. */
+function fyllInnElever(){
+  const alle=getElever();
+  if(!alle.length){toast('Legg til elever under «Elever» først.');return;}
+  if(!friPulter.length){toast('Legg ut noen pulter først.');return;}
+  if(alle.length>friPulter.length){
+    toast(`${alle.length} elever, men bare ${friPulter.length} pulter.`);return;
+  }
+
+  const blandet=shuffle([...alle]);
+  friPulter.forEach((p,i)=>{p.elev=blandet[i]||null});
+
+  let brudd=friBrudd().length;
+  for(let i=0;i<400&&brudd>0;i++){
+    const a=Math.floor(Math.random()*friPulter.length);
+    const b=Math.floor(Math.random()*friPulter.length);
+    if(a===b) continue;
+    const t=friPulter[a].elev;friPulter[a].elev=friPulter[b].elev;friPulter[b].elev=t;
+    const nytt=friBrudd().length;
+    if(nytt<=brudd) brudd=nytt;                       // godtar uendret for å komme videre
+    else {const u=friPulter[a].elev;friPulter[a].elev=friPulter[b].elev;friPulter[b].elev=u;}
+  }
+  renderFri();
+  toast(brudd?`Elevene er plassert · ${brudd} regelbrudd igjen`:'✅ Elevene er plassert');
+}
+
+// Klikk på tomt gulv opphever valget.
+document.getElementById('fri-canvas').addEventListener('pointerdown',e=>{
+  if(e.target.id==='fri-canvas'&&valgtPult){valgtPult=null;renderFri();}
+});
+
 // ── BYTT PERSPEKTIV ──
 // elevPerspektiv=true: ser fra elevenes side (tavle øverst, rad 1 nærmest tavlen)
 // Visuelt snur vi radene med flex-direction:column-reverse og roterer all tekst 180°
@@ -878,13 +1362,14 @@ function onDrop(e){
 let elevPerspektiv = true;
 function byttPerspektiv(){
   elevPerspektiv=!elevPerspektiv;
-  const grid=document.getElementById('classroom-grid');
-  grid.classList.toggle('elev-perspektiv', elevPerspektiv);
+  document.getElementById('classroom-grid').classList.toggle('elev-perspektiv', elevPerspektiv);
+  document.getElementById('fri-canvas').classList.toggle('elev-perspektiv', elevPerspektiv);
   // Flytt tavle
   document.getElementById('blackboard-top').style.display=elevPerspektiv?'none':'block';
   document.getElementById('blackboard-bottom').style.display=elevPerspektiv?'block':'none';
   const btn=document.getElementById('btn-perspektiv');
   btn.textContent=elevPerspektiv?'👩‍🏫 Lærerperspektiv':'🎒 Elevperspektiv';
+  if(modus==='fri') renderFri();   // verktøyknappene må flytte med
 }
 
 // ── NY GRUPPE ──
@@ -896,9 +1381,12 @@ function nyGruppe(){
   toast('➕ Ny tom gruppe lagt til');
 }
 
+// Har vi noe å lagre/vise i den modusen vi står i?
+function harKart(){return modus==='fri' ? friPulter.length>0 : currentMap.length>0}
+
 // ── SAVE MODAL ──
 function lagreKart(){
-  if(!currentMap.length){toast('Generer et kart først.');return;}
+  if(!harKart()){toast(modus==='fri'?'Legg ut noen pulter først.':'Generer et kart først.');return;}
   const existing=document.getElementById('kart-name').value.trim();
   document.getElementById('save-name-input').value=existing||defaultKartName();
   document.getElementById('save-modal').style.display='flex';
@@ -909,7 +1397,7 @@ function confirmSave(){
   const name=document.getElementById('save-name-input').value.trim()||defaultKartName();
   document.getElementById('kart-name').value=name;
   const saves=JSON.parse(localStorage.getItem('klassekart-saves')||'[]');
-  saves.push({name,map:currentMap,ts:Date.now()});
+  saves.push({name,modus,map:currentMap,pulter:friPulter,ts:Date.now()});
   localStorage.setItem('klassekart-saves',JSON.stringify(saves));
   closeSaveModal();
   toast('✅ Lagret: '+name);
@@ -928,7 +1416,7 @@ function renderSaves(){
     <div class="save-item">
       <div class="save-name">
         <strong>${esc(s.name)}</strong>
-        <small>${s.map.flat().filter(Boolean).length} elever · ${s.map.length} grupper</small>
+        <small>${esc(saveSammendrag(s))}</small>
       </div>
       <div class="save-actions">
         <button class="btn-secondary" style="padding:8px 14px;font-size:18px" onclick="lastKart(${i})">Last inn</button>
@@ -936,13 +1424,29 @@ function renderSaves(){
       </div>
     </div>`).join('');
 }
+// Kart lagret før fri plassering fantes har verken modus eller pulter.
+function saveSammendrag(s){
+  if(s.modus==='fri'){
+    const p=s.pulter||[];
+    return `${p.filter(x=>x.elev).length} elever · ${p.length} pulter · fri plassering`;
+  }
+  const m=s.map||[];
+  return `${m.flat().filter(Boolean).length} elever · ${m.length} grupper`;
+}
+
 function lastKart(i){
   const saves=JSON.parse(localStorage.getItem('klassekart-saves')||'[]');
-  currentMap=saves[i].map;
-  document.getElementById('kart-name').value=saves[i].name;
-  renderMap();
-  showTab('kart',document.querySelectorAll('.tab')[2]);
-  toast('📂 Lastet inn: '+saves[i].name);
+  const s=saves[i];
+  currentMap=s.map||[];
+  friPulter=s.pulter||[];
+  // Sørg for at nye pulter ikke får id-er som allerede er i bruk.
+  pultTeller=friPulter.reduce((m,p)=>Math.max(m,parseInt(String(p.id).replace(/\D/g,''))||0),0)+1;
+  valgtPult=null;
+  document.getElementById('kart-name').value=s.name;
+  showTab('kart');
+  const m=s.modus==='fri'?'fri':'gruppe';
+  if(m!==modus) setModus(m); else if(m==='fri') renderFri(); else renderMap();
+  toast('📂 Lastet inn: '+s.name);
 }
 function slettKart(i){
   if(!confirm('Slette dette kartet?')) return;
@@ -954,9 +1458,7 @@ function slettKart(i){
 
 // ── FULLSKJERM ──
 function åpneFullskjerm(){
-  if(!currentMap.length){toast('Generer et kart først.');return;}
-  // Clone the map-scroll contents into the overlay
-  const src=document.querySelector('.map-scroll');
+  if(!harKart()){toast(modus==='fri'?'Legg ut noen pulter først.':'Generer et kart først.');return;}
   const fsContent=document.getElementById('fs-content');
   fsContent.innerHTML='';
   // Add blackboard top/bottom clones
@@ -964,10 +1466,15 @@ function åpneFullskjerm(){
   bbTop.removeAttribute('id');
   const bbBottom=document.getElementById('blackboard-bottom').cloneNode(true);
   bbBottom.removeAttribute('id');
-  const gridClone=document.getElementById('classroom-grid').cloneNode(true);
+  const kilde=modus==='fri'?'fri-canvas':'classroom-grid';
+  const gridClone=document.getElementById(kilde).cloneNode(true);
   gridClone.removeAttribute('id');
-  // Remove drag handlers from clone (cosmetic only)
+  gridClone.style.display='';
+  // Klonen er kun til visning – ingen redigering
   gridClone.querySelectorAll('.desk').forEach(d=>{d.draggable=false});
+  gridClone.querySelectorAll('.pult-verkt,.fdesk.valgt').forEach(d=>{
+    if(d.classList.contains('pult-verkt')) d.remove(); else d.classList.remove('valgt');
+  });
   if(elevPerspektiv){
     fsContent.appendChild(gridClone);
     fsContent.appendChild(bbBottom);
@@ -985,10 +1492,21 @@ function lukkFullskjerm(){
   if(document.fullscreenElement) document.exitFullscreen?.();
 }
 document.addEventListener('keydown',e=>{
-  if(e.key==='Escape') lukkFullskjerm();
+  if(e.key!=='Escape') return;
+  lukkFullskjerm();
+  lukkInnstillinger();
+  if(valgtPult){valgtPult=null;renderFri();}
 });
-function toemKart(){currentMap=[];renderMap();document.getElementById('stat-elever').textContent='–';document.getElementById('stat-grupper').textContent='–';}
-function skrivUt(){if(!currentMap.length){toast('Generer et kart først.');return;}window.print();}
+function toemKart(){
+  if(modus==='fri'){friPulter=[];valgtPult=null;renderFri();}
+  else {currentMap=[];renderMap();}
+  document.getElementById('stat-elever').textContent='–';
+  document.getElementById('stat-grupper').textContent='–';
+}
+function skrivUt(){
+  if(!harKart()){toast(modus==='fri'?'Legg ut noen pulter først.':'Generer et kart først.');return;}
+  window.print();
+}
 function toast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
