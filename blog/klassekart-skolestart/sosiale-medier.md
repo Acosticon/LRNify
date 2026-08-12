@@ -15,19 +15,26 @@ mye av verdien etter at klassene har satt seg.
 
 ## Facebook
 
-📚 Ny klasse, ny liste – og som regel den samme oppgaven de første skoledagene: finne ut hvem som skal sitte hvor.
+🎒📚 SKOLESTART betyr ny klasseliste – og du vet oppgaven: finne ut hvem som skal sitte hvor!
 
-Vi har et gratis verktøy som gjør den jobben på sekunder: **Klassekart** 🎉
+Vi har gjort den jobben superenkel – og helt GRATIS 🙌 Møt **Klassekart**:
 
 ✅ Lim inn elevlisten (jenter, gutter, andre)
 ✅ Legg inn regler – hvem MÅ sitte sammen, hvem bør IKKE sitte sammen
-✅ Trykk «Generer tilfeldig» – ferdig kart, klart til tavla eller utskrift
+✅ Trykk «Generer tilfeldig» – ferdig kart, klart for tavla eller utskrift!
 
-Ingen pålogging, ingen kostnad, ingen konto å administrere. Bare åpne og bruk 👉 https://lrnify.no/tools/klassekart/
+👉 Prøv det her: https://lrnify.no/tools/klassekart/
 
-🚧 Litt om oss: LRNify er fortsatt under utvikling, og vi bygger stadig ut med flere gratis verktøy og læringsspill for lærere. Er det noe du skulle ønske fantes – et verktøy, en funksjon, et spill? Skriv det i kommentarfeltet, vi leser alt og tar imot alle forslag! 💬
+Og det stopper ikke der! LRNify er en hel verktøykasse for lærere – 100 % gratis og uten pålogging:
+🎯 **Verktøy** som elevvelger, nedtelling, stoppeklokke, lydmåler og graftegner – de små tingene som sparer deg tid hver dag
+🎮 **Læringsspill** i flere fag – bygget på LK20, laget for at elevene faktisk skal ha lyst til å øve
+🎲 **Aktiviteter** som terningspill, quiz og temaspinner – gode pusterom og innslag i timen
 
-#lærer #skolestart #klasserom #digitallæring #gratisverktøy #norskskole #LK20
+Ingen skjulte kostnader, ingen abonnement, ingen "prøveperiode". Bare gratis, alltid. 💛
+
+🚧 PS: LRNify er fortsatt under utvikling – vi bygger stadig ut med MER gratis innhold for lærere. Har du et ønske om et verktøy, spill eller funksjon du savner? Skriv det i kommentarfeltet – vi leser alt og elsker forslag! 💬👇
+
+#lærer #skolestart #klasserom #digitallæring #gratisverktøy #læringsspill #norskskole #LK20
 
 ---
 
