@@ -422,7 +422,7 @@
             ".validate": "newData.hasChildren(['navn', 'ms', 'n', 'ts']) && newData.child('ms').val() >= newData.child('n').val() * 400",
 
             "navn": {
-              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 14"
+              ".validate": "newData.isString() && newData.val().matches(/^\\S{1,14}$/)"
             },
             "ms": {
               ".validate": "newData.isNumber() && newData.val() >= 400 && newData.val() <= 3600000"

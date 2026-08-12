@@ -713,6 +713,51 @@ function stampsInRegion(region){
    kan uansett ikke bli juksesikker; dette luker bort det som ellers ville
    lagt seg øverst som en umulig tid.
    --------------------------------------------------------------------------- */
+/* ---------------- kallenavnfilter (ledertavla er verdensåpen) --------------
+   Fanger kjente banneord, ikke ekte navn – et filter kan ikke vite at
+   «Kari Nordmann» er et navn og ikke et skjellsord. Det er derfor
+   mellomrom er forbudt (se input-lytteren på #nick), og databasereglene
+   håndhever det samme uavhengig av klienten.
+
+   Blokklista er en start, ikke en fasit – med normalisering (små
+   bokstaver, tallerstatning, luking av gjentatte tegn) fanges de vanligste
+   skrivemåtene, men et filter mot fritekst kan aldri bli komplett. Den som
+   virkelig prøver å komme seg forbi et ordfilter, klarer som regel det;
+   poenget her er å luke bort det aller meste uten å plage noen.
+
+   Treffer filteret, byttes navnet stille ut med et generert kallenavn for
+   *den* ledertavleoppføringen – det eleven har skrevet i feltet ellers i
+   spillet røres ikke. Ingen advarsel midt i spillet, bare en kort setning
+   i sluttmeldingen om at det skjedde.
+   --------------------------------------------------------------------------- */
+const NAVNEFILTER=[
+  'faen','fitte','fitta','kuk','kukk','pikk','ræva','ræv','helvete',
+  'jævla','jævel','satan','fanden','drittsekk','megge','hore','homo',
+  'neger','krøpling','pyse','fitteunge','kødd','kødden',
+  'fuck','shit','bitch','cunt','asshole','whore','nigger','nigga','fag','faggot','retard','slut',
+];
+function lbNormaliser(s){
+  return String(s||'').toLowerCase()
+    .replace(/[@4]/g,'a').replace(/3/g,'e').replace(/1|!/g,'i').replace(/0/g,'o').replace(/5|\$/g,'s').replace(/7/g,'t')
+    .replace(/[^a-zæøå]/g,'')
+    .replace(/(.)\1+/g,'$1');   /* "fuuuuck" -> "fuck", "Bjørnn" -> "Bjørn" */
+}
+/* Blokklista må gjennom samme normalisering som input – ellers kolliderer
+   kollapsingen av gjentatte tegn med ord som «pikk» der dobbel konsonant er
+   riktig skrivemåte, og det egentlige målordet glipper gjennom. */
+const NAVNEFILTER_NORM=NAVNEFILTER.map(lbNormaliser);
+function erUpassende(navn){
+  const n=lbNormaliser(navn);
+  return !n || NAVNEFILTER_NORM.some(ord=>n.includes(ord));
+}
+const LB_ADJEKTIV=['Rask','Sterk','Kjapp','Snar','Kvikk','Modig','Snill','Vill','Smart','Rolig'];
+const LB_DYR=['Rev','Ulv','Ørn','Falk','Hare','Elg','Bjørn','Ugle','Lynx','Reven'];
+function genererKallenavn(){ return (pick(LB_ADJEKTIV)+pick(LB_DYR)+(1+(Math.random()*98|0))).slice(0,14); }
+/* Om det genererte navnet av uflaks selv skulle inneholde et blokkert ord
+   (kan skje ved sammensetning av to uskyldige deler), prøv på nytt et par
+   ganger før vi gir opp og bruker det som det er. */
+function trygtKallenavn(){ for(let i=0;i<5;i++){ const k=genererKallenavn(); if(!erUpassende(k)) return k; } return 'Kartograf'+(1+(Math.random()*98|0)); }
+
 let LB_DB='https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app';
 const LB_SPILL='kartografen';
 const LB_VERTER=['lrnify.no','www.lrnify.no'];
@@ -1060,10 +1105,15 @@ async function end(){
   if(perfect && !S.relaxed){
     $('endTitle').textContent='PERFEKT! 🏆';
     $('endLine').textContent='alt riktig på første forsøk';
-    const name=(nick.value||'Anonym').trim()||'Anonym';
-    lastEntry={ navn:name, ms, n:total, ts:Date.now() };
+    /* Skrevet inn av eleven, men bare brukt til DENNE ledertavleoppføringen
+       – nick.value og lagret nick rører vi ikke her. */
+    const skrevet=(nick.value||'').replace(/\s+/g,'').trim()||'Anonym';
+    const byttet=erUpassende(skrevet);
+    const lbNavn=byttet?trygtKallenavn():skrevet;
+    lastEntry={ navn:lbNavn, ms, n:total, ts:Date.now() };
     await LB.submit(lastEntry);
     note.textContent=(lbErGlobal()?'⏱ Tiden din er sendt til ledertavla!':'⏱ Tiden din er lagret på denne maskinen.')
+      +(byttet?' Kallenavnet ditt kunne ikke brukes der, så vi kalte deg «'+lbNavn+'» i stedet.':'')
       +(newStamp?' Nytt stempel i passet! 🛂':'');
   } else if(perfect && S.relaxed){
     $('endTitle').textContent='PERFEKT! 🏆';
@@ -1296,6 +1346,11 @@ $('replayBtn').addEventListener('click', start);
 $('menuBtn').addEventListener('click', toHub);
 $('backBtn').addEventListener('click', toHub);
 nick.addEventListener('keydown', e=>{ if(e.key==='Enter') start(); });
+/* Ledertavla er verdensåpen: uten mellomrom blir det unaturlig å skrive
+   et fullt navn («KariNordmann»), og de fleste barn skriver rett og
+   slett ett kult ord i stedet. Det stopper ikke en som prøver, men
+   demper det vanligste tilfellet uten å be om noe fra eleven. */
+nick.addEventListener('input', ()=>{ if(/\s/.test(nick.value)) nick.value=nick.value.replace(/\s+/g,''); });
 document.querySelectorAll('#endOverlay .tab').forEach(t=>t.addEventListener('click', ()=>{ setActiveTab(t.dataset.period); renderLB(t.dataset.period); }));
 
 /* ---------------- oppstart ---------------- */
@@ -1313,6 +1368,7 @@ window.__game={
   /* Lar røyktesten peke ledertavla mot en lokal etterlikning av Firebase-
      REST-et, i stedet for å skrive testtider inn i den ekte basen. */
   _lbTest:(base,på)=>{ LB_DB=base; lbTvingGlobal=på; LB.cache={}; },
+  erUpassende, lbNormaliser, genererKallenavn, trygtKallenavn,
 };
 
 })();

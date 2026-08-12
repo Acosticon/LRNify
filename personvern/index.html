@@ -60,14 +60,14 @@
 
 <h2>Elever logger aldri inn</h2>
 <p>
-  Elever bruker LRNify uten konto og uten å oppgi noe som identifiserer dem —
-  de blir med i en aktivitet ved å taste inn en romkode læreren har fått opp
-  på skjermen. Vi lagrer aldri elevers etternavn, fødselsdato, karakterer
-  eller vurderinger.
+  Elever bruker LRNify uten konto og uten navn — de blir med i en aktivitet
+  ved å taste inn en romkode læreren har fått opp på skjermen. Vi lagrer
+  aldri elevers etternavn, fødselsdato, karakterer eller vurderinger.
 </p>
 <p>
-  Ett unntak finnes: i spillet Kartografen skriver eleven selv inn et
-  kallenavn som havner på en åpen ledertavle. Det er beskrevet under
+  I noen spill er det mulighet for å legge inn et frivillig
+  <em>kallenavn</em> i forbindelse med en highscore-liste (f.eks. i
+  Kartografen). Det er beskrevet under
   <a href="#ledertavle">Ledertavla i Kartografen</a>.
 </p>
 
@@ -107,7 +107,15 @@
   <strong>Be elevene finne på et kallenavn</strong> — «Lynet», «Kartkongen» —
   og ikke bruke sitt eget fulle navn. Vi lagrer ingen IP-adresse, ingen
   bruker-ID og ingenting som knytter en tid til en bestemt maskin eller person
-  ut over det kallenavnet eleven selv skrev inn.
+  ut over det kallenavnet eleven selv skrev inn. Feltet tar ikke mellomrom,
+  nettopp for å gjøre det unaturlig å skrive et fullt navn.
+</p>
+<p>
+  Kallenavnet sjekkes automatisk mot en liste over kjente skjellsord. Treffer
+  filteret, brukes et tilfeldig generert kallenavn (f.eks. «RaskRev42») på
+  ledertavla i stedet — eleven varsles kort om dette, men spillet stanser
+  ikke. Et slikt filter fanger ikke alt, og er ment å luke bort det aller
+  meste, ikke å garantere at ingenting upassende noensinne kommer gjennom.
 </p>
 <p>
   Runder som ikke er feilfrie lagres ikke. Spiller eleven i «Avslappet modus»,
