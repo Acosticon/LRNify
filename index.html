@@ -432,6 +432,9 @@
     <a href="#laereplan">Læreplan (LK20)</a>
     <a href="#skoler">For skoler</a>
     <a href="#kontakt">Kontakt</a>
+    <!-- Kun for admin-kontoer, se auth/lrnify-auth.js#erAdmin. Skjult til
+         innlogging er avklart, for å unngå et glimt av lenken for alle. -->
+    <a href="/bruk/" id="adminLenke" style="display:none;">📊 Bruksstatistikk</a>
     <!-- Inngangen for telefon, der toppen ikke har plass til widgeten.
          Fylles av lrnify-auth.js nederst på sida. -->
     <div id="larerInnloggingMeny" style="margin-top:10px;"></div>
@@ -727,6 +730,15 @@ const iToppen = document.getElementById('larerInnlogging');
 const iMenyen = document.getElementById('larerInnloggingMeny');
 if(iToppen) LRNifyAuth.mountLoginWidget(iToppen);
 if(iMenyen) LRNifyAuth.mountLoginWidget(iMenyen);
+
+LRNifyAuth.onAuthChange(bruker=>{
+  const adminLenke=document.getElementById('adminLenke');
+  if(!adminLenke) return;
+  if(!bruker){ adminLenke.style.display='none'; return; }
+  LRNifyAuth.erAdmin().then(erAdmin=>{
+    adminLenke.style.display = erAdmin ? '' : 'none';
+  });
+});
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 </body>

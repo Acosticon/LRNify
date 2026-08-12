@@ -425,6 +425,20 @@
   }
 
   /**
+   * Om innlogget lærer har admin-flagget (satt manuelt i Firebase-konsollet,
+   * se bruk/README.md). Brukes til å vise/skjule ting kun ment for drift av
+   * LRNify selv, f.eks. lenken til bruksstatistikken.
+   * @returns {Promise<boolean>}
+   */
+  async function erAdmin() {
+    kreverInit();
+    const uid = getCurrentUid();
+    if (!uid) return false;
+    const snap = await FB.get(FB.ref(FB.db, 'users/' + uid + '/admin'));
+    return snap.val() === true;
+  }
+
+  /**
    * Henter lærerens lagrede klasser, nyeste først.
    * @returns {Promise<Array<{klasseId, navn, trinn, opprettet, elever}>>}
    */
@@ -841,6 +855,7 @@
     tilbakestillPassord,
     logout,
     getCurrentUid,
+    erAdmin,
     opprettRom,
     hentMineRom,
     hentAlleMineRom,
