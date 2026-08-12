@@ -1,8 +1,12 @@
 # Sosiale medier – "Klassekart til skolestart"
 
 Utgangspunkt: bloggposten `/blog/klassekart-skolestart/`. Under er tilpassede versjoner for
-Facebook og Instagram, klare til å lime inn. Bilde: `media/tools/klassekart.png`, eller ta et
-ferskt skjermbilde av et generert klassekart for mer "levende" innhold.
+Facebook og Instagram, klare til å lime inn – og ferdige bilder til begge, laget i LRNifys egen
+stil (samme farger/fonter som verktøyene).
+
+**Bilder (ferdige, i `social/`-mappen ved siden av denne filen):**
+- `social/facebook-klassekart-1200x630.png` – liggende, bruk som vedlagt bilde/lenke-forhåndsvisning på Facebook.
+- `social/facebook-klassekart-1080x1080.png` – kvadratisk, bruk til feed-innlegg på Facebook eller Instagram.
 
 Publiseringsvindu: nå og de neste 1–2 ukene, mens skolestart faktisk pågår – dette temaet mister
 mye av verdien etter at klassene har satt seg.
@@ -48,9 +52,10 @@ PS: LRNify er fortsatt "work in progress" – vi bygger ut med mer gratis innhol
 .
 #lærerliv #skolestart2026 #klasserom #klassekart #digitalklasserom #gratisforlærer #norskskole #undervisning #lk20 #edtechnorge
 
-**Format-forslag:** karusell (3 bilder) – 1) tomt klasserom / spørsmålstegn, 2) skjermbilde av
-verktøyet med navn og regler lagt inn, 3) det ferdige kartet. Alternativt en 15–20 sek skjermopptak
-av "lim inn navn → trykk generer → ferdig kart" som Reel.
+**Bilde:** `social/facebook-klassekart-1080x1080.png` fungerer som ferdig enkeltbilde til feed-innlegget.
+Vil du heller ha en karusell: bruk det som bilde 1, og legg til 2) skjermbilde av verktøyet med navn
+og regler lagt inn, 3) det ferdige kartet. Alternativt en 15–20 sek skjermopptak av
+"lim inn navn → trykk generer → ferdig kart" som Reel.
 
 ---
 
