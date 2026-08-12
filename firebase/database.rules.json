@@ -409,6 +409,36 @@
           }
         }
       }
+    },
+
+    "ledertavle": {
+      "$spill": {
+        "$tavle": {
+          ".read": true,
+          ".indexOn": ["ms", "ts"],
+
+          "$oppforing": {
+            ".write": "$spill.matches(/^[a-z0-9-]{1,40}$/) && $tavle.matches(/^[a-z0-9_-]{1,60}$/) && !data.exists() && newData.exists()",
+            ".validate": "newData.hasChildren(['navn', 'ms', 'n', 'ts']) && newData.child('ms').val() >= newData.child('n').val() * 400",
+
+            "navn": {
+              ".validate": "newData.isString() && newData.val().matches(/^\\S{1,8}$/)"
+            },
+            "ms": {
+              ".validate": "newData.isNumber() && newData.val() >= 400 && newData.val() <= 3600000"
+            },
+            "n": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 100"
+            },
+            "ts": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000 && newData.val() >= now - 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      }
     }
   }
 }
