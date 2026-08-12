@@ -168,6 +168,7 @@
   .row.me{background:#fff7da;}
   .row.gold .rk{color:#caa204;} .row.silver .rk{color:#9aa0a6;} .row.bronze .rk{color:#b5793c;}
   .lb-empty{padding:18px; text-align:center; font-weight:800; opacity:.65;}
+  .lb-note{font-weight:700; font-size:12px; opacity:.7; text-align:center; margin-top:6px; min-height:1em;}
 
   /* ======= PASS ======= */
   .passgrid{display:grid; grid-template-columns:1fr; gap:8px; margin-top:10px; text-align:left;}
@@ -228,6 +229,7 @@
     <header>
       <div class="brand">LRN<span class="dot">·</span>ify</div>
       <div class="stats">
+        <button class="btn small sub" id="lbBtn">🏆 Ledertavla</button>
         <button class="btn small sub" id="passBtn">🛂 Passet mitt</button>
       </div>
     </header>
@@ -303,6 +305,7 @@
               <button class="tab" data-period="all">Tidenes</button>
             </div>
             <div class="rows" id="lbRows"></div>
+            <div class="lb-note" id="lbNote"></div>
           </div>
 
           <div>
@@ -346,6 +349,39 @@
         <button class="printbtn" data-print="blank">Tomt kart</button>
         <button class="printbtn" data-print="test">Prøveark</button>
         <button class="printbtn" data-print="fasit">Fasit</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= LEDERTAVLE ================= -->
+  <div class="overlay hidden" id="lbOverlay">
+    <div class="card" style="position:relative;">
+      <button class="closex" id="lbClose" aria-label="Lukk">✕</button>
+      <h1>🏆 Ledertavla</h1>
+      <p>Raskeste feilfrie runder. Bare runder der alt ble riktig på første forsøk kommer med.</p>
+
+      <div class="optgroup">
+        <div class="lbl">Region</div>
+        <div class="optrow" id="lbRegionRow"></div>
+      </div>
+      <div class="optgroup">
+        <div class="lbl">Modus</div>
+        <div class="optrow" id="lbModeRow"></div>
+      </div>
+      <div class="optgroup">
+        <div class="lbl">Nivå</div>
+        <div class="optrow" id="lbLevelRow"></div>
+      </div>
+
+      <div class="lb">
+        <div class="tabs" id="lbHubTabs">
+          <button class="tab active" data-period="today">I dag</button>
+          <button class="tab" data-period="week">Denne uka</button>
+          <button class="tab" data-period="month">Måneden</button>
+          <button class="tab" data-period="all">Tidenes</button>
+        </div>
+        <div class="rows" id="lbHubRows"></div>
+        <div class="lb-note" id="lbHubNote"></div>
       </div>
     </div>
   </div>
@@ -659,25 +695,94 @@ function stampsInRegion(region){
   return n;
 }
 
-/* ---------------- ledertavle (lokal, per region+modus+nivå) ----------------
-   Tidene ligger i localStorage, altså per nettleser og maskin: elever på
-   hver sin Chromebook ser ikke hverandres tider. Det er med vilje – samme
-   opplegg som Land i Europa. submit/top er likevel async, slik at de kan
-   byttes mot en delt database senere uten at resten av spillet endres:
+/* ---------------- ledertavle (global, delt via Firebase) -------------------
+   Tidene ligger i den samme Firebase-basen som besøkstellinga, og leses og
+   skrives med rene REST-kall — ingen Firebase-SDK, slik at spillet slipper å
+   laste ~100 kB for en liste med ti navn. Reglene ligger i
+   firebase/database.rules.json: tavla er åpen for lesing, hvem som helst kan
+   legge til én tid, men ingen kan endre eller slette andres.
 
-     -- submit: await sb.from('leaderboard').insert({ game:key(), name, ms });
-     -- top:    await sb.from('leaderboard').select('name,ms,created_at')
-     --            .eq('game',key()).gte('created_at',periodeStart)
-     --            .order('ms').limit(n);
+   Bare den ekte sida skriver til basen. Lokal utvikling og forhåndsvisninger
+   faller tilbake på localStorage, slik at testtider aldri havner i produksjon.
+   Det samme skjer hvis nettet er nede – da ser eleven sine egne tider i
+   stedet for en feilmelding.
+
+   Reglene kan ikke vite hvor mange oppgaver en runde har, så hver oppføring
+   bærer med seg sin egen n, og lesesida forkaster alt som ikke stemmer med
+   rundens faktiske antall. En tavle som tar imot tider rett fra nettleseren
+   kan uansett ikke bli juksesikker; dette luker bort det som ellers ville
+   lagt seg øverst som en umulig tid.
    --------------------------------------------------------------------------- */
+let LB_DB='https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app';
+const LB_SPILL='kartografen';
+const LB_VERTER=['lrnify.no','www.lrnify.no'];
+const LB_TIMEOUT=6000;
+let lbKilde='global';   /* 'global' eller 'lokal' – styrer notisen under lista */
+let lbTvingGlobal=false;/* settes bare av røyktesten, se __game._lbTest */
+
+function lbErGlobal(){ return typeof fetch==='function' && (lbTvingGlobal || LB_VERTER.indexOf(location.hostname)!==-1); }
+function periodeStart(period, now){
+  if(period==='all') return 0;
+  const d=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  if(period==='today') return d.getTime();
+  if(period==='month') return new Date(now.getFullYear(),now.getMonth(),1).getTime();
+  if(period==='week'){ const dag=(d.getDay()+6)%7; d.setDate(d.getDate()-dag); return d.getTime(); }
+  return 0;
+}
+async function lbHent(url){
+  const ctrl=new AbortController(), t=setTimeout(()=>ctrl.abort(),LB_TIMEOUT);
+  try{ const r=await fetch(url,{signal:ctrl.signal,cache:'no-store'}); if(!r.ok) return null; return await r.json(); }
+  catch(e){ return null; }
+  finally{ clearTimeout(t); }
+}
 function isoWeek(d){ const t=new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())); const day=(t.getUTCDay()+6)%7; t.setUTCDate(t.getUTCDate()-day+3); const firstThu=new Date(Date.UTC(t.getUTCFullYear(),0,4)); const w=1+Math.round(((t-firstThu)/86400000-3+((firstThu.getUTCDay()+6)%7))/7); return t.getUTCFullYear()+'-W'+w; }
 function inPeriod(ts, period, now){ const d=new Date(ts); if(period==='all') return true; if(period==='today') return d.toDateString()===now.toDateString(); if(period==='week') return isoWeek(d)===isoWeek(now); if(period==='month') return d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth(); return true; }
 const LB = {
   cache:{},
-  key(){ return 'lrnify_kartografen_lb_'+S.region+'_'+S.mode+'_'+S.level; },
-  _read(k){ if(!this.cache[k]) this.cache[k]=store.get(k,[]); return this.cache[k]; },
-  async submit(entry){ const k=this.key(); const l=this._read(k).concat([entry]).slice(-500); this.cache[k]=l; store.set(k,l); return entry; },
-  async top(period,n=10){ const now=new Date(); return this._read(this.key()).filter(e=>inPeriod(e.ts,period,now)).sort((a,b)=>a.ms-b.ms).slice(0,n); },
+  /* Tavlenøkkelen må passe /^[a-z0-9_-]{1,60}$/ i databasereglene. Alle
+     region-, modus- og nivånøklene er små bokstaver, så den holder seg
+     innenfor av seg selv. */
+  tavle(region,mode,level){ return (region||S.region)+'_'+(mode||S.mode)+'_'+(level||S.level); },
+  url(tavle,q){ return LB_DB+'/ledertavle/'+LB_SPILL+'/'+tavle+'.json'+(q||''); },
+  key(region,mode,level){ return 'lrnify_kartografen_lb_'+this.tavle(region,mode,level); },
+
+  _lokal(k){ if(!this.cache[k]) this.cache[k]=store.get(k,[]); return this.cache[k]; },
+  _lagreLokalt(k,entry){ const l=this._lokal(k).concat([entry]).slice(-500); this.cache[k]=l; store.set(k,l); },
+
+  /* Tida lagres alltid lokalt også. Da ser eleven sin egen tid selv om
+     nettet svikter, og vi har noe å vise hvis basen er utilgjengelig. */
+  async submit(entry){
+    this._lagreLokalt(this.key(),entry);
+    if(!lbErGlobal()) return entry;
+    const ctrl=new AbortController(), t=setTimeout(()=>ctrl.abort(),LB_TIMEOUT);
+    try{
+      const r=await fetch(this.url(this.tavle()),{method:'POST',signal:ctrl.signal,
+        body:JSON.stringify({navn:entry.navn, ms:entry.ms, n:entry.n, ts:entry.ts})});
+      if(r.ok){ const d=await r.json(); entry.id=d&&d.name; }
+    }catch(e){ /* tida ligger uansett lokalt */ }
+    finally{ clearTimeout(t); }
+    return entry;
+  },
+
+  async top(period,n=10,region,mode,level){
+    const now=new Date(), tavle=this.tavle(region,mode,level);
+    const forventet=quizForRound(region,mode,level).length;
+    if(lbErGlobal()){
+      const q = period==='all'
+        ? '?orderBy=%22ms%22&limitToFirst=200'
+        : '?orderBy=%22ts%22&startAt='+periodeStart(period,now);
+      const data=await lbHent(this.url(tavle,q));
+      if(data!==null){
+        lbKilde='global';
+        return Object.keys(data||{}).map(id=>Object.assign({id},data[id]))
+          .filter(e=>e.n===forventet && inPeriod(e.ts,period,now))
+          .sort((a,b)=>a.ms-b.ms).slice(0,n);
+      }
+    }
+    lbKilde='lokal';
+    return this._lokal(this.key(region,mode,level))
+      .filter(e=>inPeriod(e.ts,period,now)).sort((a,b)=>a.ms-b.ms).slice(0,n);
+  },
 };
 
 /* ---------------- global state ---------------- */
@@ -779,12 +884,16 @@ $('relaxToggle').addEventListener('change',e=>setRelaxedMode(e.target.checked));
 /* ============================================================
    SPILLOPPSETT / KARTBYGGING
    ============================================================ */
-function quizForRound(){
-  const R=REGIONS[S.region];
+/* Uten argumenter gjelder den runden som spilles nå. Ledertavla kaller den
+   med eksplisitt region/modus/nivå for å vite hvor mange oppgaver en annen
+   tavle har, og luke bort tider som ikke kan stamme fra den runden. */
+function quizForRound(region,mode,level){
+  region=region||S.region; mode=mode||S.mode; level=level||S.level;
+  const R=REGIONS[region];
   let list=R.quiz.slice();
-  if(S.level==='utforsker') list=list.filter(c=>!c.mini && c.size!=='S');
-  if(S.mode==='hovedsteder') list=list.filter(c=>c.capital && c.id!=='PS' && c.id!=='IL'); /* omstridte hovedsteder utelates */
-  if(S.mode==='byer') list=list.filter(c=>c.byer && c.byer.length);
+  if(level==='utforsker') list=list.filter(c=>!c.mini && c.size!=='S');
+  if(mode==='hovedsteder') list=list.filter(c=>c.capital && c.id!=='PS' && c.id!=='IL'); /* omstridte hovedsteder utelates */
+  if(mode==='byer') list=list.filter(c=>c.byer && c.byer.length);
   return list;
 }
 function buildMap(){
@@ -952,9 +1061,10 @@ async function end(){
     $('endTitle').textContent='PERFEKT! 🏆';
     $('endLine').textContent='alt riktig på første forsøk';
     const name=(nick.value||'Anonym').trim()||'Anonym';
-    lastEntry={ name, ms, ts:Date.now() };
+    lastEntry={ navn:name, ms, n:total, ts:Date.now() };
     await LB.submit(lastEntry);
-    note.textContent='⏱ Tiden din er registrert på ledertavlen!'+(newStamp?' Nytt stempel i passet! 🛂':'');
+    note.textContent=(lbErGlobal()?'⏱ Tiden din er sendt til ledertavla!':'⏱ Tiden din er lagret på denne maskinen.')
+      +(newStamp?' Nytt stempel i passet! 🛂':'');
   } else if(perfect && S.relaxed){
     $('endTitle').textContent='PERFEKT! 🏆';
     $('endLine').textContent='alt riktig på første forsøk';
@@ -968,17 +1078,35 @@ async function end(){
   lbPeriod='today'; setActiveTab(lbPeriod); await renderLB(lbPeriod);
   $('endOverlay').classList.remove('hidden');
 }
-function setActiveTab(period){ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.period===period)); }
+function setActiveTab(period){ document.querySelectorAll('#endOverlay .tab').forEach(t=>t.classList.toggle('active', t.dataset.period===period)); }
+
+/* Er dette elevens egen tid? Globalt får oppføringa en id fra basen; lokalt
+   finnes ingen id, og da må navn+tid+tidspunkt til sammen peke den ut. */
+function erMeg(e){
+  if(!lastEntry) return false;
+  if(e.id && lastEntry.id) return e.id===lastEntry.id;
+  return (e.navn||e.name)===lastEntry.navn && e.ms===lastEntry.ms && e.ts===lastEntry.ts;
+}
+function tegnRader(el,list){
+  if(!list.length){ el.innerHTML='<div class="lb-empty">Ingen tider ennå – bli den første! 🏁</div>'; return; }
+  const medal=['gold','silver','bronze'];
+  el.innerHTML=list.map((e,i)=>
+    '<div class="row '+(medal[i]||'')+' '+(erMeg(e)?'me':'')+'"><div class="rk">'+(i+1)+'</div>'+
+    '<div class="nm">'+escapeHtml(e.navn||e.name||'Anonym')+'</div>'+
+    '<div class="tm">'+fmtMs(e.ms)+'</div></div>').join('');
+}
+function kildeNotis(){
+  return lbKilde==='lokal'
+    ? (lbErGlobal() ? 'Fikk ikke kontakt med ledertavla – viser tider fra denne maskinen.'
+                    : 'Viser tider fra denne maskinen.')
+    : '';
+}
 async function renderLB(period){
   lbPeriod=period;
   const rows=$('lbRows');
-  const list=await LB.top(period,10);
-  if(!list.length){ rows.innerHTML='<div class="lb-empty">Ingen tider ennå – bli den første! 🏁</div>'; return; }
-  const medal=['gold','silver','bronze'];
-  rows.innerHTML=list.map((e,i)=>{
-    const me = lastEntry && e.name===lastEntry.name && e.ms===lastEntry.ms && e.ts===lastEntry.ts;
-    return '<div class="row '+(medal[i]||'')+' '+(me?'me':'')+'"><div class="rk">'+(i+1)+'</div><div class="nm">'+escapeHtml(e.name)+'</div><div class="tm">'+fmtMs(e.ms)+'</div></div>';
-  }).join('');
+  rows.innerHTML='<div class="lb-empty">Henter tider …</div>';
+  tegnRader(rows, await LB.top(period,10));
+  $('lbNote').textContent=kildeNotis();
 }
 
 /* ============================================================
@@ -998,6 +1126,58 @@ function renderPass(){
     g.appendChild(div);
   });
 }
+/* ============================================================
+   LEDERTAVLE-SKJERM (egen inngang fra huben)
+   ============================================================ */
+const lbView={ region:'norge', mode:'fylker', level:'kartograf', period:'today' };
+let lbHentNr=0;   /* teller som gjør at et tregt svar ikke overskriver et nyere */
+
+function lbOpt(row,tekst,valgt,onclick){
+  const b=document.createElement('button'); b.className='opt'+(valgt?' sel':'');
+  b.innerHTML=tekst; b.addEventListener('click',onclick); row.appendChild(b);
+}
+function renderLbVelgere(){
+  const rr=$('lbRegionRow'); rr.innerHTML='';
+  REGION_ORDER.forEach(rid=>lbOpt(rr,REGIONS[rid].navn,lbView.region===rid,()=>{
+    lbView.region=rid;
+    if(!REGION_CONF[rid].moduser.includes(lbView.mode)) lbView.mode=REGION_CONF[rid].moduser[0];
+    renderLbVelgere(); renderHubLB();
+  }));
+  const mr=$('lbModeRow'); mr.innerHTML='';
+  REGION_CONF[lbView.region].moduser.forEach(m=>lbOpt(mr,MODES[m].ikon+' '+MODES[m].navn,lbView.mode===m,()=>{
+    lbView.mode=m; renderLbVelgere(); renderHubLB();
+  }));
+  const lr=$('lbLevelRow'); lr.innerHTML='';
+  Object.keys(LEVELS).forEach(k=>lbOpt(lr,LEVELS[k].navn,lbView.level===k,()=>{
+    lbView.level=k; renderLbVelgere(); renderHubLB();
+  }));
+}
+async function renderHubLB(){
+  const rows=$('lbHubRows');
+  rows.innerHTML='<div class="lb-empty">Henter tider …</div>';
+  const mitt=++lbHentNr;
+  const list=await LB.top(lbView.period,10,lbView.region,lbView.mode,lbView.level);
+  if(mitt!==lbHentNr) return;
+  tegnRader(rows,list);
+  $('lbHubNote').textContent=kildeNotis();
+}
+function openLB(){
+  if(S.region){ lbView.region=S.region; if(S.mode) lbView.mode=S.mode; if(S.level) lbView.level=S.level; }
+  if(!REGION_CONF[lbView.region].moduser.includes(lbView.mode)) lbView.mode=REGION_CONF[lbView.region].moduser[0];
+  renderLbVelgere();
+  document.querySelectorAll('#lbHubTabs .tab').forEach(t=>t.classList.toggle('active',t.dataset.period===lbView.period));
+  $('lbOverlay').classList.remove('hidden');
+  renderHubLB();
+}
+$('lbBtn').addEventListener('click',openLB);
+$('lbClose').addEventListener('click',()=>$('lbOverlay').classList.add('hidden'));
+$('lbOverlay').addEventListener('click',e=>{ if(e.target===$('lbOverlay')) $('lbOverlay').classList.add('hidden'); });
+document.querySelectorAll('#lbHubTabs .tab').forEach(t=>t.addEventListener('click',()=>{
+  lbView.period=t.dataset.period;
+  document.querySelectorAll('#lbHubTabs .tab').forEach(o=>o.classList.toggle('active',o===t));
+  renderHubLB();
+}));
+
 $('passBtn').addEventListener('click',()=>{ renderPass(); $('passOverlay').classList.remove('hidden'); });
 $('passClose').addEventListener('click',()=>$('passOverlay').classList.add('hidden'));
 $('passOverlay').addEventListener('click',e=>{ if(e.target===$('passOverlay')) $('passOverlay').classList.add('hidden'); });
@@ -1116,7 +1296,7 @@ $('replayBtn').addEventListener('click', start);
 $('menuBtn').addEventListener('click', toHub);
 $('backBtn').addEventListener('click', toHub);
 nick.addEventListener('keydown', e=>{ if(e.key==='Enter') start(); });
-document.querySelectorAll('.tab').forEach(t=>t.addEventListener('click', ()=>{ setActiveTab(t.dataset.period); renderLB(t.dataset.period); }));
+document.querySelectorAll('#endOverlay .tab').forEach(t=>t.addEventListener('click', ()=>{ setActiveTab(t.dataset.period); renderLB(t.dataset.period); }));
 
 /* ---------------- oppstart ---------------- */
 renderHub();
@@ -1129,6 +1309,10 @@ window.__game={
   centroidOf:id=>({x:byId[id].cx,y:byId[id].cy}), isMini:id=>!!(byId[id]&&byId[id].mini),
   forceTarget:id=>{ clearTimeout(advanceTimer); locked=false; finished=false; queue=[id]; idx=0; attempts=0; firstTry=true; clearReveal(); next(); },
   countryAt, miniNear,
+  lbView, openLB, renderHubLB, lbErGlobal, kildeNotis,
+  /* Lar røyktesten peke ledertavla mot en lokal etterlikning av Firebase-
+     REST-et, i stedet for å skrive testtider inn i den ekte basen. */
+  _lbTest:(base,på)=>{ LB_DB=base; lbTvingGlobal=på; LB.cache={}; },
 };
 
 })();

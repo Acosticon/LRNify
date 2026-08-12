@@ -457,5 +457,57 @@ check('vanlig lærer leser én enkelt teller', false, db(medAdmin, LARER).read(P
 check('admin leser statistikken', true, db(medAdmin, ADMIN).read('/bruk'));
 check('lærer kan ikke gjøre seg selv til admin', false, db(medAdmin, LARER).write('/users/' + LARER.uid + '/admin', true));
 
+// ---------------------------------------------------------------------------
+// Ledertavle (games/geografi/kartografen/). Verdensåpen: hvem som helst kan
+// lese, og hvem som helst kan legge til én tid. Reglene kan derfor ikke stole
+// på hvem som skriver — de kan bare passe på at en oppføring har riktig form,
+// at ingen rører andres tider, og at tida ikke er fysisk umulig.
+// ---------------------------------------------------------------------------
+const LT = '/ledertavle/kartografen/norge_fylker_kartograf';
+const tid = { navn: 'Lynet', ms: 42000, n: 15, ts: now };
+const tavle = { ledertavle: { kartografen: { norge_fylker_kartograf: { '-Nt1': tid } } } };
+const tomTavle = {};
+
+console.log('--- ledertavle: normal flyt');
+check('elev leverer en tid', true, db(tomTavle, null).write(LT + '/-Nt2', tid));
+check('elev leverer i en tavle som finnes fra før', true, db(tavle, null).write(LT + '/-Nt2', tid));
+check('hvem som helst leser tavla', true, db(tavle, null).read(LT));
+check('innlogget lærer leverer også', true, db(tavle, LARER).write(LT + '/-Nt2', tid));
+check('rask, men mulig tid (15 fylker på 6 s)', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Rapp', ms: 6000, n: 15, ts: now }));
+
+console.log('--- ledertavle: hærverk');
+check('endrer en annens tid', false, db(tavle, null).write(LT + '/-Nt1/ms', 1000));
+check('overskriver en annens oppføring', false, db(tavle, null).write(LT + '/-Nt1', tid));
+check('sletter en annens tid', false, db(tavle, null).write(LT + '/-Nt1', null));
+check('tømmer hele tavla', false, db(tavle, null).write(LT, null));
+check('overskriver hele tavla', false, db(tavle, null).write(LT, { '-Nx': tid }));
+check('sletter hele ledertavletreet', false, db(tavle, null).write('/ledertavle', null));
+check('lister opp alle tavler', false, db(tavle, null).read('/ledertavle'));
+check('lister opp alle spill', false, db(tavle, null).read('/ledertavle/kartografen'));
+
+console.log('--- ledertavle: juks og ugyldige data');
+check('umulig tid (15 fylker på 1 s)', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 1000, n: 15, ts: now }));
+check('null millisekunder', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 0, n: 15, ts: now }));
+check('negativ tid', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: -5000, n: 15, ts: now }));
+// Grensa for hva reglene kan få til: de vet ikke at norge_fylker_kartograf
+// har 15 oppgaver, så n=1 med ms=1000 er internt konsistent og slipper
+// gjennom. Klienten forkaster oppføringer der n ikke stemmer med rundens
+// faktiske antall — se ledertavleFilter i Kartografen. En verdensåpen tavle
+// som tar imot tider fra nettleseren kan uansett aldri bli juksesikker;
+// reglene stopper søppel og hærverk, ikke en bevisst jukser med konsoll.
+check('feil n slipper gjennom reglene (klienten luker det bort)', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 1000, n: 1, ts: now }));
+check('riktig n gir et gulv som holder', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 1000, n: 15, ts: now }));
+check('urimelig mange oppgaver', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 90000, n: 500, ts: now }));
+check('backdaterer for å komme inn på gårsdagens liste', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 42000, n: 15, ts: now - 86400000 }));
+check('daterer fram i tid', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 42000, n: 15, ts: now + 86400000 }));
+check('for langt kallenavn', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A'.repeat(15), ms: 42000, n: 15, ts: now }));
+check('tomt kallenavn', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: '', ms: 42000, n: 15, ts: now }));
+check('mangler felt', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Lynet', ms: 42000 }));
+check('smugler inn et ekstra felt', false, db(tomTavle, null).write(LT + '/-Nt2', Object.assign({}, tid, { lenke: 'http://spam' })));
+check('tid som tekst', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: '1', n: 15, ts: now }));
+check('objekt i navnefeltet', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: { a: 1 }, ms: 42000, n: 15, ts: now }));
+check('ugyldig tavlenøkkel', false, db(tomTavle, null).write('/ledertavle/kartografen/Norge Fylker/-Nt2', tid));
+check('ugyldig spillnøkkel', false, db(tomTavle, null).write('/ledertavle/Kartografen!/norge_fylker_kartograf/-Nt2', tid));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
