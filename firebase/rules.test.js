@@ -500,8 +500,8 @@ check('riktig n gir et gulv som holder', false, db(tomTavle, null).write(LT + '/
 check('urimelig mange oppgaver', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 90000, n: 500, ts: now }));
 check('backdaterer for å komme inn på gårsdagens liste', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 42000, n: 15, ts: now - 86400000 }));
 check('daterer fram i tid', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 42000, n: 15, ts: now + 86400000 }));
-check('for langt kallenavn', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A'.repeat(15), ms: 42000, n: 15, ts: now }));
-check('kallenavn på nøyaktig 14 tegn går gjennom', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A'.repeat(14), ms: 42000, n: 15, ts: now }));
+check('for langt kallenavn', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A'.repeat(9), ms: 42000, n: 15, ts: now }));
+check('kallenavn på nøyaktig 8 tegn går gjennom', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A'.repeat(8), ms: 42000, n: 15, ts: now }));
 check('tomt kallenavn', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: '', ms: 42000, n: 15, ts: now }));
 check('mellomrom i kallenavnet', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Kari Nordmann', ms: 42000, n: 15, ts: now }));
 check('kallenavn med innledende mellomrom', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: ' Lynet', ms: 42000, n: 15, ts: now }));

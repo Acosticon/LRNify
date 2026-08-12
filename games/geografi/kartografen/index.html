@@ -335,7 +335,7 @@
 
       <div class="namefield">
         <label for="nick">Kallenavn:</label>
-        <input id="nick" maxlength="14" placeholder="f.eks. Lynet" autocomplete="off" spellcheck="false">
+        <input id="nick" maxlength="8" placeholder="f.eks. Lynet" autocomplete="off" spellcheck="false">
       </div>
       <div class="relaxrow">
         <label for="relaxToggle" style="cursor:pointer;">😌 Avslappet modus (ingen tidtaking)</label>
@@ -730,6 +730,7 @@ function stampsInRegion(region){
    spillet røres ikke. Ingen advarsel midt i spillet, bare en kort setning
    i sluttmeldingen om at det skjedde.
    --------------------------------------------------------------------------- */
+const NAVN_MAKS=8;   /* eneste sted grensa er satt – #nick.maxLength settes fra denne */
 const NAVNEFILTER=[
   'faen','fitte','fitta','kuk','kukk','pikk','ræva','ræv','helvete',
   'jævla','jævel','satan','fanden','drittsekk','megge','hore','homo',
@@ -750,13 +751,13 @@ function erUpassende(navn){
   const n=lbNormaliser(navn);
   return !n || NAVNEFILTER_NORM.some(ord=>n.includes(ord));
 }
-const LB_ADJEKTIV=['Rask','Sterk','Kjapp','Snar','Kvikk','Modig','Snill','Vill','Smart','Rolig'];
-const LB_DYR=['Rev','Ulv','Ørn','Falk','Hare','Elg','Bjørn','Ugle','Lynx','Reven'];
-function genererKallenavn(){ return (pick(LB_ADJEKTIV)+pick(LB_DYR)+(1+(Math.random()*98|0))).slice(0,14); }
-/* Om det genererte navnet av uflaks selv skulle inneholde et blokkert ord
-   (kan skje ved sammensetning av to uskyldige deler), prøv på nytt et par
-   ganger før vi gir opp og bruker det som det er. */
-function trygtKallenavn(){ for(let i=0;i<5;i++){ const k=genererKallenavn(); if(!erUpassende(k)) return k; } return 'Kartograf'+(1+(Math.random()*98|0)); }
+/* Kort nok til å alltid holde seg innenfor NAVN_MAKS selv med et
+   totalls tall bak (lengste ordet + 2 siffer skal aldri gå over 8). */
+const LB_DYR=['Rev','Ulv','Ørn','Elg','Ugle','Hare','Falk','Puma','Ravn','Gaupe','Bever','Tiger'];
+function genererKallenavn(){ return (pick(LB_DYR)+(1+(Math.random()*98|0))).slice(0,NAVN_MAKS); }
+/* Om det genererte navnet av uflaks selv skulle inneholde et blokkert ord,
+   prøv på nytt et par ganger før vi gir opp og bruker det som det er. */
+function trygtKallenavn(){ for(let i=0;i<5;i++){ const k=genererKallenavn(); if(!erUpassende(k)) return k; } return ('Gjest'+(1+(Math.random()*98|0))).slice(0,NAVN_MAKS); }
 
 let LB_DB='https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app';
 const LB_SPILL='kartografen';
@@ -1351,6 +1352,7 @@ nick.addEventListener('keydown', e=>{ if(e.key==='Enter') start(); });
    slett ett kult ord i stedet. Det stopper ikke en som prøver, men
    demper det vanligste tilfellet uten å be om noe fra eleven. */
 nick.addEventListener('input', ()=>{ if(/\s/.test(nick.value)) nick.value=nick.value.replace(/\s+/g,''); });
+nick.maxLength=NAVN_MAKS;   /* HTML-attributtet er satt likt, dette er kontrollen */
 document.querySelectorAll('#endOverlay .tab').forEach(t=>t.addEventListener('click', ()=>{ setActiveTab(t.dataset.period); renderLB(t.dataset.period); }));
 
 /* ---------------- oppstart ---------------- */
