@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Grafkjøreren — LRNify</title>
+<meta name="description" content="Styr farten på en bil med gass, brems og stopp slik at bevegelsen matcher en gitt strekning–tid-graf.">
+<link rel="canonical" href="https://lrnify.no/games/grafkjoreren/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Grafkjøreren – LRNify">
+<meta property="og:description" content="Styr farten på en bil med gass, brems og stopp slik at bevegelsen matcher en gitt strekning–tid-graf.">
+<meta property="og:image" content="https://lrnify.no/media/og/grafkjoreren.png">
+<meta property="og:url" content="https://lrnify.no/games/grafkjoreren/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Grafkjøreren – LRNify">
+<meta name="twitter:description" content="Styr farten på en bil med gass, brems og stopp slik at bevegelsen matcher en gitt strekning–tid-graf.">
+<meta name="twitter:image" content="https://lrnify.no/media/og/grafkjoreren.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #2b2118;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+    --gridline:#e8dfc9;
+
+    --sky: #bcd7ff;
+    --road: #4b463d;
+    --road-line: #fff9f0;
+    --target-color: #2563eb;
+    --player-color: #dc2626;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SCREENS ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .screen-hero { padding: 4px 0 4px; }
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 6px; }
+  .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.9rem,7vw,3rem); }
+  .screen-hero p  {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.9rem,2.4vw,1.05rem); margin-top: 8px; max-width: 440px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; width: 100%;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 10px; }
+
+  .example-label { font-weight: 800; font-size: .8rem; color: var(--muted); margin-bottom: 8px; }
+  .example-wrap { width: min(80vw, 340px); margin: 0 auto; aspect-ratio: 600/320; position: relative; border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink); overflow: hidden; background:#fffdf7; }
+  .example-wrap svg { width: 100%; height: 100%; display: block; }
+
+  button, .btn-primary, .btn-secondary { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+  .btn-primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  .btn-secondary {
+    font-weight: 900; background: var(--card); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 14px 22px; font-size: 1rem; flex: 1;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-secondary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-secondary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-secondary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  .btn-back {
+    font-weight: 800; color: var(--muted); text-decoration: none; font-size: .9rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 40px; }
+  .game-wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; align-items: center; animation: fadeIn .3s ease; }
+
+  .hud {
+    width: 100%;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    flex-wrap: wrap; padding-top: 6px;
+  }
+  .hud-target {
+    background: var(--yellow); border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 8px 16px; transform: rotate(-1deg); flex: 1 1 auto; min-width: 160px;
+  }
+  .hud-label { display:block; font-weight:900; font-size:.9rem; }
+  .hud-right { display: flex; gap: 8px; }
+  .hud-stat {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 6px 12px; text-align: center; min-width: 74px;
+  }
+  .hud-stat-label { display:block; font-weight:900; font-size:.6rem; text-transform:uppercase; letter-spacing:.05em; color: var(--muted); }
+  .hud-stat-val { font-family: 'Chewy', cursive; font-size: 1.1rem; }
+
+  /* ══ BILBANE ══ */
+  .track-wrap { width: min(94vw, 600px); margin: 0 auto; }
+  .track-frame {
+    position: relative; width: 100%; height: 72px;
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky) 52%, var(--road) 52%, var(--road) 100%);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    overflow: hidden;
+  }
+  .track-road-line {
+    position: absolute; left: 0; right: 0; bottom: 16px; height: 4px;
+    background: repeating-linear-gradient(90deg, var(--road-line) 0 18px, transparent 18px 34px);
+    opacity: .85;
+  }
+  .track-car {
+    position: absolute; bottom: 8px; left: 0%; transform: translateX(-50%);
+    font-size: 1.9rem; line-height: 1;
+  }
+
+  /* ══ DIAGRAM ══ */
+  .chart-wrap { width: min(94vw, 600px); margin: 0 auto; }
+  .chart-frame {
+    background: #fffdf7; border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+  }
+  .chart-frame svg { width: 100%; height: auto; display: block; }
+  .c-plot-bg   { fill: #fffdf7; }
+  .c-grid      { stroke: var(--gridline); stroke-width: 1.5; }
+  .c-axis      { stroke: var(--ink); stroke-width: 2.5; }
+  .c-axis-label{ font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 13px; fill: var(--muted); }
+  .c-axis-title{ font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 14px; fill: var(--ink); }
+  .c-target-line { fill: none; stroke: var(--target-color); stroke-width: 4; stroke-dasharray: 10 7; stroke-linecap: round; stroke-linejoin: round; }
+  .c-player-line { fill: none; stroke: var(--player-color); stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+  .c-time-marker { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 3 4; opacity: .5; }
+  .chart-legend { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; font-weight:800; font-size:.78rem; margin-top:8px; }
+  .chart-legend span { display:flex; align-items:center; gap:6px; }
+  .legend-swatch { width: 22px; height: 0; border-top-width: 4px; border-top-style: solid; display:inline-block; }
+  .legend-swatch.target { border-color: var(--target-color); border-top-style: dashed; }
+  .legend-swatch.player { border-color: var(--player-color); }
+
+  /* ══ KONTROLLER ══ */
+  .speed-readout { font-weight: 900; font-size: 1.05rem; text-align: center; }
+  .speed-readout span { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+
+  .controls-wrap { display: flex; gap: 10px; width: 100%; max-width: 440px; margin: 0 auto; }
+  .ctrl-btn {
+    flex: 1; font-weight: 900; font-size: 1.7rem; background: var(--card);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 16px 0; min-height: 64px; touch-action: manipulation;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .ctrl-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+  .ctrl-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .ctrl-btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .ctrl-btn-stop { font-size: .95rem; background: #fee2e2; color: #b91c1c; }
+
+  @media (max-width: 640px) {
+    .controls-wrap {
+      position: sticky; bottom: 0; z-index: 5; max-width: none;
+      background: var(--cream); padding: 10px 4px calc(10px + env(safe-area-inset-bottom));
+      border-top: 3px solid rgba(43,33,24,.15);
+    }
+  }
+
+  /* ══ RESULTAT ══ */
+  .result-panel {
+    width: 100%; background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; display: flex; flex-direction: column; gap: 12px;
+  }
+  .result-panel[hidden] { display: none; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: .95rem; }
+  .result-row strong { font-family: 'Chewy', cursive; font-size: 1.5rem; }
+
+  .feedback-list { list-style: none; display: flex; flex-direction: column; gap: 7px; text-align: left; }
+  .fb-item { display: flex; align-items: flex-start; gap: 9px; font-weight: 700; font-size: .92rem; }
+  .fb-icon {
+    display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    width: 22px; height: 22px; border-radius: 50%; font-size: .78rem; font-weight: 900; margin-top: 1px;
+  }
+  .fb-ok .fb-icon   { background: var(--green); color: #fff; }
+  .fb-warn .fb-icon { background: #fde68a; color: #92610a; }
+
+  .result-note { font-weight: 700; font-size: .85rem; color: var(--muted); text-align: center; }
+  .result-actions { display: flex; gap: 10px; width: 100%; }
+
+  /* ══ SLUTTSKJERM ══ */
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+  .summary-quote {
+    font-weight: 800; font-style: italic; font-size: .95rem; color: var(--ink);
+    border-top: 3px solid var(--gridline); padding-top: 10px; margin-top: 4px;
+  }
+
+  footer {
+    text-align: center; padding: 24px; color: var(--muted);
+    font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(43,33,24,.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🚗📈</div>
+      <h1>Grafkjøreren</h1>
+      <p>Styr bilen slik at den følger grafen. Bratt graf betyr høy fart — vannrett graf betyr stopp.</p>
+    </div>
+    <div class="card">
+      <h2>Slik spiller du</h2>
+      <div class="example-label">Eksempel: kjør jevnt, stopp så</div>
+      <div class="example-wrap">
+        <svg id="exampleSvg" viewBox="0 0 600 320" role="img" aria-label="Eksempelgraf: strekningen øker jevnt de tre første sekundene, deretter er kurven vannrett i to sekunder mens bilen står stille."></svg>
+      </div>
+      <p style="font-weight:700; font-size:.9rem; color:var(--muted); margin-top:10px;">
+        Du får se en målkurve. Bruk «−», «STOPP» og «+» til å endre fart underveis, slik at din egen kurve følger målet så godt som mulig. 6 grafer, to forsøk på hver.
+      </p>
+    </div>
+    <button class="btn-primary" id="btnStart">Start</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="hud">
+      <div class="hud-target">
+        <span class="hud-label" id="hudGraphLabel">Graf 1 av 6</span>
+      </div>
+      <div class="hud-right">
+        <div class="hud-stat">
+          <span class="hud-stat-label">Poeng</span>
+          <span class="hud-stat-val" id="hudScore">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="track-wrap">
+      <div class="track-frame">
+        <div class="track-road-line" aria-hidden="true"></div>
+        <div class="track-car" id="carEl" aria-hidden="true">🚗</div>
+      </div>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-frame">
+        <svg id="chartSvg" viewBox="0 0 600 320" role="img" aria-label="Strekning-tid-diagram. Den stiplede blå kurven er målet, den røde heltrukne kurven er din egen bevegelse."></svg>
+      </div>
+      <div class="chart-legend">
+        <span><i class="legend-swatch target" aria-hidden="true"></i>Målkurve</span>
+        <span><i class="legend-swatch player" aria-hidden="true"></i>Din kurve</span>
+      </div>
+    </div>
+    <p class="sr-only" id="graphDescription"></p>
+
+    <div class="speed-readout">Fart: <span id="speedValue">0</span></div>
+
+    <div class="controls-wrap">
+      <button class="ctrl-btn" id="btnSlower" aria-label="Saktere" disabled>−</button>
+      <button class="ctrl-btn ctrl-btn-stop" id="btnStop" aria-label="Stopp" disabled>STOPP</button>
+      <button class="ctrl-btn" id="btnFaster" aria-label="Raskere" disabled>+</button>
+    </div>
+
+    <button class="btn-primary" id="btnGo">Kjør!</button>
+
+    <div class="result-panel" id="resultPanel" hidden>
+      <div class="result-row"><span>Treffsikkerhet</span><strong id="resTreff">0 %</strong></div>
+      <ul class="feedback-list" id="feedbackList"></ul>
+      <p class="result-note" id="resultNote"></p>
+      <div class="result-actions">
+        <button class="btn-secondary" id="btnRetry">Prøv igjen</button>
+        <button class="btn-primary" id="btnNext" style="max-width:none;">Neste graf</button>
+      </div>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🏁📊</div>
+      <h1>Grafkjøringen er ferdig</h1>
+      <p>Her er resultatet ditt etter 6 grafer.</p>
+    </div>
+    <div class="card result-card">
+      <div class="result-row"><span>Totalpoeng</span><strong id="endTotal">0 av 600</strong></div>
+      <div class="result-row"><span>Beste graf</span><strong id="endBest">–</strong></div>
+      <div class="result-row"><span>Størst avvik</span><strong id="endWorst">–</strong></div>
+      <div class="result-row"><span>Gj.snittlig treffsikkerhet</span><strong id="endAvg">0 %</strong></div>
+      <p class="summary-quote">«Jo større fart bilen har, desto brattere blir strekning–tid-grafen.»</p>
+    </div>
+    <button class="btn-primary" id="btnPlayAgain">Kjør igjen</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const NS = 'http://www.w3.org/2000/svg';
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS(NS, tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
+
+/* ── OPPGAVEDATA ──
+   Hver graf er en liste av [fart, varighet] par. Fasit og målkurve
+   beregnes fra samme datastruktur (segments/targetLog under). */
+const GRAPH_DEFS = [
+  [[2, 10]],                                   // 1: konstant fart
+  [[1, 4], [3, 5]],                             // 2: sakte -> raskt
+  [[2, 4], [0, 3], [2, 4]],                      // 3: kjør -> stopp -> kjør
+  [[1, 3], [2, 3], [0, 2], [3, 3]],               // 4: tre fartsskifter
+  [[1, 2], [3, 2], [0, 2], [2, 2], [1, 2]],        // 5: flere korte segmenter
+  [[1, 2], [3, 3], [0, 2], [2, 2], [1, 2], [3, 3]], // 6: alt kombinert
+];
+
+/* posisjon = summen av fart × tid for hvert avsnitt i loggen, evaluert
+   ved tidspunkt t. Loggen er en liste av {t, speed} sortert stigende på
+   t, og gjelder helt til neste oppføring (eller t, om den er sist).
+   Rent tidsbasert — ingen avhengighet av bildefrekvens. */
+function distanceFromLog(log, t) {
+  let dist = 0;
+  for (let i = 0; i < log.length; i++) {
+    const segStart = log[i].t;
+    if (segStart >= t) break;
+    const segEndFull = (i + 1 < log.length) ? log[i + 1].t : t;
+    const segEnd = Math.min(segEndFull, t);
+    dist += log[i].speed * (segEnd - segStart);
+  }
+  return dist;
+}
+
+function buildGraph(def) {
+  let t = 0;
+  const segments = [];
+  for (const [speed, dur] of def) { segments.push({ start: t, end: t + dur, speed }); t += dur; }
+  const duration = t;
+  const targetLog = segments.map(s => ({ t: s.start, speed: s.speed }));
+  const yMax = duration * 3; // verst tenkelige (fart 3 hele veien) — stabil skala, aldri behov for omskalering
+  return { segments, duration, targetLog, yMax };
+}
+
+const SPEED_WORDS = { 0: 'stå stille', 1: 'lav fart', 2: 'middels fart', 3: 'høy fart' };
+function describeGraph(segments) {
+  const parts = segments.map(s => {
+    const dur = s.end - s.start;
+    const durText = dur + (dur === 1 ? ' sekund' : ' sekunder');
+    return s.speed === 0 ? `stå stille i ${durText}` : `kjøre med ${SPEED_WORDS[s.speed]} i ${durText}`;
+  });
+  if (parts.length === 1) return 'Kjør: ' + parts[0] + '.';
+  const last = parts.pop();
+  return 'Kjør: ' + parts.join(', ') + ' og ' + last + '.';
+}
+
+/* ── DIAGRAMTEGNING (delt mellom eksempel og spillskjerm) ── */
+const CHART_W = 600, CHART_H = 320;
+const CHART_M = { l: 46, r: 16, t: 16, b: 34 };
+const PLOT_W = CHART_W - CHART_M.l - CHART_M.r;
+const PLOT_H = CHART_H - CHART_M.t - CHART_M.b;
+
+function niceStep(range, targetTicks) {
+  if (range <= 0) return 1;
+  const rough = range / targetTicks;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
+  const residual = rough / magnitude;
+  let step;
+  if (residual < 1.5) step = 1; else if (residual < 3) step = 2; else if (residual < 7) step = 5; else step = 10;
+  return step * magnitude;
+}
+
+function renderChart(svg, graph, includeLiveLayers) {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const { duration, yMax, segments } = graph;
+  const xS = t => CHART_M.l + (t / duration) * PLOT_W;
+  const yS = d => CHART_M.t + PLOT_H - (d / yMax) * PLOT_H;
+
+  svg.appendChild(svgEl('rect', { x: CHART_M.l, y: CHART_M.t, width: PLOT_W, height: PLOT_H, class: 'c-plot-bg' }));
+
+  const xStep = niceStep(duration, 5);
+  for (let t = 0; t <= duration + 0.001; t += xStep) {
+    const x = xS(t);
+    svg.appendChild(svgEl('line', { x1: x, y1: CHART_M.t, x2: x, y2: CHART_M.t + PLOT_H, class: 'c-grid' }));
+    const lbl = svgEl('text', { x, y: CHART_M.t + PLOT_H + 18, class: 'c-axis-label', 'text-anchor': 'middle' });
+    lbl.textContent = Math.round(t);
+    svg.appendChild(lbl);
+  }
+  const yStep = niceStep(yMax, 5);
+  for (let d = 0; d <= yMax + 0.001; d += yStep) {
+    const y = yS(d);
+    svg.appendChild(svgEl('line', { x1: CHART_M.l, y1: y, x2: CHART_M.l + PLOT_W, y2: y, class: 'c-grid' }));
+    const lbl = svgEl('text', { x: CHART_M.l - 8, y: y + 4, class: 'c-axis-label', 'text-anchor': 'end' });
+    lbl.textContent = Math.round(d);
+    svg.appendChild(lbl);
+  }
+
+  svg.appendChild(svgEl('line', { x1: CHART_M.l, y1: CHART_M.t, x2: CHART_M.l, y2: CHART_M.t + PLOT_H, class: 'c-axis' }));
+  svg.appendChild(svgEl('line', { x1: CHART_M.l, y1: CHART_M.t + PLOT_H, x2: CHART_M.l + PLOT_W, y2: CHART_M.t + PLOT_H, class: 'c-axis' }));
+
+  const xTitle = svgEl('text', { x: CHART_M.l + PLOT_W / 2, y: CHART_H - 4, class: 'c-axis-title', 'text-anchor': 'middle' });
+  xTitle.textContent = 'Tid (s)';
+  svg.appendChild(xTitle);
+  const yTitle = svgEl('text', { x: 14, y: CHART_M.t + PLOT_H / 2, class: 'c-axis-title', 'text-anchor': 'middle', transform: `rotate(-90 14 ${CHART_M.t + PLOT_H / 2})` });
+  yTitle.textContent = 'Strekning';
+  svg.appendChild(yTitle);
+
+  let cum = 0;
+  const verts = [[0, 0]];
+  segments.forEach(s => { cum += s.speed * (s.end - s.start); verts.push([s.end, cum]); });
+  const targetPoints = verts.map(([t, d]) => `${xS(t)},${yS(d)}`).join(' ');
+  svg.appendChild(svgEl('polyline', { points: targetPoints, class: 'c-target-line' }));
+
+  const result = { xS, yS };
+  if (includeLiveLayers) {
+    result.playerLine = svgEl('polyline', { points: '', class: 'c-player-line' });
+    svg.appendChild(result.playerLine);
+    result.timeMarker = svgEl('line', { x1: xS(0), y1: CHART_M.t, x2: xS(0), y2: CHART_M.t + PLOT_H, class: 'c-time-marker' });
+    svg.appendChild(result.timeMarker);
+  }
+  return result;
+}
+
+/* ── STARTSKJERM: statisk eksempel ── */
+(function buildExample() {
+  const exampleGraph = buildGraph([[2, 3], [0, 2]]);
+  renderChart($('exampleSvg'), exampleGraph, false);
+})();
+
+/* ── SPILLTILSTAND ── */
+const GAME_SVG = $('chartSvg');
+const carEl = $('carEl');
+let state = 'start'; // start | ready | running | result | end
+let graphIndex = 0;
+let currentGraph = null;
+let chart = null; // { xS, yS, playerLine, timeMarker }
+let playerLog = [];
+let playerSpeed = 0;
+let startTs = 0;
+let rafId = null;
+let attemptNumber = 1;
+let bestScoreThisGraph = 0;
+let totalScore = 0;
+let graphScores = [];
+let autoAdvanceTimer = null;
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+
+function getElapsed() {
+  if (state !== 'running') return 0;
+  return (performance.now() - startTs) / 1000;
+}
+
+function updateSpeedUI() {
+  $('speedValue').textContent = String(playerSpeed);
+  const running = state === 'running';
+  $('btnFaster').disabled = !running || playerSpeed >= 3;
+  $('btnSlower').disabled = !running || playerSpeed <= 0;
+  $('btnStop').disabled = !running;
+}
+
+function updatePlayerVisuals(elapsed) {
+  const verts = playerLog.map(e => [e.t, distanceFromLog(playerLog, e.t)]);
+  verts.push([elapsed, distanceFromLog(playerLog, elapsed)]);
+  const pts = verts.map(([t, d]) => `${chart.xS(t)},${chart.yS(d)}`).join(' ');
+  chart.playerLine.setAttribute('points', pts);
+  chart.timeMarker.setAttribute('x1', chart.xS(elapsed));
+  chart.timeMarker.setAttribute('x2', chart.xS(elapsed));
+  const dist = distanceFromLog(playerLog, elapsed);
+  carEl.style.left = clamp((dist / currentGraph.yMax) * 100, 0, 100) + '%';
+}
+
+function setSpeed(newSpeed) {
+  if (state !== 'running') return;
+  newSpeed = clamp(newSpeed, 0, 3);
+  if (newSpeed === playerSpeed) return;
+  playerSpeed = newSpeed;
+  const elapsed = getElapsed();
+  if (playerLog.length && playerLog[playerLog.length - 1].t === elapsed) playerLog[playerLog.length - 1].speed = newSpeed;
+  else playerLog.push({ t: elapsed, speed: newSpeed });
+  updateSpeedUI();
+}
+
+function computeScore(graph, log) {
+  const duration = graph.duration;
+  const samples = Math.max(1, Math.round(duration * 20));
+  let sumErr = 0;
+  for (let i = 0; i <= samples; i++) {
+    const t = (i / samples) * duration;
+    sumErr += Math.abs(distanceFromLog(graph.targetLog, t) - distanceFromLog(log, t));
+  }
+  const avgErr = sumErr / (samples + 1);
+  const tolerance = 0.22 * (duration * 3);
+  const score = 100 * (1 - avgErr / tolerance);
+  return Math.max(0, Math.min(100, Math.round(score)));
+}
+
+function computeFeedback(segments, log) {
+  const n = segments.length;
+  return segments.map((s, i) => {
+    const dur = s.end - s.start;
+    const avg = (distanceFromLog(log, s.end) - distanceFromLog(log, s.start)) / dur;
+    const diff = Math.abs(avg - s.speed);
+    const ok = diff <= 0.35;
+    let text;
+    if (s.speed === 0) text = ok ? 'God stopp' : 'Du stoppet ikke helt';
+    else if (i === 0) text = ok ? 'Riktig fart i starten' : 'Feil fart i starten';
+    else if (i === n - 1) text = ok ? 'God fart mot slutten' : (avg < s.speed ? 'Du økte farten litt for sent mot slutten' : 'Du reduserte farten litt for sent mot slutten');
+    else text = ok ? 'Riktig fart midtveis' : 'Feil fart midtveis';
+    return { ok, text };
+  });
+}
+
+function resetAttemptVisuals() {
+  playerSpeed = 0;
+  playerLog = [{ t: 0, speed: 0 }];
+  updatePlayerVisuals(0);
+  carEl.style.left = '0%';
+  $('speedValue').textContent = '0';
+}
+
+function loadGraph(index) {
+  graphIndex = index;
+  currentGraph = buildGraph(GRAPH_DEFS[index]);
+  attemptNumber = 1;
+  bestScoreThisGraph = 0;
+  $('hudGraphLabel').textContent = `Graf ${index + 1} av ${GRAPH_DEFS.length}`;
+  $('graphDescription').textContent = describeGraph(currentGraph.segments);
+  chart = renderChart(GAME_SVG, currentGraph, true);
+  resetAttemptVisuals();
+  state = 'ready';
+  $('btnGo').hidden = false;
+  $('resultPanel').hidden = true;
+  updateSpeedUI();
+}
+
+function startSession() {
+  totalScore = 0;
+  graphScores = [];
+  $('hudScore').textContent = '0';
+  showScreen('screen-game');
+  loadGraph(0);
+}
+
+function tick(now) {
+  if (state !== 'running') return;
+  let elapsed = (now - startTs) / 1000;
+  if (elapsed >= currentGraph.duration) {
+    updatePlayerVisuals(currentGraph.duration);
+    finishRun();
+    return;
+  }
+  updatePlayerVisuals(elapsed);
+  rafId = requestAnimationFrame(tick);
+}
+
+function startRun() {
+  state = 'running';
+  playerSpeed = 0;
+  playerLog = [{ t: 0, speed: 0 }];
+  startTs = performance.now();
+  $('btnGo').hidden = true;
+  updateSpeedUI();
+  updatePlayerVisuals(0);
+  $('srAnnounce').textContent = 'Kjøring startet.';
+  rafId = requestAnimationFrame(tick);
+}
+
+function finishRun() {
+  state = 'result';
+  if (rafId) cancelAnimationFrame(rafId);
+  updateSpeedUI();
+  const score = computeScore(currentGraph, playerLog);
+  bestScoreThisGraph = Math.max(bestScoreThisGraph, score);
+  showResult(score);
+}
+
+function showResult(score) {
+  $('resTreff').textContent = score + ' %';
+  const feedback = computeFeedback(currentGraph.segments, playerLog);
+  const list = $('feedbackList');
+  list.innerHTML = '';
+  feedback.forEach(f => {
+    const li = document.createElement('li');
+    li.className = 'fb-item ' + (f.ok ? 'fb-ok' : 'fb-warn');
+    const icon = document.createElement('span');
+    icon.className = 'fb-icon'; icon.setAttribute('aria-hidden', 'true'); icon.textContent = f.ok ? '✓' : '△';
+    const txt = document.createElement('span'); txt.textContent = f.text;
+    li.appendChild(icon); li.appendChild(txt);
+    list.appendChild(li);
+  });
+
+  clearTimeout(autoAdvanceTimer);
+  if (attemptNumber === 1) {
+    $('btnRetry').hidden = false;
+    $('btnNext').textContent = 'Neste graf';
+    $('resultNote').textContent = '';
+  } else {
+    $('btnRetry').hidden = true;
+    $('btnNext').textContent = 'Neste graf';
+    $('resultNote').textContent = 'Beste forsøk på denne grafen: ' + bestScoreThisGraph + ' poeng.';
+    autoAdvanceTimer = setTimeout(() => { if (state === 'result') goNextGraph(); }, 3500);
+  }
+  $('resultPanel').hidden = false;
+  $('srAnnounce').textContent = 'Treffsikkerhet ' + score + ' prosent. ' + feedback.map(f => f.text).join('. ');
+}
+
+function retryAttempt() {
+  clearTimeout(autoAdvanceTimer);
+  attemptNumber = 2;
+  resetAttemptVisuals();
+  state = 'ready';
+  $('resultPanel').hidden = true;
+  $('btnGo').hidden = false;
+  updateSpeedUI();
+}
+
+function goNextGraph() {
+  clearTimeout(autoAdvanceTimer);
+  totalScore += bestScoreThisGraph;
+  graphScores.push(bestScoreThisGraph);
+  $('hudScore').textContent = String(totalScore);
+  const next = graphIndex + 1;
+  if (next >= GRAPH_DEFS.length) endSession(); else loadGraph(next);
+}
+
+function endSession() {
+  state = 'end';
+  $('endTotal').textContent = totalScore + ' av ' + (GRAPH_DEFS.length * 100);
+  const bestIdx = graphScores.indexOf(Math.max(...graphScores));
+  const worstIdx = graphScores.indexOf(Math.min(...graphScores));
+  $('endBest').textContent = 'Graf ' + (bestIdx + 1) + ' (' + graphScores[bestIdx] + ' poeng)';
+  $('endWorst').textContent = 'Graf ' + (worstIdx + 1) + ' (' + graphScores[worstIdx] + ' poeng)';
+  $('endAvg').textContent = Math.round(totalScore / GRAPH_DEFS.length) + ' %';
+  showScreen('screen-end');
+}
+
+$('btnStart').addEventListener('click', () => { state = 'ready'; startSession(); });
+$('btnGo').addEventListener('click', startRun);
+$('btnSlower').addEventListener('click', () => setSpeed(playerSpeed - 1));
+$('btnFaster').addEventListener('click', () => setSpeed(playerSpeed + 1));
+$('btnStop').addEventListener('click', () => setSpeed(0));
+$('btnRetry').addEventListener('click', retryAttempt);
+$('btnNext').addEventListener('click', goNextGraph);
+$('btnPlayAgain').addEventListener('click', () => { state = 'ready'; startSession(); });
+
+document.addEventListener('keydown', e => {
+  const activeId = document.querySelector('.screen.active').id;
+  if (activeId === 'screen-start') {
+    if (e.key === 'Enter') { e.preventDefault(); $('btnStart').click(); }
+    return;
+  }
+  if (activeId === 'screen-end') {
+    if (e.key === 'Enter') { e.preventDefault(); $('btnPlayAgain').click(); }
+    return;
+  }
+  if (activeId === 'screen-game') {
+    if (state === 'ready' && e.key === 'Enter') { e.preventDefault(); $('btnGo').click(); return; }
+    if (state === 'running') {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); setSpeed(playerSpeed - 1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); setSpeed(playerSpeed + 1); }
+      else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); setSpeed(0); }
+      return;
+    }
+    if (state === 'result' && e.key === 'Enter') {
+      e.preventDefault();
+      if (!$('btnNext').hidden) $('btnNext').click(); else if (!$('btnRetry').hidden) $('btnRetry').click();
+    }
+  }
+});
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>
