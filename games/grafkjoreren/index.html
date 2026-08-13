@@ -154,7 +154,7 @@
   /* ══ BILBANE ══ */
   .track-wrap { width: min(94vw, 600px); margin: 0 auto; }
   .track-frame {
-    position: relative; width: 100%; height: 72px;
+    position: relative; width: 100%; height: 88px;
     background: linear-gradient(180deg, var(--sky) 0%, var(--sky) 52%, var(--road) 52%, var(--road) 100%);
     border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
     overflow: hidden;
@@ -165,8 +165,8 @@
     opacity: .85;
   }
   .track-car {
-    position: absolute; bottom: 8px; left: 0%; transform: translateX(-50%);
-    font-size: 1.9rem; line-height: 1;
+    position: absolute; bottom: 6px; left: 0%; transform: translateX(-50%) scaleX(-1);
+    font-size: 2.7rem; line-height: 1;
   }
 
   /* ══ DIAGRAM ══ */
@@ -193,21 +193,27 @@
   .speed-readout { font-weight: 900; font-size: 1.05rem; text-align: center; }
   .speed-readout span { font-family: 'Chewy', cursive; font-size: 1.3rem; }
 
-  .controls-wrap { display: flex; gap: 10px; width: 100%; max-width: 440px; margin: 0 auto; }
-  .ctrl-btn {
-    flex: 1; font-weight: 900; font-size: 1.7rem; background: var(--card);
-    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
-    padding: 16px 0; min-height: 64px; touch-action: manipulation;
-    transition: transform .1s, box-shadow .1s;
+  .lever-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .lever-control {
+    width: min(112px, 26vw); aspect-ratio: 140 / 300;
+    touch-action: none; user-select: none; -webkit-user-select: none;
+    cursor: grab;
   }
-  .ctrl-btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
-  .ctrl-btn:disabled { opacity: .4; cursor: not-allowed; }
-  .ctrl-btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
-  .ctrl-btn-stop { font-size: .95rem; background: #fee2e2; color: #b91c1c; }
+  .lever-control:active { cursor: grabbing; }
+  .lever-control svg { width: 100%; height: 100%; display: block; }
+  .lever-control:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+  .lever-control[aria-disabled="true"] { opacity: .4; cursor: default; pointer-events: none; }
+  .lv-rail   { fill: #eee6d6; stroke: var(--ink); stroke-width: 3; }
+  .lv-tick   { stroke: var(--ink); stroke-width: 3; stroke-linecap: round; }
+  .lv-tick-label { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 24px; fill: var(--ink); }
+  .lv-handle { fill: var(--yellow); stroke: var(--ink); stroke-width: 4; }
+  .lv-handle-grip { stroke: var(--ink); stroke-width: 2.5; opacity: .55; stroke-linecap: round; }
+  .lever-hint { font-weight: 800; font-size: .85rem; color: var(--muted); text-align: center; }
+  .lever-hint[hidden] { display: none; }
 
   @media (max-width: 640px) {
-    .controls-wrap {
-      position: sticky; bottom: 0; z-index: 5; max-width: none;
+    .lever-wrap {
+      position: sticky; bottom: 0; z-index: 5;
       background: var(--cream); padding: 10px 4px calc(10px + env(safe-area-inset-bottom));
       border-top: 3px solid rgba(43,33,24,.15);
     }
@@ -273,7 +279,7 @@
         <svg id="exampleSvg" viewBox="0 0 600 320" role="img" aria-label="Eksempelgraf: strekningen øker jevnt de tre første sekundene, deretter er kurven vannrett i to sekunder mens bilen står stille."></svg>
       </div>
       <p style="font-weight:700; font-size:.9rem; color:var(--muted); margin-top:10px;">
-        Du får se en målkurve. Bruk «−», «STOPP» og «+» til å endre fart underveis, slik at din egen kurve følger målet så godt som mulig. 6 grafer, to forsøk på hver.
+        Du får se en målkurve. Dra fartsspaken opp eller ned — eller bruk piltaster/tallene 0–3 — for å endre fart underveis, slik at din egen kurve følger målet så godt som mulig. Turen starter idet du beveger spaken. 6 grafer, to forsøk på hver.
       </p>
     </div>
     <button class="btn-primary" id="btnStart">Start</button>
@@ -314,15 +320,21 @@
     </div>
     <p class="sr-only" id="graphDescription"></p>
 
-    <div class="speed-readout">Fart: <span id="speedValue">0</span></div>
-
-    <div class="controls-wrap">
-      <button class="ctrl-btn" id="btnSlower" aria-label="Saktere" disabled>−</button>
-      <button class="ctrl-btn ctrl-btn-stop" id="btnStop" aria-label="Stopp" disabled>STOPP</button>
-      <button class="ctrl-btn" id="btnFaster" aria-label="Raskere" disabled>+</button>
+    <div class="lever-wrap">
+      <div class="speed-readout">Fart: <span id="speedValue">0</span></div>
+      <div class="lever-control"
+           id="speedLever"
+           tabindex="0"
+           role="slider"
+           aria-orientation="vertical"
+           aria-valuemin="0"
+           aria-valuemax="3"
+           aria-valuenow="0"
+           aria-label="Fartsspak. Dra opp eller ned, bruk piltaster, eller tast 0 til 3 for å velge fart direkte. Turen starter idet du beveger spaken.">
+        <svg id="leverSvg" viewBox="0 0 140 300" aria-hidden="true"></svg>
+      </div>
+      <p class="lever-hint" id="leverHint">Beveg spaken for å starte turen</p>
     </div>
-
-    <button class="btn-primary" id="btnGo">Kjør!</button>
 
     <div class="result-panel" id="resultPanel" hidden>
       <div class="result-row"><span>Treffsikkerhet</span><strong id="resTreff">0 %</strong></div>
@@ -489,6 +501,48 @@ function renderChart(svg, graph, includeLiveLayers) {
   return result;
 }
 
+/* ── FARTSSPAK (vertikal, 4 rastposisjoner 0–3) ── */
+const LEVER_VB_H = 300;
+const LEVER_X = 70, LEVER_TOP = 34, LEVER_BOTTOM = 266;
+
+function leverYForValue(v) { return LEVER_BOTTOM - (clamp(v, 0, 3) / 3) * (LEVER_BOTTOM - LEVER_TOP); }
+function leverValueForY(y) {
+  const clamped = clamp(y, LEVER_TOP, LEVER_BOTTOM);
+  return ((LEVER_BOTTOM - clamped) / (LEVER_BOTTOM - LEVER_TOP)) * 3;
+}
+
+let leverHandle = null;
+let leverGrips = [];
+function buildLever() {
+  const svg = $('leverSvg');
+  svg.appendChild(svgEl('rect', { x: LEVER_X - 11, y: LEVER_TOP, width: 22, height: LEVER_BOTTOM - LEVER_TOP, rx: 11, class: 'lv-rail' }));
+  [0, 1, 2, 3].forEach(v => {
+    const y = leverYForValue(v);
+    svg.appendChild(svgEl('line', { x1: LEVER_X - 24, y1: y, x2: LEVER_X - 14, y2: y, class: 'lv-tick' }));
+    const lbl = svgEl('text', { x: LEVER_X - 32, y: y + 8, class: 'lv-tick-label', 'text-anchor': 'end' });
+    lbl.textContent = String(v);
+    svg.appendChild(lbl);
+  });
+  leverHandle = svgEl('circle', { cx: LEVER_X, cy: leverYForValue(0), r: 20, class: 'lv-handle' });
+  svg.appendChild(leverHandle);
+  leverGrips = [-7, 0, 7].map(dy => {
+    const line = svgEl('line', { x1: LEVER_X - 9, y1: leverYForValue(0) + dy, x2: LEVER_X + 9, y2: leverYForValue(0) + dy, class: 'lv-handle-grip' });
+    svg.appendChild(line);
+    return { el: line, dy };
+  });
+}
+function updateLeverVisual(value) {
+  const y = leverYForValue(value);
+  leverHandle.setAttribute('cy', y);
+  leverGrips.forEach(g => { g.el.setAttribute('y1', y + g.dy); g.el.setAttribute('y2', y + g.dy); });
+  $('speedLever').setAttribute('aria-valuenow', String(Math.round(clamp(value, 0, 3))));
+}
+function setLeverInteractive(enabled) {
+  const lever = $('speedLever');
+  lever.tabIndex = enabled ? 0 : -1;
+  if (enabled) lever.removeAttribute('aria-disabled'); else lever.setAttribute('aria-disabled', 'true');
+}
+
 /* ── STARTSKJERM: statisk eksempel ── */
 (function buildExample() {
   const exampleGraph = buildGraph([[2, 3], [0, 2]]);
@@ -524,10 +578,6 @@ function getElapsed() {
 
 function updateSpeedUI() {
   $('speedValue').textContent = String(playerSpeed);
-  const running = state === 'running';
-  $('btnFaster').disabled = !running || playerSpeed >= 3;
-  $('btnSlower').disabled = !running || playerSpeed <= 0;
-  $('btnStop').disabled = !running;
 }
 
 function updatePlayerVisuals(elapsed) {
@@ -544,12 +594,26 @@ function updatePlayerVisuals(elapsed) {
 function setSpeed(newSpeed) {
   if (state !== 'running') return;
   newSpeed = clamp(newSpeed, 0, 3);
-  if (newSpeed === playerSpeed) return;
+  if (newSpeed === playerSpeed) { updateLeverVisual(newSpeed); return; }
   playerSpeed = newSpeed;
   const elapsed = getElapsed();
   if (playerLog.length && playerLog[playerLog.length - 1].t === elapsed) playerLog[playerLog.length - 1].speed = newSpeed;
   else playerLog.push({ t: elapsed, speed: newSpeed });
   updateSpeedUI();
+  updateLeverVisual(newSpeed);
+}
+
+/* Eneste inngang for spak/piltaster/talltaster: hvis turen ikke er i gang
+   ennå, starter selve kjøringen idet spilleren beveger farten bort fra 0 —
+   det finnes ingen egen «Kjør!»-knapp lenger. */
+function engageLeverValue(newSpeed) {
+  newSpeed = clamp(newSpeed, 0, 3);
+  if (state === 'ready') {
+    if (newSpeed === 0) { updateLeverVisual(0); return; }
+    startRun(newSpeed);
+    return;
+  }
+  setSpeed(newSpeed);
 }
 
 function computeScore(graph, log) {
@@ -588,6 +652,7 @@ function resetAttemptVisuals() {
   updatePlayerVisuals(0);
   carEl.style.left = '0%';
   $('speedValue').textContent = '0';
+  updateLeverVisual(0);
 }
 
 function loadGraph(index) {
@@ -600,7 +665,8 @@ function loadGraph(index) {
   chart = renderChart(GAME_SVG, currentGraph, true);
   resetAttemptVisuals();
   state = 'ready';
-  $('btnGo').hidden = false;
+  $('leverHint').hidden = false;
+  setLeverInteractive(true);
   $('resultPanel').hidden = true;
   updateSpeedUI();
 }
@@ -625,14 +691,15 @@ function tick(now) {
   rafId = requestAnimationFrame(tick);
 }
 
-function startRun() {
+function startRun(initialSpeed) {
   state = 'running';
-  playerSpeed = 0;
-  playerLog = [{ t: 0, speed: 0 }];
+  playerSpeed = initialSpeed;
+  playerLog = [{ t: 0, speed: initialSpeed }];
   startTs = performance.now();
-  $('btnGo').hidden = true;
+  $('leverHint').hidden = true;
   updateSpeedUI();
   updatePlayerVisuals(0);
+  updateLeverVisual(initialSpeed);
   $('srAnnounce').textContent = 'Kjøring startet.';
   rafId = requestAnimationFrame(tick);
 }
@@ -640,6 +707,8 @@ function startRun() {
 function finishRun() {
   state = 'result';
   if (rafId) cancelAnimationFrame(rafId);
+  setLeverInteractive(false);
+  $('leverHint').hidden = true;
   updateSpeedUI();
   const score = computeScore(currentGraph, playerLog);
   bestScoreThisGraph = Math.max(bestScoreThisGraph, score);
@@ -682,7 +751,8 @@ function retryAttempt() {
   resetAttemptVisuals();
   state = 'ready';
   $('resultPanel').hidden = true;
-  $('btnGo').hidden = false;
+  $('leverHint').hidden = false;
+  setLeverInteractive(true);
   updateSpeedUI();
 }
 
@@ -706,11 +776,38 @@ function endSession() {
   showScreen('screen-end');
 }
 
+buildLever();
+setLeverInteractive(false);
+
+let leverDragging = false;
+function leverPointerValue(evt) {
+  const rect = $('leverSvg').getBoundingClientRect();
+  const scaleY = LEVER_VB_H / rect.height;
+  return leverValueForY((evt.clientY - rect.top) * scaleY);
+}
+function handleLeverPointer(evt) {
+  if (state !== 'ready' && state !== 'running') return;
+  const raw = leverPointerValue(evt);
+  updateLeverVisual(raw);
+  const snapped = Math.round(clamp(raw, 0, 3));
+  if (snapped !== playerSpeed) engageLeverValue(snapped);
+}
+$('speedLever').addEventListener('pointerdown', e => {
+  if (state !== 'ready' && state !== 'running') return;
+  leverDragging = true;
+  $('speedLever').setPointerCapture(e.pointerId);
+  handleLeverPointer(e);
+  e.preventDefault();
+});
+$('speedLever').addEventListener('pointermove', e => {
+  if (!leverDragging) return;
+  handleLeverPointer(e);
+});
+function endLeverDrag() { leverDragging = false; updateLeverVisual(playerSpeed); }
+$('speedLever').addEventListener('pointerup', endLeverDrag);
+$('speedLever').addEventListener('pointercancel', endLeverDrag);
+
 $('btnStart').addEventListener('click', () => { state = 'ready'; startSession(); });
-$('btnGo').addEventListener('click', startRun);
-$('btnSlower').addEventListener('click', () => setSpeed(playerSpeed - 1));
-$('btnFaster').addEventListener('click', () => setSpeed(playerSpeed + 1));
-$('btnStop').addEventListener('click', () => setSpeed(0));
 $('btnRetry').addEventListener('click', retryAttempt);
 $('btnNext').addEventListener('click', goNextGraph);
 $('btnPlayAgain').addEventListener('click', () => { state = 'ready'; startSession(); });
@@ -726,11 +823,11 @@ document.addEventListener('keydown', e => {
     return;
   }
   if (activeId === 'screen-game') {
-    if (state === 'ready' && e.key === 'Enter') { e.preventDefault(); $('btnGo').click(); return; }
-    if (state === 'running') {
-      if (e.key === 'ArrowLeft') { e.preventDefault(); setSpeed(playerSpeed - 1); }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); setSpeed(playerSpeed + 1); }
-      else if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); setSpeed(0); }
+    if (state === 'ready' || state === 'running') {
+      if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { e.preventDefault(); engageLeverValue(playerSpeed + 1); return; }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { e.preventDefault(); engageLeverValue(playerSpeed - 1); return; }
+      if (e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); engageLeverValue(0); return; }
+      if (e.key === '0' || e.key === '1' || e.key === '2' || e.key === '3') { e.preventDefault(); engageLeverValue(Number(e.key)); return; }
       return;
     }
     if (state === 'result' && e.key === 'Enter') {
