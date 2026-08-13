@@ -151,6 +151,23 @@
   .hud-stat-label { display:block; font-weight:900; font-size:.6rem; text-transform:uppercase; letter-spacing:.05em; color: var(--muted); }
   .hud-stat-val { font-family: 'Chewy', cursive; font-size: 1.1rem; }
 
+  /* ══ PASSASJER ══ */
+  .passenger-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .passenger-card {
+    width: 132px; height: 132px; background: var(--card);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+  }
+  .passenger-card svg { width: 100%; height: 100%; display: block; }
+  .passenger-name { font-family: 'Chewy', cursive; font-size: 1.05rem; }
+  .pf-shawl   { fill: #c0455e; stroke: var(--ink); stroke-width: 4; }
+  .pf-hair    { fill: #e4e4e4; stroke: var(--ink); stroke-width: 3; }
+  .pf-skin    { fill: #f4c9a0; stroke: var(--ink); stroke-width: 4; }
+  .pf-glasses { fill: none; stroke: var(--ink); stroke-width: 3; }
+  .pf-feature { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; fill: none; }
+  .pf-eye     { fill: var(--ink); }
+  .pf-mouth   { fill: #7a2e3a; stroke: var(--ink); stroke-width: 3; }
+  .pf-z       { font-family: 'Chewy', cursive; fill: var(--muted); }
+
   /* ══ BILBANE ══ */
   .track-wrap { width: min(94vw, 600px); margin: 0 auto; }
   .track-frame {
@@ -165,9 +182,16 @@
     opacity: .85;
   }
   .track-car {
-    position: absolute; bottom: 6px; left: 0%; transform: translateX(-50%) scaleX(-1);
-    font-size: 2.7rem; line-height: 1;
+    position: absolute; bottom: 8px; left: 0%; transform: translateX(-50%);
+    width: 84px;
   }
+  .track-car svg { width: 100%; height: auto; display: block; }
+  .tx-body  { fill: #f7c948; stroke: var(--ink); stroke-width: 4; }
+  .tx-glass { fill: #1b2430; stroke: var(--ink); stroke-width: 2; }
+  .tx-dark  { fill: var(--ink); }
+  .tx-light { fill: #fff9f0; stroke: var(--ink); stroke-width: 2; }
+  .tx-hub   { fill: #cfcfcf; }
+  .tx-check { fill: #fff9f0; }
 
   /* ══ DIAGRAM ══ */
   .chart-wrap { width: min(94vw, 600px); margin: 0 auto; }
@@ -302,10 +326,19 @@
       </div>
     </div>
 
+    <div class="passenger-wrap">
+      <div class="passenger-card">
+        <svg id="passengerSvg" viewBox="0 0 140 140" role="img" aria-label="Passasjerens ansikt reagerer på farten din"></svg>
+      </div>
+      <span class="passenger-name" id="passengerName">Bestemor</span>
+    </div>
+
     <div class="track-wrap">
       <div class="track-frame">
         <div class="track-road-line" aria-hidden="true"></div>
-        <div class="track-car" id="carEl" aria-hidden="true">🚗</div>
+        <div class="track-car" id="carEl" aria-hidden="true">
+          <svg id="taxiSvg" viewBox="0 0 200 110"></svg>
+        </div>
       </div>
     </div>
 
@@ -501,6 +534,86 @@ function renderChart(svg, graph, includeLiveLayers) {
   return result;
 }
 
+/* ── TAXI (klassisk gul, tegnet med front mot høyre — kjøreretningen) ── */
+function buildTaxi() {
+  const svg = $('taxiSvg');
+  svg.appendChild(svgEl('circle', { cx: 55, cy: 92, r: 15, class: 'tx-dark' }));
+  svg.appendChild(svgEl('circle', { cx: 55, cy: 92, r: 6, class: 'tx-hub' }));
+  svg.appendChild(svgEl('circle', { cx: 155, cy: 92, r: 15, class: 'tx-dark' }));
+  svg.appendChild(svgEl('circle', { cx: 155, cy: 92, r: 6, class: 'tx-hub' }));
+
+  svg.appendChild(svgEl('rect', { x: 20, y: 55, width: 160, height: 35, rx: 10, class: 'tx-body' }));
+  svg.appendChild(svgEl('path', { d: 'M55,55 L65,25 Q70,18 80,18 L140,18 Q150,18 155,25 L165,55 Z', class: 'tx-body' }));
+
+  svg.appendChild(svgEl('path', { d: 'M62,50 L70,28 L98,28 L98,50 Z', class: 'tx-glass' }));
+  svg.appendChild(svgEl('path', { d: 'M102,50 L102,28 L132,28 L150,50 Z', class: 'tx-glass' }));
+
+  svg.appendChild(svgEl('rect', { x: 20, y: 68, width: 160, height: 8, class: 'tx-dark' }));
+  for (let i = 0; i < 8; i++) {
+    svg.appendChild(svgEl('rect', { x: 24 + i * 20, y: 68, width: 10, height: 8, class: 'tx-check' }));
+  }
+
+  svg.appendChild(svgEl('rect', { x: 88, y: 9, width: 24, height: 10, rx: 2, class: 'tx-dark' }));
+  svg.appendChild(svgEl('circle', { cx: 179, cy: 78, r: 5, class: 'tx-light' }));
+}
+
+/* ── PASSASJER: fast rollebesetning én figur per graf ──
+   Bare bestemor har egen tegning foreløpig — resten av rollebesetningen
+   tegnes i en senere runde. */
+function drawBestemor(svg, speed) {
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const cx = 70, cy = 84, r = 40;
+
+  svg.appendChild(svgEl('path', { d: 'M20,140 Q20,96 45,90 L95,90 Q120,96 120,140 Z', class: 'pf-shawl' }));
+  svg.appendChild(svgEl('circle', { cx, cy: cy - 2, r: r + 6, class: 'pf-hair' }));
+  svg.appendChild(svgEl('circle', { cx, cy, r, class: 'pf-skin' }));
+  svg.appendChild(svgEl('circle', { cx, cy: cy - r - 6, r: 14, class: 'pf-hair' }));
+
+  svg.appendChild(svgEl('circle', { cx: cx - 15, cy: cy - 2, r: 12, class: 'pf-glasses' }));
+  svg.appendChild(svgEl('circle', { cx: cx + 15, cy: cy - 2, r: 12, class: 'pf-glasses' }));
+  svg.appendChild(svgEl('line', { x1: cx - 3, y1: cy - 2, x2: cx + 3, y2: cy - 2, class: 'pf-glasses' }));
+
+  const g = svgEl('g', {});
+  svg.appendChild(g);
+
+  if (speed === 0) { // sover
+    g.appendChild(svgEl('path', { d: `M${cx - 22},${cy - 2} q7,6 14,0`, class: 'pf-feature' }));
+    g.appendChild(svgEl('path', { d: `M${cx + 8},${cy - 2} q7,6 14,0`, class: 'pf-feature' }));
+    g.appendChild(svgEl('path', { d: `M${cx - 8},${cy + 22} q8,4 16,0`, class: 'pf-feature' }));
+    ['Z', 'z', 'z'].forEach((ch, i) => {
+      const t = svgEl('text', { x: cx + 34 + i * 10, y: cy - r - 4 - i * 10, class: 'pf-z', 'font-size': 20 - i * 4 });
+      t.textContent = ch;
+      g.appendChild(t);
+    });
+  } else if (speed === 1) { // sur
+    g.appendChild(svgEl('line', { x1: cx - 25, y1: cy - 18, x2: cx - 9, y2: cy - 12, class: 'pf-feature' }));
+    g.appendChild(svgEl('line', { x1: cx + 9, y1: cy - 12, x2: cx + 25, y2: cy - 18, class: 'pf-feature' }));
+    g.appendChild(svgEl('circle', { cx: cx - 15, cy: cy - 2, r: 3, class: 'pf-eye' }));
+    g.appendChild(svgEl('circle', { cx: cx + 15, cy: cy - 2, r: 3, class: 'pf-eye' }));
+    g.appendChild(svgEl('path', { d: `M${cx - 10},${cy + 26} q8,-6 16,0`, class: 'pf-feature' }));
+  } else if (speed === 2) { // blid
+    g.appendChild(svgEl('path', { d: `M${cx - 24},${cy - 16} q9,-5 16,0`, class: 'pf-feature' }));
+    g.appendChild(svgEl('path', { d: `M${cx + 8},${cy - 16} q7,-5 16,0`, class: 'pf-feature' }));
+    g.appendChild(svgEl('circle', { cx: cx - 15, cy: cy - 2, r: 3, class: 'pf-eye' }));
+    g.appendChild(svgEl('circle', { cx: cx + 15, cy: cy - 2, r: 3, class: 'pf-eye' }));
+    g.appendChild(svgEl('path', { d: `M${cx - 12},${cy + 18} q12,12 24,0`, class: 'pf-feature' }));
+  } else { // 3: jublende
+    g.appendChild(svgEl('path', { d: `M${cx - 26},${cy - 20} q10,-8 18,-2`, class: 'pf-feature' }));
+    g.appendChild(svgEl('path', { d: `M${cx + 8},${cy - 22} q8,-6 18,2`, class: 'pf-feature' }));
+    g.appendChild(svgEl('path', { d: `M${cx - 19},${cy - 6} q4,-8 8,0`, class: 'pf-feature' }));
+    g.appendChild(svgEl('path', { d: `M${cx + 11},${cy - 6} q4,-8 8,0`, class: 'pf-feature' }));
+    g.appendChild(svgEl('ellipse', { cx, cy: cy + 22, rx: 14, ry: 10, class: 'pf-mouth' }));
+    g.appendChild(svgEl('path', { d: 'M30,120 Q14,90 26,68', class: 'pf-feature' }));
+    g.appendChild(svgEl('path', { d: 'M110,120 Q126,90 114,68', class: 'pf-feature' }));
+  }
+}
+
+const PASSENGER_MOOD = { 0: 'sover', 1: 'er sur', 2: 'er blid', 3: 'jubler' };
+function updatePassengerExpression(speed) {
+  drawBestemor($('passengerSvg'), speed);
+  $('passengerSvg').setAttribute('aria-label', 'Bestemor ' + PASSENGER_MOOD[speed] + '.');
+}
+
 /* ── FARTSSPAK (vertikal, 4 rastposisjoner 0–3) ── */
 const LEVER_VB_H = 300;
 const LEVER_X = 70, LEVER_TOP = 34, LEVER_BOTTOM = 266;
@@ -601,6 +714,7 @@ function setSpeed(newSpeed) {
   else playerLog.push({ t: elapsed, speed: newSpeed });
   updateSpeedUI();
   updateLeverVisual(newSpeed);
+  updatePassengerExpression(newSpeed);
 }
 
 /* Eneste inngang for spak/piltaster/talltaster: hvis turen ikke er i gang
@@ -653,6 +767,7 @@ function resetAttemptVisuals() {
   carEl.style.left = '0%';
   $('speedValue').textContent = '0';
   updateLeverVisual(0);
+  updatePassengerExpression(0);
 }
 
 function loadGraph(index) {
@@ -700,6 +815,7 @@ function startRun(initialSpeed) {
   updateSpeedUI();
   updatePlayerVisuals(0);
   updateLeverVisual(initialSpeed);
+  updatePassengerExpression(initialSpeed);
   $('srAnnounce').textContent = 'Kjøring startet.';
   rafId = requestAnimationFrame(tick);
 }
@@ -778,6 +894,8 @@ function endSession() {
 
 buildLever();
 setLeverInteractive(false);
+buildTaxi();
+updatePassengerExpression(0);
 
 let leverDragging = false;
 function leverPointerValue(evt) {
