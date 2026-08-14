@@ -102,6 +102,8 @@
     font-size:clamp(12.5px,2vmin,15px); cursor:pointer; text-align:center; transition:transform .06s; min-width:88px;}
   .pill:hover{transform:translateY(-1px);}
   .pill.sel{background:var(--yellow); box-shadow:0 4px 0 var(--ink);}
+  .lb-submit{margin:10px 0; padding:10px; background:#fff7da; border:3px solid var(--ink); border-radius:14px;}
+  .lb-submit p{margin:0 0 8px; font-weight:800;}
   .namefield{display:flex; align-items:center; gap:8px; justify-content:center; margin:12px 0 4px;}
   .namefield label{font-weight:800;}
   .namefield input{font-family:'Nunito',sans-serif; font-weight:800; font-size:clamp(16px,2.6vmin,20px);
@@ -341,6 +343,14 @@
           <p id="endTimeRow">Tid: <b id="endTime">0:00</b></p>
           <p id="endNote" style="color:var(--good-d)"></p>
 
+          <div class="lb-submit hidden" id="lbSubmit">
+            <p id="lbSubmitPrompt">🏆 Du er på topplisten! Skriv inn initialene dine:</p>
+            <div class="namefield" id="lbSubmitForm">
+              <input id="nick" maxlength="3" placeholder="f.eks. OMJ" autocomplete="off" spellcheck="false" style="text-transform:uppercase">
+              <button class="btn small" id="lbSubmitBtn">Send inn</button>
+            </div>
+          </div>
+
           <div class="lb" id="lbBox">
             <div class="tabs">
               <button class="tab active" data-period="today">I dag</button>
@@ -383,10 +393,6 @@
         <h1><span class="rc" id="setupMode">Modus</span></h1>
         <p>Hvordan vil du spille?</p>
         <div class="bigopts" id="styleRow"></div>
-        <div class="namefield">
-          <label for="nick">Initialer:</label>
-          <input id="nick" maxlength="3" placeholder="f.eks. OMJ" autocomplete="off" spellcheck="false" style="text-transform:uppercase">
-        </div>
       </div>
     </div>
   </div>
@@ -837,6 +843,9 @@ const S = { region:null, mode:null, style:'tid' };
 let byId={}, MINIS=[], REGULARS=[], pathEls={}, dotEls={}, hitOrder=[], HITDOTS=[], hitShapes=[];
 let queue=[], idx=0, score=0, attempts=0, firstTry=true, t0=0, penaltyMs=0, timerInt=null,
     locked=false, finished=false, advanceTimer=null, lastEntry=null, lbPeriod='today', streak=0;
+/* Ferdig runde som kvalifiserer for ledertavla, men ikke sendt inn ennå –
+   venter på at eleven skriver initialer og bekrefter. */
+let pendingResult=null;
 /* arkade */
 let arkPoints=0, arkFactor=1, arkTick=null, arkQStart=0, arkWindow=ARK_START_VINDU, fastStreak=0, mult=1;
 /* Byer-modus trekker én by per fylke. Den hører til runden, ikke til
@@ -921,7 +930,6 @@ function showStep2(){
     b.addEventListener('click',()=>{ S.style=k; start(); });
     sr.appendChild(b);
   });
-  nick.value=store.get('lrnify_geo_nick','');
   $('setupStep1').classList.add('hidden');
   $('setupStep2').classList.remove('hidden');
 }
@@ -1112,8 +1120,6 @@ function unmark(id,...cls){ elsOf(id).forEach(e=>e.classList.remove(...cls)); }
 function dist(ax,ay,bx,by){return Math.hypot(ax-bx,ay-by);}
 
 function start(){
-  let name=(nick.value||'').trim()||'Anonym'; nick.value=name;
-  store.set('lrnify_geo_nick',name);
   $('setupOverlay').classList.add('hidden');
   $('hubScreen').classList.add('hidden');
   $('gameScreen').classList.remove('hidden');
@@ -1320,13 +1326,9 @@ async function end(){
   finished=true; clearInterval(timerInt); clearInterval(arkTick);
   const total=queue.length, ms=Date.now()-t0+penaltyMs;
   elProgress.textContent=total;
-  const note=$('endNote'); lastEntry=null;
-  /* Skrevet inn av eleven, men bare brukt til DENNE ledertavleoppføringen –
-     nick.value og lagret nick rører vi ikke her. */
-  const skrevet=lbNormaliser(nick.value)||'ANO';
-  const byttet=erUpassende(skrevet);
-  const navn=byttet?trygtInitial():skrevet;
+  const note=$('endNote'); lastEntry=null; pendingResult=null;
   const em=$('endMedal');
+  let kvalifisert=false;
 
   if(S.style==='arkade'){
     $('endTitle').textContent='Arkade slutt!';
@@ -1335,9 +1337,8 @@ async function end(){
     $('endTimeRow').classList.add('hidden');
     em.textContent='🕹️';
     if(arkPoints>0){
-      lastEntry={ navn, pts:arkPoints, n:total, ts:Date.now() };
-      await LB.submit(lastEntry);
-      note.textContent='🏆 Poengsummen din er registrert på highscorelisten!'+(byttet?' (Initialene dine kunne ikke brukes, så vi brukte «'+navn+'».)':'');
+      kvalifisert=true; pendingResult={ pts:arkPoints, n:total, ts:Date.now() };
+      note.textContent='';
     } else note.textContent='Prøv igjen – raske svar gir opptil 1000 p per land!';
     $('lbBox').classList.remove('hidden');
   } else if(S.style==='tid'){
@@ -1352,9 +1353,8 @@ async function end(){
     const perfect=score===total;
     if(perfect){
       $('endTitle').textContent='PERFEKT! 🏆';
-      lastEntry={ navn, ms, n:total, ts:Date.now() };
-      await LB.submit(lastEntry);
-      note.textContent='⏱ Tiden din er registrert på ledertavlen!'+(newStamp?' Nytt stempel i passet! 🛂':'')+(byttet?' (Initialene dine kunne ikke brukes, så vi brukte «'+navn+'».)':'');
+      kvalifisert=true; pendingResult={ ms, n:total, ts:Date.now() };
+      note.textContent=newStamp?'Nytt stempel i passet! 🛂':'';
     } else {
       $('endTitle').textContent= score>=total*0.8?'Sterkt! 🌟':score>=total*0.5?'Bra jobba! 👍':'Godt forsøk! 💪';
       note.textContent= medal ? (newStamp?'Nytt stempel i passet! 🛂':'Få alt riktig for gullstempel og ledertavle!')
@@ -1371,9 +1371,38 @@ async function end(){
     $('lbBox').classList.add('hidden');
   }
   em.classList.remove('stampin'); void em.offsetWidth; em.classList.add('stampin');
+
+  const submitBox=$('lbSubmit');
+  if(kvalifisert){
+    $('lbSubmitPrompt').textContent='🏆 Du er på topplisten! Skriv inn initialene dine:';
+    $('lbSubmitForm').classList.remove('hidden');
+    nick.value=store.get('lrnify_geo_nick','');
+    submitBox.classList.remove('hidden');
+  } else {
+    submitBox.classList.add('hidden');
+  }
+
   if(!$('lbBox').classList.contains('hidden')){ lbPeriod='today'; setActiveTab(lbPeriod); await renderLB(lbPeriod); }
   $('endOverlay').classList.remove('hidden');
 }
+/* Sender inn først når eleven bekrefter at hun faktisk vil på topplisten –
+   ikke automatisk bare fordi runden kvalifiserer. */
+async function submitToLB(){
+  if(!pendingResult) return;
+  const res=pendingResult; pendingResult=null;
+  /* Skrevet inn av eleven, men bare brukt til DENNE ledertavleoppføringen. */
+  const skrevet=lbNormaliser(nick.value)||'ANO';
+  const byttet=erUpassende(skrevet);
+  const navn=byttet?trygtInitial():skrevet;
+  store.set('lrnify_geo_nick',navn);
+  lastEntry=Object.assign({navn},res);
+  await LB.submit(lastEntry);
+  $('lbSubmitForm').classList.add('hidden');
+  $('lbSubmitPrompt').textContent=(S.style==='arkade'?'🏆 Poengsummen din':'⏱ Tiden din')+' er registrert som «'+navn+'»!'
+    +(byttet?' (Initialene dine kunne ikke brukes, så vi valgte disse i stedet.)':'');
+  lbPeriod='today'; setActiveTab(lbPeriod); await renderLB(lbPeriod);
+}
+$('lbSubmitBtn').addEventListener('click', submitToLB);
 function setActiveTab(period){ document.querySelectorAll('#endOverlay .tab').forEach(t=>t.classList.toggle('active', t.dataset.period===period)); }
 /* Er dette elevens egen oppføring? Globalt får den en id fra basen; lokalt
    finnes ingen id, og da må navn+verdi+tidspunkt til sammen peke den ut. */
@@ -1595,7 +1624,7 @@ function toHub(){
 $('replayBtn').addEventListener('click', start);
 $('menuBtn').addEventListener('click', toHub);
 $('backBtn').addEventListener('click', toHub);
-nick.addEventListener('keydown', e=>{ if(e.key==='Enter') start(); });
+nick.addEventListener('keydown', e=>{ if(e.key==='Enter') submitToLB(); });
 /* Feltet er nå «initialer», ikke et fritt kallenavn – vis dem alltid som
    store bokstaver mens eleven skriver, matcher det som havner på tavla. */
 nick.addEventListener('input', ()=>{ const v=nick.value.toUpperCase(); if(v!==nick.value) nick.value=v; });
@@ -1622,7 +1651,8 @@ window.__game={
   forceTarget:id=>{ clearTimeout(advanceTimer); locked=false; finished=false; queue=[id]; idx=0; attempts=0; firstTry=true; clearReveal(); next(); },
   countryAt, miniNear,
   lbView, openLB, renderHubLB, lbErGlobal, kildeNotis,
-  erUpassende, lbNormaliser, trygtInitial,
+  erUpassende, lbNormaliser, trygtInitial, submitToLB,
+  get pendingResult(){return pendingResult;},
   /* Lar røyktesten peke ledertavla mot en lokal etterlikning av Firebase-
      REST-et, i stedet for å skrive testtider inn i den ekte basen. */
   _lbTest:(base,på)=>{ LB_DB=base; lbTvingGlobal=på; LB.cache={}; },
