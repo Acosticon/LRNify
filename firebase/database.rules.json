@@ -419,13 +419,16 @@
 
           "$oppforing": {
             ".write": "$spill.matches(/^[a-z0-9-]{1,40}$/) && $tavle.matches(/^[a-z0-9_-]{1,60}$/) && !data.exists() && newData.exists()",
-            ".validate": "newData.hasChildren(['navn', 'ms', 'n', 'ts']) && newData.child('ms').val() >= newData.child('n').val() * 400",
+            ".validate": "newData.hasChildren(['navn', 'n', 'ts']) && ((newData.hasChild('ms') && !newData.hasChild('pts') && $tavle.matches(/_tid$/) && newData.child('ms').val() >= newData.child('n').val() * 400) || (newData.hasChild('pts') && !newData.hasChild('ms') && $tavle.matches(/_arkade$/) && newData.child('pts').val() <= newData.child('n').val() * 3000))",
 
             "navn": {
-              ".validate": "newData.isString() && newData.val().matches(/^\\S{1,8}$/)"
+              ".validate": "newData.isString() && newData.val().matches(/^\\S{1,3}$/)"
             },
             "ms": {
               ".validate": "newData.isNumber() && newData.val() >= 400 && newData.val() <= 3600000"
+            },
+            "pts": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 300000"
             },
             "n": {
               ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 100"

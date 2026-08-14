@@ -463,17 +463,33 @@ check('lærer kan ikke gjøre seg selv til admin', false, db(medAdmin, LARER).wr
 // på hvem som skriver — de kan bare passe på at en oppføring har riktig form,
 // at ingen rører andres tider, og at tida ikke er fysisk umulig.
 // ---------------------------------------------------------------------------
-const LT = '/ledertavle/kartografen/norge_fylker_kartograf';
-const tid = { navn: 'Lynet', ms: 42000, n: 15, ts: now };
-const tavle = { ledertavle: { kartografen: { norge_fylker_kartograf: { '-Nt1': tid } } } };
+const LT = '/ledertavle/kartografen/norge_fylker_tid';
+const LTA = '/ledertavle/kartografen/europa_land_arkade';
+const tid = { navn: 'OMJ', ms: 42000, n: 15, ts: now };
+const arkade = { navn: 'OMJ', pts: 20000, n: 47, ts: now };
+const tavle = { ledertavle: { kartografen: { norge_fylker_tid: { '-Nt1': tid } } } };
 const tomTavle = {};
 
-console.log('--- ledertavle: normal flyt');
+console.log('--- ledertavle: normal flyt (Spill på tid)');
 check('elev leverer en tid', true, db(tomTavle, null).write(LT + '/-Nt2', tid));
 check('elev leverer i en tavle som finnes fra før', true, db(tavle, null).write(LT + '/-Nt2', tid));
 check('hvem som helst leser tavla', true, db(tavle, null).read(LT));
 check('innlogget lærer leverer også', true, db(tavle, LARER).write(LT + '/-Nt2', tid));
-check('rask, men mulig tid (15 fylker på 6 s)', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Rapp', ms: 6000, n: 15, ts: now }));
+check('rask, men mulig tid (15 fylker på 6 s)', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'RAP', ms: 6000, n: 15, ts: now }));
+
+console.log('--- ledertavle: normal flyt (Arkade)');
+check('elev leverer en poengsum', true, db(tomTavle, null).write(LTA + '/-Na1', arkade));
+check('makspoengsum for 47 land (47*3000) går gjennom', true, db(tomTavle, null).write(LTA + '/-Na1', { navn: 'MAX', pts: 141000, n: 47, ts: now }));
+check('null poeng er gyldig (bomma på alt)', true, db(tomTavle, null).write(LTA + '/-Na1', { navn: 'NUL', pts: 0, n: 47, ts: now }));
+
+console.log('--- ledertavle: ms og pts utelukker hverandre');
+check('begge felt samtidig', false, db(tomTavle, null).write(LTA + '/-Na1', { navn: 'OMJ', ms: 42000, pts: 20000, n: 47, ts: now }));
+check('poengsum sendt inn på en tidsbasert tavle uten ms', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'OMJ', pts: 20000, n: 15, ts: now }));
+check('ingen av delene', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'OMJ', n: 15, ts: now }));
+check('for høy poengsum for antall land (over 3000/land)', false, db(tomTavle, null).write(LTA + '/-Na1', { navn: 'OMJ', pts: 141001, n: 47, ts: now }));
+check('negativ poengsum', false, db(tomTavle, null).write(LTA + '/-Na1', { navn: 'OMJ', pts: -1, n: 47, ts: now }));
+check('poengsum som tekst', false, db(tomTavle, null).write(LTA + '/-Na1', { navn: 'OMJ', pts: '20000', n: 47, ts: now }));
+check('gyldig ms-oppføring i en _arkade-navngitt tavle', false, db(tomTavle, null).write(LTA + '/-Na1', { navn: 'OMJ', ms: 42000, n: 47, ts: now }));
 
 console.log('--- ledertavle: hærverk');
 check('endrer en annens tid', false, db(tavle, null).write(LT + '/-Nt1/ms', 1000));
@@ -486,33 +502,33 @@ check('lister opp alle tavler', false, db(tavle, null).read('/ledertavle'));
 check('lister opp alle spill', false, db(tavle, null).read('/ledertavle/kartografen'));
 
 console.log('--- ledertavle: juks og ugyldige data');
-check('umulig tid (15 fylker på 1 s)', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 1000, n: 15, ts: now }));
-check('null millisekunder', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 0, n: 15, ts: now }));
-check('negativ tid', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: -5000, n: 15, ts: now }));
-// Grensa for hva reglene kan få til: de vet ikke at norge_fylker_kartograf
-// har 15 oppgaver, så n=1 med ms=1000 er internt konsistent og slipper
-// gjennom. Klienten forkaster oppføringer der n ikke stemmer med rundens
-// faktiske antall — se ledertavleFilter i Kartografen. En verdensåpen tavle
-// som tar imot tider fra nettleseren kan uansett aldri bli juksesikker;
-// reglene stopper søppel og hærverk, ikke en bevisst jukser med konsoll.
-check('feil n slipper gjennom reglene (klienten luker det bort)', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 1000, n: 1, ts: now }));
-check('riktig n gir et gulv som holder', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 1000, n: 15, ts: now }));
-check('urimelig mange oppgaver', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 90000, n: 500, ts: now }));
-check('backdaterer for å komme inn på gårsdagens liste', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 42000, n: 15, ts: now - 86400000 }));
-check('daterer fram i tid', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: 42000, n: 15, ts: now + 86400000 }));
-check('for langt kallenavn', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A'.repeat(9), ms: 42000, n: 15, ts: now }));
-check('kallenavn på nøyaktig 8 tegn går gjennom', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A'.repeat(8), ms: 42000, n: 15, ts: now }));
-check('tomt kallenavn', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: '', ms: 42000, n: 15, ts: now }));
-check('mellomrom i kallenavnet', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Kari Nordmann', ms: 42000, n: 15, ts: now }));
-check('kallenavn med innledende mellomrom', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: ' Lynet', ms: 42000, n: 15, ts: now }));
-check('tabulator i kallenavnet', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Lynet\tX', ms: 42000, n: 15, ts: now }));
-check('linjeskift i kallenavnet', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Lynet\nX', ms: 42000, n: 15, ts: now }));
-check('mangler felt', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Lynet', ms: 42000 }));
+check('umulig tid (15 fylker på 1 s)', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: 1000, n: 15, ts: now }));
+check('null millisekunder', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: 0, n: 15, ts: now }));
+check('negativ tid', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: -5000, n: 15, ts: now }));
+// Grensa for hva reglene kan få til: de vet ikke at norge_fylker_tid har 15
+// oppgaver, så n=1 med ms=1000 er internt konsistent og slipper gjennom.
+// Klienten forkaster oppføringer der n ikke stemmer med rundens faktiske
+// antall. En verdensåpen tavle som tar imot data fra nettleseren kan
+// uansett aldri bli juksesikker; reglene stopper søppel og hærverk, ikke
+// en bevisst jukser med konsoll.
+check('feil n slipper gjennom reglene (klienten luker det bort)', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: 1000, n: 1, ts: now }));
+check('riktig n gir et gulv som holder', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: 1000, n: 15, ts: now }));
+check('urimelig mange oppgaver', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: 90000, n: 500, ts: now }));
+check('backdaterer for å komme inn på gårsdagens liste', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: 42000, n: 15, ts: now - 86400000 }));
+check('daterer fram i tid', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: 42000, n: 15, ts: now + 86400000 }));
+check('for lange initialer', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUKS', ms: 42000, n: 15, ts: now }));
+check('initialer på nøyaktig 3 tegn går gjennom', true, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'ABC', ms: 42000, n: 15, ts: now }));
+check('tomme initialer', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: '', ms: 42000, n: 15, ts: now }));
+check('mellomrom i initialene', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A B', ms: 42000, n: 15, ts: now }));
+check('initialer med innledende mellomrom', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: ' AB', ms: 42000, n: 15, ts: now }));
+check('tabulator i initialene', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A\tB', ms: 42000, n: 15, ts: now }));
+check('linjeskift i initialene', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'A\nB', ms: 42000, n: 15, ts: now }));
+check('mangler felt', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'OMJ', ms: 42000 }));
 check('smugler inn et ekstra felt', false, db(tomTavle, null).write(LT + '/-Nt2', Object.assign({}, tid, { lenke: 'http://spam' })));
-check('tid som tekst', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'Juks', ms: '1', n: 15, ts: now }));
+check('tid som tekst', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: 'JUK', ms: '1', n: 15, ts: now }));
 check('objekt i navnefeltet', false, db(tomTavle, null).write(LT + '/-Nt2', { navn: { a: 1 }, ms: 42000, n: 15, ts: now }));
 check('ugyldig tavlenøkkel', false, db(tomTavle, null).write('/ledertavle/kartografen/Norge Fylker/-Nt2', tid));
-check('ugyldig spillnøkkel', false, db(tomTavle, null).write('/ledertavle/Kartografen!/norge_fylker_kartograf/-Nt2', tid));
+check('ugyldig spillnøkkel', false, db(tomTavle, null).write('/ledertavle/Kartografen!/norge_fylker_tid/-Nt2', tid));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
