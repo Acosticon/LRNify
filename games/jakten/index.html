@@ -1,1 +1,670 @@
-123
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Relikviejakten – KRLE-detektivspill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --natt:#141a26; --natt2:#1c2433; --panel:#232d40;
+    --papir:#efe3c8; --papir-m:#e2d3b0; --blekk:#2b2118;
+    --gull:#d4a94c; --gull-l:#f0cd7e;
+    --roed:#c0392b; --groenn:#5a9e35;
+    --tekst:#e8e2d4; --dus:#9aa5b8;
+    --ramme:#0c1018;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{font-family:'Nunito',system-ui,sans-serif; background:var(--natt); color:var(--tekst);
+    height:100dvh; overflow:hidden; user-select:none; -webkit-user-select:none;}
+  #app{height:100dvh; display:flex; flex-direction:column; padding:10px; gap:8px;}
+  .hidden{display:none!important;}
+  .skrivemaskin{font-family:'Special Elite',monospace;}
+
+  header{display:flex; align-items:center; gap:10px; flex:0 0 auto; flex-wrap:wrap;}
+  .brand{font-family:'Special Elite',monospace; font-size:clamp(15px,2.4vmin,20px); color:var(--dus); white-space:nowrap;}
+  .brand b{color:var(--gull);}
+  .stats{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; align-items:center;}
+  .chip{background:var(--panel); border:2px solid var(--ramme); border-radius:12px; padding:6px 12px; font-weight:800;
+    font-size:clamp(12px,2vmin,15px); display:flex; align-items:center; gap:6px; white-space:nowrap; box-shadow:0 3px 0 var(--ramme);}
+  .btn{font-family:'Special Elite',monospace; font-size:clamp(15px,2.6vmin,21px); background:var(--gull);
+    border:3px solid var(--ramme); border-radius:12px; box-shadow:0 5px 0 var(--ramme); padding:9px 20px;
+    margin:10px 5px 0; cursor:pointer; color:var(--blekk); transition:transform .05s,box-shadow .05s;}
+  .btn.sub{background:var(--panel); color:var(--tekst);}
+  .btn.small{font-size:clamp(13px,2vmin,16px); padding:6px 12px; box-shadow:0 3px 0 var(--ramme); margin:0;}
+  .btn:active{transform:translateY(3px); box-shadow:0 2px 0 var(--ramme);}
+
+  /* ================= ARKIV ================= */
+  #arkiv{flex:1 1 auto; min-height:0; overflow:auto; padding:4px 2px 20px;}
+  .ark-head{text-align:center; margin:8px 0 4px;}
+  .ark-head h1{font-family:'Special Elite',monospace; font-size:clamp(28px,6vmin,50px); margin:0; color:var(--gull);
+    text-shadow:0 3px 0 rgba(0,0,0,.5); letter-spacing:1px;}
+  .ark-head .under{font-weight:800; color:var(--dus); font-size:clamp(12px,2vmin,16px); margin-top:2px;}
+  .rank{display:flex; justify-content:center; align-items:center; gap:10px; margin:10px 0 4px; flex-wrap:wrap;}
+  .badge{background:var(--panel); border:2px solid var(--gull); color:var(--gull-l); border-radius:999px;
+    padding:6px 16px; font-weight:900; font-size:clamp(13px,2.2vmin,16px); letter-spacing:.5px;}
+  .nivarow{display:flex; justify-content:center; gap:8px; margin:8px 0 14px;}
+  .niva{background:var(--panel); color:var(--tekst); border:2px solid var(--ramme); border-radius:11px;
+    padding:6px 14px; font-weight:800; cursor:pointer; font-size:clamp(12px,2vmin,15px);}
+  .niva.sel{background:var(--gull); color:var(--blekk); border-color:var(--gull); box-shadow:0 3px 0 var(--ramme);}
+  .saker{display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:14px; max-width:1050px; margin:0 auto;}
+  .mappe{position:relative; background:var(--papir); color:var(--blekk); border:3px solid var(--ramme); border-radius:8px 14px 14px 14px;
+    padding:34px 14px 12px; cursor:pointer; transition:transform .1s; box-shadow:0 6px 0 var(--ramme); min-height:118px;}
+  .mappe::before{content:""; position:absolute; top:-14px; left:14px; width:44%; height:18px; background:var(--papir);
+    border:3px solid var(--ramme); border-bottom:none; border-radius:8px 8px 0 0;}
+  .mappe:hover{transform:translateY(-3px) rotate(-.4deg);}
+  .mappe:active{transform:translateY(2px);}
+  .mappe .snr{font-family:'Special Elite',monospace; font-size:12px; color:#8a7a5c; position:absolute; top:8px; left:16px;}
+  .mappe h3{font-family:'Special Elite',monospace; margin:0 0 2px; font-size:clamp(15px,2.4vmin,19px); line-height:1.15;}
+  .mappe .tr{font-weight:800; font-size:12px; color:#7a6a4a;}
+  .mappe .stj{position:absolute; top:6px; right:12px; font-size:15px; letter-spacing:1px;}
+  .mappe .lost{position:absolute; bottom:10px; right:10px; font-family:'Special Elite',monospace; color:var(--roed);
+    border:2px solid var(--roed); border-radius:6px; padding:1px 7px; font-size:11.5px; transform:rotate(-8deg); opacity:.85;}
+
+  /* ================= SAK ================= */
+  #sak{display:flex; flex-direction:column; gap:8px; flex:1 1 auto; min-height:0;}
+  .oppgavelinje{background:var(--papir); color:var(--blekk); border:3px solid var(--ramme); border-radius:14px;
+    box-shadow:0 5px 0 var(--ramme); padding:8px 14px; display:flex; align-items:center; gap:12px; transform:rotate(-.4deg);}
+  .oppgavelinje .fase{font-family:'Special Elite',monospace; font-size:clamp(11px,1.8vmin,13px); color:#8a7a5c; white-space:nowrap;}
+  .oppgavelinje .tekst{font-weight:800; font-size:clamp(13px,2.3vmin,17px); line-height:1.25;}
+
+  .scene{position:relative; flex:1 1 auto; min-height:0; background:var(--natt2); border:3px solid var(--ramme);
+    border-radius:16px; box-shadow:0 6px 0 var(--ramme); overflow:hidden;}
+  .scene .gulv{position:absolute; inset:0; background:
+    radial-gradient(ellipse at 50% 115%, #2a3549 0%, transparent 55%),
+    linear-gradient(180deg, #161d2b 0%, #1c2433 100%);}
+  .podium{position:absolute; left:50%; bottom:8%; transform:translateX(-50%); width:min(46vmin,300px); height:22px;
+    background:#31281c; border:3px solid var(--ramme); border-radius:8px;}
+  .gjenstand{position:absolute; left:50%; bottom:calc(8% + 20px); transform:translateX(-50%);
+    width:min(58vmin,340px); height:min(58vmin,340px);}
+  .gjenstand svg{width:100%; height:100%; display:block;}
+
+  /* lommelykt */
+  .moerke{position:absolute; inset:0; pointer-events:none; z-index:3;
+    background:radial-gradient(circle 150px at var(--lx,50%) var(--ly,45%),
+      rgba(8,11,18,0) 0%, rgba(8,11,18,.25) 55%, rgba(8,11,18,.93) 100%);
+    transition:opacity .3s;}
+  .fullyst .moerke{opacity:0;}
+  .lysring{position:absolute; z-index:4; pointer-events:none; width:300px; height:300px; border-radius:50%;
+    left:var(--lx,50%); top:var(--ly,45%); transform:translate(-50%,-50%);
+    box-shadow:inset 0 0 30px 6px rgba(240,205,126,.12);}
+  .fullyst .lysring{display:none;}
+
+  .hotspot{position:absolute; z-index:5; width:44px; height:44px; transform:translate(-50%,-50%);
+    background:none; border:none; cursor:pointer; padding:0;}
+  .hotspot::before{content:""; position:absolute; inset:10px; border-radius:50%;
+    background:radial-gradient(circle, rgba(240,205,126,.85) 0%, rgba(240,205,126,0) 70%);
+    animation:glimt 1.6s ease-in-out infinite;}
+  .hotspot.funnet::before{animation:none; background:none; border:2.5px solid var(--groenn); border-radius:50%; opacity:.9;}
+  .hotspot.funnet::after{content:"✓"; position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--groenn); font-weight:900; font-size:18px;}
+  @keyframes glimt{0%,100%{opacity:.25; transform:scale(.8);}50%{opacity:.95; transform:scale(1.15);}}
+  .fullyst .hotspot:not(.funnet)::before{opacity:1; animation:glimt 1.2s ease-in-out infinite;}
+  @media (prefers-reduced-motion:reduce){ .hotspot::before{animation:none; opacity:.7;} }
+
+  /* sporkort */
+  .sporrad{position:absolute; left:10px; top:10px; z-index:6; display:flex; flex-direction:column; gap:8px; max-width:min(46%,260px);}
+  .sporkort{background:var(--papir); color:var(--blekk); border:3px solid var(--ramme); border-radius:10px;
+    padding:8px 11px; box-shadow:0 4px 0 var(--ramme); transform:rotate(-1deg);}
+  .sporkort.ny{animation:smell .35s cubic-bezier(.2,2,.4,1);}
+  @keyframes smell{0%{transform:scale(1.6) rotate(6deg); opacity:0;}100%{transform:scale(1) rotate(-1deg); opacity:1;}}
+  .sporkort b{font-family:'Special Elite',monospace; display:block; font-size:13.5px;}
+  .sporkort p{margin:3px 0 0; font-weight:700; font-size:12.5px; line-height:1.3;}
+  .sporkort.tom{opacity:.35; border-style:dashed; min-height:34px; display:flex; align-items:center; justify-content:center;
+    font-weight:900; color:#8a7a5c; background:rgba(239,227,200,.6);}
+
+  .verktoy{position:absolute; right:10px; top:10px; z-index:6; display:flex; flex-direction:column; gap:6px; align-items:flex-end;}
+  .uu-btn{font-family:'Nunito',sans-serif; font-weight:800; font-size:clamp(11px,1.9vmin,14px);
+    background:var(--panel); color:var(--tekst); border:2px solid var(--ramme); border-radius:10px; padding:5px 10px;
+    cursor:pointer; box-shadow:0 3px 0 var(--ramme);}
+  .uu-btn.active{background:var(--gull); color:var(--blekk);}
+
+  /* deduksjon */
+  .dedu{position:absolute; inset:0; z-index:10; background:rgba(8,11,18,.72); display:flex;
+    align-items:center; justify-content:center; padding:14px; overflow:auto;}
+  .notat{background:var(--papir); color:var(--blekk); border:4px solid var(--ramme); border-radius:14px;
+    box-shadow:0 8px 0 var(--ramme); max-width:560px; width:100%; padding:16px 18px 14px; transform:rotate(-.5deg);
+    max-height:92%; overflow:auto;}
+  .notat h2{font-family:'Special Elite',monospace; margin:0 0 2px; font-size:clamp(17px,3vmin,23px);}
+  .notat .sp{font-weight:800; font-size:clamp(13px,2.2vmin,16px); margin:8px 0 8px;}
+  .altrad{display:flex; flex-direction:column; gap:7px;}
+  .alt{background:#fff; border:3px solid var(--blekk); border-radius:10px; padding:9px 12px; font-weight:800;
+    font-size:clamp(13px,2.1vmin,15.5px); cursor:pointer; text-align:left; transition:transform .06s; color:var(--blekk); font-family:'Nunito',sans-serif;}
+  .alt:hover{transform:translateX(3px);}
+  .alt.feil{background:#f8d3cc; border-color:var(--roed); animation:rist .3s;}
+  .alt.rett{background:#dcefcf; border-color:var(--groenn);}
+  @keyframes rist{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+  .feilrad{font-family:'Special Elite',monospace; color:var(--roed); font-size:12.5px; margin-top:8px; min-height:16px;}
+
+  /* kart i deduksjon */
+  .kartboks{border:3px solid var(--blekk); border-radius:10px; overflow:hidden; background:#cfe3ec; margin-top:4px;}
+  .kartboks svg{display:block; width:100%;}
+  .kartboks path.land{fill:#e9dfc6; stroke:#a99b78; stroke-width:.8;}
+  .kartsted{cursor:pointer;}
+  .kartsted circle{fill:var(--gull); stroke:var(--blekk); stroke-width:2; transition:r .1s;}
+  .kartsted:hover circle{r:11;}
+  .kartsted text{font-family:'Nunito',sans-serif; font-size:13.5px; font-weight:800; fill:var(--blekk);
+    paint-order:stroke; stroke:#f4ecd8; stroke-width:3px;}
+  .kartsted.feil circle{fill:var(--roed);}
+  .kartsted.rett circle{fill:var(--groenn);}
+
+  /* sak løst */
+  .lostkort{text-align:center;}
+  .stempel{display:inline-block; font-family:'Special Elite',monospace; color:var(--roed); border:5px solid var(--roed);
+    border-radius:10px; padding:6px 22px; font-size:clamp(26px,6vmin,44px); transform:rotate(-8deg); letter-spacing:2px;
+    margin:6px 0 4px;}
+  .stempel.inn{animation:stemp .45s cubic-bezier(.2,2.5,.5,1);}
+  @keyframes stemp{0%{transform:scale(2.6) rotate(-30deg); opacity:0;}60%{transform:scale(.92) rotate(-4deg); opacity:1;}100%{transform:scale(1) rotate(-8deg);}}
+  .stjerner{font-size:clamp(28px,6vmin,44px); letter-spacing:6px; margin:4px 0;}
+  .faktakort{background:#fff; border:3px solid var(--blekk); border-radius:10px; padding:10px 13px; margin-top:10px; text-align:left;}
+  .faktakort b{font-family:'Special Elite',monospace;}
+  .faktakort p{margin:4px 0 0; font-weight:700; font-size:clamp(12.5px,2vmin,15px); line-height:1.45;}
+
+  .toast{position:absolute; left:50%; bottom:12px; transform:translateX(-50%) translateY(20px); z-index:20;
+    background:var(--ramme); color:#fff; font-weight:800; padding:8px 16px; border-radius:12px;
+    font-size:clamp(13px,2.1vmin,16px); opacity:0; transition:.2s; pointer-events:none; white-space:nowrap;}
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- ============ ARKIVET ============ -->
+  <div id="arkivScreen" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0;">
+    <header>
+      <div class="brand">LRN<b>ify</b> presenterer</div>
+      <div class="stats"><div class="chip">⭐ <b id="totStj">0</b>/18</div></div>
+    </header>
+    <div id="arkiv">
+      <div class="ark-head">
+        <h1>🔦 RELIKVIEJAKTEN</h1>
+        <div class="under">Seks gjenstander er stjålet fra Verdensmuseet. Finn ut hvor de hører hjemme.</div>
+      </div>
+      <div class="rank"><span class="badge" id="rankBadge">🕵️ Aspirant</span></div>
+      <div class="nivarow">
+        <button class="niva sel" data-niva="lett">Aspirant (5.–7. trinn)</button>
+        <button class="niva" data-niva="vanskelig">Etterforsker (8.–10. trinn)</button>
+      </div>
+      <div class="saker" id="sakGrid"></div>
+    </div>
+  </div>
+
+  <!-- ============ SAK ============ -->
+  <div id="sakScreen" class="hidden" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0;gap:8px;">
+    <header>
+      <button class="btn small sub" id="tilArkiv">← Arkivet</button>
+      <div class="brand" id="sakTittel">Sak #1</div>
+      <div class="stats"><div class="chip">🔍 <b id="sporTeller">0</b>/3 spor</div></div>
+    </header>
+    <div id="aria-status" aria-live="polite" style="position:absolute;left:-9999px;"></div>
+
+    <div class="oppgavelinje">
+      <div class="fase" id="faseLabel">UNDERSØKELSE</div>
+      <div class="tekst" id="oppgaveTekst">Lys på gjenstanden og finn tre spor.</div>
+    </div>
+
+    <div class="scene" id="scene">
+      <div class="gulv"></div>
+      <div class="podium"></div>
+      <div class="gjenstand" id="gjenstand"></div>
+      <div class="moerke" id="moerke"></div>
+      <div class="lysring"></div>
+      <div class="sporrad" id="sporrad"></div>
+      <div class="verktoy">
+        <button class="uu-btn" id="lysBtn" aria-pressed="false">💡 Full belysning</button>
+      </div>
+      <div class="toast" id="toast"></div>
+
+      <!-- BRIEFING -->
+      <div class="dedu" id="briefBox">
+        <div class="notat">
+          <h2 id="briefTittel">Sak #1</h2>
+          <p class="sp skrivemaskin" id="briefTekst" style="font-weight:400;font-family:'Special Elite',monospace;"></p>
+          <div style="text-align:center"><button class="btn" id="briefStart">Start undersøkelsen 🔦</button></div>
+        </div>
+      </div>
+
+      <!-- DEDUKSJON -->
+      <div class="dedu hidden" id="deduBox">
+        <div class="notat">
+          <h2>🗒️ Detektivnotatboka</h2>
+          <div class="sp" id="deduSp"></div>
+          <div class="altrad" id="deduAlt"></div>
+          <div class="kartboks hidden" id="kartboks"></div>
+          <div class="feilrad" id="feilrad"></div>
+        </div>
+      </div>
+
+      <!-- SAK LØST -->
+      <div class="dedu hidden" id="lostBox">
+        <div class="notat lostkort">
+          <div><span class="stempel" id="stempel">SAK LØST</span></div>
+          <div class="stjerner" id="stjerner">⭐⭐⭐</div>
+          <div class="faktakort"><b>📌 Visste du at …</b><p id="faktaTekst"></p></div>
+          <button class="btn" id="nesteSak">Neste sak →</button>
+          <button class="btn sub" id="lostArkiv">Arkivet</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   RELIKVIEJAKTEN v001 – KRLE-detektivspill (LRNify)
+   Motoren er datadrevet: en sak er ren data. Nye saksmapper
+   (religioner, høytider, etikk) legges til i CASES.
+   ============================================================ */
+const WORLD = {"w":1000,"h":560,"land":"M927,580L921,574L913,562L903,543L897,536L892,522L867,494L866,490L882,492L907,519L915,519L925,533L931,537L928,544L935,547L939,558L948,564L946,580L927,580ZM1020,573L1013,573L1011,568L1002,565L993,568L990,564L979,563L978,551L971,542L970,526L975,520L986,522L987,514L1000,511L1008,498L1020,486L1020,573ZM760,484L754,486L750,479L748,466L750,452L756,457L764,472ZM967,375L961,379L954,376L956,365L968,363ZM394,226L384,236L379,231ZM318,226L322,229L336,229L325,233L317,230ZM259,204L257,218L237,209L238,205ZM214,178L218,184L218,196L209,196L207,180ZM216,170L214,176L209,169L215,162ZM106,84L95,89L85,87L91,79L88,70L102,60L107,60L114,65L111,76ZM231,56L228,63L220,55L229,52ZM132,32L125,40L138,39L131,53L137,54L143,64L148,66L153,78L161,80L157,88L160,92L154,96L145,96L127,101L112,101L122,93L116,86L123,83L121,73L130,74L127,64L119,63L118,55L115,59L112,47L114,38L119,32ZM69,-20L70,-19L62,-13L39,-7L15,-10L21,-14L9,-17L19,-19L19,-20L69,-20ZM489,177L494,183L491,199L495,209L508,216L518,217L528,215L526,198L516,188L516,181L523,183L528,180L519,170L514,172L510,164L501,161L492,149L499,149L497,143L509,143L506,129L493,128L481,133L472,140L467,149L475,157L475,163ZM1020,51L1014,63L1020,64L1020,193L1020,193L1013,189L1004,192L994,198L996,185L991,180L981,189L979,195L970,199L991,213L996,207L1008,211L1011,215L1002,218L994,233L1003,238L1009,246L1020,258L1020,315L1020,315L1017,324L1001,339L986,341L982,345L966,351L965,360L961,361L959,351L948,348L937,357L931,372L947,392L960,405L966,421L966,436L953,447L938,463L937,451L924,445L916,432L903,428L903,421L897,421L897,430L892,451L898,457L904,473L913,479L927,495L928,513L934,526L929,527L912,514L903,491L903,485L897,474L886,465L888,438L885,423L882,419L875,397L871,390L859,401L850,398L851,387L849,379L828,353L821,339L814,339L814,347L790,350L788,362L779,368L772,378L760,389L760,393L747,399L746,406L749,424L747,433L748,447L732,468L724,460L717,439L709,427L705,410L697,398L688,370L685,351L675,357L669,356L659,345L662,342L649,331L644,329L634,316L599,319L568,313L564,302L560,301L548,307L539,304L524,294L511,274L502,273L496,276L504,296L515,305L520,315L526,313L526,323L529,328L545,327L560,307L562,320L570,329L580,332L590,343L582,360L578,359L578,371L569,376L560,388L539,395L538,402L519,410L513,416L491,422L486,427L475,428L470,409L467,392L460,382L453,368L444,360L438,352L437,341L432,331L424,326L422,319L405,293L401,293L402,281L396,296L387,287L399,310L412,329L411,336L421,346L428,375L435,381L442,399L457,411L474,430L469,435L480,447L499,443L532,433L532,445L521,478L515,491L500,513L475,535L463,552L453,560L445,578L444,580L239,580L239,580L221,556L216,547L222,529L224,511L214,496L195,501L183,483L171,483L158,486L136,497L120,493L107,494L94,500L83,496L53,470L51,460L41,449L39,443L26,432L26,419L19,409L28,397L31,380L30,363L25,355L26,347L31,340L33,331L40,324L45,309L50,305L59,293L66,292L82,276L80,265L84,253L89,247L101,240L109,225L118,229L135,231L161,218L194,214L210,215L217,211L225,220L227,233L222,238L229,247L259,256L263,264L288,273L294,267L292,260L299,252L314,253L316,257L340,262L358,268L366,263L377,263L393,267L396,265L405,235L405,225L394,216L390,221L379,222L373,218L366,217L360,222L352,217L345,218L334,204L337,197L332,193L339,185L350,184L352,178L365,179L381,171L392,171L415,180L429,180L437,175L434,165L426,161L413,151L398,143L408,135L403,131L412,126L391,131L386,134L387,140L397,141L381,151L378,145L370,142L377,138L357,132L351,143L346,146L345,156L340,166L349,179L341,180L333,187L330,181L314,182L320,187L312,189L308,184L310,197L318,204L319,209L312,207L310,212L313,220L303,216L298,203L285,186L285,173L280,169L260,158L251,145L239,139L234,142L236,153L243,157L246,164L260,175L278,185L277,190L267,185L265,190L270,193L263,206L263,197L257,188L244,178L239,178L222,163L220,154L211,151L195,161L181,159L172,162L171,172L165,178L156,180L148,194L151,199L146,209L135,217L120,217L112,224L105,215L88,216L89,203L84,199L90,182L89,166L86,162L96,156L121,159L137,159L141,154L142,137L131,123L120,120L120,114L129,112L140,114L138,105L144,108L159,102L161,95L175,89L181,77L207,69L202,57L204,44L217,39L216,48L219,49L212,57L214,64L221,69L231,65L241,71L263,62L276,66L277,62L286,60L283,47L291,39L297,45L302,45L303,34L296,32L295,27L310,24L323,25L330,21L323,17L312,17L291,22L281,15L281,7L277,0L284,-9L300,-19L300,-20L356,-20L356,-20L358,-14L371,-9L367,-17L370,-19L386,-15L390,-16L387,-20L1020,-20ZM277,-20L276,-18L277,-14L258,-1L255,10L266,20L261,29L255,31L254,44L251,52L243,51L240,58L233,58L230,50L219,30L214,25L203,34L194,36L186,32L181,5L186,0L202,-6L213,-14L218,-20L277,-20Z","cities":{"jerusalem":[402,260],"aten":[316,206],"istanbul":[350,180],"varanasi":[756,317],"katmandu":[769,296],"amritsar":[686,262]}};
+
+const STEDER = {
+  jerusalem: { navn:'Synagogen i Jerusalem' },
+  aten:      { navn:'Den ortodokse katedralen i Aten' },
+  istanbul:  { navn:'Moskeen i Istanbul' },
+  varanasi:  { navn:'Hindutempelet i Varanasi' },
+  katmandu:  { navn:'Buddhistklosteret i Katmandu' },
+  amritsar:  { navn:'Gurdwaraen i Amritsar' },
+};
+const TRADISJONER = ['Jødedom','Kristendom','Islam','Hinduisme','Buddhisme','Sikhisme'];
+
+/* ---------- SVG-illustrasjoner (nøkterne museumsgjenstander) ---------- */
+const ART = {
+hanukkia:`<svg viewBox="0 0 300 300">
+ <defs><linearGradient id="ms" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e8c56a"/><stop offset="1" stop-color="#b78a2e"/></linearGradient></defs>
+ <rect x="105" y="252" width="90" height="14" rx="5" fill="url(#ms)" stroke="#6e5215" stroke-width="2.5"/>
+ <rect x="128" y="238" width="44" height="16" rx="4" fill="url(#ms)" stroke="#6e5215" stroke-width="2.5"/>
+ <rect x="146" y="120" width="8" height="120" fill="url(#ms)" stroke="#6e5215" stroke-width="2"/>
+ ${[0,1,2,3].map(i=>{const off=18+i*22; return `
+   <path d="M ${150-off} 96 L ${150-off} 130 Q ${150-off} ${168+i*0} 150 ${168}" fill="none" stroke="url(#ms)" stroke-width="7"/>
+   <path d="M ${150+off} 96 L ${150+off} 130 Q ${150+off} 168 150 168" fill="none" stroke="url(#ms)" stroke-width="7"/>`;}).join('')}
+ ${[-84,-62,-40,-18,18,40,62,84].map(off=>`
+   <rect x="${150+off-7}" y="82" width="14" height="12" rx="3" fill="url(#ms)" stroke="#6e5215" stroke-width="2"/>
+   <rect x="${150+off-4}" y="58" width="8" height="24" rx="2" fill="#f2ead2" stroke="#b9ac8a" stroke-width="1.5"/>
+   <path d="M ${150+off-4} 94 q 4 8 8 0" fill="#f2ead2" opacity=".9"/>`).join('')}
+ <rect x="141" y="66" width="18" height="14" rx="3" fill="url(#ms)" stroke="#6e5215" stroke-width="2"/>
+ <rect x="146" y="38" width="8" height="28" rx="2" fill="#f2ead2" stroke="#b9ac8a" stroke-width="1.5"/>
+ <g stroke="#6e5215" stroke-width="2" fill="none">
+   <path d="M150 246 l7 12 h-14 z"/><path d="M150 262 l7 -12 h-14 z"/>
+ </g>
+</svg>`,
+ikon:`<svg viewBox="0 0 300 300">
+ <rect x="52" y="30" width="196" height="240" rx="6" fill="#6b4a20" stroke="#3d2a10" stroke-width="4"/>
+ <rect x="64" y="42" width="172" height="216" fill="#d9a93c"/>
+ <rect x="64" y="42" width="172" height="216" fill="none" stroke="#8a6420" stroke-width="2"/>
+ <circle cx="138" cy="112" r="34" fill="#f0cd7e" stroke="#8a6420" stroke-width="2.5"/>
+ <circle cx="178" cy="140" r="24" fill="#f0cd7e" stroke="#8a6420" stroke-width="2.5"/>
+ <path d="M104 258 q 4 -96 34 -122 q 22 -14 34 6 q 20 24 26 116 z" fill="#7a2e2e" stroke="#4a1c1c" stroke-width="2.5"/>
+ <path d="M120 116 q 18 -26 36 0 q -4 22 -18 22 q -14 0 -18 -22" fill="#e8c9a8" stroke="#8a6420" stroke-width="2"/>
+ <path d="M112 100 q 26 -34 52 0 q 2 26 -8 22 q 4 -20 -18 -20 q -22 0 -18 20 q -10 4 -8 -22" fill="#5a3a6e" stroke="#3a2448" stroke-width="2"/>
+ <path d="M158 148 q 14 -18 28 0 q -2 16 -14 16 q -12 0 -14 -16" fill="#e8c9a8" stroke="#8a6420" stroke-width="2"/>
+ <path d="M156 172 q 22 -14 42 0 l 4 60 q -26 10 -50 0 z" fill="#8a5a2e" stroke="#4a2f14" stroke-width="2"/>
+ <text x="84" y="66" font-family="Georgia,serif" font-size="17" font-weight="bold" fill="#6e1f1f">ΜΡ</text>
+ <text x="196" y="66" font-family="Georgia,serif" font-size="17" font-weight="bold" fill="#6e1f1f">ΘΥ</text>
+</svg>`,
+matte:`<svg viewBox="0 0 300 300">
+ <rect x="75" y="22" width="150" height="256" rx="6" fill="#7a3030" stroke="#3f1616" stroke-width="4"/>
+ <rect x="87" y="34" width="126" height="232" fill="#9a4444"/>
+ <path d="M99 246 v-140 q 51 -66 102 0 v140 z" fill="#c8dbe0" stroke="#3f1616" stroke-width="3"/>
+ <path d="M111 246 v-132 q 39 -52 78 0 v132 z" fill="#7a8a5a" stroke="#3f1616" stroke-width="2"/>
+ ${[0,1,2].map(i=>`<g transform="translate(150 ${150+i*34})"><path d="M0 -11 L3 -3 11 -3 5 2 7 10 0 5 -7 10 -5 2 -11 -3 -3 -3 Z" fill="#e8d9a8" stroke="#3f1616" stroke-width="1.4"/></g>`).join('')}
+ ${[92,124,156,188,220,252].map(y=>`<rect x="87" y="${y-56}" width="7" height="10" fill="#e8d9a8"/><rect x="206" y="${y-56}" width="7" height="10" fill="#e8d9a8"/>`).join('')}
+ <circle cx="196" cy="252" r="17" fill="#d9c98a" stroke="#3f1616" stroke-width="2.5"/>
+ <path d="M196 241 l4 9 -4 11 -4 -11 z" fill="#7a3030" stroke="#3f1616" stroke-width="1.3"/>
+ <circle cx="196" cy="252" r="2.4" fill="#3f1616"/>
+</svg>`,
+ganesha:`<svg viewBox="0 0 300 300">
+ <defs><linearGradient id="br" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0a85a"/><stop offset="1" stop-color="#a86a24"/></linearGradient></defs>
+ <ellipse cx="150" cy="262" rx="78" ry="14" fill="#6e4416" stroke="#3d250b" stroke-width="3"/>
+ <ellipse cx="150" cy="212" rx="52" ry="42" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <path d="M104 196 q -26 6 -20 30 q 16 8 34 -4" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <path d="M196 196 q 26 6 20 30 q -16 8 -34 -4" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <path d="M112 170 q -30 -4 -34 20 q 12 12 30 6" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <path d="M188 170 q 30 -4 34 20 q -12 12 -30 6" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <circle cx="216" cy="196" r="11" fill="#e8c56a" stroke="#6e4416" stroke-width="2.5"/>
+ <circle cx="150" cy="120" r="46" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <path d="M108 108 q -30 -10 -36 18 q 10 22 34 12" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <path d="M192 108 q 30 -10 36 18 q -10 22 -34 12" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <path d="M150 136 q -12 30 4 44 q 10 8 18 2" fill="url(#br)" stroke="#6e4416" stroke-width="3"/>
+ <circle cx="134" cy="112" r="4.5" fill="#3d250b"/><circle cx="166" cy="112" r="4.5" fill="#3d250b"/>
+ <path d="M126 76 q 24 -18 48 0 l -6 14 q -18 -10 -36 0 z" fill="#e8c56a" stroke="#6e4416" stroke-width="2.5"/>
+</svg>`,
+hjul:`<svg viewBox="0 0 300 300">
+ <defs><linearGradient id="cy" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#c9902e"/><stop offset=".5" stop-color="#f0cd7e"/><stop offset="1" stop-color="#b07a20"/></linearGradient></defs>
+ <rect x="141" y="168" width="18" height="104" rx="8" fill="#8a5a2e" stroke="#4a2f14" stroke-width="3"/>
+ <ellipse cx="150" cy="270" rx="16" ry="8" fill="#6e4416" stroke="#4a2f14" stroke-width="2.5"/>
+ <rect x="96" y="70" width="108" height="96" rx="14" fill="url(#cy)" stroke="#6e5215" stroke-width="3.5"/>
+ <rect x="96" y="98" width="108" height="40" fill="#a8641e" opacity=".35"/>
+ ${[112,134,156,178].map(x=>`<path d="M${x} 108 q 6 -8 12 0 q -6 8 -12 0 M${x+2} 122 h10 M${x} 128 q 8 6 14 -2" fill="none" stroke="#4a2f14" stroke-width="2.2" stroke-linecap="round"/>`).join('')}
+ <path d="M150 70 v -20 m 0 0 a 8 8 0 1 1 0.1 0" fill="#e8c56a" stroke="#6e5215" stroke-width="3"/>
+ <path d="M204 118 q 30 6 26 34" fill="none" stroke="#4a2f14" stroke-width="3" stroke-dasharray="2 5" stroke-linecap="round"/>
+ <circle cx="230" cy="158" r="9" fill="#8a5a2e" stroke="#4a2f14" stroke-width="2.5"/>
+ <path d="M138 176 q 12 8 24 0" fill="none" stroke="#4a2f14" stroke-width="2"/>
+</svg>`,
+khanda:`<svg viewBox="0 0 300 300">
+ <defs><linearGradient id="st" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#dde5f0"/><stop offset="1" stop-color="#8fa0b8"/></linearGradient></defs>
+ <circle cx="150" cy="160" r="62" fill="none" stroke="url(#st)" stroke-width="13"/>
+ <circle cx="150" cy="160" r="62" fill="none" stroke="#3a4456" stroke-width="2.5" opacity=".7"/>
+ <circle cx="150" cy="160" r="49.5" fill="none" stroke="#3a4456" stroke-width="2" opacity=".6"/>
+ <path d="M150 44 l 12 26 -4 118 h -16 l -4 -118 z" fill="url(#st)" stroke="#3a4456" stroke-width="2.5"/>
+ <path d="M150 44 v 144" stroke="#3a4456" stroke-width="1.6" opacity=".55"/>
+ <rect x="128" y="188" width="44" height="10" rx="4" fill="url(#st)" stroke="#3a4456" stroke-width="2"/>
+ <rect x="143" y="198" width="14" height="24" rx="5" fill="#5a6a84" stroke="#3a4456" stroke-width="2"/>
+ <path d="M84 250 Q 40 180 96 96 Q 66 180 106 244 Z" fill="url(#st)" stroke="#3a4456" stroke-width="2.5"/>
+ <path d="M216 250 Q 260 180 204 96 Q 234 180 194 244 Z" fill="url(#st)" stroke="#3a4456" stroke-width="2.5"/>
+</svg>`,
+};
+
+/* ---------- SAKSBANKEN ---------- */
+const CASES = [
+{ id:'hanukkia', navn:'Lysestaken med de ni armene', tradisjon:'Jødedom', art:'hanukkia', sted:'jerusalem',
+  brief:'En lysestake i messing ble funnet i en forlatt koffert på en flyplass i Europa. Tollerne fant verken eier eller kvittering – bare en museumslapp med teksten «Utstilling: Lysfester». Gjenstanden er meldt stjålet fra Verdensmuseet.',
+  spor:[
+    {x:50,y:22,tittel:'Ni armer', tekst:'Åtte like lysholdere på rad – og en niende i midten som står høyere enn de andre.'},
+    {x:24,y:30,tittel:'Voksrester', tekst:'Stearin i holderne, men ulikt mye: som om ett nytt lys ble tent for hver kveld.'},
+    {x:50,y:88,tittel:'Sekstakket stjerne', tekst:'En sekstakket stjerne er inngravert i foten – et velkjent jødisk symbol.'},
+  ],
+  bruk:{ riktig:'Tennes under hanukka – ett nytt lys hver kveld i åtte dager',
+    vanskelig:['Sto i tempelet i Jerusalem (det er menoraen, med sju armer)','Tennes hver fredag når sabbaten begynner','Brukes under påskemåltidet pesach'],
+    lett:['Tennes hver fredag når sabbaten begynner','Brukes ved jødiske bryllup'] },
+  fakta:'Hanukkiaen tennes under hanukka, jødenes lysfest, som varer i åtte dager. Hver kveld tennes ett nytt lys med hjelpelyset sjammasj – det niende lyset, som ofte står høyere. Den må ikke forveksles med menoraen, tempelets lysestake med sju armer.' },
+
+{ id:'ikon', navn:'Bildet med gullbakgrunn', tradisjon:'Kristendom', art:'ikon', sted:'aten',
+  brief:'Et lite maleri på treplate ble oppdaget på et loppemarked, priset til femti kroner. En våken kunsthistoriker slo alarm: Dette er ingen kopi. Bildet står i Verdensmuseets savnetliste.',
+  spor:[
+    {x:22,y:25,tittel:'Gullbakgrunn', tekst:'Ekte bladgull dekker hele bakgrunnen. I denne kunsttradisjonen symboliserer gullet himmelen.'},
+    {x:46,y:33,tittel:'Glorier', tekst:'Begge skikkelsene har en lysende ring rundt hodet – et tegn på hellighet.'},
+    {x:72,y:20,tittel:'Greske bokstaver', tekst:'ΜΡ ΘΥ – en gresk forkortelse for «Guds mor». Språket peker mot en østlig kirketradisjon.'},
+  ],
+  bruk:{ riktig:'Henger i hjem og kirker som hjelp til bønn og andakt',
+    vanskelig:['Viser nøyaktig hvordan personene så ut i virkeligheten','Er en altertavle som alltid må stå bak alteret','Ble laget som illustrasjon til en trykt bibel'],
+    lett:['Viser nøyaktig hvordan personene så ut i virkeligheten','Brukes som gevinst i kirkens juleutlodning'] },
+  fakta:'Ikoner er hellige bilder i den ortodokse kirken, malt etter faste regler på treplater. Gullbakgrunnen symboliserer himmelen og det guddommelige lyset. Bokstavene ΜΡ ΘΥ er gresk forkortelse for «Guds mor». Troende bruker ikoner som hjelp til bønn og andakt – bildet æres, men tilbes ikke.' },
+
+{ id:'matte', navn:'Teppet med kompasset', tradisjon:'Islam', art:'matte', sted:'istanbul',
+  brief:'Et vakkert, håndknyttet teppe dukket opp i en nettauksjon med teksten «orientalsk pynteteppe». Verdensmuseet gjenkjente det umiddelbart på fotografiene: Dette er ingen pynt. Auksjonen ble stanset.',
+  spor:[
+    {x:50,y:30,tittel:'Bue-mønster', tekst:'Mønsteret danner en bue – en nisje som skal peke i én bestemt retning når teppet legges ut.'},
+    {x:50,y:62,tittel:'Bare geometri', tekst:'Stjerner, ranker og border – men ikke ett eneste menneske eller dyr er avbildet.'},
+    {x:66,y:86,tittel:'Innsydd kompass', tekst:'Et lite kompass er sydd inn i hjørnet. Eieren trengte å finne en helt bestemt himmelretning.'},
+  ],
+  bruk:{ riktig:'Legges ut ved de fem daglige bønnene – vendt mot Mekka',
+    vanskelig:['Henges på veggen som pynt i hjemmet','Brukes bare av imamen under fredagsbønnen','Sitteunderlag under måltidet som bryter fasten i ramadan'],
+    lett:['Henges på veggen som pynt i hjemmet','Brukes som dørmatte foran moskeen'] },
+  fakta:'Muslimer ber fem ganger om dagen, alltid vendt mot Kaba i Mekka. Bønneretningen kalles qibla, og mange bønnematter har innebygd kompass for å finne den. Mønsteret er geometrisk: I religiøs islamsk kunst avbildes vanligvis verken mennesker eller dyr.' },
+
+{ id:'ganesha', navn:'Statuen med elefanthodet', tradisjon:'Hinduisme', art:'ganesha', sted:'varanasi',
+  brief:'En messingstatue ble etterlatt på et hotellrom sammen med en lapp: «Beklager. Den hører ikke hjemme hos meg.» Resepsjonisten kontaktet politiet, som kontaktet Verdensmuseet. Nå er den din sak.',
+  spor:[
+    {x:50,y:30,tittel:'Elefanthode', tekst:'Skikkelsen har elefanthode med store ører og snabel – men menneskekropp.'},
+    {x:22,y:60,tittel:'Flere armer', tekst:'Fire armer, hver med sin gjenstand. Flere armer er et tegn på guddommelig kraft.'},
+    {x:76,y:64,tittel:'Søtsak i hånden', tekst:'I én hånd: en liten, rund søtsak – en laddu. Denne skikkelsen er kjent for å være glad i søtt.'},
+  ],
+  bruk:{ riktig:'Påkalles ved nye begynnelser – hindringenes fjerner',
+    vanskelig:['Krigsgud som beskytter soldater i strid','Vokter inngangen til dødsriket','Regngud som sørger for god avling'],
+    lett:['Krigsgud som beskytter soldater i strid','Julepynt fra India'] },
+  fakta:'Ganesha med elefanthodet er en av hinduismens mest elskede guder – hindringenes fjerner. Mange hinduer ber til Ganesha før nye begynnelser: en reise, en eksamen eller et nytt prosjekt. En gudestatue som brukes i tilbedelse, kalles en murti.' },
+
+{ id:'hjul', navn:'Sylinderen som snurrer', tradisjon:'Buddhisme', art:'hjul', sted:'katmandu',
+  brief:'I hittegodset på jernbanestasjonen sto en metallsylinder på et trehåndtak. En reisende hadde levert den inn: «Den lå igjen på perrongen. Det føltes galt å bare la den ligge.» Verdensmuseet bekrefter: Den er deres.',
+  spor:[
+    {x:50,y:38,tittel:'Skrift rundt sylinderen', tekst:'Tegn fra et språk i Himalaya er preget rundt hele sylinderen. Inni ligger papirruller med samme tekst, om og om igjen.'},
+    {x:78,y:52,tittel:'Kjede med lodd', tekst:'Et lite lodd i kjede hjelper sylinderen med å snurre jevnt rundt – alltid samme vei, med klokka.'},
+    {x:50,y:80,tittel:'Blankslitt håndtak', tekst:'Trehåndtaket er blankslitt av bruk. Noen har holdt og snurret denne i timevis, dag etter dag.'},
+  ],
+  bruk:{ riktig:'Snurres med klokka – hver runde er som å resitere bønnen inni',
+    vanskelig:['Kvern som maler teblader til smørte','Instrument som slår timeslag i klosteret','Beholder for røkelse under meditasjon'],
+    lett:['Instrument som slår timeslag i klosteret','Leketøy som gis til barn i klosteret'] },
+  fakta:'Bønnehjul brukes særlig i tibetansk buddhisme. Inni sylinderen ligger mantraet «Om mani padme hum» skrevet mange ganger på papirruller. Å snurre hjulet – alltid med klokka – regnes som å resitere mantraet like mange ganger.' },
+
+{ id:'khanda', navn:'Emblemet i stål', tradisjon:'Sikhisme', art:'khanda', sted:'amritsar',
+  brief:'Et blankpusset emblem i stål ble funnet i en pantelåners vindu. Pantelåneren sverget på at han hadde kjøpt det lovlig – men serienummeret på baksiden matcher Verdensmuseets katalog.',
+  spor:[
+    {x:50,y:22,tittel:'Tveegget sverd', tekst:'Et rett sverd, kvesset på begge sider, står midt i emblemet.'},
+    {x:22,y:56,tittel:'Sirkelen', tekst:'En ubrutt sirkel omslutter sverdet – uten begynnelse og uten slutt.'},
+    {x:79,y:60,tittel:'To krumme sverd', tekst:'To buede sverd rammer inn symbolet – ett for åndelig og ett for verdslig ansvar.'},
+  ],
+  bruk:{ riktig:'Hovedsymbol for en religion – pryder flagget utenfor gudshuset',
+    vanskelig:['Seremonielt våpen som brukes under høytider','Symbol for de fem elvene i Punjab','Kongelig våpenskjold fra det gamle India'],
+    lett:['Kongelig våpenskjold fra det gamle India','Premie fra en fekteturnering'] },
+  fakta:'Khandaen er sikhismens hovedsymbol: et tveegget sverd, en sirkel (chakkar) som viser at Gud er evig, og to kirpaner som står for åndelig og verdslig ansvar. Symbolet pryder Nishan Sahib – flagget som vaier utenfor enhver gurdwara, sikhenes gudshus.' },
+];
+
+/* ============================================================
+   MOTOR
+   ============================================================ */
+const $=id=>document.getElementById(id);
+const store={ get(k,fb){try{const v=localStorage.getItem(k);return v===null?fb:JSON.parse(v);}catch(e){return fb;}},
+              set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}} };
+const SAVE_KEY='lrnify_relikviejakten';
+let niva=store.get(SAVE_KEY+'_niva','lett');
+let sak=null, sakIdx=0, funnet=[], feil=0, fase='brief', qIdx=0, laast=false;
+
+function stjernerFor(f){ return f===0?3 : f===1?2 : 1; }
+function lagret(){ return store.get(SAVE_KEY,{}); }
+function totalStjerner(){ const l=lagret(); return CASES.reduce((s,c)=>s+(l[c.id]||0),0); }
+function rank(){ const t=totalStjerner();
+  return t>=18?'🏆 Mesterdetektiv' : t>=12?'🎖️ Førstebetjent' : t>=6?'🕵️ Etterforsker' : '🕵️ Aspirant'; }
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function aria(msg){const s=$('aria-status'); s.textContent=''; requestAnimationFrame(()=>s.textContent=msg);}
+let toastT=null;
+function toast(msg){const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1400);}
+
+/* ---------- arkivet ---------- */
+function renderArkiv(){
+  $('totStj').textContent=totalStjerner();
+  $('rankBadge').textContent=rank();
+  document.querySelectorAll('.niva').forEach(b=>b.classList.toggle('sel',b.dataset.niva===niva));
+  const g=$('sakGrid'); g.innerHTML='';
+  CASES.forEach((c,i)=>{
+    const stj=lagret()[c.id]||0;
+    const d=document.createElement('div'); d.className='mappe'; d.tabIndex=0; d.setAttribute('role','button');
+    d.innerHTML='<div class="snr">SAK #'+String(i+1).padStart(3,'0')+'</div>'+
+      '<div class="stj">'+'⭐'.repeat(stj)+'</div>'+
+      '<h3>'+esc(c.navn)+'</h3>'+
+      '<div class="tr">'+(stj? esc(c.tradisjon) : 'Tradisjon: ukjent')+'</div>'+
+      (stj?'<div class="lost">SAK LØST</div>':'');
+    d.addEventListener('click',()=>startSak(i));
+    d.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();startSak(i);}});
+    g.appendChild(d);
+  });
+}
+document.querySelectorAll('.niva').forEach(b=>b.addEventListener('click',()=>{
+  niva=b.dataset.niva; store.set(SAVE_KEY+'_niva',niva); renderArkiv();
+}));
+
+/* ---------- sak ---------- */
+function startSak(i){
+  sakIdx=i; sak=CASES[i]; funnet=[]; feil=0; qIdx=0; fase='brief'; laast=false;
+  $('arkivScreen').classList.add('hidden');
+  $('sakScreen').classList.remove('hidden');
+  $('sakTittel').textContent='SAK #'+String(i+1).padStart(3,'0');
+  $('sporTeller').textContent='0';
+  $('faseLabel').textContent='BRIEFING';
+  $('oppgaveTekst').textContent='Les saksmappen.';
+  $('gjenstand').innerHTML=ART[sak.art];
+  renderSporrad();
+  ['deduBox','lostBox'].forEach(id=>$(id).classList.add('hidden'));
+  $('briefBox').classList.remove('hidden');
+  $('briefTittel').textContent='SAK #'+String(i+1).padStart(3,'0')+': '+sak.navn;
+  $('briefTekst').textContent=sak.brief;
+  /* hotspots */
+  document.querySelectorAll('.hotspot').forEach(h=>h.remove());
+  const gj=$('gjenstand');
+  sak.spor.forEach((s,si)=>{
+    const b=document.createElement('button'); b.className='hotspot';
+    b.style.left=s.x+'%'; b.style.top=s.y+'%';
+    b.setAttribute('aria-label','Undersøk detalj '+(si+1));
+    b.addEventListener('click',()=>finnSpor(si));
+    gj.appendChild(b);
+  });
+  aria('Ny sak: '+sak.navn+'. '+sak.brief);
+}
+$('briefStart').addEventListener('click',()=>{
+  $('briefBox').classList.add('hidden');
+  fase='undersok';
+  $('faseLabel').textContent='UNDERSØKELSE';
+  $('oppgaveTekst').textContent='Før lommelykten over gjenstanden og finn tre spor.';
+  aria('Undersøkelsen har startet. Finn tre spor på gjenstanden. Bruk knappen Full belysning om du vil se alle sporene.');
+});
+
+function renderSporrad(){
+  const r=$('sporrad'); r.innerHTML='';
+  for(let i=0;i<3;i++){
+    if(funnet.includes(i)){
+      const s=sak.spor[i];
+      r.insertAdjacentHTML('beforeend','<div class="sporkort'+(i===funnet[funnet.length-1]?' ny':'')+'"><b>🔍 SPOR '+(i+1)+': '+esc(s.tittel)+'</b><p>'+esc(s.tekst)+'</p></div>');
+    } else {
+      r.insertAdjacentHTML('beforeend','<div class="sporkort tom">SPOR '+(i+1)+'</div>');
+    }
+  }
+}
+function finnSpor(i){
+  if(fase!=='undersok'||funnet.includes(i)) return;
+  funnet.push(i);
+  document.querySelectorAll('.hotspot')[i].classList.add('funnet');
+  $('sporTeller').textContent=funnet.length;
+  renderSporrad();
+  aria('Spor funnet: '+sak.spor[i].tittel+'. '+sak.spor[i].tekst);
+  if(funnet.length===3){
+    toast('Alle spor funnet! 🗒️');
+    setTimeout(()=>{ fase='dedu'; qIdx=0; visSporsmal(); },900);
+  }
+}
+
+/* ---------- deduksjon ---------- */
+function alternativer(){
+  if(qIdx===0){
+    const alle = niva==='lett'
+      ? shuffle([sak.tradisjon, ...shuffle(TRADISJONER.filter(t=>t!==sak.tradisjon)).slice(0,2)])
+      : shuffle(TRADISJONER.slice());
+    return alle.map(t=>({tekst:t, rett:t===sak.tradisjon}));
+  }
+  if(qIdx===1){
+    const d = niva==='lett'?sak.bruk.lett:sak.bruk.vanskelig;
+    return shuffle([{tekst:sak.bruk.riktig,rett:true}, ...d.map(t=>({tekst:t,rett:false}))]);
+  }
+  return null; /* q3 = kart */
+}
+function visSporsmal(){
+  $('faseLabel').textContent='DEDUKSJON '+(qIdx+1)+'/3';
+  $('oppgaveTekst').textContent='Bruk sporene og svar i notatboka.';
+  $('deduBox').classList.remove('hidden');
+  $('feilrad').textContent='';
+  const spEl=$('deduSp'), altEl=$('deduAlt'), kart=$('kartboks');
+  if(qIdx<2){
+    kart.classList.add('hidden'); altEl.classList.remove('hidden');
+    spEl.textContent = qIdx===0 ? '1. Hvilken tradisjon hører gjenstanden hjemme i?' : '2. Hva brukes den til?';
+    altEl.innerHTML='';
+    alternativer().forEach(a=>{
+      const b=document.createElement('button'); b.className='alt'; b.textContent=a.tekst;
+      b.addEventListener('click',()=>svar(a.rett,b));
+      altEl.appendChild(b);
+    });
+    aria(spEl.textContent);
+  } else {
+    spEl.textContent='3. Hvor skal gjenstanden leveres tilbake?';
+    altEl.classList.add('hidden');
+    kart.classList.remove('hidden');
+    let inner='<path class="land" d="'+WORLD.land+'"/>';
+    const plasser=Object.entries(STEDER);
+    plasser.forEach(([k,st])=>{
+      const [x,y]=WORLD.cities[k];
+      const over = (k==='katmandu'||k==='istanbul'||k==='amritsar');
+      inner+='<g class="kartsted" data-k="'+k+'" role="button" aria-label="'+esc(st.navn)+'">'+
+        '<circle cx="'+x+'" cy="'+y+'" r="9"/>'+
+        '<text x="'+x+'" y="'+(y+(over?-16:27))+'" text-anchor="middle">'+esc(st.navn.split(' i ')[1]||st.navn)+'</text></g>';
+    });
+    kart.innerHTML='<svg viewBox="0 0 '+WORLD.w+' '+WORLD.h+'">'+inner+'</svg>';
+    kart.querySelectorAll('.kartsted').forEach(g=>{
+      g.addEventListener('click',()=>svarSted(g));
+    });
+    aria('Velg leveringssted på kartet: '+plasser.map(p=>p[1].navn).join(', '));
+  }
+}
+function svar(rett,btn){
+  if(laast) return;
+  if(rett){
+    laast=true; btn.classList.add('rett');
+    toast(qIdx===0?'Riktig tradisjon! ✅':'Riktig! ✅');
+    setTimeout(()=>{ laast=false; qIdx++; visSporsmal(); },700);
+  } else {
+    feil++; btn.classList.add('feil');
+    $('feilrad').textContent='✗ Etterforskningsfeil notert i protokollen ('+feil+')';
+    aria('Feil. Prøv igjen.');
+    setTimeout(()=>btn.classList.remove('feil'),600);
+  }
+}
+function svarSted(g){
+  if(laast) return;
+  const k=g.dataset.k;
+  if(k===sak.sted){
+    laast=true; g.classList.add('rett');
+    toast('Levert! 📦');
+    setTimeout(sakLost,800);
+  } else {
+    feil++; g.classList.add('feil');
+    $('feilrad').textContent='✗ Feil sted – '+STEDER[k].navn+' venter ikke på denne. ('+feil+')';
+    aria('Feil sted. Prøv igjen.');
+    setTimeout(()=>g.classList.remove('feil'),700);
+  }
+}
+
+/* ---------- sak løst ---------- */
+function sakLost(){
+  const stj=stjernerFor(feil);
+  const l=lagret(); if((l[sak.id]||0)<stj){ l[sak.id]=stj; store.set(SAVE_KEY,l); }
+  $('deduBox').classList.add('hidden');
+  $('lostBox').classList.remove('hidden');
+  $('faseLabel').textContent='SAK LØST';
+  $('oppgaveTekst').textContent=sak.navn+' er tilbake der den hører hjemme: '+STEDER[sak.sted].navn+'.';
+  const st=$('stempel'); st.classList.remove('inn'); void st.offsetWidth; st.classList.add('inn');
+  $('stjerner').textContent='⭐'.repeat(stj)+'☆'.repeat(3-stj);
+  $('faktaTekst').textContent=sak.fakta;
+  $('nesteSak').classList.toggle('hidden', sakIdx>=CASES.length-1);
+  aria('Sak løst! '+stj+' av 3 stjerner. '+sak.fakta);
+}
+$('nesteSak').addEventListener('click',()=>startSak(sakIdx+1));
+$('lostArkiv').addEventListener('click',tilArkiv);
+$('tilArkiv').addEventListener('click',tilArkiv);
+function tilArkiv(){
+  $('sakScreen').classList.add('hidden');
+  renderArkiv();
+  $('arkivScreen').classList.remove('hidden');
+}
+
+/* ---------- lommelykt ---------- */
+const scene=$('scene');
+function flyttLys(clientX,clientY){
+  const r=scene.getBoundingClientRect();
+  scene.style.setProperty('--lx',((clientX-r.left)/r.width*100)+'%');
+  scene.style.setProperty('--ly',((clientY-r.top)/r.height*100)+'%');
+}
+scene.addEventListener('pointermove',e=>flyttLys(e.clientX,e.clientY));
+scene.addEventListener('pointerdown',e=>flyttLys(e.clientX,e.clientY));
+$('lysBtn').addEventListener('click',()=>{
+  const on=!scene.classList.contains('fullyst');
+  scene.classList.toggle('fullyst',on);
+  $('lysBtn').classList.toggle('active',on);
+  $('lysBtn').setAttribute('aria-pressed',String(on));
+});
+
+/* ---------- oppstart ---------- */
+renderArkiv();
+
+/* ---------- test-hooks ---------- */
+window.__spill={
+  CASES, STEDER,
+  get state(){return {sakIdx, fase, funnet:funnet.slice(), feil, qIdx, niva};},
+  startSak, finnSpor,
+  svarTekst(tekst){ const b=[...document.querySelectorAll('#deduAlt .alt')].find(b=>b.textContent===tekst); if(b) b.click(); return !!b; },
+  svarStedKey(k){ const g=document.querySelector('.kartsted[data-k="'+k+'"]'); if(g) g.dispatchEvent(new MouseEvent('click',{bubbles:true})); return !!g; },
+  brief(){ document.getElementById('briefStart').click(); },
+  lagret, setNiva(n){ niva=n; },
+};
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+</body>
+</html>
