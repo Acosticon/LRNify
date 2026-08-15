@@ -1,6 +1,6 @@
 // Simulerer reglene i database.rules.json mot ekte klientoperasjoner fra
-// aktiviteter/poll/, aktiviteter/terningspill/, aktiviteter/genetikhjul/ og
-// aktiviteter/temaspinner/.
+// aktiviteter/poll/, aktiviteter/terningspill/, aktiviteter/genetikhjul/,
+// aktiviteter/temaspinner/ og aktiviteter/tankesky/.
 //
 //   npm install targaryen
 //   node firebase/rules.test.js
@@ -271,6 +271,88 @@ check('ukjent felt på klokka', false, db(tp(), LARER).write(tPath + '/klokke/ha
 check('kjempelangt tema', false, db(tp(), LARER).write(tPath + '/elever/' + ELEV.uid + '/tema', 'x'.repeat(200)));
 check('urimelig lang varighet', false, db(tp(), LARER).write(tPath + '/varighetMs', 99999999));
 check('skriver rett på /temaspinner', false, db({}, LARER).write('/temaspinner', { evil: true }));
+
+/* ══════════════════════════════════════════════════════════════
+   TANKESKY
+   Læreren eier rommet og styrer tema/friFlyt/runde. En elev kan opprette
+   et nytt ord (count 1), øke et eksisterende ord med nøyaktig én uten å
+   røre teksten, eller trekke nøyaktig én fra sitt eget forrige ord — kun
+   når elevens egen innsendinger-post fortsatt peker på akkurat det ordet.
+   ══════════════════════════════════════════════════════════════ */
+const SKODE = 'SKY1';
+const sRom = {
+  opprettet: now,
+  owner: LARER.uid,
+  tema: 'Bærekraft',
+  friFlyt: false,
+  runde: 1,
+  ord: {
+    ord1: { tekst: 'Sirkulær økonomi', tekstNorm: 'sirkulær økonomi', count: 2, sistOppdatert: now },
+    ord2: { tekst: 'Resirkulering', tekstNorm: 'resirkulering', count: 1, sistOppdatert: now },
+  },
+  innsendinger: {
+    [ELEV.uid]: { ordId: 'ord1', runde: 1, tekst: 'Sirkulær økonomi' },
+  },
+};
+const sp = (rom) => ({ tankesky: { [SKODE]: rom || sRom } });
+const sPath = '/tankesky/' + SKODE;
+const nyttSRom = { opprettet: now, owner: LARER.uid, tema: 'Bærekraft', friFlyt: false, runde: 1 };
+
+console.log('--- tankesky: lærerens flyt');
+check('lærer oppretter rom', true, db({}, LARER).write(sPath, nyttSRom));
+check('lærer overskriver sitt eget rom', true, db(sp(), LARER).write(sPath, nyttSRom));
+check('lærer endrer tema', true, db(sp(), LARER).write(sPath + '/tema', 'Klimaendringer'));
+check('lærer skrur på fri flyt', true, db(sp(), LARER).write(sPath + '/friFlyt', true));
+check('lærer starter ny runde (tømmer ord og innsendinger)', true, db(sp(), LARER).update(sPath, { runde: 2, ord: null, innsendinger: null }));
+check('lærer fjerner et ord', true, db(sp(), LARER).write(sPath + '/ord/ord2', null));
+check('lærer angrer fjerningen (samme id og data tilbake)', true, db(sp(), LARER).write(sPath + '/ord/ord2', sRom.ord.ord2));
+check('lærer slår sammen to bobler', true, db(sp(), LARER).update(sPath, {
+  'ord/ord1': { tekst: 'Sirkulær økonomi', tekstNorm: 'sirkulær økonomi', count: 3, sistOppdatert: now },
+  'ord/ord2': null,
+}));
+check('lærer sletter rommet', true, db(sp(), LARER).write(sPath, null));
+
+console.log('--- tankesky: elevens flyt');
+check('elev leser rommet (ingen ordsky vises, men rommet finnes)', true, db(sp(), ELEV2).read(sPath));
+check('elev oppretter et nytt ord', true, db(sp(), ELEV2).write(sPath + '/ord/nyord1', { tekst: 'Klima', tekstNorm: 'klima', count: 1, sistOppdatert: now }));
+check('elev øker et eksisterende ord med én', true, db(sp(), ELEV2).write(sPath + '/ord/ord2', { tekst: 'Resirkulering', tekstNorm: 'resirkulering', count: 2, sistOppdatert: now }));
+check('elev trekker fra sitt eget forrige ord (redigerer, fri flyt av)', true, db(sp(), ELEV).write(sPath + '/ord/ord1', { tekst: 'Sirkulær økonomi', tekstNorm: 'sirkulær økonomi', count: 1, sistOppdatert: now }));
+check('elev oppdaterer sin egen innsendinger-post', true, db(sp(), ELEV).update(sPath + '/innsendinger/' + ELEV.uid, { ordId: 'ord2', runde: 1, tekst: 'Resirkulering' }));
+
+console.log('--- tankesky: hærverk');
+check('elev dekrementerer en andens ord', false, db(sp(), ELEV2).write(sPath + '/ord/ord1', { tekst: 'Sirkulær økonomi', tekstNorm: 'sirkulær økonomi', count: 1, sistOppdatert: now }));
+check('elev hopper flere tall på telleren', false, db(sp(), ELEV).write(sPath + '/ord/ord2', { tekst: 'Resirkulering', tekstNorm: 'resirkulering', count: 10, sistOppdatert: now }));
+check('elev endrer teksten mens telleren økes', false, db(sp(), ELEV).write(sPath + '/ord/ord2', { tekst: 'Jukseord', tekstNorm: 'jukseord', count: 2, sistOppdatert: now }));
+check('elev oppretter et ord med feil starttall', false, db(sp(), ELEV2).write(sPath + '/ord/nyord2', { tekst: 'Klima', tekstNorm: 'klima', count: 2, sistOppdatert: now }));
+check('elev sletter et ord som ikke er hennes eget siste bidrag', false, db(sp(), ELEV2).write(sPath + '/ord/ord1', null));
+check('elev skrur på fri flyt', false, db(sp(), ELEV).write(sPath + '/friFlyt', true));
+check('elev starter ny runde', false, db(sp(), ELEV).write(sPath + '/runde', 2));
+check('elev sletter rommet', false, db(sp(), ELEV).write(sPath, null));
+check('elev overtar eierskapet', false, db(sp(), ELEV).write(sPath + '/owner', ELEV.uid));
+check('elev skriver innsendinger for en annen elev', false, db(sp(), ELEV).write(sPath + '/innsendinger/' + ELEV2.uid, { ordId: 'ord1', runde: 1, tekst: 'juks' }));
+check('elev sender inn med feil runde i innsendinger', false, db(sp(), ELEV2).write(sPath + '/innsendinger/' + ELEV2.uid, { ordId: 'ord2', runde: 99, tekst: 'noe' }));
+check('uinnlogget oppretter rom', false, db({}, null).write(sPath, nyttSRom));
+check('uinnlogget sender inn et ord', false, db(sp(), null).write(sPath + '/ord/nyord3', { tekst: 'Klima', tekstNorm: 'klima', count: 1, sistOppdatert: now }));
+check('lister opp /tankesky', false, db(sp(), LARER).read('/tankesky'));
+
+console.log('--- tankesky: gjenbruk av romkode');
+const gammeltSRom = Object.assign({}, sRom, { opprettet: now - 20 * 3600 * 1000 });
+check('annen lærer overtar gammel kode (>12t)', true, db(sp(gammeltSRom), ELEV2).write(sPath, Object.assign({}, nyttSRom, { owner: ELEV2.uid })));
+check('annen lærer kaprer ferskt rom', false, db(sp(), ELEV2).write(sPath, Object.assign({}, nyttSRom, { owner: ELEV2.uid })));
+
+console.log('--- tankesky: ugyldige data');
+check('ugyldig romkode', false, db({}, LARER).write('/tankesky/sky 1', nyttSRom));
+check('for lang romkode', false, db({}, LARER).write('/tankesky/' + 'A'.repeat(12), nyttSRom));
+check('rom uten tema', false, db({}, LARER).write(sPath, { opprettet: now, owner: LARER.uid, friFlyt: false, runde: 1 }));
+check('rom med annens uid som owner', false, db({}, ELEV).write(sPath, Object.assign({}, nyttSRom, { owner: LARER.uid })));
+check('kjempelangt tema', false, db(sp(), LARER).write(sPath + '/tema', 'x'.repeat(200)));
+check('runde satt til null', false, db(sp(), LARER).write(sPath + '/runde', 0));
+check('ukjent felt på rommet', false, db(sp(), LARER).write(sPath + '/ekstrafelt', true));
+check('ukjent felt på et ord', false, db(sp(), ELEV2).write(sPath + '/ord/nyord4', { tekst: 'Klima', tekstNorm: 'klima', count: 1, sistOppdatert: now, ekstra: true }));
+check('ord uten tekstNorm', false, db(sp(), ELEV2).write(sPath + '/ord/nyord5', { tekst: 'Klima', count: 1, sistOppdatert: now }));
+check('tom tekst', false, db(sp(), ELEV2).write(sPath + '/ord/nyord6', { tekst: '', tekstNorm: '', count: 1, sistOppdatert: now }));
+check('kjempelang tekst', false, db(sp(), ELEV2).write(sPath + '/ord/nyord7', { tekst: 'x'.repeat(70), tekstNorm: 'x'.repeat(70), count: 1, sistOppdatert: now }));
+check('skriver rett på /tankesky', false, db({}, LARER).write('/tankesky', { evil: true }));
 
 /* ── lrnify-auth.js (auth/lrnify-auth.js): users/, resultater/, og de nye
    eierUid/delteUider/klasseId-feltene på rooms/. LARER2 er en annen innlogget

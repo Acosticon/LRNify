@@ -12,6 +12,7 @@ gang uten å la hvem som helst skrive hva som helst.
 | `aktiviteter/terningspill/` | Realtime Database | `krle/{ROMKODE}` | Lærer lager/sletter rom og setter `state`, elev legger til lag og svar |
 | `aktiviteter/genetikhjul/` | Realtime Database | `genetikhjul/{KLASSEKODE}` | Elev sender inn én profil, lærerens tavle nullstiller klassen |
 | `aktiviteter/temaspinner/` | Realtime Database | `temaspinner/{ROMKODE}` | Lærer lager rom, deler ut temaer og styrer klokka; elev melder seg på og ber om bytte |
+| `aktiviteter/tankesky/` | Realtime Database | `tankesky/{ROMKODE}` | Lærer lager rom og styrer runde/fri flyt/tavle; elev sender inn ord som teller opp eller oppretter bobler |
 | `loype/drobak-akvarium/` | Firestore | `fjordvoktere` | Legger til ett lag på veggen (`{ lag, tid }`) |
 | `index.html` (forsidens CTA-skjema) | Firestore | `feedback` | Besøkende sender inn forslag/tilbakemelding/bestilling |
 | `bruk/lrnify-bruk.js` (alle sider) | Realtime Database | `bruk/{dato}/{side}/{hendelse}` | Teller opp én sidevisning — anonymt, se `bruk/README.md` |
@@ -28,11 +29,14 @@ hovedsak ikke kreve
 `auth != null`. Sikkerheten ligger i at romkoden må være kjent, og i at reglene
 låser *formen* på det som kan skrives.
 
-**Unntaket er Temaspinner**, som er bygget etter at anonym pålogging kom på
-plass og derfor krever den overalt: elevens anonyme id *er* nøkkelen under
-`elever/`, og det er den som skiller «mitt tema» fra «en annens tema». Uten
-anonym pålogging virker ikke rom-modus i Temaspinner — men tavlemodus i samme
-app går helt uten nett og er upåvirket.
+**Unntaket er Temaspinner og Tankesky**, som er bygget etter at anonym
+pålogging kom på plass og derfor krever den overalt. I Temaspinner *er*
+elevens anonyme id nøkkelen under `elever/`, og det er den som skiller «mitt
+tema» fra «en annens tema». Uten anonym pålogging virker ikke rom-modus i
+Temaspinner — men tavlemodus i samme app går helt uten nett og er upåvirket.
+I Tankesky brukes den anonyme id-en til å vite hvilket ord en elev sist sendte
+inn (`innsendinger/{uid}`), slik at eleven kan redigere sitt eget bidrag når
+«fri flyt» er av, uten å kunne røre andres ord.
 
 ## Raskeste vei (Firebase Console, ~2 minutter)
 

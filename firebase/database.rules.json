@@ -280,6 +280,84 @@
       }
     },
 
+    "tankesky": {
+      "$kode": {
+        ".read": true,
+        ".write": "$kode.matches(/^[A-Z0-9]{4,8}$/) && auth != null && (!data.exists() || data.child('owner').val() === auth.uid || data.child('opprettet').val() < now - 43200000)",
+        ".validate": "newData.hasChildren(['opprettet', 'owner', 'tema', 'friFlyt', 'runde'])",
+
+        "owner": {
+          ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
+        },
+        "opprettet": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+        "tema": {
+          ".write": "auth != null && root.child('tankesky').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        },
+        "friFlyt": {
+          ".write": "auth != null && root.child('tankesky').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isBoolean()"
+        },
+        "runde": {
+          ".write": "auth != null && root.child('tankesky').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 100000"
+        },
+
+        "ord": {
+          ".write": "auth != null && root.child('tankesky').child($kode).child('owner').val() === auth.uid",
+
+          "$ordId": {
+            ".write": "auth != null && (root.child('tankesky').child($kode).child('owner').val() === auth.uid || (!data.exists() && newData.exists() && newData.child('count').val() === 1) || (data.exists() && newData.exists() && newData.child('tekst').val() === data.child('tekst').val() && newData.child('tekstNorm').val() === data.child('tekstNorm').val() && newData.child('count').val() === data.child('count').val() + 1) || (data.exists() && root.child('tankesky').child($kode).child('innsendinger').child(auth.uid).child('ordId').val() === $ordId && ((newData.exists() && newData.child('tekst').val() === data.child('tekst').val() && newData.child('tekstNorm').val() === data.child('tekstNorm').val() && newData.child('count').val() === data.child('count').val() - 1) || (!newData.exists() && data.child('count').val() <= 1))))",
+            ".validate": "newData.hasChildren(['tekst', 'tekstNorm', 'count', 'sistOppdatert'])",
+
+            "tekst": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+            },
+            "tekstNorm": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+            },
+            "count": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 100000"
+            },
+            "sistOppdatert": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "innsendinger": {
+          ".write": "auth != null && root.child('tankesky').child($kode).child('owner').val() === auth.uid",
+
+          "$elevId": {
+            ".write": "auth != null && $elevId === auth.uid",
+            ".validate": "newData.hasChildren(['ordId', 'runde', 'tekst'])",
+
+            "ordId": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 40"
+            },
+            "runde": {
+              ".validate": "newData.isNumber() && newData.val() === root.child('tankesky').child($kode).child('runde').val()"
+            },
+            "tekst": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 60"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",

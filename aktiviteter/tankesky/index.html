@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Tankesky — LRNify</title>
+<meta name="description" content="Felles idémyldring: læreren viser et senterord, elevene sender inn ord fra egne enheter, og tavla fylles live med en ordsky der de mest gjentatte ordene vokser.">
+<link rel="canonical" href="https://lrnify.no/aktiviteter/tankesky/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Tankesky – LRNify">
+<meta property="og:description" content="Felles idémyldring: læreren viser et senterord, elevene sender inn ord fra egne enheter, og tavla fylles live med en ordsky der de mest gjentatte ordene vokser.">
+<meta property="og:image" content="https://lrnify.no/media/aktiviteter/tankesky.png">
+<meta property="og:url" content="https://lrnify.no/aktiviteter/tankesky/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tankesky – LRNify">
+<meta name="twitter:description" content="Felles idémyldring: læreren viser et senterord, elevene sender inn ord fra egne enheter, og tavla fylles live med en ordsky der de mest gjentatte ordene vokser.">
+<meta name="twitter:image" content="https://lrnify.no/media/aktiviteter/tankesky.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#fff9f0;
+    --yellow:#facc15;
+    --ink:#1a1a1a;
+    --red:#dc2626;
+    --green:#16a34a;
+    --muted:#7a6f63;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh; background:var(--cream); color:var(--ink);
+    font-family:'Nunito',sans-serif; font-weight:700;
+    padding:16px 14px 48px;
+    display:flex; flex-direction:column; align-items:center;
+  }
+  .skjult{ display:none !important; }
+
+  h1{
+    font-family:'Chewy',cursive; font-weight:400;
+    font-size:clamp(2rem,7vw,3rem); margin:6px 0 2px; text-align:center;
+    transform:rotate(-1.5deg);
+  }
+  .undertittel{ color:var(--muted); font-size:.95rem; margin-bottom:20px; text-align:center; }
+
+  .skjerm{ width:100%; max-width:460px; }
+  .skjerm.bredt{ max-width:1200px; }
+
+  .kort{
+    background:#fff; border:4px solid var(--ink); border-radius:22px;
+    padding:22px 20px; width:100%;
+    box-shadow:6px 6px 0 var(--ink);
+  }
+  .knapp{
+    display:block; width:100%; border:4px solid var(--ink); border-radius:16px;
+    background:var(--yellow); font-family:'Nunito',sans-serif; font-weight:900;
+    font-size:1.15rem; padding:16px; margin-top:14px; cursor:pointer;
+    box-shadow:4px 4px 0 var(--ink); transition:transform .08s, box-shadow .08s;
+    color:var(--ink);
+  }
+  .knapp:active{ transform:translate(3px,3px); box-shadow:1px 1px 0 var(--ink); }
+  .knapp[disabled]{ opacity:.45; cursor:not-allowed; }
+  .knapp[disabled]:active{ transform:none; box-shadow:4px 4px 0 var(--ink); }
+  .knapp.hvit{ background:#fff; }
+  .knapp.stor{ font-size:1.35rem; padding:24px 16px; }
+  .knapp.liten{ width:auto; display:inline-block; font-size:.95rem; padding:10px 16px; margin-top:0; }
+  .knapp.fare{ background:#fee2e2; }
+
+  .tilbake{
+    background:none; border:none; font-family:'Nunito',sans-serif; font-weight:800;
+    color:var(--muted); cursor:pointer; padding:0; margin-bottom:14px;
+    font-size:.85rem; text-decoration:underline;
+  }
+
+  label.felt{
+    display:block; font-weight:900; font-size:.8rem; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--muted); margin-bottom:6px;
+  }
+  input[type=text]{
+    width:100%; padding:14px 16px; border:3px solid var(--ink); border-radius:14px;
+    font-family:'Nunito',sans-serif; font-weight:800; font-size:1.1rem;
+    background:var(--cream); color:var(--ink);
+  }
+  input[type=text]:focus{ outline:3px solid var(--yellow); outline-offset:1px; }
+  .felt-gruppe{ margin-bottom:18px; }
+
+  .valg{ display:flex; gap:10px; flex-wrap:wrap; }
+  .valg button{
+    flex:1 1 auto; min-width:120px; border:3px solid var(--ink); border-radius:14px;
+    background:#fff; font-family:'Nunito',sans-serif; font-weight:900; font-size:1rem;
+    padding:13px 12px; cursor:pointer; box-shadow:3px 3px 0 var(--ink); color:var(--ink);
+    text-align:center; line-height:1.25;
+  }
+  .valg button.pa{ background:var(--yellow); }
+  .valg button small{ display:block; font-weight:700; font-size:.78rem; color:var(--muted); }
+  .valg button.pa small{ color:#7a6410; }
+
+  .feil{
+    color:var(--red); font-weight:800; margin-top:12px; text-align:center;
+    background:#fee2e2; border:3px solid var(--red); border-radius:12px; padding:10px;
+  }
+  .hjelpetekst{ color:var(--muted); font-size:.85rem; font-weight:700; margin-top:6px; }
+
+  /* ── Toppbar (kode + QR) ── */
+  .topplinje{
+    display:flex; gap:14px; align-items:center; justify-content:center; flex-wrap:wrap;
+    margin-bottom:10px; width:100%;
+  }
+  .kodepille{
+    font-family:'Chewy',cursive; font-weight:400; font-size:1.8rem; letter-spacing:.1em;
+    background:#fff; border:4px solid var(--ink); border-radius:16px; padding:5px 16px;
+    box-shadow:4px 4px 0 var(--ink);
+  }
+  .qr-boks{
+    background:#fff; border:4px solid var(--ink); border-radius:14px; padding:6px;
+    box-shadow:3px 3px 0 var(--ink); line-height:0;
+  }
+  .qr-boks canvas{ display:block; width:76px; height:76px; image-rendering:pixelated; }
+
+  /* ── Lærerens tavle ── */
+  .tavle-toppen{
+    width:100%; display:flex; align-items:flex-start; justify-content:space-between;
+    gap:14px; flex-wrap:wrap; margin-bottom:6px;
+  }
+  .tema-visning{
+    flex:1 1 320px; text-align:center;
+  }
+  .tema-merke{
+    font-weight:900; font-size:.78rem; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--muted); margin-bottom:2px;
+  }
+  .tema-ord{
+    font-family:'Chewy',cursive; font-weight:400; line-height:1.05;
+    font-size:clamp(1.8rem,5vw,3.2rem); word-break:break-word;
+  }
+  .tavle-verktoy{
+    display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:center;
+    margin:10px 0 14px;
+  }
+  .bryter{
+    display:flex; align-items:center; gap:8px; border:3px solid var(--ink); border-radius:14px;
+    background:#fff; padding:9px 14px; cursor:pointer; box-shadow:3px 3px 0 var(--ink);
+    font-family:'Nunito',sans-serif; font-weight:900; font-size:.9rem; color:var(--ink);
+  }
+  .bryter .lampe{
+    width:14px; height:14px; border-radius:50%; border:2px solid var(--ink); background:#e5e5e5;
+  }
+  .bryter.pa .lampe{ background:var(--green); }
+  .bryter.pa{ background:#dcfce7; }
+
+  /* ── Ordskyen ── */
+  .sky{
+    position:relative; width:100%; min-height:56vh;
+    background:#fff; border:4px solid var(--ink); border-radius:22px;
+    box-shadow:6px 6px 0 var(--ink); overflow:hidden;
+  }
+  .sky-tomt{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-weight:800; font-size:1rem; text-align:center; padding:20px;
+    pointer-events:none;
+  }
+  .boble{
+    position:absolute; top:0; left:0;
+    display:inline-flex; align-items:center; justify-content:center; text-align:center;
+    font-family:'Nunito',sans-serif; font-weight:900; color:var(--ink);
+    border:3px solid var(--ink); border-radius:999px;
+    padding:.45em 1em; box-shadow:4px 4px 0 var(--ink);
+    cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:none;
+    transform:scale(0); line-height:1.15; max-width:min(46vw,420px); word-break:break-word;
+    transition:box-shadow .12s ease, filter .12s ease, font-size .25s ease, padding .25s ease;
+  }
+  .boble.boble-0{ background:#fff; }
+  .boble.boble-1{ background:var(--yellow); }
+  .boble.boble-2{ background:#fde68a; }
+  .boble.boble-3{ background:#fef3c7; }
+  .boble.popp-inn{ animation:boble-inn .42s cubic-bezier(.34,1.56,.64,1) forwards; }
+  .boble.popp-ut{ animation:boble-ut .22s ease-in forwards; pointer-events:none; }
+  @keyframes boble-inn{ 0%{ transform:scale(0) rotate(-4deg); } 60%{ transform:scale(1.14) rotate(2deg); } 100%{ transform:scale(1) rotate(0); } }
+  @keyframes boble-ut{ to{ transform:scale(0); opacity:0; } }
+  .boble.drar{ z-index:40; box-shadow:6px 6px 0 var(--ink); filter:brightness(1.04); transition:none; }
+  @media (prefers-reduced-motion:reduce){ .boble.popp-inn, .boble.popp-ut{ animation:none; } }
+
+  /* ── Angre-toast ── */
+  .angre-toast{
+    position:fixed; left:50%; bottom:22px; transform:translateX(-50%);
+    background:var(--ink); color:#fff; border-radius:16px; padding:12px 14px 12px 18px;
+    display:flex; align-items:center; gap:12px; box-shadow:4px 4px 0 rgba(0,0,0,.35);
+    font-weight:800; z-index:80; font-size:.92rem;
+  }
+  .angre-toast button{
+    background:var(--yellow); color:var(--ink); border:none; border-radius:10px;
+    padding:8px 12px; font-weight:900; font-family:'Nunito',sans-serif; cursor:pointer;
+  }
+
+  /* ── Elevens skjema ── */
+  .elev-tema{
+    text-align:center; margin-bottom:18px;
+  }
+  .elev-tema .tema-merke{ margin-bottom:4px; }
+  .elev-tema .tema-ord{ font-size:clamp(1.7rem,8vw,2.6rem); }
+  .send-status{
+    text-align:center; font-weight:900; margin-top:12px; border-radius:12px; padding:10px;
+    font-size:.95rem;
+  }
+  .send-status.ok{ background:#dcfce7; color:#166534; }
+  .send-status.feil{ background:#fee2e2; color:#991b1b; }
+  .laast-varsel{
+    text-align:center; color:var(--muted); font-weight:700; font-size:.85rem; margin-top:10px;
+  }
+
+  .lydknapp{
+    position:fixed; top:10px; right:10px; z-index:50;
+    border:3px solid var(--ink); border-radius:12px; background:#fff; cursor:pointer;
+    font-size:1.1rem; padding:7px 10px; box-shadow:3px 3px 0 var(--ink); line-height:1;
+  }
+  .nettvarsel{
+    position:fixed; bottom:0; left:0; right:0; z-index:60;
+    background:var(--red); color:#fff; font-weight:900; text-align:center;
+    padding:10px; font-size:.9rem;
+  }
+
+  footer{ margin-top:30px; color:var(--muted); opacity:.7; font-size:.8rem; text-align:center; }
+</style>
+</head>
+<body>
+
+<button class="lydknapp" id="lyd-knapp" title="Skru lyd av eller på">🔊</button>
+
+<h1 id="tittel">☁️ Tankesky</h1>
+<div class="undertittel" id="undertittel">Ett senterord — alle tanker på tavla</div>
+
+<!-- ══════════ START: rolle ══════════ -->
+<div class="skjerm kort" id="skjerm-start">
+  <label class="felt">Hvem er du?</label>
+  <button class="knapp stor" id="rolle-larer">🎓 Jeg er lærer<small style="display:block;font-weight:700;font-size:.85rem;color:#7a6410;">Sett et senterord og vis tavla</small></button>
+  <button class="knapp stor hvit" id="rolle-elev">🙋 Jeg er elev<small style="display:block;font-weight:700;font-size:.85rem;color:var(--muted);">Bli med med kode fra læreren</small></button>
+  <div class="feil skjult" id="feil-rolle"></div>
+</div>
+
+<!-- ══════════ LÆRER: oppsett ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-larer-oppsett">
+  <button class="tilbake" data-tilbake="skjerm-start">← Tilbake</button>
+  <div class="felt-gruppe">
+    <label class="felt" for="oppsett-tema">Senterord / tema</label>
+    <input type="text" id="oppsett-tema" placeholder="F.eks. Bærekraft" maxlength="120" autocomplete="off">
+  </div>
+  <div class="felt-gruppe">
+    <label class="felt">Fri flyt</label>
+    <div class="valg" id="oppsett-friflyt">
+      <button data-friflyt="av" class="pa">Av<small>Ett ord per elev per runde</small></button>
+      <button data-friflyt="pa">På<small>Elever kan sende så mye de vil</small></button>
+    </div>
+  </div>
+  <button class="knapp" id="opprett-rom">Opprett rom →</button>
+  <div class="feil skjult" id="feil-opprett"></div>
+</div>
+
+<!-- ══════════ LÆRER: tavle ══════════ -->
+<div class="skjerm bredt skjult" id="skjerm-larer-tavle">
+  <div class="topplinje">
+    <div class="kodepille" id="tavle-kode">····</div>
+    <div class="qr-boks" id="tavle-qr"><canvas id="tavle-qr-canvas"></canvas></div>
+  </div>
+  <div class="tavle-toppen">
+    <div class="tema-visning">
+      <div class="tema-merke">Senterord</div>
+      <div class="tema-ord" id="tavle-tema">…</div>
+    </div>
+  </div>
+  <div class="tavle-verktoy">
+    <button class="bryter" id="tavle-friflyt"><span class="lampe"></span><span id="tavle-friflyt-tekst">Fri flyt: av</span></button>
+    <button class="knapp liten hvit" id="tavle-ny-runde">🔄 Ny runde</button>
+    <button class="knapp liten hvit fare" id="tavle-avslutt">Avslutt rommet</button>
+  </div>
+  <div class="sky" id="sky">
+    <div class="sky-tomt" id="sky-tomt">Venter på de første ordene …</div>
+  </div>
+  <div class="hjelpetekst" style="text-align:center;margin-top:10px;">
+    Trykk på en boble for å fjerne den · dra én boble inn i en annen for å slå dem sammen
+  </div>
+</div>
+
+<!-- ══════════ ELEV: kode ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-elev-kode">
+  <button class="tilbake" data-tilbake="skjerm-start">← Tilbake</button>
+  <div class="felt-gruppe">
+    <label class="felt" for="elev-kode">Romkode fra læreren</label>
+    <input type="text" id="elev-kode" placeholder="ABCD" maxlength="8" autocomplete="off"
+           spellcheck="false" autocapitalize="characters"
+           style="text-transform:uppercase; font-size:2rem; text-align:center; letter-spacing:.28em; font-family:'Chewy',cursive; font-weight:400;">
+  </div>
+  <button class="knapp" id="elev-kode-neste">Bli med →</button>
+  <div class="feil skjult" id="feil-kode"></div>
+</div>
+
+<!-- ══════════ ELEV: skjema ══════════ -->
+<div class="skjerm kort skjult" id="skjerm-elev-skjema">
+  <div class="elev-tema">
+    <div class="tema-merke">Senterord</div>
+    <div class="tema-ord" id="elev-tema">…</div>
+  </div>
+  <div class="felt-gruppe">
+    <label class="felt" for="elev-ord">Ditt ord eller korte setning</label>
+    <input type="text" id="elev-ord" placeholder="Skriv her …" maxlength="60" autocomplete="off">
+  </div>
+  <button class="knapp" id="elev-send">Send inn</button>
+  <div class="send-status skjult" id="elev-status"></div>
+  <div class="laast-varsel skjult" id="elev-laast">Rommet er avsluttet av læreren.</div>
+</div>
+
+<footer>LRNify · Tankesky</footer>
+
+<script type="module">
+/* ══════════════════════════════════════════════════════════════════════════
+   QR-KODE
+   Samme minimale generator som i Temaspinner (versjon 1–4, EC-nivå L,
+   byte-modus) — skrevet lokalt fordi skolenett ofte blokkerer CDN-er.
+   ══════════════════════════════════════════════════════════════════════════ */
+const QR = (function(){
+  const EXP = new Array(512), LOG = new Array(256);
+  let x = 1;
+  for(let i=0;i<255;i++){ EXP[i]=x; LOG[x]=i; x<<=1; if(x & 0x100) x^=0x11d; }
+  for(let i=255;i<512;i++) EXP[i]=EXP[i-255];
+  const mul = (a,b)=> (a===0||b===0) ? 0 : EXP[LOG[a]+LOG[b]];
+
+  function genPoly(grad){
+    let g=[1];
+    for(let i=0;i<grad;i++){
+      const n=new Array(g.length+1).fill(0);
+      for(let j=0;j<g.length;j++){ n[j]^=g[j]; n[j+1]^=mul(g[j],EXP[i]); }
+      g=n;
+    }
+    return g;
+  }
+  function rs(data, ecLen){
+    const g=genPoly(ecLen), res=data.concat(new Array(ecLen).fill(0));
+    for(let i=0;i<data.length;i++){
+      const k=res[i];
+      if(k!==0) for(let j=0;j<g.length;j++) res[i+j]^=mul(g[j],k);
+    }
+    return res.slice(data.length);
+  }
+
+  const TAB={1:{s:21,d:19,e:7},2:{s:25,d:34,e:10},3:{s:29,d:55,e:15},4:{s:33,d:80,e:20}};
+  const bit=(v,i)=>(v>>>i)&1;
+
+  function formatCeller(s){
+    const c1=[];
+    for(let i=0;i<=5;i++) c1.push([i,8]);
+    c1.push([7,8],[8,8],[8,7]);
+    for(let i=9;i<15;i++) c1.push([8,14-i]);
+    const c2=new Array(15);
+    for(let i=0;i<7;i++) c2[14-i]=[s-1-i,8];
+    for(let i=0;i<8;i++) c2[7-i]=[8,s-8+i];
+    return {c1,c2};
+  }
+
+  function bygg(versjon, kodeord){
+    const s=TAB[versjon].s;
+    const m=Array.from({length:s},()=>new Array(s).fill(false));
+    const fast=Array.from({length:s},()=>new Array(s).fill(false));
+    const sett=(r,c,d)=>{ if(r<0||r>=s||c<0||c>=s) return; m[r][c]=d; fast[r][c]=true; };
+
+    for(const [rr,cc] of [[0,0],[0,s-7],[s-7,0]])
+      for(let r=-1;r<=7;r++) for(let c=-1;c<=7;c++){
+        const d=Math.max(Math.abs(r-3),Math.abs(c-3));
+        sett(rr+r,cc+c,d!==2&&d!==4);
+      }
+    if(versjon>=2){
+      const k=s-7;
+      for(let r=-2;r<=2;r++) for(let c=-2;c<=2;c++)
+        sett(k+r,k+c,Math.max(Math.abs(r),Math.abs(c))!==1);
+    }
+    for(let i=8;i<s-8;i++){ sett(6,i,i%2===0); sett(i,6,i%2===0); }
+    const {c1,c2}=formatCeller(s);
+    c1.concat(c2).forEach(([r,c])=>sett(r,c,false));
+    sett(s-8,8,true);
+
+    let i=0; const n=kodeord.length*8;
+    for(let hoyre=s-1;hoyre>=1;hoyre-=2){
+      if(hoyre===6) hoyre=5;
+      for(let v=0;v<s;v++) for(let j=0;j<2;j++){
+        const cx=hoyre-j, opp=((hoyre+1)&2)===0, cy=opp?s-1-v:v;
+        if(!fast[cy][cx] && i<n){ m[cy][cx]=bit(kodeord[i>>>3],7-(i&7))!==0; i++; }
+      }
+    }
+    return {s,m,fast};
+  }
+
+  function maske(k,r,c){
+    switch(k){
+      case 0: return (r+c)%2===0;
+      case 1: return r%2===0;
+      case 2: return c%3===0;
+      case 3: return (r+c)%3===0;
+      case 4: return (Math.floor(r/2)+Math.floor(c/3))%2===0;
+      case 5: return ((r*c)%2)+((r*c)%3)===0;
+      case 6: return (((r*c)%2)+((r*c)%3))%2===0;
+      default: return (((r+c)%2)+((r*c)%3))%2===0;
+    }
+  }
+
+  function ferdigRutenett(mat,k){
+    const {s,m,fast}=mat;
+    const g=m.map(r=>r.slice());
+    for(let r=0;r<s;r++) for(let c=0;c<s;c++)
+      if(!fast[r][c] && maske(k,r,c)) g[r][c]=!g[r][c];
+    const d=(0b01<<3)|k;
+    let rest=d;
+    for(let i=0;i<10;i++) rest=(rest<<1)^((rest>>>9)*0x537);
+    const bits=((d<<10)|rest)^0x5412;
+    const {c1,c2}=formatCeller(s);
+    c1.forEach(([r,c],i)=>{ g[r][c]=bit(bits,i)!==0; });
+    c2.forEach(([r,c],i)=>{ g[r][c]=bit(bits,i)!==0; });
+    g[s-8][8]=true;
+    return g;
+  }
+
+  function straff(s,g){
+    let sum=0;
+    const kol=[];
+    for(let c=0;c<s;c++) kol.push(g.map(r=>r[c]));
+    const rekke=(l)=>{
+      let f=l[0],n=1,p=0;
+      for(let i=1;i<s;i++){ if(l[i]===f) n++; else { if(n>=5) p+=3+(n-5); f=l[i]; n=1; } }
+      if(n>=5) p+=3+(n-5);
+      return p;
+    };
+    for(let r=0;r<s;r++) sum+=rekke(g[r]);
+    for(let c=0;c<s;c++) sum+=rekke(kol[c]);
+    for(let r=0;r<s-1;r++) for(let c=0;c<s-1;c++){
+      const v=g[r][c];
+      if(v===g[r][c+1]&&v===g[r+1][c]&&v===g[r+1][c+1]) sum+=3;
+    }
+    const p1=[true,false,true,true,true,false,true,false,false,false,false];
+    const p2=[false,false,false,false,true,false,true,true,true,false,true];
+    const treff=(a,i,p)=>p.every((v,k)=>a[i+k]===v);
+    const skann=(l)=>{ let p=0; for(let i=0;i<=s-11;i++) if(treff(l,i,p1)||treff(l,i,p2)) p+=40; return p; };
+    for(let r=0;r<s;r++) sum+=skann(g[r]);
+    for(let c=0;c<s;c++) sum+=skann(kol[c]);
+    let morke=0;
+    for(let r=0;r<s;r++) for(let c=0;c<s;c++) if(g[r][c]) morke++;
+    const pst=(morke*100)/(s*s);
+    sum+=(Math.abs(Math.ceil(pst/5)*5-50)/5)*10;
+    return sum;
+  }
+
+  function lag(tekst){
+    const b=Array.from(new TextEncoder().encode(tekst));
+    let versjon=null;
+    for(const v of [1,2,3,4]) if(4+8+b.length*8 <= TAB[v].d*8){ versjon=v; break; }
+    if(versjon===null) return null;
+    const bits=[];
+    const put=(v,l)=>{ for(let i=l-1;i>=0;i--) bits.push((v>>>i)&1); };
+    put(0b0100,4); put(b.length,8);
+    for(const v of b) put(v,8);
+    const kap=TAB[versjon].d*8;
+    for(let i=0,n=Math.min(4,kap-bits.length);i<n;i++) bits.push(0);
+    while(bits.length%8!==0) bits.push(0);
+    const fyll=[0xec,0x11];
+    for(let i=0;bits.length<kap;i++) put(fyll[i%2],8);
+    const dcw=[];
+    for(let i=0;i<bits.length;i+=8){
+      let v=0; for(let j=0;j<8;j++) v=(v<<1)|bits[i+j];
+      dcw.push(v);
+    }
+    const mat=bygg(versjon, dcw.concat(rs(dcw,TAB[versjon].e)));
+    let best=null,beste=Infinity;
+    for(let k=0;k<8;k++){
+      const g=ferdigRutenett(mat,k), p=straff(mat.s,g);
+      if(p<beste){ beste=p; best=g; }
+    }
+    return {storrelse:mat.s, rutenett:best};
+  }
+
+  function tegn(canvas, tekst, cssBredde){
+    const q = lag(tekst);
+    if(!q) return false;
+    const dpr = window.devicePixelRatio || 1;
+    const stille = 4;
+    const totalt = q.storrelse + stille*2;
+    const skala = Math.max(1, Math.floor((cssBredde*dpr)/totalt));
+    const piksler = totalt*skala;
+    canvas.width = piksler; canvas.height = piksler;
+    canvas.style.width = (piksler/dpr)+'px';
+    canvas.style.height = (piksler/dpr)+'px';
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff'; ctx.fillRect(0,0,piksler,piksler);
+    ctx.fillStyle = '#000';
+    for(let r=0;r<q.storrelse;r++) for(let c=0;c<q.storrelse;c++)
+      if(q.rutenett[r][c]) ctx.fillRect((c+stille)*skala,(r+stille)*skala,skala,skala);
+    return true;
+  }
+  return { tegn };
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LYD
+   Web Audio-toner, ingen lydfiler. Samme mønster som Temaspinner.
+   ══════════════════════════════════════════════════════════════════════════ */
+const LS = { lyd:'tankesky.lyd' };
+let lydPa = localStorage.getItem(LS.lyd) !== 'av';
+let lydCtx = null;
+function laasOppLyd(){
+  if(lydCtx) return;
+  try{ lydCtx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){}
+}
+function tone(frekvens, varighet, type, volum, glidTil){
+  if(!lydPa || !lydCtx) return;
+  try{
+    const t = lydCtx.currentTime;
+    const o = lydCtx.createOscillator(), g = lydCtx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(frekvens, t);
+    if(glidTil) o.frequency.exponentialRampToValueAtTime(glidTil, t+varighet);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(volum, t+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t+varighet);
+    o.connect(g); g.connect(lydCtx.destination);
+    o.start(t); o.stop(t+varighet+0.02);
+  }catch(e){}
+}
+function spillPoppInn(){ tone(520, 0.08, 'sine', 0.14, 780); }
+function spillPoppUt(){ tone(340, 0.1, 'sine', 0.16, 160); }
+function tegnLydknapp(){
+  document.getElementById('lyd-knapp').textContent = lydPa ? '🔊' : '🔇';
+}
+document.getElementById('lyd-knapp').addEventListener('click', ()=>{
+  lydPa = !lydPa;
+  localStorage.setItem(LS.lyd, lydPa ? 'pa' : 'av');
+  tegnLydknapp();
+  if(lydPa){ laasOppLyd(); spillPoppInn(); }
+});
+tegnLydknapp();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FIREBASE
+   Samme prosjekt og mønster som resten av LRNify (poll-c6bd2). Reglene
+   ligger i firebase/database.rules.json under "tankesky". Lastes først når
+   noen faktisk velger en rolle, ikke ved sidelast.
+   ══════════════════════════════════════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+let FB = null, db = null, laster = null;
+const KILDE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+
+function lastFirebase(){
+  if(FB) return Promise.resolve(FB);
+  if(!laster){
+    laster = Promise.all([
+      import(KILDE + 'firebase-app.js'),
+      import(KILDE + 'firebase-database.js'),
+      import(KILDE + 'firebase-auth.js')
+    ]).then(([a, d, g]) => {
+      const app = a.initializeApp(firebaseConfig);
+      db = d.getDatabase(app);
+      const auth = g.getAuth(app);
+      FB = {
+        ref: d.ref, set: d.set, update: d.update, get: d.get, onValue: d.onValue,
+        off: d.off, push: d.push,
+        auth, paalogg: g.signInAnonymously
+      };
+      FB.onValue(FB.ref(db, '.info/connected'), s => { settKontakt(s.val() !== false); }, () => {});
+      return FB;
+    }).catch(e => { laster = null; throw e; });
+  }
+  return laster;
+}
+const R = (sti) => FB.ref(db, sti);
+const naa = () => Date.now();
+
+let uid = null, paalogging = null;
+function sikreAuth(){
+  if(uid) return Promise.resolve(uid);
+  if(!paalogging){
+    paalogging = lastFirebase()
+      .then(() => FB.paalogg(FB.auth))
+      .then(c => (uid = c.user.uid))
+      .catch(() => { paalogging = null; return null; });
+  }
+  return paalogging;
+}
+
+let harKontakt = true;
+function settKontakt(pa){
+  if(pa === harKontakt) return;
+  harKontakt = pa;
+  let el = document.getElementById('nettvarsel');
+  if(!pa){
+    if(!el){
+      el = document.createElement('div');
+      el.id = 'nettvarsel'; el.className = 'nettvarsel';
+      el.textContent = '⚠ Mistet kontakt, prøver igjen …';
+      document.body.appendChild(el);
+    }
+  } else if(el){ el.remove(); }
+}
+
+const ALFABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // uten O/0 og I/1
+function lagRomkode(){
+  let k = '';
+  const b = new Uint32Array(4);
+  (window.crypto || window.msCrypto).getRandomValues(b);
+  for(let i=0;i<4;i++) k += ALFABET[b[i] % ALFABET.length];
+  return k;
+}
+const romSti = (kode) => 'tankesky/' + kode;
+const ordSti = (kode, id) => romSti(kode) + '/ord/' + id;
+const innsendingSti = (kode, id) => romSti(kode) + '/innsendinger/' + id;
+
+function normaliser(tekst){
+  return String(tekst || '').trim().toLowerCase().replace(/\s+/g, ' ');
+}
+
+async function vent(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   FELLES UI
+   ══════════════════════════════════════════════════════════════════════════ */
+function visSkjerm(id){
+  document.querySelectorAll('.skjerm').forEach(s => s.classList.add('skjult'));
+  const el = document.getElementById(id);
+  if(el) el.classList.remove('skjult');
+  const bare = id === 'skjerm-larer-tavle';
+  document.getElementById('undertittel').classList.toggle('skjult', bare);
+  document.getElementById('tittel').classList.toggle('skjult', bare);
+}
+function visFeil(id, melding){
+  const el = document.getElementById(id);
+  el.textContent = melding;
+  el.classList.remove('skjult');
+}
+function skjulFeil(id){ document.getElementById(id).classList.add('skjult'); }
+
+document.querySelectorAll('[data-tilbake]').forEach(b => {
+  b.addEventListener('click', () => visSkjerm(b.dataset.tilbake));
+});
+
+document.getElementById('rolle-larer').addEventListener('click', async () => {
+  laasOppLyd();
+  skjulFeil('feil-rolle');
+  visSkjerm('skjerm-larer-oppsett');
+  try{ await lastFirebase(); }
+  catch(e){ visFeil('feil-rolle', 'Får ikke lastet Firebase. Skolenettet blokkerer kanskje www.gstatic.com.'); }
+});
+document.getElementById('rolle-elev').addEventListener('click', async () => {
+  laasOppLyd();
+  skjulFeil('feil-rolle');
+  visSkjerm('skjerm-elev-kode');
+  try{ await lastFirebase(); }
+  catch(e){ visFeil('feil-rolle', 'Får ikke lastet Firebase. Skolenettet blokkerer kanskje www.gstatic.com.'); }
+});
+
+/* Bli-med-lenken fra "Del"-knappen bærer romkoden (?kode=ABCD), så en elev
+   slipper å skrive den av tavla. */
+(function prefillKodeFraUrl(){
+  const fraUrl = (new URLSearchParams(location.search).get('kode') || '').trim().toUpperCase();
+  if(!fraUrl) return;
+  document.getElementById('rolle-elev').click();
+  document.getElementById('elev-kode').value = fraUrl;
+})();
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UI-LÆRER
+   ══════════════════════════════════════════════════════════════════════════ */
+let larerKode = null;
+let onsketFriFlyt = false;
+let sisteRomData = null;
+let larerAvlytt = null;
+
+document.getElementById('oppsett-friflyt').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(!b) return;
+  onsketFriFlyt = b.dataset.friflyt === 'pa';
+  document.querySelectorAll('#oppsett-friflyt button').forEach(k => k.classList.toggle('pa', k === b));
+});
+
+document.getElementById('opprett-rom').addEventListener('click', async () => {
+  skjulFeil('feil-opprett');
+  const tema = document.getElementById('oppsett-tema').value.trim();
+  if(!tema){ visFeil('feil-opprett', 'Skriv et senterord først.'); return; }
+  const knapp = document.getElementById('opprett-rom');
+  knapp.disabled = true;
+  try{
+    const id = await sikreAuth();
+    if(!id){ visFeil('feil-opprett', 'Fikk ikke kontakt med Firebase. Sjekk nettet og prøv igjen.'); return; }
+    const kode = lagRomkode();
+    await FB.set(R(romSti(kode)), {
+      opprettet: naa(),
+      owner: id,
+      tema,
+      friFlyt: onsketFriFlyt,
+      runde: 1
+    });
+    larerKode = kode;
+    startLarerTavle();
+  }catch(e){
+    visFeil('feil-opprett', 'Kunne ikke opprette rommet: ' + e.message);
+  }finally{
+    knapp.disabled = false;
+  }
+});
+
+function blilenke(kode){
+  return location.origin + location.pathname + '?kode=' + encodeURIComponent(kode);
+}
+
+function startLarerTavle(){
+  visSkjerm('skjerm-larer-tavle');
+  document.getElementById('tavle-kode').textContent = larerKode;
+  const lenke = blilenke(larerKode);
+  const ok = QR.tegn(document.getElementById('tavle-qr-canvas'), lenke, 76);
+  document.getElementById('tavle-qr').classList.toggle('skjult', !ok);
+  history.replaceState(null, '', '?kode=' + encodeURIComponent(larerKode));
+  if (typeof LRNifyDeling !== 'undefined') LRNifyDeling.setRomkode(larerKode);
+
+  if(larerAvlytt) FB.off(R(romSti(larerKode)), 'value', larerAvlytt);
+  larerAvlytt = snap => {
+    if(!snap.exists()){
+      resetSky();
+      visSkjerm('skjerm-start');
+      return;
+    }
+    const data = snap.val();
+    const rundeSkiftet = sisteRomData && sisteRomData.runde !== data.runde;
+    sisteRomData = data;
+    document.getElementById('tavle-tema').textContent = data.tema || '';
+    tegnFriFlytBryter(data.friFlyt === true);
+    if(rundeSkiftet) resetSky();
+    tegnSky(data.ord || {});
+  };
+  FB.onValue(R(romSti(larerKode)), larerAvlytt);
+}
+
+function tegnFriFlytBryter(pa){
+  const b = document.getElementById('tavle-friflyt');
+  b.classList.toggle('pa', pa);
+  document.getElementById('tavle-friflyt-tekst').textContent = 'Fri flyt: ' + (pa ? 'på' : 'av');
+}
+document.getElementById('tavle-friflyt').addEventListener('click', async () => {
+  if(!larerKode || !sisteRomData) return;
+  await FB.update(R(romSti(larerKode)), { friFlyt: !(sisteRomData.friFlyt === true) });
+});
+
+document.getElementById('tavle-ny-runde').addEventListener('click', async () => {
+  if(!larerKode || !sisteRomData) return;
+  if(!confirm('Start ny runde? Ordskyen tømmes for alle, og elevene kan sende inn på nytt.')) return;
+  await FB.update(R(romSti(larerKode)), {
+    runde: (sisteRomData.runde || 1) + 1,
+    ord: null,
+    innsendinger: null
+  });
+});
+
+document.getElementById('tavle-avslutt').addEventListener('click', async () => {
+  if(!larerKode) return;
+  if(!confirm('Avslutte rommet for alle?')) return;
+  if(larerAvlytt){ FB.off(R(romSti(larerKode)), 'value', larerAvlytt); larerAvlytt = null; }
+  await FB.set(R(romSti(larerKode)), null);
+  larerKode = null; sisteRomData = null;
+  resetSky();
+  visSkjerm('skjerm-start');
+});
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ORDSKYEN (lærerens tavle)
+   Hver boble beholder sin DOM-posisjon mellom oppdateringer — vi legger bare
+   til nye, fjerner borte, og lar størrelsen gli når count endrer seg. Det
+   gjør at skyen ikke "hopper" hver gang et nytt ord dukker opp.
+   ══════════════════════════════════════════════════════════════════════════ */
+const bobler = new Map(); // ordId -> { el, rect:{x,y,w,h}, data }
+
+function resetSky(){
+  bobler.forEach(b => b.el.remove());
+  bobler.clear();
+  document.getElementById('sky-tomt').classList.remove('skjult');
+}
+
+function tegnSky(ordData){
+  const tomtEl = document.getElementById('sky-tomt');
+  const idListe = Object.keys(ordData);
+  tomtEl.classList.toggle('skjult', idListe.length > 0);
+
+  // Fjernede: pop-ut og slett fra DOM
+  bobler.forEach((b, id) => {
+    if(!ordData[id]){
+      b.el.classList.add('popp-ut');
+      spillPoppUt();
+      setTimeout(() => b.el.remove(), 260);
+      bobler.delete(id);
+    }
+  });
+
+  // Uendrede/oppdaterte: juster størrelse ved behov
+  idListe.forEach(id => {
+    const o = ordData[id];
+    const eksisterende = bobler.get(id);
+    if(eksisterende){
+      if(eksisterende.data.count !== o.count || eksisterende.data.tekst !== o.tekst){
+        eksisterende.el.textContent = o.tekst;
+        eksisterende.el.style.fontSize = fontStorrelse(o.count);
+        eksisterende.data = o;
+      }
+      return;
+    }
+    leggTilBoble(id, o);
+  });
+}
+
+function fontStorrelse(count){
+  const s = 1 + Math.min(Math.log2((count || 1) + 1) * 0.5, 2.6);
+  return s.toFixed(2) + 'rem';
+}
+
+function leggTilBoble(id, data){
+  const sky = document.getElementById('sky');
+  const el = document.createElement('div');
+  el.className = 'boble boble-' + (Math.abs(hash(id)) % 4);
+  el.textContent = data.tekst;
+  el.style.fontSize = fontStorrelse(data.count);
+  el.style.visibility = 'hidden';
+  sky.appendChild(el);
+
+  const bredde = el.offsetWidth, hoyde = el.offsetHeight;
+  const plass = finnPlass(sky, bredde, hoyde);
+  el.style.left = plass.x + 'px';
+  el.style.top = plass.y + 'px';
+  el.style.visibility = 'visible';
+
+  bobler.set(id, { el, rect: { x: plass.x, y: plass.y, w: bredde, h: hoyde }, data });
+  gjorDraggbar(el, id);
+
+  requestAnimationFrame(() => {
+    el.classList.add('popp-inn');
+    spillPoppInn();
+  });
+}
+
+// Enkel strengehash, brukt kun til å velge en stabil fargevariant per ord-id.
+function hash(tekst){
+  let h = 0;
+  for(let i=0;i<tekst.length;i++){ h = (h*31 + tekst.charCodeAt(i)) | 0; }
+  return h;
+}
+
+/* Arkimedisk spiral utover fra midten, med litt tilfeldig startvinkel så
+   flere elever som sender samtidig ikke alltid lander i samme mønster. */
+function finnPlass(sky, bredde, hoyde){
+  const cw = sky.clientWidth || 800, ch = sky.clientHeight || 400;
+  const cx = cw/2, cy = ch/2;
+  let vinkel = Math.random() * Math.PI * 2;
+  let radius = 0;
+  const trinnVinkel = 0.32, trinnRadius = 2.6;
+  const opptatt = Array.from(bobler.values()).map(b => b.rect);
+
+  for(let forsok=0; forsok<2200; forsok++){
+    const x = cx + radius*Math.cos(vinkel) - bredde/2;
+    const y = cy + radius*Math.sin(vinkel)*0.62 - hoyde/2;
+    if(x >= 6 && y >= 6 && x+bredde <= cw-6 && y+hoyde <= ch-6){
+      const rect = { x, y, w:bredde, h:hoyde };
+      if(!opptatt.some(b => overlapper(rect, b))) return { x, y };
+    }
+    vinkel += trinnVinkel;
+    radius += trinnRadius;
+  }
+  return {
+    x: Math.max(6, cx - bredde/2 + (Math.random()-0.5)*40),
+    y: Math.max(6, cy - hoyde/2 + (Math.random()-0.5)*40)
+  };
+}
+function overlapper(a, b){
+  const m = 6;
+  return !(a.x+a.w+m < b.x || b.x+b.w+m < a.x || a.y+a.h+m < b.y || b.y+b.h+m < a.y);
+}
+
+/* ── Klikk for å fjerne, dra for å slå sammen ── */
+function gjorDraggbar(el, id){
+  let startX=0, startY=0, startLeft=0, startTop=0, bevegelse=0, drar=false;
+
+  el.addEventListener('pointerdown', e => {
+    if(e.button !== undefined && e.button !== 0) return;
+    drar = true; bevegelse = 0;
+    startX = e.clientX; startY = e.clientY;
+    startLeft = parseFloat(el.style.left) || 0;
+    startTop = parseFloat(el.style.top) || 0;
+    try{ el.setPointerCapture(e.pointerId); }catch(err){}
+    el.classList.add('drar');
+  });
+
+  el.addEventListener('pointermove', e => {
+    if(!drar) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    bevegelse = Math.max(bevegelse, Math.hypot(dx, dy));
+    el.style.left = (startLeft + dx) + 'px';
+    el.style.top = (startTop + dy) + 'px';
+  });
+
+  el.addEventListener('pointerup', async e => {
+    if(!drar) return;
+    drar = false;
+    el.classList.remove('drar');
+
+    if(bevegelse < 8){
+      // Et klikk, ikke en dra-bevegelse: fjern boblen.
+      fjernOrd(id);
+      return;
+    }
+
+    const nyRect = { x: parseFloat(el.style.left)||0, y: parseFloat(el.style.top)||0, w: el.offsetWidth, h: el.offsetHeight };
+    const b = bobler.get(id);
+    if(b) b.rect = nyRect;
+    const mal = finnBesteOverlapp(id, nyRect);
+    if(mal){
+      await slaSammen(id, mal.id);
+    }else{
+      el.style.left = startLeft + 'px';
+      el.style.top = startTop + 'px';
+      if(b) b.rect = { x:startLeft, y:startTop, w:nyRect.w, h:nyRect.h };
+    }
+  });
+}
+
+function finnBesteOverlapp(egenId, rect){
+  let best = null, besteAreal = 0;
+  bobler.forEach((b, id) => {
+    if(id === egenId) return;
+    const ix = Math.max(rect.x, b.rect.x);
+    const iy = Math.max(rect.y, b.rect.y);
+    const ix2 = Math.min(rect.x+rect.w, b.rect.x+b.rect.w);
+    const iy2 = Math.min(rect.y+rect.h, b.rect.y+b.rect.h);
+    if(ix2 <= ix || iy2 <= iy) return;
+    const areal = (ix2-ix) * (iy2-iy);
+    const minAreal = Math.min(rect.w*rect.h, b.rect.w*b.rect.h);
+    if(areal > minAreal*0.25 && areal > besteAreal){ besteAreal = areal; best = { id, data:b.data }; }
+  });
+  return best;
+}
+
+async function slaSammen(kildeId, malId){
+  const kilde = bobler.get(kildeId), mal = bobler.get(malId);
+  if(!kilde || !mal || !larerKode) return;
+  const kortere = kilde.data.tekst.length >= mal.data.tekst.length ? kilde.data : mal.data;
+  const endring = {};
+  endring['ord/' + malId] = {
+    tekst: kortere.tekst,
+    tekstNorm: kortere.tekstNorm,
+    count: (kilde.data.count||1) + (mal.data.count||1),
+    sistOppdatert: naa()
+  };
+  endring['ord/' + kildeId] = null;
+  try{ await FB.update(R(romSti(larerKode)), endring); }catch(e){}
+}
+
+let angreTimer = null, angreData = null;
+async function fjernOrd(id){
+  const b = bobler.get(id);
+  if(!b || !larerKode) return;
+  angreData = { id, data: b.data };
+  try{ await FB.set(R(ordSti(larerKode, id)), null); }
+  catch(e){ angreData = null; return; }
+  visAngreToast(b.data.tekst);
+}
+function visAngreToast(tekst){
+  clearTimeout(angreTimer);
+  let toast = document.getElementById('angre-toast');
+  if(!toast){
+    toast = document.createElement('div');
+    toast.id = 'angre-toast';
+    toast.className = 'angre-toast';
+    toast.innerHTML = '<span id="angre-tekst"></span><button id="angre-knapp" type="button">Angre</button>';
+    document.body.appendChild(toast);
+    toast.querySelector('#angre-knapp').addEventListener('click', async () => {
+      clearTimeout(angreTimer);
+      toast.classList.add('skjult');
+      if(!angreData || !larerKode) return;
+      const { id, data } = angreData;
+      angreData = null;
+      try{ await FB.set(R(ordSti(larerKode, id)), data); }catch(e){}
+    });
+  }
+  toast.querySelector('#angre-tekst').textContent = 'Fjernet «' + tekst + '»';
+  toast.classList.remove('skjult');
+  angreTimer = setTimeout(() => { toast.classList.add('skjult'); angreData = null; }, 3000);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   UI-ELEV
+   ══════════════════════════════════════════════════════════════════════════ */
+let elevKode = null;
+let elevAvlytt = null;
+let elevSisteRunde = null;
+
+document.getElementById('elev-kode-neste').addEventListener('click', async () => {
+  skjulFeil('feil-kode');
+  const kode = document.getElementById('elev-kode').value.trim().toUpperCase();
+  if(kode.length < 4){ visFeil('feil-kode', 'Skriv inn romkoden du fikk av læreren.'); return; }
+  const knapp = document.getElementById('elev-kode-neste');
+  knapp.disabled = true;
+  try{
+    await lastFirebase();
+    const snap = await FB.get(R(romSti(kode)));
+    if(!snap.exists()){ visFeil('feil-kode', 'Fant ikke et rom med den koden.'); return; }
+    elevKode = kode;
+    startElevSkjema(snap.val());
+  }catch(e){
+    visFeil('feil-kode', 'Fikk ikke kontakt med Firebase. Sjekk nettet og prøv igjen.');
+  }finally{
+    knapp.disabled = false;
+  }
+});
+
+function startElevSkjema(data){
+  visSkjerm('skjerm-elev-skjema');
+  document.getElementById('elev-tema').textContent = data.tema || '';
+  document.getElementById('elev-laast').classList.add('skjult');
+  document.getElementById('elev-status').classList.add('skjult');
+  document.getElementById('elev-ord').disabled = false;
+  document.getElementById('elev-send').disabled = false;
+  elevSisteRunde = data.runde;
+
+  sikreAuth().then(() => fyllInnEgetBidrag(data));
+
+  if(elevAvlytt) FB.off(R(romSti(elevKode)), 'value', elevAvlytt);
+  elevAvlytt = snap => {
+    if(!snap.exists()){
+      document.getElementById('elev-laast').classList.remove('skjult');
+      document.getElementById('elev-ord').disabled = true;
+      document.getElementById('elev-send').disabled = true;
+      return;
+    }
+    const d = snap.val();
+    document.getElementById('elev-tema').textContent = d.tema || '';
+    if(d.runde !== elevSisteRunde){
+      elevSisteRunde = d.runde;
+      document.getElementById('elev-ord').value = '';
+      document.getElementById('elev-status').classList.add('skjult');
+    }
+    fyllInnEgetBidrag(d);
+  };
+  FB.onValue(R(romSti(elevKode)), elevAvlytt);
+}
+
+function fyllInnEgetBidrag(d){
+  if(!uid || d.friFlyt === true) return;
+  const min = (d.innsendinger || {})[uid];
+  const felt = document.getElementById('elev-ord');
+  if(min && min.runde === d.runde && document.activeElement !== felt){
+    felt.value = min.tekst || '';
+  }
+}
+
+document.getElementById('elev-send').addEventListener('click', async () => {
+  const felt = document.getElementById('elev-ord');
+  const knapp = document.getElementById('elev-send');
+  const status = document.getElementById('elev-status');
+  const tekst = felt.value.trim();
+  const tekstNorm = normaliser(tekst);
+  if(!tekstNorm){
+    status.textContent = 'Skriv et ord eller en kort setning først.';
+    status.className = 'send-status feil';
+    status.classList.remove('skjult');
+    return;
+  }
+  knapp.disabled = true;
+  status.classList.add('skjult');
+  const svar = await elevSendOrd(tekst, tekstNorm);
+  knapp.disabled = false;
+  if(svar === 'ok' || svar === 'uendret'){
+    status.textContent = 'Sendt inn! ✓';
+    status.className = 'send-status ok';
+  }else{
+    status.textContent = 'Fikk ikke sendt. Prøv en gang til.';
+    status.className = 'send-status feil';
+  }
+  status.classList.remove('skjult');
+});
+document.getElementById('elev-ord').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('elev-send').click();
+});
+
+/* Innsending fra en elev. Ved fri flyt av og en gyldig tidligere innsending
+   i samme runde: fjerner ett fra det gamle ordet (evt. sletter det) og
+   legger ett til det nye — en overskriving, ikke en ny stemme. Ellers er
+   dette rett og slett en ny stemme på et ord (evt. et helt nytt ord). */
+async function elevSendOrd(tekst, tekstNorm){
+  const id = await sikreAuth();
+  if(!id || !elevKode) return 'feil';
+  try{
+    const snap = await FB.get(R(romSti(elevKode)));
+    if(!snap.exists()) return 'feil';
+    const rom = snap.val();
+    const ordListe = rom.ord || {};
+    const friFlyt = rom.friFlyt === true;
+    const runde = rom.runde;
+    const min = (rom.innsendinger || {})[id];
+    const harLast = min && min.runde === runde && ordListe[min.ordId];
+
+    const finnMatch = (unntattId) => {
+      for(const [oid, o] of Object.entries(ordListe)){
+        if(oid === unntattId) continue;
+        if(o.tekstNorm === tekstNorm) return oid;
+      }
+      return null;
+    };
+
+    if(!friFlyt && harLast){
+      if(ordListe[min.ordId].tekstNorm === tekstNorm) return 'uendret';
+      await dekrementerOrd(min.ordId);
+      const treff = finnMatch(min.ordId);
+      const nyId = treff ? await inkrementerOrd(treff) : await opprettOrd(tekst, tekstNorm);
+      if(!nyId) return 'feil';
+      await FB.update(R(innsendingSti(elevKode, id)), { ordId: nyId, runde, tekst });
+      return 'ok';
+    }
+
+    const treff = finnMatch(null);
+    const nyId = treff ? await inkrementerOrd(treff) : await opprettOrd(tekst, tekstNorm);
+    if(!nyId) return 'feil';
+    await FB.update(R(innsendingSti(elevKode, id)), { ordId: nyId, runde, tekst });
+    return 'ok';
+  }catch(e){
+    return 'feil';
+  }
+}
+
+async function opprettOrd(tekst, tekstNorm){
+  const nyRef = FB.push(R(romSti(elevKode) + '/ord'));
+  await FB.set(nyRef, { tekst, tekstNorm, count: 1, sistOppdatert: naa() });
+  return nyRef.key;
+}
+async function inkrementerOrd(id){
+  for(let forsok=0; forsok<5; forsok++){
+    try{
+      const snap = await FB.get(R(ordSti(elevKode, id)));
+      // Ordet kan ha blitt fjernet av læreren mellom oppslag og skriving —
+      // da er det ingenting å øke på, og kalleren oppretter et nytt i stedet.
+      if(!snap.exists()) return null;
+      const cur = snap.val().count || 1;
+      await FB.update(R(ordSti(elevKode, id)), { count: cur + 1, sistOppdatert: naa() });
+      return id;
+    }catch(e){ await vent(100 + Math.random()*250); }
+  }
+  return null;
+}
+async function dekrementerOrd(id){
+  for(let forsok=0; forsok<5; forsok++){
+    try{
+      const snap = await FB.get(R(ordSti(elevKode, id)));
+      if(!snap.exists()) return;
+      const cur = snap.val().count || 1;
+      if(cur <= 1) await FB.set(R(ordSti(elevKode, id)), null);
+      else await FB.update(R(ordSti(elevKode, id)), { count: cur - 1 });
+      return;
+    }catch(e){ await vent(100 + Math.random()*250); }
+  }
+}
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>
