@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Atombyggeren — LRNify</title>
+<meta name="description" content="Bygg atomer og ioner av protoner, nøytroner og elektroner ut fra grunnstoff, massetall og ladning.">
+<link rel="canonical" href="https://lrnify.no/games/atombyggeren/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Atombyggeren – LRNify">
+<meta property="og:description" content="Bygg atomer og ioner av protoner, nøytroner og elektroner ut fra grunnstoff, massetall og ladning.">
+<meta property="og:image" content="https://lrnify.no/media/og/atombyggeren.png">
+<meta property="og:url" content="https://lrnify.no/games/atombyggeren/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Atombyggeren – LRNify">
+<meta name="twitter:description" content="Bygg atomer og ioner av protoner, nøytroner og elektroner ut fra grunnstoff, massetall og ladning.">
+<meta name="twitter:image" content="https://lrnify.no/media/og/atombyggeren.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #241b12;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+    --red:   #b91c1c;
+
+    --proton:   #2563eb;
+    --proton-d: #1d4ed8;
+    --neutron:  #64748b;
+    --neutron-d:#475569;
+    --electron: #d97706;
+    --electron-d:#b45309;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SCREENS ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .screen-hero { padding: 4px 0 4px; }
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 6px; }
+  .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.9rem,7vw,3rem); }
+  .screen-hero p  {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.9rem,2.4vw,1.05rem); margin-top: 8px; max-width: 440px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; width: 100%;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 12px; }
+
+  button { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+  .btn-primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .btn-back {
+    font-weight: 800; color: var(--muted); text-decoration: none; font-size: .9rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  .btn-secondary {
+    font-weight: 900; background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 10px 16px; font-size: .88rem;
+    transition: transform .1s, box-shadow .1s, background .1s;
+  }
+  .btn-secondary:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); background: #fff3d6; }
+  .btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-secondary:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+
+  /* ══ EKSEMPEL PÅ STARTSKJERM ══ */
+  .example-body { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .example-model { display: flex; align-items: center; justify-content: center; }
+  .example-facts { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; font-weight: 800; font-size: .85rem; }
+  .example-facts span b { font-family: 'Chewy', cursive; font-size: 1rem; }
+  .example-facts .fp b { color: var(--proton-d); }
+  .example-facts .fn b { color: var(--neutron-d); }
+  .example-facts .fe b { color: var(--electron-d); }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 40px; }
+  .game-wrap {
+    max-width: 900px; margin: 0 auto;
+    display: flex; flex-direction: column; gap: 18px;
+    animation: fadeIn .3s ease;
+  }
+  .col-left, .col-right { display: flex; flex-direction: column; gap: 16px; }
+
+  .hud {
+    width: 100%; display: flex; justify-content: space-between; align-items: baseline;
+    padding-top: 4px; flex-wrap: wrap; gap: 6px;
+  }
+  .hud-label { font-weight: 900; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .hud-score { font-family: 'Chewy', cursive; font-size: 1.1rem; color: var(--ink); }
+
+  /* ══ OPPGAVEKORT ══ */
+  .task-card { text-align: center; }
+  .task-title { font-family: 'Chewy', cursive; font-size: clamp(1.3rem,5vw,1.7rem); margin-bottom: 8px; }
+  .task-ref {
+    display: inline-block; font-weight: 800; font-size: .82rem; color: var(--muted);
+    background: var(--cream); border: 2px solid var(--ink); border-radius: 8px;
+    padding: 3px 10px; margin-bottom: 10px;
+  }
+  .task-note { font-weight: 700; font-size: .85rem; color: var(--muted); margin-bottom: 10px; }
+  .task-facts { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: center; margin-bottom: 12px; }
+  .task-facts li {
+    font-weight: 800; font-size: .85rem; background: #fff3d6;
+    border: 2px solid var(--ink); border-radius: 8px; padding: 4px 10px;
+  }
+  .fact-label { color: var(--muted); font-weight: 700; }
+  .fact-value { font-family: 'Chewy', cursive; }
+
+  /* ══ ATOMMODELL ══ */
+  .atom-model-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .electron-ring {
+    position: relative;
+    width: clamp(170px, 46vw, 220px); height: clamp(170px, 46vw, 220px);
+    border-radius: 50%;
+    border: 3px dashed rgba(36,27,18,.28);
+    display: flex; align-items: center; justify-content: center;
+    transition: box-shadow .25s ease;
+  }
+  .electron-ring.cloud {
+    box-shadow: inset 0 0 0 12px rgba(217,119,6,.14);
+  }
+  .nucleus {
+    width: clamp(84px, 26vw, 112px); height: clamp(84px, 26vw, 112px);
+    border-radius: 50%;
+    background: linear-gradient(160deg, var(--proton) 0 50%, var(--neutron) 50% 100%);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    color: #fff; font-weight: 900; text-align: center; gap: 2px;
+    transition: transform .18s ease;
+  }
+  .nucleus.pulse { animation: nucleusPulse .3s ease; }
+  @keyframes nucleusPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+  .nucleus-row { font-size: clamp(.72rem,3vw,.88rem); text-shadow: 0 1px 2px rgba(0,0,0,.35); line-height: 1.3; }
+
+  .e-dot {
+    position: absolute; width: 11px; height: 11px; border-radius: 50%;
+    background: var(--electron); border: 2px solid var(--ink);
+    transform: translate(-50%,-50%);
+    transition: left .22s ease, top .22s ease, opacity .18s ease;
+  }
+  .e-dot.enter { animation: dotEnter .22s ease; }
+  @keyframes dotEnter { from { opacity: 0; transform: translate(-50%,-50%) scale(.3); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+  .electron-count { font-family: 'Chewy', cursive; font-size: 1rem; color: var(--electron-d); }
+
+  .atom-model-wrap.correct-pulse .electron-ring { box-shadow: 0 0 0 6px rgba(22,163,74,.35); }
+
+  /* ══ STATUS ══ */
+  .status-panel {
+    text-align: center; background: var(--cream); border: 3px solid var(--ink);
+    border-radius: 10px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .status-line { font-weight: 900; font-size: .95rem; letter-spacing: .01em; }
+  .status-line .p { color: var(--proton-d); }
+  .status-line .n { color: var(--neutron-d); }
+  .status-line .e { color: var(--electron-d); }
+  .status-derived { font-weight: 800; font-size: .85rem; color: var(--muted); }
+
+  /* ══ TELLERE ══ */
+  .counters { display: flex; flex-direction: column; gap: 12px; }
+  .counter { display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .counter-label { font-weight: 900; font-size: .85rem; text-transform: uppercase; letter-spacing: .05em; }
+  .counter.type-p .counter-label { color: var(--proton-d); }
+  .counter.type-n .counter-label { color: var(--neutron-d); }
+  .counter.type-e .counter-label { color: var(--electron-d); }
+  .counter-controls { display: flex; align-items: center; gap: 10px; }
+  .counter-btn {
+    min-width: 44px; min-height: 44px; font-size: 1.4rem; font-weight: 900;
+    background: var(--card); color: var(--ink); border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .1s, box-shadow .1s, background .1s;
+  }
+  .counter-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); background: #fff3d6; }
+  .counter-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .counter-btn:disabled { opacity: .35; cursor: not-allowed; }
+  .counter-btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .counter-value {
+    min-width: 52px; text-align: center; font-family: 'Chewy', cursive; font-size: 1.5rem;
+    border: 3px solid var(--ink); border-radius: 10px; padding: 6px 4px; background: var(--cream);
+  }
+  .counter-value:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .counters.locked .counter-btn { opacity: .35; pointer-events: none; }
+  .counters.locked .counter-value { opacity: .6; }
+
+  .check-btn { width: 100%; }
+
+  /* ══ TILBAKEMELDING ══ */
+  .hint-area {
+    width: 100%; background: #fff3d6; border: 3px solid var(--ink); border-radius: 10px;
+    padding: 12px 14px; font-weight: 800; font-size: .88rem; display: flex; gap: 8px; align-items: flex-start;
+  }
+  .hint-area::before { content: "⚠"; font-size: 1rem; line-height: 1.3; }
+  .hint-area[hidden] { display: none; }
+
+  .strong-hint-btn { align-self: center; }
+  .strong-hint-btn[hidden] { display: none; }
+
+  .feedback-row {
+    width: 100%; background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 16px 18px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    text-align: center; opacity: 0; transform: translateY(6px);
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .feedback-row[hidden] { display: none; }
+  .feedback-row.show { opacity: 1; transform: translateY(0); }
+  .solved-mark { font-family: 'Chewy', cursive; font-size: 1.3rem; color: var(--green); }
+  .solved-detail { font-weight: 700; font-size: .9rem; color: var(--ink); }
+  .solved-breakdown { list-style: none; font-weight: 700; font-size: .84rem; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+
+  /* ══ PERIODESYSTEM-PANEL ══ */
+  .pt-overlay {
+    position: fixed; inset: 0; background: rgba(36,27,18,.55);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 50; padding: 0;
+  }
+  .pt-overlay[hidden] { display: none; }
+  .pt-panel {
+    background: var(--cream); border: 4px solid var(--ink); border-radius: 16px 16px 0 0;
+    box-shadow: 0 -6px 0 rgba(0,0,0,.15);
+    width: 100%; max-width: 640px; max-height: 82vh; overflow-y: auto;
+    padding: 18px 18px 26px;
+    animation: ptSlideUp .22s ease;
+  }
+  @keyframes ptSlideUp { from { transform: translateY(24px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .pt-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .pt-header h2 { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+  .pt-close {
+    min-width: 44px; min-height: 44px; background: var(--card); border: 3px solid var(--ink);
+    border-radius: 10px; font-size: 1.2rem; font-weight: 900; box-shadow: 0 3px 0 var(--ink);
+  }
+  .pt-close:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .pt-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(78px,1fr)); gap: 8px;
+  }
+  .pt-cell {
+    background: var(--card); border: 2px solid var(--ink); border-radius: 8px;
+    padding: 6px 4px; text-align: center; display: flex; flex-direction: column; gap: 1px;
+  }
+  .pt-cell .z { font-weight: 800; font-size: .68rem; color: var(--muted); }
+  .pt-cell .sym { font-family: 'Chewy', cursive; font-size: 1.15rem; }
+  .pt-cell .nm { font-weight: 700; font-size: .62rem; color: var(--muted); }
+
+  @media (min-width: 900px) {
+    .game-wrap { flex-direction: row; align-items: flex-start; gap: 32px; }
+    .col-left, .col-right { flex: 1; }
+    .pt-overlay { align-items: center; }
+    .pt-panel { border-radius: 16px; }
+  }
+
+  /* ══ SLUTTSKJERM ══ */
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: .95rem; gap: 12px; }
+  .result-row strong { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+  .result-summary { font-weight: 700; font-size: .88rem; color: var(--muted); text-align: left; line-height: 1.5; }
+
+  footer {
+    text-align: center; padding: 24px; color: var(--muted);
+    font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(43,33,24,.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .nucleus.pulse, .e-dot, .feedback-row, .counter-btn, .btn-primary, .btn-secondary, .pt-panel {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">⚛️</div>
+      <h1>Atombyggeren</h1>
+      <p>Bygg atomet ved å velge riktig antall protoner, nøytroner og elektroner.</p>
+    </div>
+    <div class="card">
+      <h2>Eksempel: Helium-4</h2>
+      <div class="example-body">
+        <div class="example-model" id="exModel" aria-hidden="true"></div>
+        <div class="example-facts">
+          <span class="fp">Protoner <b>2</b></span>
+          <span class="fn">Nøytroner <b>2</b></span>
+          <span class="fe">Elektroner <b>2</b></span>
+        </div>
+        <p style="font-weight:700; font-size:.9rem; color:var(--muted); margin-top:6px;">
+          10 atomer. Du styrer tre tellere — protoner, nøytroner og elektroner — og sjekker svaret når du er klar.
+        </p>
+      </div>
+    </div>
+    <button class="btn-primary" id="btnStart">Start</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="col-left">
+      <div class="hud">
+        <span class="hud-label" id="hudTask">Atom 1 av 10</span>
+        <span class="hud-score" id="hudScore">Poeng: 0</span>
+      </div>
+
+      <div class="card task-card">
+        <h2 class="task-title" id="taskTitle">Bygg helium</h2>
+        <div class="task-ref" id="refRow" hidden></div>
+        <p class="task-note" id="taskNote" hidden></p>
+        <ul class="task-facts" id="taskFacts"></ul>
+        <button type="button" class="btn-secondary" id="btnShowPT">Vis periodesystem</button>
+      </div>
+
+      <div class="atom-model-wrap" id="atomModelWrap">
+        <div class="electron-ring" id="electronRing" aria-hidden="true">
+          <div class="nucleus" id="nucleus">
+            <span class="nucleus-row">p⁺ <span id="pValModel">0</span></span>
+            <span class="nucleus-row">n⁰ <span id="nValModel">0</span></span>
+          </div>
+        </div>
+        <div class="electron-count" aria-hidden="true">e⁻ <span id="eValModel">0</span></div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="status-panel">
+        <span class="status-line" id="statusLine"><span class="p">p⁺ 0</span> | <span class="n">n⁰ 0</span> | <span class="e">e⁻ 0</span></span>
+        <span class="status-derived" id="massChargeLine">Massetall: 0 | Ladning: 0</span>
+      </div>
+
+      <div class="counters" id="counters">
+        <div class="counter type-p">
+          <span class="counter-label" id="labelP">Protoner</span>
+          <div class="counter-controls">
+            <button type="button" class="counter-btn" id="pMinus" aria-label="Reduser antall protoner">−</button>
+            <div class="counter-value" id="pSpin" tabindex="0" role="spinbutton" aria-labelledby="labelP" aria-valuemin="0" aria-valuemax="18" aria-valuenow="0">0</div>
+            <button type="button" class="counter-btn" id="pPlus" aria-label="Øk antall protoner">+</button>
+          </div>
+        </div>
+        <div class="counter type-n">
+          <span class="counter-label" id="labelN">Nøytroner</span>
+          <div class="counter-controls">
+            <button type="button" class="counter-btn" id="nMinus" aria-label="Reduser antall nøytroner">−</button>
+            <div class="counter-value" id="nSpin" tabindex="0" role="spinbutton" aria-labelledby="labelN" aria-valuemin="0" aria-valuemax="22" aria-valuenow="0">0</div>
+            <button type="button" class="counter-btn" id="nPlus" aria-label="Øk antall nøytroner">+</button>
+          </div>
+        </div>
+        <div class="counter type-e">
+          <span class="counter-label" id="labelE">Elektroner</span>
+          <div class="counter-controls">
+            <button type="button" class="counter-btn" id="eMinus" aria-label="Reduser antall elektroner">−</button>
+            <div class="counter-value" id="eSpin" tabindex="0" role="spinbutton" aria-labelledby="labelE" aria-valuemin="0" aria-valuemax="21" aria-valuenow="0">0</div>
+            <button type="button" class="counter-btn" id="ePlus" aria-label="Øk antall elektroner">+</button>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary check-btn" id="checkBtn">Sjekk atom</button>
+
+      <p class="hint-area" id="hintArea" hidden></p>
+      <button type="button" class="btn-secondary strong-hint-btn" id="strongHintBtn" hidden>Vis sterkere hint</button>
+
+      <div class="feedback-row" id="feedbackRow" hidden>
+        <span class="solved-mark" id="resultHeading">✓ Riktig!</span>
+        <span class="solved-detail" id="resultDetail">Dette er helium-4.</span>
+        <ul class="solved-breakdown" id="resultBreakdown"></ul>
+        <button type="button" class="btn-primary" id="btnNext">Neste atom</button>
+      </div>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+    <div class="sr-only" id="srDerived" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">⚛️🎉</div>
+      <h1>Atomlaboratoriet er ferdig</h1>
+      <p>Her er resultatet ditt etter 10 atomer.</p>
+    </div>
+    <div class="card result-card">
+      <div class="result-row"><span>Poeng</span><strong id="endScore">0 av 20</strong></div>
+      <div class="result-row"><span>Riktig på første forsøk</span><strong id="endFirstTry">0 av 10</strong></div>
+      <div class="result-row"><span>Antall hint brukt</span><strong id="endHints">0</strong></div>
+    </div>
+    <div class="card">
+      <p class="result-summary">
+        Protoner bestemmer grunnstoffet.<br>
+        Protoner + nøytroner gir massetallet.<br>
+        Forskjellen mellom protoner og elektroner gir ladningen.
+      </p>
+    </div>
+    <button class="btn-primary" id="btnAgain">Bygg flere atomer</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<!-- ════════ PERIODESYSTEM-PANEL ════════ -->
+<div class="pt-overlay" id="ptOverlay" hidden>
+  <div class="pt-panel" role="dialog" aria-modal="true" aria-labelledby="ptTitle">
+    <div class="pt-header">
+      <h2 id="ptTitle">Periodesystem — de 18 første grunnstoffene</h2>
+      <button type="button" class="pt-close" id="ptClose" aria-label="Lukk periodesystemet">✕</button>
+    </div>
+    <div class="pt-grid" id="ptGrid"></div>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ══════════════════ GRUNNSTOFFDATA ══════════════════
+   De 18 første grunnstoffene. "mass" er et vanlig, pedagogisk
+   kuratert massetall (ikke tilfeldig generert) brukt som standard
+   isotop for nøytrale atom-oppgaver. Alt av protonantall og
+   grunnstoffidentitet er alltid utledet fra denne listen — det
+   finnes ingen separat "fasit" et annet sted.
+   ═══════════════════════════════════════════════════ */
+const ELEMENTS = [
+  { z: 1,  symbol: 'H',  name: 'hydrogen',   mass: 1  },
+  { z: 2,  symbol: 'He', name: 'helium',     mass: 4  },
+  { z: 3,  symbol: 'Li', name: 'litium',     mass: 7  },
+  { z: 4,  symbol: 'Be', name: 'beryllium',  mass: 9  },
+  { z: 5,  symbol: 'B',  name: 'bor',        mass: 11 },
+  { z: 6,  symbol: 'C',  name: 'karbon',     mass: 12 },
+  { z: 7,  symbol: 'N',  name: 'nitrogen',   mass: 14 },
+  { z: 8,  symbol: 'O',  name: 'oksygen',    mass: 16 },
+  { z: 9,  symbol: 'F',  name: 'fluor',      mass: 19 },
+  { z: 10, symbol: 'Ne', name: 'neon',       mass: 20 },
+  { z: 11, symbol: 'Na', name: 'natrium',    mass: 23 },
+  { z: 12, symbol: 'Mg', name: 'magnesium',  mass: 24 },
+  { z: 13, symbol: 'Al', name: 'aluminium',  mass: 27 },
+  { z: 14, symbol: 'Si', name: 'silisium',   mass: 28 },
+  { z: 15, symbol: 'P',  name: 'fosfor',     mass: 31 },
+  { z: 16, symbol: 'S',  name: 'svovel',     mass: 32 },
+  { z: 17, symbol: 'Cl', name: 'klor',       mass: 35 },
+  { z: 18, symbol: 'Ar', name: 'argon',      mass: 40 },
+];
+const elBySymbol = sym => ELEMENTS.find(e => e.symbol === sym);
+
+/* Kuratert utvalg av vanlige ioner (ladning aldri over ±3). */
+const CATIONS = [
+  { symbol: 'Li', charge: 1 },
+  { symbol: 'Na', charge: 1 },
+  { symbol: 'Be', charge: 2 },
+  { symbol: 'Mg', charge: 2 },
+  { symbol: 'Al', charge: 3 },
+];
+const ANIONS = [
+  { symbol: 'F',  charge: -1 },
+  { symbol: 'Cl', charge: -1 },
+  { symbol: 'O',  charge: -2 },
+  { symbol: 'S',  charge: -2 },
+  { symbol: 'N',  charge: -3 },
+  { symbol: 'P',  charge: -3 },
+];
+
+const MAX_P = 18, MAX_N = 22, MAX_E = 21;
+const ELECTRON_DOT_CAP = 12;
+
+function shuffled(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ══════════════════ OPPGAVEMODELL ══════════════════
+   Hver oppgave lagrer bare: grunnstoff (z/symbol/navn), massetall
+   og ladning. Riktige protoner/nøytroner/elektroner beregnes alltid
+   ut fra disse tre tallene — aldri hardkodet som egne fasitfelt. */
+function chargeSup(c) {
+  const digit = Math.abs(c) === 1 ? '' : (Math.abs(c) === 2 ? '²' : '³');
+  return digit + (c > 0 ? '⁺' : '⁻');
+}
+function chargeLabel(c) {
+  if (c === 0) return '0';
+  return (c > 0 ? '+' : '−') + Math.abs(c);
+}
+
+function makeTask(level, el, massNumber, charge) {
+  charge = charge || 0;
+  const task = { level, symbol: el.symbol, name: el.name, z: el.z, massNumber, charge };
+  if (level === 1) {
+    task.title = 'Bygg ' + el.name;
+    task.showRef = true;
+    task.facts = [
+      { label: 'Nøytroner', value: massNumber - el.z },
+      { label: 'Elektroner', value: el.z }
+    ];
+    task.note = null;
+  } else if (level === 2) {
+    task.title = 'Bygg ' + el.name + '-' + massNumber;
+    task.showRef = false;
+    task.facts = [
+      { label: 'Atomnummer', value: el.z },
+      { label: 'Massetall', value: massNumber },
+      { label: 'Elektroner', value: el.z }
+    ];
+    task.note = null;
+  } else if (level === 3) {
+    task.title = 'Bygg ' + el.name + '-' + massNumber;
+    task.showRef = false;
+    task.facts = [{ label: 'Massetall', value: massNumber }];
+    task.note = 'Nøytralt atom (ladning 0).';
+  } else {
+    task.title = 'Bygg ' + el.symbol + chargeSup(charge) + ', massetall ' + massNumber;
+    task.showRef = false;
+    task.facts = [
+      { label: 'Massetall', value: massNumber },
+      { label: 'Ladning', value: chargeLabel(charge) }
+    ];
+    task.note = null;
+  }
+  return task;
+}
+
+function correctCounts(task) {
+  return { p: task.z, n: task.massNumber - task.z, e: task.z - task.charge };
+}
+
+function buildSession() {
+  const neutralShuffled = shuffled(ELEMENTS);
+  const usedSym = new Set();
+  function takeNeutral() {
+    const el = neutralShuffled.find(e => !usedSym.has(e.symbol));
+    usedSym.add(el.symbol);
+    return el;
+  }
+  const level1 = [1, 2].map(() => { const el = takeNeutral(); return makeTask(1, el, el.mass, 0); });
+  const level2 = [1, 2].map(() => { const el = takeNeutral(); return makeTask(2, el, el.mass, 0); });
+  const level3 = [1, 2].map(() => { const el = takeNeutral(); return makeTask(3, el, el.mass, 0); });
+
+  const cationsShuffled = shuffled(CATIONS);
+  const anionsShuffled = shuffled(ANIONS);
+  const usedIon = new Set();
+  function takeFrom(pool) {
+    const item = pool.find(x => !usedIon.has(x.symbol)) || pool[0];
+    usedIon.add(item.symbol);
+    return item;
+  }
+  const level4 = [takeFrom(cationsShuffled), takeFrom(cationsShuffled)].map(ion =>
+    makeTask(4, elBySymbol(ion.symbol), elBySymbol(ion.symbol).mass, ion.charge)
+  );
+  const combinedIonPool = shuffled(CATIONS.concat(ANIONS));
+  const fifthA = takeFrom(combinedIonPool);
+  const fifthB = takeFrom(anionsShuffled); // garanterer minst ett negativt ion i økten
+  const level5 = [fifthA, fifthB].map(ion =>
+    makeTask(5, elBySymbol(ion.symbol), elBySymbol(ion.symbol).mass, ion.charge)
+  );
+
+  return [].concat(level1, level2, level3, level4, level5);
+}
+
+/* ══════════════════ ATOMMODELL (VISUALISERING) ══════════════════ */
+const electronRing = $('electronRing');
+let prevRenderedMass = null, prevRenderedE = null;
+
+function renderElectronDots(count) {
+  Array.from(electronRing.querySelectorAll('.e-dot')).forEach(d => d.remove());
+  const capped = Math.min(count, ELECTRON_DOT_CAP);
+  const size = electronRing.clientWidth || 200;
+  const center = size / 2;
+  const radius = center * 0.82;
+  for (let i = 0; i < capped; i++) {
+    const angle = (2 * Math.PI * i) / capped - Math.PI / 2;
+    const x = center + radius * Math.cos(angle);
+    const y = center + radius * Math.sin(angle);
+    const dot = document.createElement('div');
+    dot.className = 'e-dot' + (REDUCED_MOTION ? '' : ' enter');
+    dot.style.left = x + 'px';
+    dot.style.top = y + 'px';
+    electronRing.appendChild(dot);
+  }
+  electronRing.classList.toggle('cloud', count > ELECTRON_DOT_CAP);
+}
+
+function renderAtomModel(protons, neutrons, electrons) {
+  $('pValModel').textContent = protons;
+  $('nValModel').textContent = neutrons;
+  $('eValModel').textContent = electrons;
+
+  const mass = protons + neutrons;
+  if (prevRenderedMass !== null && mass !== prevRenderedMass) {
+    const nucleus = $('nucleus');
+    nucleus.classList.remove('pulse');
+    void nucleus.offsetWidth;
+    if (!REDUCED_MOTION) nucleus.classList.add('pulse');
+  }
+  prevRenderedMass = mass;
+
+  if (prevRenderedE !== electrons) {
+    renderElectronDots(electrons);
+  }
+  prevRenderedE = electrons;
+}
+window.addEventListener('resize', () => { if (prevRenderedE !== null) renderElectronDots(prevRenderedE); });
+
+/* ══════════════════ SPILLTILSTAND ══════════════════ */
+let session = [], taskIndex = 0, task = null;
+let protons = 0, neutrons = 0, electrons = 0;
+let attempts = 0, wrongChecks = 0, solved = false, locked = false;
+let score = 0, firstTryCount = 0, totalHints = 0;
+let prevAnnouncedMass = null, prevAnnouncedCharge = null;
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+
+function announce(text) {
+  const el = $('srAnnounce');
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = text; });
+}
+function announceDerived(text) {
+  const el = $('srDerived');
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = text; });
+}
+
+function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+
+function updateCounterDisplays() {
+  $('pSpin').textContent = protons; $('pSpin').setAttribute('aria-valuenow', protons);
+  $('nSpin').textContent = neutrons; $('nSpin').setAttribute('aria-valuenow', neutrons);
+  $('eSpin').textContent = electrons; $('eSpin').setAttribute('aria-valuenow', electrons);
+  $('pMinus').disabled = locked || protons <= 0;
+  $('pPlus').disabled  = locked || protons >= MAX_P;
+  $('nMinus').disabled = locked || neutrons <= 0;
+  $('nPlus').disabled  = locked || neutrons >= MAX_N;
+  $('eMinus').disabled = locked || electrons <= 0;
+  $('ePlus').disabled  = locked || electrons >= MAX_E;
+}
+
+function updateStatusPanel() {
+  $('statusLine').innerHTML =
+    '<span class="p">p⁺ ' + protons + '</span> | <span class="n">n⁰ ' + neutrons + '</span> | <span class="e">e⁻ ' + electrons + '</span>';
+  const mass = protons + neutrons;
+  const charge = protons - electrons;
+  $('massChargeLine').textContent = 'Massetall: ' + mass + ' | Ladning: ' + chargeLabel(charge);
+  if (mass !== prevAnnouncedMass || charge !== prevAnnouncedCharge) {
+    announceDerived('Massetall ' + mass + ', ladning ' + chargeLabel(charge) + '.');
+    prevAnnouncedMass = mass; prevAnnouncedCharge = charge;
+  }
+}
+
+function renderAll() {
+  updateCounterDisplays();
+  renderAtomModel(protons, neutrons, electrons);
+  updateStatusPanel();
+}
+
+function setCount(type, val) {
+  if (solved || locked) return;
+  const max = type === 'p' ? MAX_P : type === 'n' ? MAX_N : MAX_E;
+  const newVal = clamp(val, 0, max);
+  if (type === 'p') protons = newVal;
+  else if (type === 'n') neutrons = newVal;
+  else electrons = newVal;
+  renderAll();
+}
+
+function bindCounter(prefix, type) {
+  $(prefix + 'Minus').addEventListener('click', () => {
+    const cur = type === 'p' ? protons : type === 'n' ? neutrons : electrons;
+    setCount(type, cur - 1);
+  });
+  $(prefix + 'Plus').addEventListener('click', () => {
+    const cur = type === 'p' ? protons : type === 'n' ? neutrons : electrons;
+    setCount(type, cur + 1);
+  });
+  $(prefix + 'Spin').addEventListener('keydown', e => {
+    const cur = type === 'p' ? protons : type === 'n' ? neutrons : electrons;
+    if (e.key === 'ArrowRight' || e.key === '+') { e.preventDefault(); setCount(type, cur + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === '-') { e.preventDefault(); setCount(type, cur - 1); }
+  });
+}
+bindCounter('p', 'p'); bindCounter('n', 'n'); bindCounter('e', 'e');
+
+function renderTaskCard(t) {
+  $('taskTitle').textContent = t.title;
+  const refRow = $('refRow');
+  if (t.showRef) {
+    refRow.hidden = false;
+    refRow.textContent = t.symbol + ' – atomnummer ' + t.z;
+  } else {
+    refRow.hidden = true;
+  }
+  const noteEl = $('taskNote');
+  if (t.note) { noteEl.hidden = false; noteEl.textContent = t.note; }
+  else { noteEl.hidden = true; }
+  const factsEl = $('taskFacts');
+  factsEl.innerHTML = '';
+  t.facts.forEach(f => {
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="fact-label">' + f.label + ':</span> <span class="fact-value">' + f.value + '</span>';
+    factsEl.appendChild(li);
+  });
+}
+
+function basicHintFor(pOK, nOK, eOK) {
+  if (!pOK) return 'Sjekk atomnummeret. Det bestemmer antall protoner.';
+  if (!nOK) return 'Massetallet er protoner + nøytroner.';
+  return 'Sammenlign antall protoner og elektroner.';
+}
+
+function showHint(text) {
+  const el = $('hintArea');
+  el.hidden = false;
+  el.textContent = text;
+  announce(text);
+}
+
+function checkAtom() {
+  if (solved || locked) return;
+  attempts++;
+  const c = correctCounts(task);
+  const pOK = protons === c.p, nOK = neutrons === c.n, eOK = electrons === c.e;
+  if (pOK && nOK && eOK) {
+    handleSolved(c);
+  } else {
+    wrongChecks++;
+    totalHints++;
+    showHint(basicHintFor(pOK, nOK, eOK));
+    if (wrongChecks >= 2) $('strongHintBtn').hidden = false;
+  }
+}
+
+function strongHintText() {
+  const c = correctCounts(task);
+  const pOK = protons === c.p, nOK = neutrons === c.n, eOK = electrons === c.e;
+  if (!pOK) return capitalize(task.name) + ' har ' + c.p + ' protoner.';
+  if (!nOK) return 'Massetallet er ' + task.massNumber + ': med ' + c.p + ' protoner trenger du ' + c.n + ' nøytroner.';
+  if (!eOK) return 'Ladningen skal være ' + chargeLabel(task.charge) + ': med ' + c.p + ' protoner trenger du ' + c.e + ' elektroner.';
+  return 'Alt stemmer nå — trykk «Sjekk atom».';
+}
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+$('strongHintBtn').addEventListener('click', () => {
+  totalHints++;
+  showHint(strongHintText());
+});
+
+function lockControls() {
+  locked = true;
+  $('counters').classList.add('locked');
+  updateCounterDisplays();
+  $('checkBtn').disabled = true;
+}
+function unlockControls() {
+  locked = false;
+  $('counters').classList.remove('locked');
+  updateCounterDisplays();
+  $('checkBtn').disabled = false;
+}
+
+function handleSolved(c) {
+  solved = true;
+  const pts = attempts === 1 ? 2 : 1;
+  score += pts;
+  if (attempts === 1) firstTryCount++;
+  $('hudScore').textContent = 'Poeng: ' + score;
+  lockControls();
+
+  const ionSuffix = task.charge !== 0 ? ' (' + task.symbol + chargeSup(task.charge) + ')' : '';
+  $('resultDetail').textContent = 'Dette er ' + task.name + '-' + task.massNumber + ionSuffix + '.';
+  const list = $('resultBreakdown');
+  list.innerHTML = '';
+  const lines = [
+    c.p + ' protoner → ' + task.name,
+    c.p + ' + ' + c.n + ' → massetall ' + task.massNumber,
+    task.charge === 0
+      ? c.p + ' protoner og ' + c.e + ' elektroner → nøytralt atom'
+      : c.p + ' protoner og ' + c.e + ' elektroner → ladning ' + chargeLabel(task.charge)
+  ];
+  lines.forEach(l => { const li = document.createElement('li'); li.textContent = l; list.appendChild(li); });
+
+  $('hintArea').hidden = true;
+  $('strongHintBtn').hidden = true;
+  const fb = $('feedbackRow');
+  fb.hidden = false;
+  requestAnimationFrame(() => fb.classList.add('show'));
+
+  const wrap = $('atomModelWrap');
+  wrap.classList.add('correct-pulse');
+  setTimeout(() => wrap.classList.remove('correct-pulse'), REDUCED_MOTION ? 0 : 900);
+
+  announce('Riktig! ' + $('resultDetail').textContent + ' Du fikk ' + pts + ' poeng.');
+  $('btnNext').focus();
+}
+
+function loadTask(i) {
+  taskIndex = i;
+  task = session[i];
+  protons = 0; neutrons = 0; electrons = 0;
+  attempts = 0; wrongChecks = 0; solved = false;
+  prevRenderedMass = null; prevRenderedE = null;
+  prevAnnouncedMass = null; prevAnnouncedCharge = null;
+
+  $('hudTask').textContent = 'Atom ' + (i + 1) + ' av ' + session.length;
+  $('hudScore').textContent = 'Poeng: ' + score;
+  renderTaskCard(task);
+  unlockControls();
+  renderAll();
+
+  $('hintArea').hidden = true;
+  $('strongHintBtn').hidden = true;
+  const fb = $('feedbackRow');
+  fb.hidden = true;
+  fb.classList.remove('show');
+
+  announce('Atom ' + (i + 1) + ' av ' + session.length + '. ' + task.title + '.');
+}
+
+function startGame() {
+  session = buildSession();
+  score = 0; firstTryCount = 0; totalHints = 0;
+  showScreen('screen-game');
+  loadTask(0);
+}
+
+function endGame() {
+  $('endScore').textContent = score + ' av ' + (session.length * 2);
+  $('endFirstTry').textContent = firstTryCount + ' av ' + session.length;
+  $('endHints').textContent = String(totalHints);
+  showScreen('screen-end');
+}
+
+$('checkBtn').addEventListener('click', checkAtom);
+$('btnNext').addEventListener('click', () => {
+  if (taskIndex + 1 >= session.length) endGame();
+  else loadTask(taskIndex + 1);
+});
+$('btnStart').addEventListener('click', startGame);
+$('btnAgain').addEventListener('click', startGame);
+
+/* ══════════════════ PERIODESYSTEM-PANEL ══════════════════ */
+(function buildPeriodicTable() {
+  const grid = $('ptGrid');
+  ELEMENTS.forEach(el => {
+    const cell = document.createElement('div');
+    cell.className = 'pt-cell';
+    cell.innerHTML = '<span class="z">' + el.z + '</span><span class="sym">' + el.symbol + '</span><span class="nm">' + el.name + '</span>';
+    grid.appendChild(cell);
+  });
+})();
+
+let ptOpenerEl = null;
+function openPT() {
+  ptOpenerEl = document.activeElement;
+  $('ptOverlay').hidden = false;
+  $('ptClose').focus();
+}
+function closePT() {
+  $('ptOverlay').hidden = true;
+  if (ptOpenerEl) ptOpenerEl.focus();
+}
+$('btnShowPT').addEventListener('click', openPT);
+$('ptClose').addEventListener('click', closePT);
+$('ptOverlay').addEventListener('click', e => { if (e.target === $('ptOverlay')) closePT(); });
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('ptOverlay').hidden) closePT();
+});
+
+/* ══════════════════ EKSEMPEL PÅ STARTSKJERM (statisk) ══════════════════ */
+(function buildExample() {
+  const wrap = document.createElement('div');
+  wrap.className = 'electron-ring';
+  wrap.style.width = '150px';
+  wrap.style.height = '150px';
+  wrap.innerHTML =
+    '<div class="nucleus" style="width:76px;height:76px;">' +
+      '<span class="nucleus-row">p⁺ 2</span>' +
+      '<span class="nucleus-row">n⁰ 2</span>' +
+    '</div>';
+  $('exModel').appendChild(wrap);
+  const size = 150, center = size / 2, radius = center * 0.82;
+  for (let i = 0; i < 2; i++) {
+    const angle = (2 * Math.PI * i) / 2 - Math.PI / 2;
+    const dot = document.createElement('div');
+    dot.className = 'e-dot';
+    dot.style.left = (center + radius * Math.cos(angle)) + 'px';
+    dot.style.top = (center + radius * Math.sin(angle)) + 'px';
+    wrap.appendChild(dot);
+  }
+})();
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>
