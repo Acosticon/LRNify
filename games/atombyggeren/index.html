@@ -189,21 +189,22 @@
     border-radius: 50%; border: 2px dashed rgba(36,27,18,.25);
     pointer-events: none;
   }
+  /* Ingen kontur rundt kjernen — den skal ikke kunne forveksles med et
+     elektronskall. Bredde/høyde settes fra JS ut fra nukleontallet. */
   .nucleus {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    width: clamp(72px, 20vw, 94px); height: clamp(72px, 20vw, 94px);
     border-radius: 50%;
-    background: rgba(36,27,18,.05);
-    border: 2px solid rgba(36,27,18,.22);
-    transition: transform .18s ease;
+    background: rgba(36,27,18,.045);
   }
   .nucleus.pulse { animation: nucleusPulse .3s ease; }
   @keyframes nucleusPulse { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.08); } }
 
+  /* Størrelse og kantbredde settes fra JS: kulene krymper når det blir
+     mange nukleoner, slik at de så vidt berører uten å overlappe. */
   .nuc-dot {
-    position: absolute; width: 10px; height: 10px; border-radius: 50%;
-    border: 1.5px solid var(--ink); transform: translate(-50%,-50%);
-    transition: left .2s ease, top .2s ease;
+    position: absolute; border-radius: 50%;
+    border-style: solid; border-color: var(--ink);
+    transform: translate(-50%,-50%);
   }
   .nuc-dot.p { background: var(--proton); }
   .nuc-dot.n { background: var(--neutron); }
@@ -571,7 +572,9 @@ const ANIONS = [
 ];
 
 const MAX_P = 18, MAX_N = 22, MAX_E = 21;
-const SHELL_MAX_FIRST = 2, SHELL_MAX_REST = 8, MAX_SHELLS = 4;
+const SHELL_CAPACITIES = [2, 8, 8, 8];
+const MAX_SHELLS = SHELL_CAPACITIES.length;
+const NUC_DOT_MAX = 7, NUC_DOT_MIN = 2.6, E_DOT_RADIUS = 5.5;
 
 function shuffled(arr) {
   const a = arr.slice();
@@ -679,62 +682,113 @@ function buildSession() {
    alltid i statuspanelet under (modellen er aria-hidden). */
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
-function sunflowerPoint(i, n, R, phase, dir) {
+/* Solsikkefordeling: n punkter jevnt utover en sirkelflate med
+   senterradius R. Brukes til å pakke nukleonene i kjernen. */
+function sunflowerPoint(i, n, R) {
   const r = R * Math.sqrt((i + 0.5) / n);
-  const theta = dir * i * GOLDEN_ANGLE + phase;
+  const theta = i * GOLDEN_ANGLE;
   return { x: r * Math.cos(theta), y: r * Math.sin(theta) };
 }
 
+/* Fyllingsregelen i den forenklede skallmodellen: 2 i innerste skall,
+   deretter 8 per skall. Fylles innenfra og ut — et nytt skall starter
+   først når det forrige er fullt. Dekker 0–21 elektroner (maks i
+   spillet) innenfor fire skall. */
 function computeShells(total) {
   const shells = [];
-  let remaining = total, cap = SHELL_MAX_FIRST;
-  while (remaining > 0) {
-    const take = Math.min(cap, remaining);
+  let remaining = total;
+  for (let i = 0; i < MAX_SHELLS && remaining > 0; i++) {
+    const take = Math.min(SHELL_CAPACITIES[i], remaining);
     shells.push(take);
     remaining -= take;
-    cap = SHELL_MAX_REST;
   }
   return shells;
 }
 
-function renderNucleusDots(nucleusEl, protons, neutrons) {
-  Array.from(nucleusEl.querySelectorAll('.nuc-dot')).forEach(d => d.remove());
-  const half = (nucleusEl.clientWidth || 84) / 2;
-  const R = Math.max(half - 7, 4);
-  const frag = document.createDocumentFragment();
-  function place(count, cls, phase, dir) {
-    for (let i = 0; i < count; i++) {
-      const pt = sunflowerPoint(i, count, R, phase, dir);
-      const dot = document.createElement('div');
-      dot.className = 'nuc-dot ' + cls;
-      dot.style.left = (half + pt.x) + 'px';
-      dot.style.top = (half + pt.y) + 'px';
-      frag.appendChild(dot);
-    }
+/* Fordeler p protoner og n nøytroner utover de (p+n) plassene i klumpen
+   slik at fargene blandes jevnt gjennom hele kjernen. Uten dette (én
+   solsikke per partikkeltype) ville de to settene ligge som to lag i
+   samme flate og delvis dekke hverandre. */
+function nucleonTypes(protons, neutrons) {
+  const total = protons + neutrons;
+  const types = new Array(total);
+  let acc = 0, placed = 0;
+  for (let i = 0; i < total; i++) {
+    acc += protons;
+    if (acc >= total && placed < protons) { types[i] = 'p'; acc -= total; placed++; }
+    else types[i] = 'n';
   }
-  if (protons > 0) place(protons, 'p', 0, 1);
-  if (neutrons > 0) place(neutrons, 'n', Math.PI / 3, -1);
-  nucleusEl.appendChild(frag);
+  return types;
 }
 
-function renderElectronShells(stageEl, nucleusEl, electrons) {
+/* Kulestørrelse og klumpstørrelse utledes av nukleontallet, slik at
+   kulene så vidt berører hverandre uten å overlappe: i en solsikke med
+   n punkter over senterradius Rc er typisk naboavstand ≈ Rc·√(π/n), så
+   kuleradius r ≈ 0,84·Rc/√n. Løst for r med Rc + r ≤ maxRadius vokser
+   klumpen med √(antall) — som en flate som fylles, ikke lineært. */
+/* Empirisk kalibrert mot faktisk minste naboavstand i solsikka (den er
+   litt kortere enn den gjennomsnittlige avstanden formelen anslår), slik
+   at kulene så vidt berører hverandre i stedet for å overlappe. */
+const NUC_PACK = 0.77;
+function nucleusGeometry(total, maxRadius) {
+  if (total <= 0) return { dotRadius: 0, centerRadius: 0, outerRadius: 0 };
+  let dotRadius = NUC_PACK * maxRadius / (Math.sqrt(total) + NUC_PACK);
+  dotRadius = Math.max(NUC_DOT_MIN, Math.min(NUC_DOT_MAX, dotRadius));
+  const centerRadius = total === 1 ? 0 : dotRadius * Math.sqrt(total) / NUC_PACK;
+  return { dotRadius, centerRadius, outerRadius: centerRadius + dotRadius };
+}
+
+function renderNucleus(nucleusEl, protons, neutrons, maxRadius) {
+  nucleusEl.innerHTML = '';
+  const total = protons + neutrons;
+  const geo = nucleusGeometry(total, maxRadius);
+  const size = Math.max(geo.outerRadius * 2, 16);
+  nucleusEl.style.width = size + 'px';
+  nucleusEl.style.height = size + 'px';
+  if (total === 0) return geo;
+
+  const types = nucleonTypes(protons, neutrons);
+  const half = size / 2;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < total; i++) {
+    /* Ett enkelt nukleon hører hjemme midt i kjernen, ikke på
+       solsikkens første radius. */
+    const pt = total === 1 ? { x: 0, y: 0 } : sunflowerPoint(i, total, geo.centerRadius);
+    const dot = document.createElement('div');
+    dot.className = 'nuc-dot ' + types[i];
+    dot.style.width = dot.style.height = (geo.dotRadius * 2) + 'px';
+    dot.style.borderWidth = Math.max(1, geo.dotRadius * 0.28) + 'px';
+    dot.style.left = (half + pt.x) + 'px';
+    dot.style.top = (half + pt.y) + 'px';
+    frag.appendChild(dot);
+  }
+  nucleusEl.appendChild(frag);
+  return geo;
+}
+
+function renderElectronShells(stageEl, nucleusOuterRadius, electrons) {
   Array.from(stageEl.querySelectorAll('.shell-ring, .e-dot')).forEach(el => el.remove());
   const shells = computeShells(electrons);
-  const stageSize = stageEl.clientWidth || 260;
-  const half = stageSize / 2;
-  const nucleusHalf = (nucleusEl.clientWidth || 84) / 2;
-  const maxRadius = half - 14;
-  const gap = (maxRadius - nucleusHalf) / MAX_SHELLS;
+  const half = (stageEl.clientWidth || 260) / 2;
+  const maxRingRadius = half - E_DOT_RADIUS - 3;
+  const inner = nucleusOuterRadius + 8;
+  /* Delt på MAX_SHELLS (ikke på antall skall som faktisk tegnes), slik
+     at ringavstanden er den samme uansett hvor mange skall atomet har. */
+  const gap = (maxRingRadius - inner) / MAX_SHELLS;
   const frag = document.createDocumentFragment();
+
   shells.forEach((count, si) => {
-    const radius = nucleusHalf + gap * (si + 1);
+    const radius = inner + gap * (si + 1);
     const ring = document.createElement('div');
     ring.className = 'shell-ring';
-    ring.style.width = (radius * 2) + 'px';
-    ring.style.height = (radius * 2) + 'px';
+    ring.style.width = ring.style.height = (radius * 2) + 'px';
     frag.appendChild(ring);
+    /* Innerste skall starter rett opp (kl. 12); hvert skall utover
+       roteres 30° videre, slik at elektroner i ulike skall ikke stiller
+       seg opp på samme eike ut fra sentrum. */
+    const offset = -Math.PI / 2 + si * (Math.PI / 6);
     for (let i = 0; i < count; i++) {
-      const angle = (2 * Math.PI * i) / count - Math.PI / 2;
+      const angle = offset + (2 * Math.PI * i) / count;
       const dot = document.createElement('div');
       dot.className = 'e-dot' + (REDUCED_MOTION ? '' : ' enter');
       dot.style.left = (half + radius * Math.cos(angle)) + 'px';
@@ -759,8 +813,11 @@ function renderAtomModel(protons, neutrons, electrons) {
   }
   prevRenderedMass = mass;
 
-  renderNucleusDots(nucleusEl, protons, neutrons);
-  renderElectronShells(stageEl, nucleusEl, electrons);
+  /* Kjernen får maks ~1/3 av radien ut til ytterste skall, slik at
+     størrelsesforholdet mellom kjerne og skall holder seg lesbart. */
+  const maxNucleusRadius = (stageEl.clientWidth || 260) * 0.16;
+  const geo = renderNucleus(nucleusEl, protons, neutrons, maxNucleusRadius);
+  renderElectronShells(stageEl, geo.outerRadius, electrons);
 }
 window.addEventListener('resize', () => { renderAtomModel(protons, neutrons, electrons); });
 
@@ -1051,12 +1108,10 @@ document.addEventListener('keydown', e => {
   stage.style.height = '160px';
   const nucleus = document.createElement('div');
   nucleus.className = 'nucleus';
-  nucleus.style.width = '70px';
-  nucleus.style.height = '70px';
   stage.appendChild(nucleus);
   $('exModel').appendChild(stage);
-  renderNucleusDots(nucleus, 2, 2);
-  renderElectronShells(stage, nucleus, 2);
+  const geo = renderNucleus(nucleus, 2, 2, 160 * 0.16);
+  renderElectronShells(stage, geo.outerRadius, 2);
 })();
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
