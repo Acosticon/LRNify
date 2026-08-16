@@ -37,10 +37,16 @@
     --electron: #2563eb;
     --electron-d:#1d4ed8;
 
-    --cat-metal:     #fef3c7;
-    --cat-metalloid: #ccfbf1;
-    --cat-nonmetal:  #dcfce7;
-    --cat-noble:     #ede9fe;
+    --cat-alkali:         #fecaca;
+    --cat-alkaline:       #fed7aa;
+    --cat-transition:     #fde68a;
+    --cat-posttransition: #bfdbfe;
+    --cat-metalloid:      #99f6e4;
+    --cat-nonmetal:       #bbf7d0;
+    --cat-halogen:        #d9f99d;
+    --cat-noble:          #ddd6fe;
+    --cat-lanthanide:     #fbcfe8;
+    --cat-actinide:       #e9d5ff;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -189,21 +195,22 @@
     border-radius: 50%; border: 2px dashed rgba(36,27,18,.25);
     pointer-events: none;
   }
+  /* Ingen kontur rundt kjernen — den skal ikke kunne forveksles med et
+     elektronskall. Bredde/høyde settes fra JS ut fra nukleontallet. */
   .nucleus {
     position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
-    width: clamp(72px, 20vw, 94px); height: clamp(72px, 20vw, 94px);
     border-radius: 50%;
-    background: rgba(36,27,18,.05);
-    border: 2px solid rgba(36,27,18,.22);
-    transition: transform .18s ease;
+    background: rgba(36,27,18,.045);
   }
   .nucleus.pulse { animation: nucleusPulse .3s ease; }
   @keyframes nucleusPulse { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.08); } }
 
+  /* Størrelse og kantbredde settes fra JS: kulene krymper når det blir
+     mange nukleoner, slik at de så vidt berører uten å overlappe. */
   .nuc-dot {
-    position: absolute; width: 10px; height: 10px; border-radius: 50%;
-    border: 1.5px solid var(--ink); transform: translate(-50%,-50%);
-    transition: left .2s ease, top .2s ease;
+    position: absolute; border-radius: 50%;
+    border-style: solid; border-color: var(--ink);
+    transform: translate(-50%,-50%);
   }
   .nuc-dot.p { background: var(--proton); }
   .nuc-dot.n { background: var(--neutron); }
@@ -305,34 +312,50 @@
   }
   .pt-close:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
   .pt-hint { font-weight: 700; font-size: .78rem; color: var(--muted); margin-bottom: 10px; }
-  .pt-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-bottom: 12px; }
-  .pt-legend-item { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: .74rem; color: var(--muted); }
-  .pt-swatch { width: 14px; height: 14px; border-radius: 4px; border: 2px solid var(--ink); display: inline-block; }
-  .pt-swatch.cat-metal     { background: var(--cat-metal); }
-  .pt-swatch.cat-metalloid { background: var(--cat-metalloid); }
-  .pt-swatch.cat-nonmetal  { background: var(--cat-nonmetal); }
-  .pt-swatch.cat-noble     { background: var(--cat-noble); }
+  .pt-legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 12px; }
+  .pt-legend-item { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: .72rem; color: var(--muted); }
+  .pt-swatch { width: 13px; height: 13px; border-radius: 4px; border: 2px solid var(--ink); display: inline-block; }
+  .pt-swatch.cat-alkali         { background: var(--cat-alkali); }
+  .pt-swatch.cat-alkaline       { background: var(--cat-alkaline); }
+  .pt-swatch.cat-transition     { background: var(--cat-transition); }
+  .pt-swatch.cat-posttransition { background: var(--cat-posttransition); }
+  .pt-swatch.cat-metalloid      { background: var(--cat-metalloid); }
+  .pt-swatch.cat-nonmetal       { background: var(--cat-nonmetal); }
+  .pt-swatch.cat-halogen        { background: var(--cat-halogen); }
+  .pt-swatch.cat-noble          { background: var(--cat-noble); }
+  .pt-swatch.cat-lanthanide     { background: var(--cat-lanthanide); }
+  .pt-swatch.cat-actinide       { background: var(--cat-actinide); }
+  .pt-legend-used { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: .72rem; color: var(--muted); }
+  .pt-legend-used .pt-used-swatch {
+    width: 13px; height: 13px; border-radius: 4px; background: var(--card);
+    border: 3px solid var(--yellow); box-shadow: 0 0 0 1.5px var(--ink);
+  }
 
-  /* Ekte periodesystem-oppsett: rutene plasseres på riktig gruppe- og
-     periode-kolonne/-rad (18 grupper × 3 perioder), med det
-     karakteristiske hullet i periode 2–3 der overgangsmetallene ville
-     stått. Det er dette som gir formen kjent fra et ekte periodesystem
-     — ikke bare en liste over grunnstoffer. */
+  /* Ekte periodesystem-oppsett: alle 118 grunnstoffer plasseres på sin
+     faktiske gruppe- og periode-kolonne/-rad (18 grupper × 7 perioder),
+     med det karakteristiske hullet der overgangsmetallene ville stått
+     i periode 1–3 og 6–7, og lantanoider/aktinoider som egne rader
+     under — akkurat som et ekte periodesystem, ikke en liste. */
   .pt-grid-scroll { overflow-x: auto; padding-bottom: 4px; }
   .pt-grid {
     display: grid;
     grid-template-columns: repeat(18, minmax(34px, 1fr));
-    grid-template-rows: repeat(3, minmax(40px, auto));
-    gap: 4px;
-    min-width: 650px;
+    grid-template-rows: repeat(7, minmax(32px, auto)) 12px repeat(2, minmax(32px, auto));
+    gap: 3px;
+    min-width: 680px;
   }
   .pt-cell {
-    border: 2px solid var(--ink); border-radius: 6px;
-    padding: 4px 2px; text-align: center;
+    border: 2px solid var(--ink); border-radius: 5px;
+    padding: 2px 1px; text-align: center;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
   }
-  .pt-cell .z { font-weight: 800; font-size: .58rem; color: var(--muted); align-self: flex-start; margin-left: 2px; }
-  .pt-cell .sym { font-family: 'Chewy', cursive; font-size: 1.1rem; margin-top: -4px; }
+  .pt-cell .z { font-weight: 800; font-size: .52rem; color: var(--muted); align-self: flex-start; margin-left: 2px; }
+  .pt-cell .sym { font-family: 'Chewy', cursive; font-size: .92rem; margin-top: -3px; }
+  .pt-cell.pt-used { border-color: var(--yellow); box-shadow: 0 0 0 1.5px var(--ink); }
+  .pt-cell.pt-placeholder {
+    border-style: dashed; border-color: rgba(36,27,18,.35); background: transparent;
+  }
+  .pt-placeholder .ph-label { font-weight: 800; font-size: .5rem; color: var(--muted); }
 
   @media (min-width: 900px) {
     .game-wrap { flex-direction: row; align-items: flex-start; gap: 32px; }
@@ -498,15 +521,22 @@
 <div class="pt-overlay" id="ptOverlay" hidden>
   <div class="pt-panel" role="dialog" aria-modal="true" aria-labelledby="ptTitle">
     <div class="pt-header">
-      <h2 id="ptTitle">Periodesystem — de 18 første grunnstoffene</h2>
+      <h2 id="ptTitle">Periodesystemet</h2>
       <button type="button" class="pt-close" id="ptClose" aria-label="Lukk periodesystemet">✕</button>
     </div>
-    <p class="pt-hint">Bla sidelengs for å se alle 18 grunnstoffene →</p>
+    <p class="pt-hint">Bla sidelengs for å se hele tabellen →</p>
     <div class="pt-legend">
-      <span class="pt-legend-item"><span class="pt-swatch cat-metal"></span>Metaller</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-alkali"></span>Alkalimetaller</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-alkaline"></span>Jordalkalimetaller</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-transition"></span>Overgangsmetaller</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-posttransition"></span>Andre metaller</span>
       <span class="pt-legend-item"><span class="pt-swatch cat-metalloid"></span>Metalloider</span>
       <span class="pt-legend-item"><span class="pt-swatch cat-nonmetal"></span>Ikke-metaller</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-halogen"></span>Halogener</span>
       <span class="pt-legend-item"><span class="pt-swatch cat-noble"></span>Edelgasser</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-lanthanide"></span>Lantanoider</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-actinide"></span>Aktinoider</span>
+      <span class="pt-legend-used"><span class="pt-used-swatch"></span>Brukt i spillet (1–18)</span>
     </div>
     <div class="pt-grid-scroll">
       <div class="pt-grid" id="ptGrid"></div>
@@ -528,30 +558,165 @@ const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').mat
    grunnstoffidentitet er alltid utledet fra denne listen — det
    finnes ingen separat "fasit" et annet sted.
    ═══════════════════════════════════════════════════ */
-/* group/period = posisjon i det ekte periodesystemet (18 grupper,
-   periode 1–3), cat = grunnstoffkategori brukt til fargelegging i
-   periodesystem-panelet (metall / metalloid / ikke-metall / edelgass). */
 const ELEMENTS = [
-  { z: 1,  symbol: 'H',  name: 'hydrogen',   mass: 1,  group: 1,  period: 1, cat: 'nonmetal' },
-  { z: 2,  symbol: 'He', name: 'helium',     mass: 4,  group: 18, period: 1, cat: 'noble' },
-  { z: 3,  symbol: 'Li', name: 'litium',     mass: 7,  group: 1,  period: 2, cat: 'metal' },
-  { z: 4,  symbol: 'Be', name: 'beryllium',  mass: 9,  group: 2,  period: 2, cat: 'metal' },
-  { z: 5,  symbol: 'B',  name: 'bor',        mass: 11, group: 13, period: 2, cat: 'metalloid' },
-  { z: 6,  symbol: 'C',  name: 'karbon',     mass: 12, group: 14, period: 2, cat: 'nonmetal' },
-  { z: 7,  symbol: 'N',  name: 'nitrogen',   mass: 14, group: 15, period: 2, cat: 'nonmetal' },
-  { z: 8,  symbol: 'O',  name: 'oksygen',    mass: 16, group: 16, period: 2, cat: 'nonmetal' },
-  { z: 9,  symbol: 'F',  name: 'fluor',      mass: 19, group: 17, period: 2, cat: 'nonmetal' },
-  { z: 10, symbol: 'Ne', name: 'neon',       mass: 20, group: 18, period: 2, cat: 'noble' },
-  { z: 11, symbol: 'Na', name: 'natrium',    mass: 23, group: 1,  period: 3, cat: 'metal' },
-  { z: 12, symbol: 'Mg', name: 'magnesium',  mass: 24, group: 2,  period: 3, cat: 'metal' },
-  { z: 13, symbol: 'Al', name: 'aluminium',  mass: 27, group: 13, period: 3, cat: 'metal' },
-  { z: 14, symbol: 'Si', name: 'silisium',   mass: 28, group: 14, period: 3, cat: 'metalloid' },
-  { z: 15, symbol: 'P',  name: 'fosfor',     mass: 31, group: 15, period: 3, cat: 'nonmetal' },
-  { z: 16, symbol: 'S',  name: 'svovel',     mass: 32, group: 16, period: 3, cat: 'nonmetal' },
-  { z: 17, symbol: 'Cl', name: 'klor',       mass: 35, group: 17, period: 3, cat: 'nonmetal' },
-  { z: 18, symbol: 'Ar', name: 'argon',      mass: 40, group: 18, period: 3, cat: 'noble' },
+  { z: 1,  symbol: 'H',  name: 'hydrogen',   mass: 1  },
+  { z: 2,  symbol: 'He', name: 'helium',     mass: 4  },
+  { z: 3,  symbol: 'Li', name: 'litium',     mass: 7  },
+  { z: 4,  symbol: 'Be', name: 'beryllium',  mass: 9  },
+  { z: 5,  symbol: 'B',  name: 'bor',        mass: 11 },
+  { z: 6,  symbol: 'C',  name: 'karbon',     mass: 12 },
+  { z: 7,  symbol: 'N',  name: 'nitrogen',   mass: 14 },
+  { z: 8,  symbol: 'O',  name: 'oksygen',    mass: 16 },
+  { z: 9,  symbol: 'F',  name: 'fluor',      mass: 19 },
+  { z: 10, symbol: 'Ne', name: 'neon',       mass: 20 },
+  { z: 11, symbol: 'Na', name: 'natrium',    mass: 23 },
+  { z: 12, symbol: 'Mg', name: 'magnesium',  mass: 24 },
+  { z: 13, symbol: 'Al', name: 'aluminium',  mass: 27 },
+  { z: 14, symbol: 'Si', name: 'silisium',   mass: 28 },
+  { z: 15, symbol: 'P',  name: 'fosfor',     mass: 31 },
+  { z: 16, symbol: 'S',  name: 'svovel',     mass: 32 },
+  { z: 17, symbol: 'Cl', name: 'klor',       mass: 35 },
+  { z: 18, symbol: 'Ar', name: 'argon',      mass: 40 },
 ];
 const elBySymbol = sym => ELEMENTS.find(e => e.symbol === sym);
+
+/* ══════════════════ FULLT PERIODESYSTEM (118 grunnstoffer) ══════════════════
+   Brukes kun av periodesystem-panelet (rent oppslagsverktøy) — selve
+   spilloppgavene bruker fortsatt bare ELEMENTS (grunnstoff 1–18) over.
+   group/period plasserer hver rute på sin faktiske posisjon (gruppe
+   1–18, periode 1–7); lantanoider/aktinoider (periode 6.5/7.5) tegnes
+   som egne rader under hovedgridet, slik ekte periodesystemer viser
+   dem. z og symbol er internasjonalt standardiserte (IUPAC) og har
+   ingen norsk variasjon. Kategori (cat) følger vanlig skoleinndeling:
+   alkalimetall / jordalkalimetall / overgangsmetall / annet metall /
+   metalloid / ikke-metall / halogen / edelgass / lantanoide / aktinoide. */
+const PERIODIC_TABLE = [
+  { z: 1,  symbol: 'H',  name: 'hydrogen',      group: 1,  period: 1,   cat: 'nonmetal' },
+  { z: 2,  symbol: 'He', name: 'helium',        group: 18, period: 1,   cat: 'noble' },
+  { z: 3,  symbol: 'Li', name: 'litium',        group: 1,  period: 2,   cat: 'alkali' },
+  { z: 4,  symbol: 'Be', name: 'beryllium',     group: 2,  period: 2,   cat: 'alkaline' },
+  { z: 5,  symbol: 'B',  name: 'bor',           group: 13, period: 2,   cat: 'metalloid' },
+  { z: 6,  symbol: 'C',  name: 'karbon',        group: 14, period: 2,   cat: 'nonmetal' },
+  { z: 7,  symbol: 'N',  name: 'nitrogen',      group: 15, period: 2,   cat: 'nonmetal' },
+  { z: 8,  symbol: 'O',  name: 'oksygen',       group: 16, period: 2,   cat: 'nonmetal' },
+  { z: 9,  symbol: 'F',  name: 'fluor',         group: 17, period: 2,   cat: 'halogen' },
+  { z: 10, symbol: 'Ne', name: 'neon',          group: 18, period: 2,   cat: 'noble' },
+  { z: 11, symbol: 'Na', name: 'natrium',       group: 1,  period: 3,   cat: 'alkali' },
+  { z: 12, symbol: 'Mg', name: 'magnesium',     group: 2,  period: 3,   cat: 'alkaline' },
+  { z: 13, symbol: 'Al', name: 'aluminium',     group: 13, period: 3,   cat: 'posttransition' },
+  { z: 14, symbol: 'Si', name: 'silisium',      group: 14, period: 3,   cat: 'metalloid' },
+  { z: 15, symbol: 'P',  name: 'fosfor',        group: 15, period: 3,   cat: 'nonmetal' },
+  { z: 16, symbol: 'S',  name: 'svovel',        group: 16, period: 3,   cat: 'nonmetal' },
+  { z: 17, symbol: 'Cl', name: 'klor',          group: 17, period: 3,   cat: 'halogen' },
+  { z: 18, symbol: 'Ar', name: 'argon',         group: 18, period: 3,   cat: 'noble' },
+  { z: 19, symbol: 'K',  name: 'kalium',        group: 1,  period: 4,   cat: 'alkali' },
+  { z: 20, symbol: 'Ca', name: 'kalsium',       group: 2,  period: 4,   cat: 'alkaline' },
+  { z: 21, symbol: 'Sc', name: 'skandium',      group: 3,  period: 4,   cat: 'transition' },
+  { z: 22, symbol: 'Ti', name: 'titan',         group: 4,  period: 4,   cat: 'transition' },
+  { z: 23, symbol: 'V',  name: 'vanadium',      group: 5,  period: 4,   cat: 'transition' },
+  { z: 24, symbol: 'Cr', name: 'krom',          group: 6,  period: 4,   cat: 'transition' },
+  { z: 25, symbol: 'Mn', name: 'mangan',        group: 7,  period: 4,   cat: 'transition' },
+  { z: 26, symbol: 'Fe', name: 'jern',          group: 8,  period: 4,   cat: 'transition' },
+  { z: 27, symbol: 'Co', name: 'kobolt',        group: 9,  period: 4,   cat: 'transition' },
+  { z: 28, symbol: 'Ni', name: 'nikkel',        group: 10, period: 4,   cat: 'transition' },
+  { z: 29, symbol: 'Cu', name: 'kobber',        group: 11, period: 4,   cat: 'transition' },
+  { z: 30, symbol: 'Zn', name: 'sink',          group: 12, period: 4,   cat: 'transition' },
+  { z: 31, symbol: 'Ga', name: 'gallium',       group: 13, period: 4,   cat: 'posttransition' },
+  { z: 32, symbol: 'Ge', name: 'germanium',     group: 14, period: 4,   cat: 'metalloid' },
+  { z: 33, symbol: 'As', name: 'arsen',         group: 15, period: 4,   cat: 'metalloid' },
+  { z: 34, symbol: 'Se', name: 'selen',         group: 16, period: 4,   cat: 'nonmetal' },
+  { z: 35, symbol: 'Br', name: 'brom',          group: 17, period: 4,   cat: 'halogen' },
+  { z: 36, symbol: 'Kr', name: 'krypton',       group: 18, period: 4,   cat: 'noble' },
+  { z: 37, symbol: 'Rb', name: 'rubidium',      group: 1,  period: 5,   cat: 'alkali' },
+  { z: 38, symbol: 'Sr', name: 'strontium',     group: 2,  period: 5,   cat: 'alkaline' },
+  { z: 39, symbol: 'Y',  name: 'yttrium',       group: 3,  period: 5,   cat: 'transition' },
+  { z: 40, symbol: 'Zr', name: 'zirkonium',     group: 4,  period: 5,   cat: 'transition' },
+  { z: 41, symbol: 'Nb', name: 'niob',          group: 5,  period: 5,   cat: 'transition' },
+  { z: 42, symbol: 'Mo', name: 'molybden',      group: 6,  period: 5,   cat: 'transition' },
+  { z: 43, symbol: 'Tc', name: 'teknetium',     group: 7,  period: 5,   cat: 'transition' },
+  { z: 44, symbol: 'Ru', name: 'ruthenium',     group: 8,  period: 5,   cat: 'transition' },
+  { z: 45, symbol: 'Rh', name: 'rhodium',       group: 9,  period: 5,   cat: 'transition' },
+  { z: 46, symbol: 'Pd', name: 'palladium',     group: 10, period: 5,   cat: 'transition' },
+  { z: 47, symbol: 'Ag', name: 'sølv',          group: 11, period: 5,   cat: 'transition' },
+  { z: 48, symbol: 'Cd', name: 'kadmium',       group: 12, period: 5,   cat: 'transition' },
+  { z: 49, symbol: 'In', name: 'indium',        group: 13, period: 5,   cat: 'posttransition' },
+  { z: 50, symbol: 'Sn', name: 'tinn',          group: 14, period: 5,   cat: 'posttransition' },
+  { z: 51, symbol: 'Sb', name: 'antimon',       group: 15, period: 5,   cat: 'metalloid' },
+  { z: 52, symbol: 'Te', name: 'tellur',        group: 16, period: 5,   cat: 'metalloid' },
+  { z: 53, symbol: 'I',  name: 'jod',           group: 17, period: 5,   cat: 'halogen' },
+  { z: 54, symbol: 'Xe', name: 'xenon',         group: 18, period: 5,   cat: 'noble' },
+  { z: 55, symbol: 'Cs', name: 'cesium',        group: 1,  period: 6,   cat: 'alkali' },
+  { z: 56, symbol: 'Ba', name: 'barium',        group: 2,  period: 6,   cat: 'alkaline' },
+  { z: 72, symbol: 'Hf', name: 'hafnium',       group: 4,  period: 6,   cat: 'transition' },
+  { z: 73, symbol: 'Ta', name: 'tantal',        group: 5,  period: 6,   cat: 'transition' },
+  { z: 74, symbol: 'W',  name: 'wolfram',       group: 6,  period: 6,   cat: 'transition' },
+  { z: 75, symbol: 'Re', name: 'rhenium',       group: 7,  period: 6,   cat: 'transition' },
+  { z: 76, symbol: 'Os', name: 'osmium',        group: 8,  period: 6,   cat: 'transition' },
+  { z: 77, symbol: 'Ir', name: 'iridium',       group: 9,  period: 6,   cat: 'transition' },
+  { z: 78, symbol: 'Pt', name: 'platina',       group: 10, period: 6,   cat: 'transition' },
+  { z: 79, symbol: 'Au', name: 'gull',          group: 11, period: 6,   cat: 'transition' },
+  { z: 80, symbol: 'Hg', name: 'kvikksølv',     group: 12, period: 6,   cat: 'transition' },
+  { z: 81, symbol: 'Tl', name: 'thallium',      group: 13, period: 6,   cat: 'posttransition' },
+  { z: 82, symbol: 'Pb', name: 'bly',           group: 14, period: 6,   cat: 'posttransition' },
+  { z: 83, symbol: 'Bi', name: 'vismut',        group: 15, period: 6,   cat: 'posttransition' },
+  { z: 84, symbol: 'Po', name: 'polonium',      group: 16, period: 6,   cat: 'posttransition' },
+  { z: 85, symbol: 'At', name: 'astat',         group: 17, period: 6,   cat: 'halogen' },
+  { z: 86, symbol: 'Rn', name: 'radon',         group: 18, period: 6,   cat: 'noble' },
+  { z: 57, symbol: 'La', name: 'lantan',        group: 3,  period: 6.5, cat: 'lanthanide' },
+  { z: 58, symbol: 'Ce', name: 'cerium',        group: 4,  period: 6.5, cat: 'lanthanide' },
+  { z: 59, symbol: 'Pr', name: 'praseodym',     group: 5,  period: 6.5, cat: 'lanthanide' },
+  { z: 60, symbol: 'Nd', name: 'neodym',        group: 6,  period: 6.5, cat: 'lanthanide' },
+  { z: 61, symbol: 'Pm', name: 'promethium',    group: 7,  period: 6.5, cat: 'lanthanide' },
+  { z: 62, symbol: 'Sm', name: 'samarium',      group: 8,  period: 6.5, cat: 'lanthanide' },
+  { z: 63, symbol: 'Eu', name: 'europium',      group: 9,  period: 6.5, cat: 'lanthanide' },
+  { z: 64, symbol: 'Gd', name: 'gadolinium',    group: 10, period: 6.5, cat: 'lanthanide' },
+  { z: 65, symbol: 'Tb', name: 'terbium',       group: 11, period: 6.5, cat: 'lanthanide' },
+  { z: 66, symbol: 'Dy', name: 'dysprosium',    group: 12, period: 6.5, cat: 'lanthanide' },
+  { z: 67, symbol: 'Ho', name: 'holmium',       group: 13, period: 6.5, cat: 'lanthanide' },
+  { z: 68, symbol: 'Er', name: 'erbium',        group: 14, period: 6.5, cat: 'lanthanide' },
+  { z: 69, symbol: 'Tm', name: 'thulium',       group: 15, period: 6.5, cat: 'lanthanide' },
+  { z: 70, symbol: 'Yb', name: 'ytterbium',     group: 16, period: 6.5, cat: 'lanthanide' },
+  { z: 71, symbol: 'Lu', name: 'lutetium',      group: 17, period: 6.5, cat: 'lanthanide' },
+  { z: 87, symbol: 'Fr', name: 'francium',      group: 1,  period: 7,   cat: 'alkali' },
+  { z: 88, symbol: 'Ra', name: 'radium',        group: 2,  period: 7,   cat: 'alkaline' },
+  { z: 104,symbol: 'Rf', name: 'rutherfordium', group: 4,  period: 7,   cat: 'transition' },
+  { z: 105,symbol: 'Db', name: 'dubnium',       group: 5,  period: 7,   cat: 'transition' },
+  { z: 106,symbol: 'Sg', name: 'seaborgium',    group: 6,  period: 7,   cat: 'transition' },
+  { z: 107,symbol: 'Bh', name: 'bohrium',       group: 7,  period: 7,   cat: 'transition' },
+  { z: 108,symbol: 'Hs', name: 'hassium',       group: 8,  period: 7,   cat: 'transition' },
+  { z: 109,symbol: 'Mt', name: 'meitnerium',    group: 9,  period: 7,   cat: 'transition' },
+  { z: 110,symbol: 'Ds', name: 'darmstadtium',  group: 10, period: 7,   cat: 'transition' },
+  { z: 111,symbol: 'Rg', name: 'roentgenium',   group: 11, period: 7,   cat: 'transition' },
+  { z: 112,symbol: 'Cn', name: 'copernicium',   group: 12, period: 7,   cat: 'transition' },
+  { z: 113,symbol: 'Nh', name: 'nihonium',      group: 13, period: 7,   cat: 'posttransition' },
+  { z: 114,symbol: 'Fl', name: 'flerovium',     group: 14, period: 7,   cat: 'posttransition' },
+  { z: 115,symbol: 'Mc', name: 'moscovium',     group: 15, period: 7,   cat: 'posttransition' },
+  { z: 116,symbol: 'Lv', name: 'livermorium',   group: 16, period: 7,   cat: 'posttransition' },
+  { z: 117,symbol: 'Ts', name: 'tenness',       group: 17, period: 7,   cat: 'halogen' },
+  { z: 118,symbol: 'Og', name: 'oganesson',     group: 18, period: 7,   cat: 'noble' },
+  { z: 89, symbol: 'Ac', name: 'aktinium',      group: 3,  period: 7.5, cat: 'actinide' },
+  { z: 90, symbol: 'Th', name: 'thorium',       group: 4,  period: 7.5, cat: 'actinide' },
+  { z: 91, symbol: 'Pa', name: 'protaktinium',  group: 5,  period: 7.5, cat: 'actinide' },
+  { z: 92, symbol: 'U',  name: 'uran',          group: 6,  period: 7.5, cat: 'actinide' },
+  { z: 93, symbol: 'Np', name: 'neptunium',     group: 7,  period: 7.5, cat: 'actinide' },
+  { z: 94, symbol: 'Pu', name: 'plutonium',     group: 8,  period: 7.5, cat: 'actinide' },
+  { z: 95, symbol: 'Am', name: 'americium',     group: 9,  period: 7.5, cat: 'actinide' },
+  { z: 96, symbol: 'Cm', name: 'curium',        group: 10, period: 7.5, cat: 'actinide' },
+  { z: 97, symbol: 'Bk', name: 'berkelium',     group: 11, period: 7.5, cat: 'actinide' },
+  { z: 98, symbol: 'Cf', name: 'californium',   group: 12, period: 7.5, cat: 'actinide' },
+  { z: 99, symbol: 'Es', name: 'einsteinium',   group: 13, period: 7.5, cat: 'actinide' },
+  { z: 100,symbol: 'Fm', name: 'fermium',       group: 14, period: 7.5, cat: 'actinide' },
+  { z: 101,symbol: 'Md', name: 'mendelevium',   group: 15, period: 7.5, cat: 'actinide' },
+  { z: 102,symbol: 'No', name: 'nobelium',      group: 16, period: 7.5, cat: 'actinide' },
+  { z: 103,symbol: 'Lr', name: 'lawrencium',    group: 17, period: 7.5, cat: 'actinide' },
+];
+/* Rad i CSS-gridet: periode 1–7 -> rad 1–7, én tom rad som luft, deretter
+   lantanoid- og aktinoiderad nederst (samme mønster som ekte tabeller). */
+function ptGridRow(period) {
+  if (period === 6.5) return 9;
+  if (period === 7.5) return 10;
+  return period;
+}
 
 /* Kuratert utvalg av vanlige ioner (ladning aldri over ±3). */
 const CATIONS = [
@@ -571,7 +736,9 @@ const ANIONS = [
 ];
 
 const MAX_P = 18, MAX_N = 22, MAX_E = 21;
-const SHELL_MAX_FIRST = 2, SHELL_MAX_REST = 8, MAX_SHELLS = 4;
+const SHELL_CAPACITIES = [2, 8, 8, 8];
+const MAX_SHELLS = SHELL_CAPACITIES.length;
+const NUC_DOT_MAX = 7, NUC_DOT_MIN = 2.6, E_DOT_RADIUS = 5.5;
 
 function shuffled(arr) {
   const a = arr.slice();
@@ -679,62 +846,113 @@ function buildSession() {
    alltid i statuspanelet under (modellen er aria-hidden). */
 const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
-function sunflowerPoint(i, n, R, phase, dir) {
+/* Solsikkefordeling: n punkter jevnt utover en sirkelflate med
+   senterradius R. Brukes til å pakke nukleonene i kjernen. */
+function sunflowerPoint(i, n, R) {
   const r = R * Math.sqrt((i + 0.5) / n);
-  const theta = dir * i * GOLDEN_ANGLE + phase;
+  const theta = i * GOLDEN_ANGLE;
   return { x: r * Math.cos(theta), y: r * Math.sin(theta) };
 }
 
+/* Fyllingsregelen i den forenklede skallmodellen: 2 i innerste skall,
+   deretter 8 per skall. Fylles innenfra og ut — et nytt skall starter
+   først når det forrige er fullt. Dekker 0–21 elektroner (maks i
+   spillet) innenfor fire skall. */
 function computeShells(total) {
   const shells = [];
-  let remaining = total, cap = SHELL_MAX_FIRST;
-  while (remaining > 0) {
-    const take = Math.min(cap, remaining);
+  let remaining = total;
+  for (let i = 0; i < MAX_SHELLS && remaining > 0; i++) {
+    const take = Math.min(SHELL_CAPACITIES[i], remaining);
     shells.push(take);
     remaining -= take;
-    cap = SHELL_MAX_REST;
   }
   return shells;
 }
 
-function renderNucleusDots(nucleusEl, protons, neutrons) {
-  Array.from(nucleusEl.querySelectorAll('.nuc-dot')).forEach(d => d.remove());
-  const half = (nucleusEl.clientWidth || 84) / 2;
-  const R = Math.max(half - 7, 4);
-  const frag = document.createDocumentFragment();
-  function place(count, cls, phase, dir) {
-    for (let i = 0; i < count; i++) {
-      const pt = sunflowerPoint(i, count, R, phase, dir);
-      const dot = document.createElement('div');
-      dot.className = 'nuc-dot ' + cls;
-      dot.style.left = (half + pt.x) + 'px';
-      dot.style.top = (half + pt.y) + 'px';
-      frag.appendChild(dot);
-    }
+/* Fordeler p protoner og n nøytroner utover de (p+n) plassene i klumpen
+   slik at fargene blandes jevnt gjennom hele kjernen. Uten dette (én
+   solsikke per partikkeltype) ville de to settene ligge som to lag i
+   samme flate og delvis dekke hverandre. */
+function nucleonTypes(protons, neutrons) {
+  const total = protons + neutrons;
+  const types = new Array(total);
+  let acc = 0, placed = 0;
+  for (let i = 0; i < total; i++) {
+    acc += protons;
+    if (acc >= total && placed < protons) { types[i] = 'p'; acc -= total; placed++; }
+    else types[i] = 'n';
   }
-  if (protons > 0) place(protons, 'p', 0, 1);
-  if (neutrons > 0) place(neutrons, 'n', Math.PI / 3, -1);
-  nucleusEl.appendChild(frag);
+  return types;
 }
 
-function renderElectronShells(stageEl, nucleusEl, electrons) {
+/* Kulestørrelse og klumpstørrelse utledes av nukleontallet, slik at
+   kulene så vidt berører hverandre uten å overlappe: i en solsikke med
+   n punkter over senterradius Rc er typisk naboavstand ≈ Rc·√(π/n), så
+   kuleradius r ≈ 0,84·Rc/√n. Løst for r med Rc + r ≤ maxRadius vokser
+   klumpen med √(antall) — som en flate som fylles, ikke lineært. */
+/* Empirisk kalibrert mot faktisk minste naboavstand i solsikka (den er
+   litt kortere enn den gjennomsnittlige avstanden formelen anslår), slik
+   at kulene så vidt berører hverandre i stedet for å overlappe. */
+const NUC_PACK = 0.77;
+function nucleusGeometry(total, maxRadius) {
+  if (total <= 0) return { dotRadius: 0, centerRadius: 0, outerRadius: 0 };
+  let dotRadius = NUC_PACK * maxRadius / (Math.sqrt(total) + NUC_PACK);
+  dotRadius = Math.max(NUC_DOT_MIN, Math.min(NUC_DOT_MAX, dotRadius));
+  const centerRadius = total === 1 ? 0 : dotRadius * Math.sqrt(total) / NUC_PACK;
+  return { dotRadius, centerRadius, outerRadius: centerRadius + dotRadius };
+}
+
+function renderNucleus(nucleusEl, protons, neutrons, maxRadius) {
+  nucleusEl.innerHTML = '';
+  const total = protons + neutrons;
+  const geo = nucleusGeometry(total, maxRadius);
+  const size = Math.max(geo.outerRadius * 2, 16);
+  nucleusEl.style.width = size + 'px';
+  nucleusEl.style.height = size + 'px';
+  if (total === 0) return geo;
+
+  const types = nucleonTypes(protons, neutrons);
+  const half = size / 2;
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < total; i++) {
+    /* Ett enkelt nukleon hører hjemme midt i kjernen, ikke på
+       solsikkens første radius. */
+    const pt = total === 1 ? { x: 0, y: 0 } : sunflowerPoint(i, total, geo.centerRadius);
+    const dot = document.createElement('div');
+    dot.className = 'nuc-dot ' + types[i];
+    dot.style.width = dot.style.height = (geo.dotRadius * 2) + 'px';
+    dot.style.borderWidth = Math.max(1, geo.dotRadius * 0.28) + 'px';
+    dot.style.left = (half + pt.x) + 'px';
+    dot.style.top = (half + pt.y) + 'px';
+    frag.appendChild(dot);
+  }
+  nucleusEl.appendChild(frag);
+  return geo;
+}
+
+function renderElectronShells(stageEl, nucleusOuterRadius, electrons) {
   Array.from(stageEl.querySelectorAll('.shell-ring, .e-dot')).forEach(el => el.remove());
   const shells = computeShells(electrons);
-  const stageSize = stageEl.clientWidth || 260;
-  const half = stageSize / 2;
-  const nucleusHalf = (nucleusEl.clientWidth || 84) / 2;
-  const maxRadius = half - 14;
-  const gap = (maxRadius - nucleusHalf) / MAX_SHELLS;
+  const half = (stageEl.clientWidth || 260) / 2;
+  const maxRingRadius = half - E_DOT_RADIUS - 3;
+  const inner = nucleusOuterRadius + 8;
+  /* Delt på MAX_SHELLS (ikke på antall skall som faktisk tegnes), slik
+     at ringavstanden er den samme uansett hvor mange skall atomet har. */
+  const gap = (maxRingRadius - inner) / MAX_SHELLS;
   const frag = document.createDocumentFragment();
+
   shells.forEach((count, si) => {
-    const radius = nucleusHalf + gap * (si + 1);
+    const radius = inner + gap * (si + 1);
     const ring = document.createElement('div');
     ring.className = 'shell-ring';
-    ring.style.width = (radius * 2) + 'px';
-    ring.style.height = (radius * 2) + 'px';
+    ring.style.width = ring.style.height = (radius * 2) + 'px';
     frag.appendChild(ring);
+    /* Innerste skall starter rett opp (kl. 12); hvert skall utover
+       roteres 30° videre, slik at elektroner i ulike skall ikke stiller
+       seg opp på samme eike ut fra sentrum. */
+    const offset = -Math.PI / 2 + si * (Math.PI / 6);
     for (let i = 0; i < count; i++) {
-      const angle = (2 * Math.PI * i) / count - Math.PI / 2;
+      const angle = offset + (2 * Math.PI * i) / count;
       const dot = document.createElement('div');
       dot.className = 'e-dot' + (REDUCED_MOTION ? '' : ' enter');
       dot.style.left = (half + radius * Math.cos(angle)) + 'px';
@@ -759,8 +977,11 @@ function renderAtomModel(protons, neutrons, electrons) {
   }
   prevRenderedMass = mass;
 
-  renderNucleusDots(nucleusEl, protons, neutrons);
-  renderElectronShells(stageEl, nucleusEl, electrons);
+  /* Kjernen får maks ~1/3 av radien ut til ytterste skall, slik at
+     størrelsesforholdet mellom kjerne og skall holder seg lesbart. */
+  const maxNucleusRadius = (stageEl.clientWidth || 260) * 0.16;
+  const geo = renderNucleus(nucleusEl, protons, neutrons, maxNucleusRadius);
+  renderElectronShells(stageEl, geo.outerRadius, electrons);
 }
 window.addEventListener('resize', () => { renderAtomModel(protons, neutrons, electrons); });
 
@@ -1004,26 +1225,47 @@ $('btnStart').addEventListener('click', startGame);
 $('btnAgain').addEventListener('click', startGame);
 
 /* ══════════════════ PERIODESYSTEM-PANEL ══════════════════
-   Rutene plasseres på sin faktiske gruppe (1–18) og periode (1–3) i
-   CSS-gridet, slik at panelet får den kjente periodesystem-formen —
-   med hullet i periode 2 og 3 der overgangsmetallene ville stått —
-   i stedet for en jevn liste over 18 grunnstoffer. */
-const CAT_LABEL = { metal: 'metall', metalloid: 'metalloid', nonmetal: 'ikke-metall', noble: 'edelgass' };
+   Alle 118 grunnstoffer plasseres på sin faktiske gruppe (1–18) og
+   periode (1–7) i CSS-gridet — inkludert hullet i periode 4–7 der
+   overgangsmetallene sitter, og lantanoider/aktinoider som egne rader
+   under hovedtabellen, akkurat som et ekte periodesystem. Grunnstoff
+   1–18 (de spillet faktisk bruker) får en gul ramme. */
+const CAT_LABEL = {
+  alkali: 'alkalimetall', alkaline: 'jordalkalimetall', transition: 'overgangsmetall',
+  posttransition: 'annet metall', metalloid: 'metalloid', nonmetal: 'ikke-metall',
+  halogen: 'halogen', noble: 'edelgass', lanthanide: 'lantanoide', actinide: 'aktinoide'
+};
 (function buildPeriodicTable() {
   const grid = $('ptGrid');
-  ELEMENTS.forEach(el => {
+  const frag = document.createDocumentFragment();
+
+  PERIODIC_TABLE.forEach(el => {
     const cell = document.createElement('div');
-    cell.className = 'pt-cell cat-' + el.cat;
+    cell.className = 'pt-cell cat-' + el.cat + (el.z <= 18 ? ' pt-used' : '');
     cell.style.gridColumn = String(el.group);
-    cell.style.gridRow = String(el.period);
+    cell.style.gridRow = String(ptGridRow(el.period));
     cell.style.background = 'var(--cat-' + el.cat + ')';
     cell.title = el.name + ' (' + CAT_LABEL[el.cat] + ')';
     cell.innerHTML =
       '<span class="z">' + el.z + '</span>' +
       '<span class="sym">' + el.symbol + '</span>' +
       '<span class="sr-only">' + el.name + ', ' + CAT_LABEL[el.cat] + '</span>';
-    grid.appendChild(cell);
+    frag.appendChild(cell);
   });
+
+  /* Plassholderrutene i periode 6/7, gruppe 3 — peker ned til
+     lantanoid-/aktinoiderekka i stedet for å vise et enkeltgrunnstoff. */
+  [[6, '57–71'], [7, '89–103']].forEach(([period, label]) => {
+    const ph = document.createElement('div');
+    ph.className = 'pt-cell pt-placeholder';
+    ph.style.gridColumn = '3';
+    ph.style.gridRow = String(period);
+    ph.innerHTML = '<span class="ph-label">' + label + '</span>';
+    ph.setAttribute('aria-hidden', 'true');
+    frag.appendChild(ph);
+  });
+
+  grid.appendChild(frag);
 })();
 
 let ptOpenerEl = null;
@@ -1051,12 +1293,10 @@ document.addEventListener('keydown', e => {
   stage.style.height = '160px';
   const nucleus = document.createElement('div');
   nucleus.className = 'nucleus';
-  nucleus.style.width = '70px';
-  nucleus.style.height = '70px';
   stage.appendChild(nucleus);
   $('exModel').appendChild(stage);
-  renderNucleusDots(nucleus, 2, 2);
-  renderElectronShells(stage, nucleus, 2);
+  const geo = renderNucleus(nucleus, 2, 2, 160 * 0.16);
+  renderElectronShells(stage, geo.outerRadius, 2);
 })();
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
