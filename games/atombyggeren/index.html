@@ -30,12 +30,17 @@
     --green: #16a34a;
     --red:   #b91c1c;
 
-    --proton:   #2563eb;
-    --proton-d: #1d4ed8;
+    --proton:   #dc2626;
+    --proton-d: #b91c1c;
     --neutron:  #64748b;
     --neutron-d:#475569;
-    --electron: #d97706;
-    --electron-d:#b45309;
+    --electron: #2563eb;
+    --electron-d:#1d4ed8;
+
+    --cat-metal:     #fef3c7;
+    --cat-metalloid: #ccfbf1;
+    --cat-nonmetal:  #dcfce7;
+    --cat-noble:     #ede9fe;
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; }
@@ -167,31 +172,41 @@
   .fact-label { color: var(--muted); font-weight: 700; }
   .fact-value { font-family: 'Chewy', cursive; }
 
-  /* ══ ATOMMODELL ══ */
+  /* ══ ATOMMODELL ══
+     p⁺ = røde kuler, n⁰ = grå kuler (pakket i kjernen med en enkel
+     "solsikke"-fordeling), e⁻ = små blå kuler i konsentriske skall
+     (2 i innerste skall, deretter 8 per skall). Ingen tall tegnes inn
+     i selve modellen — de fullstendige tallene står i statuspanelet
+     under, så modellen kan være rent visuell. */
   .atom-model-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-  .electron-ring {
+  .atom-stage {
     position: relative;
-    width: clamp(170px, 46vw, 220px); height: clamp(170px, 46vw, 220px);
-    border-radius: 50%;
-    border: 3px dashed rgba(36,27,18,.28);
-    display: flex; align-items: center; justify-content: center;
-    transition: box-shadow .25s ease;
+    width: clamp(220px, 60vw, 290px); height: clamp(220px, 60vw, 290px);
+    margin: 0 auto;
   }
-  .electron-ring.cloud {
-    box-shadow: inset 0 0 0 12px rgba(217,119,6,.14);
+  .shell-ring {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    border-radius: 50%; border: 2px dashed rgba(36,27,18,.25);
+    pointer-events: none;
   }
   .nucleus {
-    width: clamp(84px, 26vw, 112px); height: clamp(84px, 26vw, 112px);
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+    width: clamp(72px, 20vw, 94px); height: clamp(72px, 20vw, 94px);
     border-radius: 50%;
-    background: linear-gradient(160deg, var(--proton) 0 50%, var(--neutron) 50% 100%);
-    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    color: #fff; font-weight: 900; text-align: center; gap: 2px;
+    background: rgba(36,27,18,.05);
+    border: 2px solid rgba(36,27,18,.22);
     transition: transform .18s ease;
   }
   .nucleus.pulse { animation: nucleusPulse .3s ease; }
-  @keyframes nucleusPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-  .nucleus-row { font-size: clamp(.72rem,3vw,.88rem); text-shadow: 0 1px 2px rgba(0,0,0,.35); line-height: 1.3; }
+  @keyframes nucleusPulse { 0%,100% { transform: translate(-50%,-50%) scale(1); } 50% { transform: translate(-50%,-50%) scale(1.08); } }
+
+  .nuc-dot {
+    position: absolute; width: 10px; height: 10px; border-radius: 50%;
+    border: 1.5px solid var(--ink); transform: translate(-50%,-50%);
+    transition: left .2s ease, top .2s ease;
+  }
+  .nuc-dot.p { background: var(--proton); }
+  .nuc-dot.n { background: var(--neutron); }
 
   .e-dot {
     position: absolute; width: 11px; height: 11px; border-radius: 50%;
@@ -202,9 +217,7 @@
   .e-dot.enter { animation: dotEnter .22s ease; }
   @keyframes dotEnter { from { opacity: 0; transform: translate(-50%,-50%) scale(.3); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
 
-  .electron-count { font-family: 'Chewy', cursive; font-size: 1rem; color: var(--electron-d); }
-
-  .atom-model-wrap.correct-pulse .electron-ring { box-shadow: 0 0 0 6px rgba(22,163,74,.35); }
+  .atom-model-wrap.correct-pulse .atom-stage { box-shadow: 0 0 0 6px rgba(22,163,74,.35); border-radius: 50%; }
 
   /* ══ STATUS ══ */
   .status-panel {
@@ -279,7 +292,7 @@
   .pt-panel {
     background: var(--cream); border: 4px solid var(--ink); border-radius: 16px 16px 0 0;
     box-shadow: 0 -6px 0 rgba(0,0,0,.15);
-    width: 100%; max-width: 640px; max-height: 82vh; overflow-y: auto;
+    width: 100%; max-width: 700px; max-height: 82vh; overflow-y: auto;
     padding: 18px 18px 26px;
     animation: ptSlideUp .22s ease;
   }
@@ -291,22 +304,42 @@
     border-radius: 10px; font-size: 1.2rem; font-weight: 900; box-shadow: 0 3px 0 var(--ink);
   }
   .pt-close:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+  .pt-hint { font-weight: 700; font-size: .78rem; color: var(--muted); margin-bottom: 10px; }
+  .pt-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-bottom: 12px; }
+  .pt-legend-item { display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: .74rem; color: var(--muted); }
+  .pt-swatch { width: 14px; height: 14px; border-radius: 4px; border: 2px solid var(--ink); display: inline-block; }
+  .pt-swatch.cat-metal     { background: var(--cat-metal); }
+  .pt-swatch.cat-metalloid { background: var(--cat-metalloid); }
+  .pt-swatch.cat-nonmetal  { background: var(--cat-nonmetal); }
+  .pt-swatch.cat-noble     { background: var(--cat-noble); }
+
+  /* Ekte periodesystem-oppsett: rutene plasseres på riktig gruppe- og
+     periode-kolonne/-rad (18 grupper × 3 perioder), med det
+     karakteristiske hullet i periode 2–3 der overgangsmetallene ville
+     stått. Det er dette som gir formen kjent fra et ekte periodesystem
+     — ikke bare en liste over grunnstoffer. */
+  .pt-grid-scroll { overflow-x: auto; padding-bottom: 4px; }
   .pt-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(78px,1fr)); gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(18, minmax(34px, 1fr));
+    grid-template-rows: repeat(3, minmax(40px, auto));
+    gap: 4px;
+    min-width: 650px;
   }
   .pt-cell {
-    background: var(--card); border: 2px solid var(--ink); border-radius: 8px;
-    padding: 6px 4px; text-align: center; display: flex; flex-direction: column; gap: 1px;
+    border: 2px solid var(--ink); border-radius: 6px;
+    padding: 4px 2px; text-align: center;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0;
   }
-  .pt-cell .z { font-weight: 800; font-size: .68rem; color: var(--muted); }
-  .pt-cell .sym { font-family: 'Chewy', cursive; font-size: 1.15rem; }
-  .pt-cell .nm { font-weight: 700; font-size: .62rem; color: var(--muted); }
+  .pt-cell .z { font-weight: 800; font-size: .58rem; color: var(--muted); align-self: flex-start; margin-left: 2px; }
+  .pt-cell .sym { font-family: 'Chewy', cursive; font-size: 1.1rem; margin-top: -4px; }
 
   @media (min-width: 900px) {
     .game-wrap { flex-direction: row; align-items: flex-start; gap: 32px; }
     .col-left, .col-right { flex: 1; }
     .pt-overlay { align-items: center; }
     .pt-panel { border-radius: 16px; }
+    .pt-hint { display: none; }
   }
 
   /* ══ SLUTTSKJERM ══ */
@@ -379,13 +412,9 @@
       </div>
 
       <div class="atom-model-wrap" id="atomModelWrap">
-        <div class="electron-ring" id="electronRing" aria-hidden="true">
-          <div class="nucleus" id="nucleus">
-            <span class="nucleus-row">p⁺ <span id="pValModel">0</span></span>
-            <span class="nucleus-row">n⁰ <span id="nValModel">0</span></span>
-          </div>
+        <div class="atom-stage" id="atomStage" aria-hidden="true">
+          <div class="nucleus" id="nucleus"></div>
         </div>
-        <div class="electron-count" aria-hidden="true">e⁻ <span id="eValModel">0</span></div>
       </div>
     </div>
 
@@ -472,7 +501,16 @@
       <h2 id="ptTitle">Periodesystem — de 18 første grunnstoffene</h2>
       <button type="button" class="pt-close" id="ptClose" aria-label="Lukk periodesystemet">✕</button>
     </div>
-    <div class="pt-grid" id="ptGrid"></div>
+    <p class="pt-hint">Bla sidelengs for å se alle 18 grunnstoffene →</p>
+    <div class="pt-legend">
+      <span class="pt-legend-item"><span class="pt-swatch cat-metal"></span>Metaller</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-metalloid"></span>Metalloider</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-nonmetal"></span>Ikke-metaller</span>
+      <span class="pt-legend-item"><span class="pt-swatch cat-noble"></span>Edelgasser</span>
+    </div>
+    <div class="pt-grid-scroll">
+      <div class="pt-grid" id="ptGrid"></div>
+    </div>
   </div>
 </div>
 
@@ -490,25 +528,28 @@ const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').mat
    grunnstoffidentitet er alltid utledet fra denne listen — det
    finnes ingen separat "fasit" et annet sted.
    ═══════════════════════════════════════════════════ */
+/* group/period = posisjon i det ekte periodesystemet (18 grupper,
+   periode 1–3), cat = grunnstoffkategori brukt til fargelegging i
+   periodesystem-panelet (metall / metalloid / ikke-metall / edelgass). */
 const ELEMENTS = [
-  { z: 1,  symbol: 'H',  name: 'hydrogen',   mass: 1  },
-  { z: 2,  symbol: 'He', name: 'helium',     mass: 4  },
-  { z: 3,  symbol: 'Li', name: 'litium',     mass: 7  },
-  { z: 4,  symbol: 'Be', name: 'beryllium',  mass: 9  },
-  { z: 5,  symbol: 'B',  name: 'bor',        mass: 11 },
-  { z: 6,  symbol: 'C',  name: 'karbon',     mass: 12 },
-  { z: 7,  symbol: 'N',  name: 'nitrogen',   mass: 14 },
-  { z: 8,  symbol: 'O',  name: 'oksygen',    mass: 16 },
-  { z: 9,  symbol: 'F',  name: 'fluor',      mass: 19 },
-  { z: 10, symbol: 'Ne', name: 'neon',       mass: 20 },
-  { z: 11, symbol: 'Na', name: 'natrium',    mass: 23 },
-  { z: 12, symbol: 'Mg', name: 'magnesium',  mass: 24 },
-  { z: 13, symbol: 'Al', name: 'aluminium',  mass: 27 },
-  { z: 14, symbol: 'Si', name: 'silisium',   mass: 28 },
-  { z: 15, symbol: 'P',  name: 'fosfor',     mass: 31 },
-  { z: 16, symbol: 'S',  name: 'svovel',     mass: 32 },
-  { z: 17, symbol: 'Cl', name: 'klor',       mass: 35 },
-  { z: 18, symbol: 'Ar', name: 'argon',      mass: 40 },
+  { z: 1,  symbol: 'H',  name: 'hydrogen',   mass: 1,  group: 1,  period: 1, cat: 'nonmetal' },
+  { z: 2,  symbol: 'He', name: 'helium',     mass: 4,  group: 18, period: 1, cat: 'noble' },
+  { z: 3,  symbol: 'Li', name: 'litium',     mass: 7,  group: 1,  period: 2, cat: 'metal' },
+  { z: 4,  symbol: 'Be', name: 'beryllium',  mass: 9,  group: 2,  period: 2, cat: 'metal' },
+  { z: 5,  symbol: 'B',  name: 'bor',        mass: 11, group: 13, period: 2, cat: 'metalloid' },
+  { z: 6,  symbol: 'C',  name: 'karbon',     mass: 12, group: 14, period: 2, cat: 'nonmetal' },
+  { z: 7,  symbol: 'N',  name: 'nitrogen',   mass: 14, group: 15, period: 2, cat: 'nonmetal' },
+  { z: 8,  symbol: 'O',  name: 'oksygen',    mass: 16, group: 16, period: 2, cat: 'nonmetal' },
+  { z: 9,  symbol: 'F',  name: 'fluor',      mass: 19, group: 17, period: 2, cat: 'nonmetal' },
+  { z: 10, symbol: 'Ne', name: 'neon',       mass: 20, group: 18, period: 2, cat: 'noble' },
+  { z: 11, symbol: 'Na', name: 'natrium',    mass: 23, group: 1,  period: 3, cat: 'metal' },
+  { z: 12, symbol: 'Mg', name: 'magnesium',  mass: 24, group: 2,  period: 3, cat: 'metal' },
+  { z: 13, symbol: 'Al', name: 'aluminium',  mass: 27, group: 13, period: 3, cat: 'metal' },
+  { z: 14, symbol: 'Si', name: 'silisium',   mass: 28, group: 14, period: 3, cat: 'metalloid' },
+  { z: 15, symbol: 'P',  name: 'fosfor',     mass: 31, group: 15, period: 3, cat: 'nonmetal' },
+  { z: 16, symbol: 'S',  name: 'svovel',     mass: 32, group: 16, period: 3, cat: 'nonmetal' },
+  { z: 17, symbol: 'Cl', name: 'klor',       mass: 35, group: 17, period: 3, cat: 'nonmetal' },
+  { z: 18, symbol: 'Ar', name: 'argon',      mass: 40, group: 18, period: 3, cat: 'noble' },
 ];
 const elBySymbol = sym => ELEMENTS.find(e => e.symbol === sym);
 
@@ -530,7 +571,7 @@ const ANIONS = [
 ];
 
 const MAX_P = 18, MAX_N = 22, MAX_E = 21;
-const ELECTRON_DOT_CAP = 12;
+const SHELL_MAX_FIRST = 2, SHELL_MAX_REST = 8, MAX_SHELLS = 4;
 
 function shuffled(arr) {
   const a = arr.slice();
@@ -628,49 +669,100 @@ function buildSession() {
   return [].concat(level1, level2, level3, level4, level5);
 }
 
-/* ══════════════════ ATOMMODELL (VISUALISERING) ══════════════════ */
-const electronRing = $('electronRing');
-let prevRenderedMass = null, prevRenderedE = null;
+/* ══════════════════ ATOMMODELL (VISUALISERING) ══════════════════
+   Kjernen tegnes som røde (proton) og grå (nøytron) kuler pakket med
+   en solsikke-fordeling (jevn dekning av en sirkelflate uten at
+   partiklene overlapper systematisk). Elektronene følger et enkelt
+   skallsystem: 2 i innerste skall, deretter 8 per skall — ingen
+   kvantemekanikk, bare den forenklede modellen elevene skal lære.
+   Ingen tall tegnes inn i modellen selv; de fullstendige tallene står
+   alltid i statuspanelet under (modellen er aria-hidden). */
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
 
-function renderElectronDots(count) {
-  Array.from(electronRing.querySelectorAll('.e-dot')).forEach(d => d.remove());
-  const capped = Math.min(count, ELECTRON_DOT_CAP);
-  const size = electronRing.clientWidth || 200;
-  const center = size / 2;
-  const radius = center * 0.82;
-  for (let i = 0; i < capped; i++) {
-    const angle = (2 * Math.PI * i) / capped - Math.PI / 2;
-    const x = center + radius * Math.cos(angle);
-    const y = center + radius * Math.sin(angle);
-    const dot = document.createElement('div');
-    dot.className = 'e-dot' + (REDUCED_MOTION ? '' : ' enter');
-    dot.style.left = x + 'px';
-    dot.style.top = y + 'px';
-    electronRing.appendChild(dot);
-  }
-  electronRing.classList.toggle('cloud', count > ELECTRON_DOT_CAP);
+function sunflowerPoint(i, n, R, phase, dir) {
+  const r = R * Math.sqrt((i + 0.5) / n);
+  const theta = dir * i * GOLDEN_ANGLE + phase;
+  return { x: r * Math.cos(theta), y: r * Math.sin(theta) };
 }
 
+function computeShells(total) {
+  const shells = [];
+  let remaining = total, cap = SHELL_MAX_FIRST;
+  while (remaining > 0) {
+    const take = Math.min(cap, remaining);
+    shells.push(take);
+    remaining -= take;
+    cap = SHELL_MAX_REST;
+  }
+  return shells;
+}
+
+function renderNucleusDots(nucleusEl, protons, neutrons) {
+  Array.from(nucleusEl.querySelectorAll('.nuc-dot')).forEach(d => d.remove());
+  const half = (nucleusEl.clientWidth || 84) / 2;
+  const R = Math.max(half - 7, 4);
+  const frag = document.createDocumentFragment();
+  function place(count, cls, phase, dir) {
+    for (let i = 0; i < count; i++) {
+      const pt = sunflowerPoint(i, count, R, phase, dir);
+      const dot = document.createElement('div');
+      dot.className = 'nuc-dot ' + cls;
+      dot.style.left = (half + pt.x) + 'px';
+      dot.style.top = (half + pt.y) + 'px';
+      frag.appendChild(dot);
+    }
+  }
+  if (protons > 0) place(protons, 'p', 0, 1);
+  if (neutrons > 0) place(neutrons, 'n', Math.PI / 3, -1);
+  nucleusEl.appendChild(frag);
+}
+
+function renderElectronShells(stageEl, nucleusEl, electrons) {
+  Array.from(stageEl.querySelectorAll('.shell-ring, .e-dot')).forEach(el => el.remove());
+  const shells = computeShells(electrons);
+  const stageSize = stageEl.clientWidth || 260;
+  const half = stageSize / 2;
+  const nucleusHalf = (nucleusEl.clientWidth || 84) / 2;
+  const maxRadius = half - 14;
+  const gap = (maxRadius - nucleusHalf) / MAX_SHELLS;
+  const frag = document.createDocumentFragment();
+  shells.forEach((count, si) => {
+    const radius = nucleusHalf + gap * (si + 1);
+    const ring = document.createElement('div');
+    ring.className = 'shell-ring';
+    ring.style.width = (radius * 2) + 'px';
+    ring.style.height = (radius * 2) + 'px';
+    frag.appendChild(ring);
+    for (let i = 0; i < count; i++) {
+      const angle = (2 * Math.PI * i) / count - Math.PI / 2;
+      const dot = document.createElement('div');
+      dot.className = 'e-dot' + (REDUCED_MOTION ? '' : ' enter');
+      dot.style.left = (half + radius * Math.cos(angle)) + 'px';
+      dot.style.top = (half + radius * Math.sin(angle)) + 'px';
+      frag.appendChild(dot);
+    }
+  });
+  stageEl.appendChild(frag);
+}
+
+let prevRenderedMass = null;
+
 function renderAtomModel(protons, neutrons, electrons) {
-  $('pValModel').textContent = protons;
-  $('nValModel').textContent = neutrons;
-  $('eValModel').textContent = electrons;
+  const nucleusEl = $('nucleus');
+  const stageEl = $('atomStage');
 
   const mass = protons + neutrons;
   if (prevRenderedMass !== null && mass !== prevRenderedMass) {
-    const nucleus = $('nucleus');
-    nucleus.classList.remove('pulse');
-    void nucleus.offsetWidth;
-    if (!REDUCED_MOTION) nucleus.classList.add('pulse');
+    nucleusEl.classList.remove('pulse');
+    void nucleusEl.offsetWidth;
+    if (!REDUCED_MOTION) nucleusEl.classList.add('pulse');
   }
   prevRenderedMass = mass;
 
-  if (prevRenderedE !== electrons) {
-    renderElectronDots(electrons);
-  }
-  prevRenderedE = electrons;
+  renderNucleusDots(nucleusEl, protons, neutrons);
+  renderElectronShells(stageEl, nucleusEl, electrons);
 }
-window.addEventListener('resize', () => { if (prevRenderedE !== null) renderElectronDots(prevRenderedE); });
+window.addEventListener('resize', () => { renderAtomModel(protons, neutrons, electrons); });
 
 /* ══════════════════ SPILLTILSTAND ══════════════════ */
 let session = [], taskIndex = 0, task = null;
@@ -871,7 +963,7 @@ function loadTask(i) {
   task = session[i];
   protons = 0; neutrons = 0; electrons = 0;
   attempts = 0; wrongChecks = 0; solved = false;
-  prevRenderedMass = null; prevRenderedE = null;
+  prevRenderedMass = null;
   prevAnnouncedMass = null; prevAnnouncedCharge = null;
 
   $('hudTask').textContent = 'Atom ' + (i + 1) + ' av ' + session.length;
@@ -911,13 +1003,25 @@ $('btnNext').addEventListener('click', () => {
 $('btnStart').addEventListener('click', startGame);
 $('btnAgain').addEventListener('click', startGame);
 
-/* ══════════════════ PERIODESYSTEM-PANEL ══════════════════ */
+/* ══════════════════ PERIODESYSTEM-PANEL ══════════════════
+   Rutene plasseres på sin faktiske gruppe (1–18) og periode (1–3) i
+   CSS-gridet, slik at panelet får den kjente periodesystem-formen —
+   med hullet i periode 2 og 3 der overgangsmetallene ville stått —
+   i stedet for en jevn liste over 18 grunnstoffer. */
+const CAT_LABEL = { metal: 'metall', metalloid: 'metalloid', nonmetal: 'ikke-metall', noble: 'edelgass' };
 (function buildPeriodicTable() {
   const grid = $('ptGrid');
   ELEMENTS.forEach(el => {
     const cell = document.createElement('div');
-    cell.className = 'pt-cell';
-    cell.innerHTML = '<span class="z">' + el.z + '</span><span class="sym">' + el.symbol + '</span><span class="nm">' + el.name + '</span>';
+    cell.className = 'pt-cell cat-' + el.cat;
+    cell.style.gridColumn = String(el.group);
+    cell.style.gridRow = String(el.period);
+    cell.style.background = 'var(--cat-' + el.cat + ')';
+    cell.title = el.name + ' (' + CAT_LABEL[el.cat] + ')';
+    cell.innerHTML =
+      '<span class="z">' + el.z + '</span>' +
+      '<span class="sym">' + el.symbol + '</span>' +
+      '<span class="sr-only">' + el.name + ', ' + CAT_LABEL[el.cat] + '</span>';
     grid.appendChild(cell);
   });
 })();
@@ -941,25 +1045,18 @@ document.addEventListener('keydown', e => {
 
 /* ══════════════════ EKSEMPEL PÅ STARTSKJERM (statisk) ══════════════════ */
 (function buildExample() {
-  const wrap = document.createElement('div');
-  wrap.className = 'electron-ring';
-  wrap.style.width = '150px';
-  wrap.style.height = '150px';
-  wrap.innerHTML =
-    '<div class="nucleus" style="width:76px;height:76px;">' +
-      '<span class="nucleus-row">p⁺ 2</span>' +
-      '<span class="nucleus-row">n⁰ 2</span>' +
-    '</div>';
-  $('exModel').appendChild(wrap);
-  const size = 150, center = size / 2, radius = center * 0.82;
-  for (let i = 0; i < 2; i++) {
-    const angle = (2 * Math.PI * i) / 2 - Math.PI / 2;
-    const dot = document.createElement('div');
-    dot.className = 'e-dot';
-    dot.style.left = (center + radius * Math.cos(angle)) + 'px';
-    dot.style.top = (center + radius * Math.sin(angle)) + 'px';
-    wrap.appendChild(dot);
-  }
+  const stage = document.createElement('div');
+  stage.className = 'atom-stage';
+  stage.style.width = '160px';
+  stage.style.height = '160px';
+  const nucleus = document.createElement('div');
+  nucleus.className = 'nucleus';
+  nucleus.style.width = '70px';
+  nucleus.style.height = '70px';
+  stage.appendChild(nucleus);
+  $('exModel').appendChild(stage);
+  renderNucleusDots(nucleus, 2, 2);
+  renderElectronShells(stage, nucleus, 2);
 })();
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
