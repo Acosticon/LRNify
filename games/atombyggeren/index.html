@@ -160,6 +160,15 @@
   }
   .hud-label { font-weight: 900; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
   .hud-score { font-family: 'Chewy', cursive; font-size: 1.1rem; color: var(--ink); }
+  .mute-btn {
+    min-width: 40px; min-height: 40px; font-size: 1.1rem; line-height: 1;
+    background: var(--card); border: 2px solid var(--ink); border-radius: 10px;
+    box-shadow: 0 3px 0 var(--ink); display: flex; align-items: center; justify-content: center;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .mute-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 0 var(--ink); }
+  .mute-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .mute-btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
 
   /* ══ OPPGAVEKORT ══ */
   .task-card { text-align: center; }
@@ -225,9 +234,6 @@
     transform: translate(-50%,-50%);
     transition: left .22s ease, top .22s ease, opacity .18s ease;
   }
-  .e-dot.enter { animation: dotEnter .22s ease; }
-  @keyframes dotEnter { from { opacity: 0; transform: translate(-50%,-50%) scale(.3); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
-
   .atom-model-wrap.correct-pulse .atom-stage { box-shadow: 0 0 0 6px rgba(22,163,74,.35); border-radius: 50%; }
 
   /* ══ STATUS ══ */
@@ -435,6 +441,7 @@
       <div class="hud">
         <span class="hud-label" id="hudTask">Atom 1 av 10</span>
         <span class="hud-score" id="hudScore">Poeng: 0</span>
+        <button type="button" class="mute-btn" id="btnMute" aria-pressed="false" aria-label="Skru av lyd">🔊</button>
       </div>
 
       <div class="card task-card">
@@ -888,149 +895,430 @@ function computeShells(total) {
   return shells;
 }
 
-/* ══ KJERNEPAKKING: protoner frastøter hverandre, nøytroner er nøytrale ══
+/* ══ KJERNESIMULERING: protoner frastøter hverandre, nøytroner er nøytrale ══
    Fysisk regel (forenklet fra 3D til 2D): protoner bør ikke ligge inntil
    hverandre når det finnes nøytroner nok til å virke som buffer mellom
    dem. Nøytron-nøytron-kontakt er derimot helt uproblematisk — nøytroner
    har ingen elektrisk frastøtning, så de reguleres ikke.
 
-   Formen skal være en rund klump (solsikke-/phyllotaksi-fordeling —
-   samme mønster som frø i en solsikke, gir jevn dekning av en sirkelflate
-   uten rutenett-følelse), ikke et rutenett. Alle nukleoner ligger på ÉN
-   felles spiral (ikke to separate, som ville gitt overlappende lag), og
-   hvilken posisjon som blir proton avgjøres ved å spre protonene jevnest
-   mulig langs SPIRALINDEKSEN (samme teknikk som brukes til å tegne rette
-   linjer på et rutenett). Gyllenvinkelen bak solsikke-mønsteret har ingen
-   enkle periodisiteter, så indekser som ligger nær hverandre i sekvensen
-   ligger som regel også nær hverandre i rommet — jevn spredning langs
-   indeksen gir dermed også en rimelig jevn spredning i rommet, og
-   helium-4 ender opp med to protoner tydelig adskilt av to nøytroner.
-   Dette er en heuristikk (ikke en matematisk garanti slik et rutenett
-   ville gitt), men gir riktig runding og lar kulene pakkes tettere —
-   opptil ca. 10 % overlapp er innenfor normalen for en tegnet klump. */
-const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
-function sunflowerPoint(i, n, R) {
-  const r = R * Math.sqrt((i + 0.5) / n);
-  const theta = i * GOLDEN_ANGLE;
-  return { x: r * Math.cos(theta), y: r * Math.sin(theta) };
-}
+   I stedet for å REGNE UT en ferdig posisjon for alle nukleoner på én
+   gang (en lukket formel gir alltid samme, gjenkjennelige mønster), er
+   dette nå en liten kraft-simulering: hver kjernepartikkel har posisjon
+   OG fart, og ved hvert simuleringssteg virker tre krefter på den:
 
-/* Jevnest mulig fordeling av `protons` "treff" blant `total` posisjoner
-   langs spiralen (Bresenham-teknikk), i stedet for å samle alle protoner
-   først eller sist i sekvensen. */
-function nucleonTypesEven(protons, total) {
-  const types = new Array(total);
-  for (let i = 0; i < total; i++) {
-    types[i] = Math.floor((i + 1) * protons / total) > Math.floor(i * protons / total) ? 'p' : 'n';
-  }
-  return types;
-}
+   1. Kollisjon (alle↔alle) — en myk "ikke stå oppå hverandre"-kraft,
+      aktiv når to partikler overlapper mer enn budsjettert.
+   2. Ekstra proton↔proton-frastøtning — lengre rekkevidde enn ren
+      kollisjon, avtagende med avstand. Dette er hovedregelen: et proton
+      som presses vekk fra et annet proton dytter naturlig nøytroner til
+      side på veien, uten at det trenger kodes inn separat.
+   3. Kohesjon mot sentrum — en svak fjærkraft som holder klumpen samlet
+      til tross for frastøtningen (i virkeligheten er det kjernekraften
+      som gjør denne jobben). Suppleres av en hard "vegg" et stykke
+      lenger ute som sikkerhetsnett, uansett hvor godt de andre kreftene
+      er stilt inn.
 
-/* Kulestørrelse utledes av nukleontallet slik at klumpen vokser med
-   √(antall) — en flate som fylles, ikke en lineær vekst. Pakkekonstanten
-   er kalibrert til å tillate inntil ca. 10 % overlapp mellom naboer i
-   stedet for at de så vidt berører hverandre, for en tettere, rundere
-   klump. */
+   Resultatet er en organisk, rund klump som oppstår av seg selv når
+   spilleren legger til partikler, ikke en forhåndsberegnet form. Se
+   spawnNucleon/stepNucleusSimulation lenger ned for hvordan dette drives
+   av et animasjonssteg for steg når spilleren trykker +/−. */
 const NUC_PACK = 0.77 * 1.10;
-function nucleusGeometry(total, maxRadius) {
+function dotRadiusFor(total, maxRadius) {
+  if (total <= 0) return 0;
+  if (total === 1) return maxRadius * NUC_DOT_MAX_RATIO;
   const dotMax = maxRadius * NUC_DOT_MAX_RATIO, dotMin = maxRadius * NUC_DOT_MIN_RATIO;
-  if (total <= 0) return { dotRadius: 0, centerRadius: 0, outerRadius: 0 };
-  if (total === 1) return { dotRadius: dotMax, centerRadius: 0, outerRadius: dotMax };
-  let dotRadius = NUC_PACK * maxRadius / (Math.sqrt(total) + NUC_PACK);
-  dotRadius = Math.max(dotMin, Math.min(dotMax, dotRadius));
-  const centerRadius = dotRadius * Math.sqrt(total) / NUC_PACK;
-  return { dotRadius, centerRadius, outerRadius: centerRadius + dotRadius };
+  const r = NUC_PACK * maxRadius / (Math.sqrt(total) + NUC_PACK);
+  return Math.max(dotMin, Math.min(dotMax, r));
+}
+/* Samme √(antall)-vekstprinsipp som tidligere (en flate som fylles),
+   men nå som et fjærmål kohesjonskraften trekker mot i stedet for en
+   posisjon som regnes ut direkte. */
+function restRadiusFor(total, dotRadius) {
+  if (total <= 1) return 0;
+  return dotRadius * Math.sqrt(total) / NUC_PACK;
 }
 
-function nucleonLayout(protons, neutrons, centerRadius) {
-  const total = protons + neutrons;
-  if (total === 1) return [{ x: 0, y: 0, type: protons === 1 ? 'p' : 'n' }];
-  const types = nucleonTypesEven(protons, total);
-  return types.map((type, i) => ({ ...sunflowerPoint(i, total, centerRadius), type }));
+const SIM_COLLIDE_K = 0.045, SIM_PROTON_REPEL_K = 55, SIM_PROTON_SOFTEN = 9;
+const SIM_COHESION_K = 0.09, SIM_DAMPING = 0.82;
+const SIM_WALL_MARGIN = 1.6, SIM_WALL_K = 0.35;
+const SIM_SETTLE_THRESHOLD = 0.05, SIM_MAX_TICKS = 300;
+
+/* Ett steg av kraft-simuleringen. Muterer nucleons (x/y/vx/vy) direkte
+   og returnerer høyeste fart blant partiklene, brukt til å avgjøre om
+   klumpen har satt seg. wallRadius er scenens faktiske takradius —
+   partikler kan aldri vandre synlig utenfor den, uansett hvor de andre
+   kreftene er stilt inn. */
+function simulationTick(nucleons, dotRadius, restRadius, wallRadius) {
+  const n = nucleons.length;
+  const fx = new Array(n).fill(0), fy = new Array(n).fill(0);
+  const collideDist = dotRadius * 2;
+
+  for (let i = 0; i < n; i++) {
+    for (let j = i + 1; j < n; j++) {
+      const a = nucleons[i], b = nucleons[j];
+      let dx = a.x - b.x, dy = a.y - b.y;
+      let dist = Math.hypot(dx, dy);
+      if (dist < 1e-3) { dx = (Math.random() - 0.5); dy = (Math.random() - 0.5); dist = Math.hypot(dx, dy) || 0.1; }
+      const ux = dx / dist, uy = dy / dist;
+
+      if (dist < collideDist) {
+        const f = (collideDist - dist) * SIM_COLLIDE_K;
+        fx[i] += ux * f; fy[i] += uy * f;
+        fx[j] -= ux * f; fy[j] -= uy * f;
+      }
+      if (a.type === 'p' && b.type === 'p') {
+        const f = SIM_PROTON_REPEL_K / (dist * dist + SIM_PROTON_SOFTEN);
+        fx[i] += ux * f; fy[i] += uy * f;
+        fx[j] -= ux * f; fy[j] -= uy * f;
+      }
+    }
+  }
+  const wallR = wallRadius != null ? wallRadius : restRadius + dotRadius * (1 + SIM_WALL_MARGIN);
+  for (let i = 0; i < n; i++) {
+    const p = nucleons[i];
+    const d = Math.hypot(p.x, p.y);
+    if (d > restRadius) {
+      const f = (d - restRadius) * SIM_COHESION_K;
+      fx[i] += -(p.x / (d || 1)) * f;
+      fy[i] += -(p.y / (d || 1)) * f;
+    }
+    if (d > wallR) {
+      const f = (d - wallR) * SIM_WALL_K;
+      fx[i] += -(p.x / (d || 1)) * f;
+      fy[i] += -(p.y / (d || 1)) * f;
+    }
+  }
+  let maxSpeed = 0;
+  for (let i = 0; i < n; i++) {
+    const p = nucleons[i];
+    p.vx = (p.vx + fx[i]) * SIM_DAMPING;
+    p.vy = (p.vy + fy[i]) * SIM_DAMPING;
+    p.x += p.vx;
+    p.y += p.vy;
+    maxSpeed = Math.max(maxSpeed, Math.hypot(p.vx, p.vy));
+  }
+  return maxSpeed;
 }
 
-function renderNucleus(nucleusEl, protons, neutrons, maxRadius) {
-  nucleusEl.innerHTML = '';
-  const total = protons + neutrons;
-  const geo = nucleusGeometry(total, maxRadius);
-  const size = Math.max(geo.outerRadius * 2, 16);
-  nucleusEl.style.width = size + 'px';
-  nucleusEl.style.height = size + 'px';
-  if (total === 0) return geo;
+/* ══ KJERNEPARTIKKEL-LIVSSYKLUS ══
+   nucleons er den ene kilden til sannhet for hvor kjernepartiklene
+   faktisk befinner seg akkurat nå — ikke noe som regnes ut på nytt fra
+   protons/neutrons-tallene ved hvert render-kall slik det var før.
+   protons/neutrons forblir de tellende, autoritative tallene fasit-
+   sjekken bruker; nucleons er det visuelle laget oppå, holdt i synk
+   med dem via spawnNucleon/removeNucleonOfType nedenfor. */
+let nucleons = [];
+let nucleonIdSeq = 0;
+let nucSimRafId = null;
+const nucDotEls = new Map(); // nukleon-id -> DOM-element
+const eDotEls = []; // elektronindeks (fyllrekkefølge) -> DOM-element
 
-  const half = size / 2;
-  const layout = nucleonLayout(protons, neutrons, geo.centerRadius);
-  const frag = document.createDocumentFragment();
-  layout.forEach(pt => {
-    const dot = document.createElement('div');
-    dot.className = 'nuc-dot ' + pt.type;
-    dot.style.width = dot.style.height = (geo.dotRadius * 2) + 'px';
-    dot.style.borderWidth = Math.max(1, geo.dotRadius * 0.28) + 'px';
-    dot.style.left = (half + pt.x) + 'px';
-    dot.style.top = (half + pt.y) + 'px';
-    frag.appendChild(dot);
+function currentMaxNucleusRadius() {
+  const stageEl = $('atomStage');
+  return (stageEl.clientWidth || 260) * 0.16;
+}
+function currentNucleusOuterRadiusBudget() {
+  const maxR = currentMaxNucleusRadius();
+  const dotR = dotRadiusFor(nucleons.length, maxR);
+  return restRadiusFor(nucleons.length, dotR) + dotR;
+}
+
+/* Nye partikler «skytes inn» fra en tilfeldig kant av scenen med fart
+   innover, i stedet for å dukke opp midt i klumpen — det er dette som
+   gir følelsen av at spilleren faktisk tilfører noe. Retningen er
+   bevisst IKKE koblet til hvor +/−-knappen står på skjermen: det ville
+   krevd egen inngangsgeometri per layout (mobil har kontrollene under
+   modellen, desktop ved siden av) og gjort animasjonen skjør for
+   endringer andre steder i grensesnittet. */
+function spawnNucleon(type) {
+  const maxR = currentMaxNucleusRadius();
+  const angle = Math.random() * Math.PI * 2;
+  const r = maxR * 1.15, speed = 3.2;
+  nucleons.push({
+    id: nucleonIdSeq++, type,
+    x: Math.cos(angle) * r, y: Math.sin(angle) * r,
+    vx: -Math.cos(angle) * speed, vy: -Math.sin(angle) * speed,
   });
-  nucleusEl.appendChild(frag);
-  return geo;
 }
 
-function renderElectronShells(stageEl, nucleusOuterRadius, electrons) {
-  Array.from(stageEl.querySelectorAll('.shell-ring, .e-dot')).forEach(el => el.remove());
-  const shells = computeShells(electrons);
+/* Fjerner alltid den sist tilførte av typen — forutsigbart (+ etterfulgt
+   av − oppfører seg som en angring), og resten av klumpen trekkes
+   naturlig sammen igjen av kohesjonskraften; det trengs ingen egen
+   "fyll hullet"-logikk. */
+function removeNucleonOfType(type) {
+  for (let i = nucleons.length - 1; i >= 0; i--) {
+    if (nucleons[i].type === type) {
+      const el = nucDotEls.get(nucleons[i].id);
+      if (el) { el.remove(); nucDotEls.delete(nucleons[i].id); }
+      nucleons.splice(i, 1);
+      return;
+    }
+  }
+}
+
+/* Skriver gjeldende posisjon/størrelse til DOM. Elementene gjenbrukes
+   (opprettes kun når en ny nukleon dukker opp) slik at dette kan kalles
+   hver animasjonsramme uten å bygge treet på nytt hver gang. */
+function syncNucleonPositions() {
+  const stageEl = $('atomStage');
+  const half = (stageEl.clientWidth || 260) / 2;
+  const total = nucleons.length;
+  const maxR = currentMaxNucleusRadius();
+  const dotR = dotRadiusFor(total, maxR);
+
+  nucleons.forEach(p => {
+    let el = nucDotEls.get(p.id);
+    if (!el) {
+      el = document.createElement('div');
+      el.className = 'nuc-dot ' + p.type;
+      stageEl.appendChild(el);
+      nucDotEls.set(p.id, el);
+    }
+    el.style.width = el.style.height = (dotR * 2) + 'px';
+    el.style.borderWidth = Math.max(1, dotR * 0.28) + 'px';
+    el.style.left = (half + p.x) + 'px';
+    el.style.top = (half + p.y) + 'px';
+  });
+
+  /* Kjernens svake bakgrunnssirkel følger det budsjetterte målet
+     (restRadius+dotRadius), ikke de faktiske, litt urolige posisjonene
+     — den skal ligge stille som en samlende bakgrunn, ikke hakke rundt
+     i takt med hver enkelt partikkel. */
+  const restR = restRadiusFor(total, dotR);
+  const nucleusEl = $('nucleus');
+  const bgSize = total > 0 ? (restR + dotR) * 2 : 0;
+  nucleusEl.style.width = nucleusEl.style.height = bgSize + 'px';
+}
+
+function stepNucleusSimulation(ticksLeft) {
+  const total = nucleons.length;
+  if (total === 0) { nucSimRafId = null; return; }
+  const maxR = currentMaxNucleusRadius();
+  const dotR = dotRadiusFor(total, maxR);
+  const restR = restRadiusFor(total, dotR);
+  const speed = simulationTick(nucleons, dotR, restR, maxR);
+  syncNucleonPositions();
+  if (speed > SIM_SETTLE_THRESHOLD && ticksLeft > 0) {
+    nucSimRafId = requestAnimationFrame(() => stepNucleusSimulation(ticksLeft - 1));
+  } else {
+    nucSimRafId = null;
+  }
+}
+function ensureNucleusSimRunning() {
+  if (nucSimRafId != null) return; // kjører allerede — fortsetter av seg selv neste ramme
+  nucSimRafId = requestAnimationFrame(() => stepNucleusSimulation(SIM_MAX_TICKS));
+}
+/* prefers-reduced-motion: ingen synlig flyging/avslapning. Kjør
+   simuleringen ferdig i stillhet (ingen rammer vises), tegn så
+   sluttresultatet i ett steg. */
+function settleNucleusInstant() {
+  const total = nucleons.length;
+  if (total === 0) return;
+  const maxR = currentMaxNucleusRadius();
+  const dotR = dotRadiusFor(total, maxR);
+  const restR = restRadiusFor(total, dotR);
+  for (let t = 0; t < 90; t++) {
+    if (simulationTick(nucleons, dotR, restR, maxR) < SIM_SETTLE_THRESHOLD) break;
+  }
+  syncNucleonPositions();
+}
+function resetNucleons() {
+  if (nucSimRafId != null) { cancelAnimationFrame(nucSimRafId); nucSimRafId = null; }
+  nucleons = [];
+  nucDotEls.forEach(el => el.remove());
+  nucDotEls.clear();
+  const nucleusEl = $('nucleus');
+  nucleusEl.style.width = nucleusEl.style.height = '0px';
+}
+function pulseNucleus() {
+  if (REDUCED_MOTION) return;
+  const nucleusEl = $('nucleus');
+  nucleusEl.classList.remove('pulse');
+  void nucleusEl.offsetWidth;
+  nucleusEl.classList.add('pulse');
+}
+
+/* ══ ELEKTRONSKALL ══
+   Posisjonene er fortsatt deterministiske (skallmodellen er ikke en
+   simulering — elektronene er bundet av faste skall, ikke frittflytende
+   partikler), men rutene gjenbrukes nå på samme måte som kjernedottene,
+   slik at CSS-overgangen på left/top faktisk får noe å animere fra når
+   søsken i samme skall må flytte seg for å gi plass. Kun det NYE
+   elektronet (animateNewest) får en egen inn-flyging fra kanten, i
+   samme visuelle språk som kjernepartiklene. */
+function renderElectronShells(stageEl, nucleusOuterRadius, electronCount, animateNewest) {
+  Array.from(stageEl.querySelectorAll('.shell-ring')).forEach(el => el.remove());
+  const shells = computeShells(electronCount);
   const half = (stageEl.clientWidth || 260) / 2;
   const eDotRadius = Math.max(3, half * E_DOT_RATIO);
   const maxRingRadius = half - eDotRadius - half * 0.02;
   const inner = nucleusOuterRadius + half * 0.028;
-  /* Delt på MAX_SHELLS (ikke på antall skall som faktisk tegnes), slik
-     at ringavstanden er den samme uansett hvor mange skall atomet har. */
   const gap = (maxRingRadius - inner) / MAX_SHELLS;
-  const frag = document.createDocumentFragment();
 
+  const targets = [];
   shells.forEach((count, si) => {
     const radius = inner + gap * (si + 1);
     const ring = document.createElement('div');
     ring.className = 'shell-ring';
     ring.style.width = ring.style.height = (radius * 2) + 'px';
-    frag.appendChild(ring);
+    stageEl.appendChild(ring);
     /* Innerste skall starter rett opp (kl. 12); hvert skall utover
        roteres 30° videre, slik at elektroner i ulike skall ikke stiller
        seg opp på samme eike ut fra sentrum. */
     const offset = -Math.PI / 2 + si * (Math.PI / 6);
     for (let i = 0; i < count; i++) {
       const angle = offset + (2 * Math.PI * i) / count;
-      const dot = document.createElement('div');
-      dot.className = 'e-dot' + (REDUCED_MOTION ? '' : ' enter');
-      dot.style.width = dot.style.height = (eDotRadius * 2) + 'px';
-      dot.style.borderWidth = Math.max(1, eDotRadius * 0.32) + 'px';
-      dot.style.left = (half + radius * Math.cos(angle)) + 'px';
-      dot.style.top = (half + radius * Math.sin(angle)) + 'px';
-      frag.appendChild(dot);
+      targets.push({ x: radius * Math.cos(angle), y: radius * Math.sin(angle) });
     }
   });
-  stageEl.appendChild(frag);
-}
 
-let prevRenderedMass = null;
-
-function renderAtomModel(protons, neutrons, electrons) {
-  const nucleusEl = $('nucleus');
-  const stageEl = $('atomStage');
-
-  const mass = protons + neutrons;
-  if (prevRenderedMass !== null && mass !== prevRenderedMass) {
-    nucleusEl.classList.remove('pulse');
-    void nucleusEl.offsetWidth;
-    if (!REDUCED_MOTION) nucleusEl.classList.add('pulse');
+  for (let i = eDotEls.length - 1; i >= electronCount; i--) {
+    const el = eDotEls[i];
+    eDotEls.length = i;
+    if (REDUCED_MOTION) { el.remove(); }
+    else { el.style.opacity = '0'; setTimeout(() => el.remove(), 200); }
   }
-  prevRenderedMass = mass;
 
-  /* Kjernen får maks ~1/3 av radien ut til ytterste skall, slik at
-     størrelsesforholdet mellom kjerne og skall holder seg lesbart. */
-  const maxNucleusRadius = (stageEl.clientWidth || 260) * 0.16;
-  const geo = renderNucleus(nucleusEl, protons, neutrons, maxNucleusRadius);
-  renderElectronShells(stageEl, geo.outerRadius, electrons);
+  targets.forEach((t, i) => {
+    let el = eDotEls[i];
+    const isNew = !el;
+    if (isNew) {
+      el = document.createElement('div');
+      el.className = 'e-dot';
+      stageEl.appendChild(el);
+      eDotEls[i] = el;
+    }
+    el.style.width = el.style.height = (eDotRadius * 2) + 'px';
+    el.style.borderWidth = Math.max(1, eDotRadius * 0.32) + 'px';
+
+    if (isNew && animateNewest && i === electronCount - 1 && !REDUCED_MOTION) {
+      el.style.transition = 'none';
+      const spawnAngle = Math.random() * Math.PI * 2, spawnR = maxRingRadius * 1.08;
+      el.style.left = (half + Math.cos(spawnAngle) * spawnR) + 'px';
+      el.style.top = (half + Math.sin(spawnAngle) * spawnR) + 'px';
+      void el.offsetWidth;
+      el.style.transition = '';
+      el.style.left = (half + t.x) + 'px';
+      el.style.top = (half + t.y) + 'px';
+    } else {
+      el.style.left = (half + t.x) + 'px';
+      el.style.top = (half + t.y) + 'px';
+    }
+  });
 }
-window.addEventListener('resize', () => { renderAtomModel(protons, neutrons, electrons); });
+function updateElectronVisual(animateNewest) {
+  renderElectronShells($('atomStage'), currentNucleusOuterRadiusBudget(), electrons, !!animateNewest);
+}
+function resetElectronVisual() {
+  eDotEls.forEach(el => el.remove());
+  eDotEls.length = 0;
+  Array.from($('atomStage').querySelectorAll('.shell-ring')).forEach(el => el.remove());
+}
+
+window.addEventListener('resize', () => {
+  syncNucleonPositions();
+  updateElectronVisual(false);
+  ensureNucleusSimRunning();
+});
+
+/* ══════════════════ LYD ══════════════════
+   Alle lyder syntetiseres med Web Audio API — ingen lydfiler, i tråd
+   med resten av spillet som ligger i én selvstendig HTML-fil uten
+   eksterne avhengigheter. Fire korte, myke lyder: proton = dyp pip,
+   nøytron = filtrert støy-"whoosh", elektron = høy kvitring, og én
+   nøytral "pop" for fjerning uansett partikkeltype (ikke tre ulike —
+   det ville vært mer støy for en handling som skjer minst like ofte
+   som å legge til). AudioContext opprettes først ved faktisk bruk
+   (brukergesten kreves uansett av nettleseren), og all lyd går gjennom
+   én masterGain slik at dempeknappen kan skru alt av med én linje. */
+let audioCtx = null, masterGain = null;
+let muted = false;
+try { muted = localStorage.getItem('atombyggeren-muted') === '1'; } catch (e) { /* privat modus e.l. — behold false */ }
+
+function ensureAudio() {
+  if (audioCtx) return audioCtx;
+  try {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = muted ? 0 : 0.35;
+    masterGain.connect(audioCtx.destination);
+  } catch (e) { audioCtx = null; }
+  return audioCtx;
+}
+
+function playTone(freqStart, freqEnd, duration, waveType, peakGain) {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = waveType;
+  osc.frequency.setValueAtTime(freqStart, now);
+  if (freqEnd !== freqStart) osc.frequency.linearRampToValueAtTime(freqEnd, now + duration);
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(peakGain, now + Math.min(0.015, duration * 0.2));
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  osc.connect(gain); gain.connect(masterGain);
+  osc.start(now); osc.stop(now + duration + 0.02);
+}
+
+function playProtonBeep() { playTone(180, 180, 0.16, 'sine', 0.5); }
+function playElectronChirpSound() { playTone(800, 1600, 0.11, 'sine', 0.35); }
+
+function playNeutronWhoosh() {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  const now = ctx.currentTime, duration = 0.18;
+  const bufferSize = Math.floor(ctx.sampleRate * duration);
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+  const noise = ctx.createBufferSource();
+  noise.buffer = buffer;
+  const filter = ctx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.setValueAtTime(2200, now);
+  filter.frequency.exponentialRampToValueAtTime(300, now + duration);
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.28, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  noise.connect(filter); filter.connect(gain); gain.connect(masterGain);
+  noise.start(now); noise.stop(now + duration + 0.02);
+}
+
+function playPop() {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  if (ctx.state === 'suspended') ctx.resume();
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(500, now);
+  osc.frequency.exponentialRampToValueAtTime(120, now + 0.06);
+  gain.gain.setValueAtTime(0.4, now);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+  osc.connect(gain); gain.connect(masterGain);
+  osc.start(now); osc.stop(now + 0.08);
+}
+
+function playNucleonSound(type) { if (type === 'p') playProtonBeep(); else playNeutronWhoosh(); }
+function playElectronChirp() { playElectronChirpSound(); }
+
+function updateMuteButton() {
+  const btn = $('btnMute');
+  if (!btn) return;
+  btn.textContent = muted ? '🔇' : '🔊';
+  btn.setAttribute('aria-pressed', String(muted));
+  btn.setAttribute('aria-label', muted ? 'Skru på lyd' : 'Skru av lyd');
+}
+function toggleMute() {
+  muted = !muted;
+  try { localStorage.setItem('atombyggeren-muted', muted ? '1' : '0'); } catch (e) { /* ignorer */ }
+  if (masterGain) masterGain.gain.value = muted ? 0 : 0.35;
+  updateMuteButton();
+}
 
 /* ══════════════════ SPILLTILSTAND ══════════════════ */
 let session = [], taskIndex = 0, task = null;
@@ -1083,17 +1371,37 @@ function updateStatusPanel() {
 
 function renderAll() {
   updateCounterDisplays();
-  renderAtomModel(protons, neutrons, electrons);
   updateStatusPanel();
 }
 
+/* Endring i protons/neutrons/electrons er fortsatt den ene autoritative
+   tilstanden fasit-sjekken bruker (uendret fra før) — men i stedet for
+   å regne ut en fullstendig ny modell fra disse tallene, tolkes en
+   endring nå som en HENDELSE: en partikkel kom til eller forsvant, med
+   sin egen lyd og sin egen inntreden i simuleringen/skall-laget. */
 function setCount(type, val) {
   if (solved || locked) return;
   const max = type === 'p' ? MAX_P : type === 'n' ? MAX_N : MAX_E;
+  const cur = type === 'p' ? protons : type === 'n' ? neutrons : electrons;
   const newVal = clamp(val, 0, max);
+  if (newVal === cur) return;
+  const added = newVal > cur;
+
   if (type === 'p') protons = newVal;
   else if (type === 'n') neutrons = newVal;
   else electrons = newVal;
+
+  if (type === 'p' || type === 'n') {
+    if (added) { spawnNucleon(type); playNucleonSound(type); }
+    else { removeNucleonOfType(type); playPop(); }
+    pulseNucleus();
+    syncNucleonPositions();
+    if (REDUCED_MOTION) settleNucleusInstant(); else ensureNucleusSimRunning();
+    updateElectronVisual(false); // kjernens ytre budsjett kan ha endret seg -> skallene kan trenge ny plassering
+  } else {
+    if (added) playElectronChirp(); else playPop();
+    updateElectronVisual(added);
+  }
   renderAll();
 }
 
@@ -1224,8 +1532,10 @@ function loadTask(i) {
   task = session[i];
   protons = 0; neutrons = 0; electrons = 0;
   attempts = 0; wrongChecks = 0; solved = false;
-  prevRenderedMass = null;
   prevAnnouncedMass = null; prevAnnouncedCharge = null;
+  resetNucleons();
+  resetElectronVisual();
+  updateElectronVisual(false);
 
   $('hudTask').textContent = 'Atom ' + (i + 1) + ' av ' + session.length;
   $('hudScore').textContent = 'Poeng: ' + score;
@@ -1263,6 +1573,8 @@ $('btnNext').addEventListener('click', () => {
 });
 $('btnStart').addEventListener('click', startGame);
 $('btnAgain').addEventListener('click', startGame);
+$('btnMute').addEventListener('click', toggleMute);
+updateMuteButton();
 
 /* ══════════════════ PERIODESYSTEM-PANEL ══════════════════
    Alle 118 grunnstoffer plasseres på sin faktiske gruppe (1–18) og
@@ -1325,7 +1637,11 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !$('ptOverlay').hidden) closePT();
 });
 
-/* ══════════════════ EKSEMPEL PÅ STARTSKJERM (statisk) ══════════════════ */
+/* ══════════════════ EKSEMPEL PÅ STARTSKJERM (statisk) ══════════════════
+   Gjenbruker nøyaktig samme simulering som selve spillet, kjørt ferdig
+   i stillhet én gang, slik at eksempelet ser identisk ut i stil som
+   den ekte modellen — bare uten den løpende animasjonen, siden dette
+   er en dekorativ, ikke-interaktiv illustrasjon. */
 (function buildExample() {
   const stage = document.createElement('div');
   stage.className = 'atom-stage';
@@ -1335,8 +1651,30 @@ document.addEventListener('keydown', e => {
   nucleus.className = 'nucleus';
   stage.appendChild(nucleus);
   $('exModel').appendChild(stage);
-  const geo = renderNucleus(nucleus, 2, 2, 160 * 0.16);
-  renderElectronShells(stage, geo.outerRadius, 2);
+
+  const maxR = 160 * 0.16;
+  const exNucleons = [
+    { type: 'p', x: -maxR, y: -maxR, vx: 0, vy: 0 },
+    { type: 'p', x: maxR, y: maxR, vx: 0, vy: 0 },
+    { type: 'n', x: maxR, y: -maxR, vx: 0, vy: 0 },
+    { type: 'n', x: -maxR, y: maxR, vx: 0, vy: 0 },
+  ];
+  const dotR = dotRadiusFor(4, maxR);
+  const restR = restRadiusFor(4, dotR);
+  for (let t = 0; t < 90; t++) simulationTick(exNucleons, dotR, restR, maxR);
+
+  const half = 80;
+  nucleus.style.width = nucleus.style.height = ((restR + dotR) * 2) + 'px';
+  exNucleons.forEach(p => {
+    const dot = document.createElement('div');
+    dot.className = 'nuc-dot ' + p.type;
+    dot.style.width = dot.style.height = (dotR * 2) + 'px';
+    dot.style.borderWidth = Math.max(1, dotR * 0.28) + 'px';
+    dot.style.left = (half + p.x) + 'px';
+    dot.style.top = (half + p.y) + 'px';
+    stage.appendChild(dot);
+  });
+  renderElectronShells(stage, restR + dotR, 2, false);
 })();
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
