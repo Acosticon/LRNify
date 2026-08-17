@@ -164,19 +164,21 @@
   /* ══ OPPGAVEKORT ══ */
   .task-card { text-align: center; }
   .task-title { font-family: 'Chewy', cursive; font-size: clamp(1.3rem,5vw,1.7rem); margin-bottom: 8px; }
-  .task-ref {
-    display: inline-block; font-weight: 800; font-size: .82rem; color: var(--muted);
-    background: var(--cream); border: 2px solid var(--ink); border-radius: 8px;
-    padding: 3px 10px; margin-bottom: 10px;
+  /* Alt spilleren får oppgitt for denne oppgaven samlet ett sted, som
+     rene rader (etikett til venstre, verdi til høyre) i stedet for
+     spredte "chips" — lettere å lese som en sammenhengende liste med
+     gitte data, slik et regnestykke på papir ville vist dem. */
+  .task-given {
+    background: var(--cream); border: 3px solid var(--ink); border-radius: 10px;
+    padding: 12px 16px; margin-bottom: 14px; text-align: left;
   }
-  .task-note { font-weight: 700; font-size: .85rem; color: var(--muted); margin-bottom: 10px; }
-  .task-facts { list-style: none; display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: center; margin-bottom: 12px; }
-  .task-facts li {
-    font-weight: 800; font-size: .85rem; background: #fff3d6;
-    border: 2px solid var(--ink); border-radius: 8px; padding: 4px 10px;
+  .task-given-label {
+    display: block; font-weight: 900; font-size: .68rem; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--muted); margin-bottom: 8px;
   }
-  .fact-label { color: var(--muted); font-weight: 700; }
-  .fact-value { font-family: 'Chewy', cursive; }
+  .task-facts { display: grid; grid-template-columns: 1fr auto; gap: 5px 14px; margin: 0; }
+  .task-facts dt { font-weight: 700; font-size: .9rem; color: var(--ink); }
+  .task-facts dd { font-family: 'Chewy', cursive; font-size: 1.05rem; text-align: right; margin: 0; color: var(--ink); }
 
   /* ══ ATOMMODELL ══
      p⁺ = røde kuler, n⁰ = grå kuler (pakket i kjernen med en enkel
@@ -428,9 +430,10 @@
 
       <div class="card task-card">
         <h2 class="task-title" id="taskTitle">Bygg helium</h2>
-        <div class="task-ref" id="refRow" hidden></div>
-        <p class="task-note" id="taskNote" hidden></p>
-        <ul class="task-facts" id="taskFacts"></ul>
+        <div class="task-given">
+          <span class="task-given-label">Oppgitt informasjon</span>
+          <dl class="task-facts" id="taskFacts"></dl>
+        </div>
         <button type="button" class="btn-secondary" id="btnShowPT">Vis periodesystem</button>
       </div>
 
@@ -762,39 +765,39 @@ function chargeLabel(c) {
   return (c > 0 ? '+' : '−') + Math.abs(c);
 }
 
+/* Gitt informasjon samles alltid i samme felt (task.facts) uansett
+   nivå — det er kun HVILKE tall som er med som endrer seg gjennom
+   progresjonen. Ingen eget "referanse"- eller "note"-format ved siden
+   av: alt spilleren får oppgitt vises i den ene, samme listen. */
 function makeTask(level, el, massNumber, charge) {
   charge = charge || 0;
   const task = { level, symbol: el.symbol, name: el.name, z: el.z, massNumber, charge };
   if (level === 1) {
     task.title = 'Bygg ' + el.name;
-    task.showRef = true;
     task.facts = [
+      { label: 'Atomnummer', value: el.z },
       { label: 'Nøytroner', value: massNumber - el.z },
       { label: 'Elektroner', value: el.z }
     ];
-    task.note = null;
   } else if (level === 2) {
     task.title = 'Bygg ' + el.name + '-' + massNumber;
-    task.showRef = false;
     task.facts = [
       { label: 'Atomnummer', value: el.z },
       { label: 'Massetall', value: massNumber },
       { label: 'Elektroner', value: el.z }
     ];
-    task.note = null;
   } else if (level === 3) {
     task.title = 'Bygg ' + el.name + '-' + massNumber;
-    task.showRef = false;
-    task.facts = [{ label: 'Massetall', value: massNumber }];
-    task.note = 'Nøytralt atom (ladning 0).';
+    task.facts = [
+      { label: 'Massetall', value: massNumber },
+      { label: 'Ladning', value: chargeLabel(0) }
+    ];
   } else {
     task.title = 'Bygg ' + el.symbol + chargeSup(charge) + ', massetall ' + massNumber;
-    task.showRef = false;
     task.facts = [
       { label: 'Massetall', value: massNumber },
       { label: 'Ladning', value: chargeLabel(charge) }
     ];
-    task.note = null;
   }
   return task;
 }
@@ -804,7 +807,8 @@ function correctCounts(task) {
 }
 
 function buildSession() {
-  const neutralShuffled = shuffled(ELEMENTS);
+  const carbon = elBySymbol('C');
+  const neutralShuffled = shuffled(ELEMENTS.filter(e => e.symbol !== 'C'));
   const usedSym = new Set();
   function takeNeutral() {
     const el = neutralShuffled.find(e => !usedSym.has(e.symbol));
@@ -812,7 +816,16 @@ function buildSession() {
     return el;
   }
   const level1 = [1, 2].map(() => { const el = takeNeutral(); return makeTask(1, el, el.mass, 0); });
-  const level2 = [1, 2].map(() => { const el = takeNeutral(); return makeTask(2, el, el.mass, 0); });
+  /* Isotop-nivået introduseres alltid med karbon: først vanlig karbon
+     (karbon-12, standardisotopen — samme tall som brukes i resten av
+     spillet), deretter en annen isotop av SAMME grunnstoff (karbon-13),
+     slik at det er tydelig at bare nøytrontallet endres, ikke
+     grunnstoffet. Karbon-14 unngås bevisst: den er kjent fra
+     karbondatering/radioaktivitet, som ligger utenfor dette spillets
+     omfang og kunne gitt feil inntrykk av hva oppgaven handler om.
+     Karbon-13 er en ekte, stabil, naturlig isotop (~1 % forekomst) uten
+     den forbindelsen. */
+  const level2 = [makeTask(2, carbon, 12, 0), makeTask(2, carbon, 13, 0)];
   const level3 = [1, 2].map(() => { const el = takeNeutral(); return makeTask(3, el, el.mass, 0); });
 
   const cationsShuffled = shuffled(CATIONS);
@@ -844,20 +857,13 @@ function buildSession() {
    kvantemekanikk, bare den forenklede modellen elevene skal lære.
    Ingen tall tegnes inn i modellen selv; de fullstendige tallene står
    alltid i statuspanelet under (modellen er aria-hidden). */
-const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
-
-/* Solsikkefordeling: n punkter jevnt utover en sirkelflate med
-   senterradius R. Brukes til å pakke nukleonene i kjernen. */
-function sunflowerPoint(i, n, R) {
-  const r = R * Math.sqrt((i + 0.5) / n);
-  const theta = i * GOLDEN_ANGLE;
-  return { x: r * Math.cos(theta), y: r * Math.sin(theta) };
-}
-
 /* Fyllingsregelen i den forenklede skallmodellen: 2 i innerste skall,
    deretter 8 per skall. Fylles innenfra og ut — et nytt skall starter
    først når det forrige er fullt. Dekker 0–21 elektroner (maks i
-   spillet) innenfor fire skall. */
+   spillet) innenfor fire skall. Innenfor ett skall er elektronene alltid
+   spredt med lik vinkelavstand — det er nettopp likevektsplasseringen
+   for punkter som frastøter hverandre langs en sirkel, så «jevnt fordelt
+   på skallet» ER frastøtningsregelen, ikke en snarvei rundt den. */
 function computeShells(total) {
   const shells = [];
   let remaining = total;
@@ -869,37 +875,87 @@ function computeShells(total) {
   return shells;
 }
 
-/* Fordeler p protoner og n nøytroner utover de (p+n) plassene i klumpen
-   slik at fargene blandes jevnt gjennom hele kjernen. Uten dette (én
-   solsikke per partikkeltype) ville de to settene ligge som to lag i
-   samme flate og delvis dekke hverandre. */
-function nucleonTypes(protons, neutrons) {
-  const total = protons + neutrons;
-  const types = new Array(total);
-  let acc = 0, placed = 0;
-  for (let i = 0; i < total; i++) {
-    acc += protons;
-    if (acc >= total && placed < protons) { types[i] = 'p'; acc -= total; placed++; }
-    else types[i] = 'n';
+/* ══ KJERNEPAKKING: protoner frastøter hverandre, nøytroner er nøytrale ══
+   Fysisk regel (forenklet fra 3D til 2D, som brukeren ba om): protoner
+   skal ikke ligge inntil hverandre når det finnes nøytroner nok til å
+   virke som buffer mellom dem. Nøytron-nøytron-kontakt er derimot helt
+   uproblematisk — nøytroner har ingen elektrisk frastøtning.
+
+   Løsningen bruker at et vanlig kvadratisk rutenett er "topartsdelt":
+   fargelegger man rutene som et sjakkbrett (paritet på x+y), er INGEN
+   to ruter av samme farge naboer til hverandre. Så lenge protontallet
+   er ≤ den største av de to sjakkbrettfargene, kan derfor ALLE protoner
+   legges i én farge — det gir null proton-proton-naboskap, garantert
+   (ikke bare sannsynlig, slik en tilfeldig fordeling ville gitt).
+   Legger man et rutenett i en voksende spiral utover fra sentrum, og
+   fyller først protonenes fargegruppe og så resten med nøytroner, får
+   man nettopp helium-4s kjente PN/NP-sjakkbrettmønster helt av seg selv.
+
+   Bare når protontallet overstiger den største fargegruppen (svært
+   protontunge, i praksis ustabile/ikke-eksisterende konfigurasjoner)
+   blir noe proton-proton-naboskap uunngåelig — det er også fysisk
+   rimelig, ikke en svakhet ved modellen. */
+function squareSpiralCells(count) {
+  const cells = [{ x: 0, y: 0 }];
+  if (count <= 1) return cells.slice(0, count);
+  const dirs = [[1, 0], [0, 1], [-1, 0], [0, -1]];
+  let x = 0, y = 0, dirIdx = 0, stepLen = 1;
+  outer:
+  while (cells.length < count) {
+    for (let rep = 0; rep < 2; rep++) {
+      const [dx, dy] = dirs[dirIdx % 4];
+      for (let k = 0; k < stepLen; k++) {
+        x += dx; y += dy;
+        cells.push({ x, y });
+        if (cells.length >= count) break outer;
+      }
+      dirIdx++;
+    }
+    stepLen++;
   }
-  return types;
+  return cells;
 }
 
-/* Kulestørrelse og klumpstørrelse utledes av nukleontallet, slik at
-   kulene så vidt berører hverandre uten å overlappe: i en solsikke med
-   n punkter over senterradius Rc er typisk naboavstand ≈ Rc·√(π/n), så
-   kuleradius r ≈ 0,84·Rc/√n. Løst for r med Rc + r ≤ maxRadius vokser
-   klumpen med √(antall) — som en flate som fylles, ikke lineært. */
-/* Empirisk kalibrert mot faktisk minste naboavstand i solsikka (den er
-   litt kortere enn den gjennomsnittlige avstanden formelen anslår), slik
-   at kulene så vidt berører hverandre i stedet for å overlappe. */
-const NUC_PACK = 0.77;
+/* Kulestørrelse utledes av nukleontallet: kulene skal så vidt berøre
+   naborutene i gridet uten å overlappe, og hele klumpen skal vokse med
+   √(antall) siden det er en flate som fylles — akkurat som før, bare nå
+   fra et rutenett i stedet for en solsikke. Formen sentreres om sitt
+   eget tyngdepunkt (ikke rutenettets origo), siden spiralen sjelden
+   avsluttes symmetrisk. */
 function nucleusGeometry(total, maxRadius) {
-  if (total <= 0) return { dotRadius: 0, centerRadius: 0, outerRadius: 0 };
-  let dotRadius = NUC_PACK * maxRadius / (Math.sqrt(total) + NUC_PACK);
-  dotRadius = Math.max(NUC_DOT_MIN, Math.min(NUC_DOT_MAX, dotRadius));
-  const centerRadius = total === 1 ? 0 : dotRadius * Math.sqrt(total) / NUC_PACK;
-  return { dotRadius, centerRadius, outerRadius: centerRadius + dotRadius };
+  if (total <= 0) return { spacing: 0, dotRadius: 0, outerRadius: 0, cells: [] };
+  const raw = squareSpiralCells(total);
+  const cx = raw.reduce((s, c) => s + c.x, 0) / raw.length;
+  const cy = raw.reduce((s, c) => s + c.y, 0) / raw.length;
+  const cells = raw.map(c => ({ x: c.x, y: c.y, cx: c.x - cx, cy: c.y - cy }));
+  if (total === 1) {
+    return { spacing: NUC_DOT_MAX * 2, dotRadius: NUC_DOT_MAX, outerRadius: NUC_DOT_MAX, cells: [{ x: 0, y: 0, cx: 0, cy: 0 }] };
+  }
+  const maxDist = Math.max(...cells.map(c => Math.hypot(c.cx, c.cy)));
+  const dotRadius = Math.max(NUC_DOT_MIN, Math.min(NUC_DOT_MAX, maxRadius / ((maxDist + 0.5) * 2)));
+  const spacing = dotRadius * 2;
+  return { spacing, dotRadius, outerRadius: maxDist * spacing + dotRadius, cells };
+}
+
+/* Sjakkbrett-fordeling: se forklaring over funksjonen den brukes fra. */
+function nucleonLayout(protons, neutrons, cells) {
+  const groupA = cells.filter(c => ((c.x + c.y) % 2 + 2) % 2 === 0);
+  const groupB = cells.filter(c => ((c.x + c.y) % 2 + 2) % 2 === 1);
+  let protonCells, neutronCells;
+  if (protons <= groupA.length) {
+    protonCells = groupA.slice(0, protons);
+    neutronCells = groupA.slice(protons).concat(groupB);
+  } else if (protons <= groupB.length) {
+    protonCells = groupB.slice(0, protons);
+    neutronCells = groupB.slice(protons).concat(groupA);
+  } else {
+    const bigger = groupA.length >= groupB.length ? groupA : groupB;
+    const smaller = bigger === groupA ? groupB : groupA;
+    protonCells = bigger.concat(smaller.slice(0, protons - bigger.length));
+    neutronCells = smaller.slice(protons - bigger.length);
+  }
+  return protonCells.map(c => ({ x: c.cx, y: c.cy, type: 'p' }))
+    .concat(neutronCells.map(c => ({ x: c.cx, y: c.cy, type: 'n' })));
 }
 
 function renderNucleus(nucleusEl, protons, neutrons, maxRadius) {
@@ -911,21 +967,18 @@ function renderNucleus(nucleusEl, protons, neutrons, maxRadius) {
   nucleusEl.style.height = size + 'px';
   if (total === 0) return geo;
 
-  const types = nucleonTypes(protons, neutrons);
   const half = size / 2;
+  const layout = nucleonLayout(protons, neutrons, geo.cells);
   const frag = document.createDocumentFragment();
-  for (let i = 0; i < total; i++) {
-    /* Ett enkelt nukleon hører hjemme midt i kjernen, ikke på
-       solsikkens første radius. */
-    const pt = total === 1 ? { x: 0, y: 0 } : sunflowerPoint(i, total, geo.centerRadius);
+  layout.forEach(pt => {
     const dot = document.createElement('div');
-    dot.className = 'nuc-dot ' + types[i];
+    dot.className = 'nuc-dot ' + pt.type;
     dot.style.width = dot.style.height = (geo.dotRadius * 2) + 'px';
     dot.style.borderWidth = Math.max(1, geo.dotRadius * 0.28) + 'px';
-    dot.style.left = (half + pt.x) + 'px';
-    dot.style.top = (half + pt.y) + 'px';
+    dot.style.left = (half + pt.x * geo.spacing) + 'px';
+    dot.style.top = (half + pt.y * geo.spacing) + 'px';
     frag.appendChild(dot);
-  }
+  });
   nucleusEl.appendChild(frag);
   return geo;
 }
@@ -1069,22 +1122,15 @@ bindCounter('p', 'p'); bindCounter('n', 'n'); bindCounter('e', 'e');
 
 function renderTaskCard(t) {
   $('taskTitle').textContent = t.title;
-  const refRow = $('refRow');
-  if (t.showRef) {
-    refRow.hidden = false;
-    refRow.textContent = t.symbol + ' – atomnummer ' + t.z;
-  } else {
-    refRow.hidden = true;
-  }
-  const noteEl = $('taskNote');
-  if (t.note) { noteEl.hidden = false; noteEl.textContent = t.note; }
-  else { noteEl.hidden = true; }
   const factsEl = $('taskFacts');
   factsEl.innerHTML = '';
   t.facts.forEach(f => {
-    const li = document.createElement('li');
-    li.innerHTML = '<span class="fact-label">' + f.label + ':</span> <span class="fact-value">' + f.value + '</span>';
-    factsEl.appendChild(li);
+    const dt = document.createElement('dt');
+    dt.textContent = f.label;
+    const dd = document.createElement('dd');
+    dd.textContent = f.value;
+    factsEl.appendChild(dt);
+    factsEl.appendChild(dd);
   });
 }
 
