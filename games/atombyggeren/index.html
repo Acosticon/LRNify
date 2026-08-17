@@ -89,7 +89,7 @@
   @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
 
   .center-wrap {
-    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    max-width: 640px; margin: 0 auto; padding: 0 20px 60px;
     display: flex; flex-direction: column; gap: 16px; align-items: center;
     text-align: center;
     animation: fadeIn .25s ease;
@@ -148,7 +148,7 @@
   /* ══ SPILLSKJERM ══ */
   #screen-game { padding: 0 16px 40px; }
   .game-wrap {
-    max-width: 900px; margin: 0 auto;
+    width: 100%; max-width: 1150px; margin: 0 auto;
     display: flex; flex-direction: column; gap: 18px;
     animation: fadeIn .3s ease;
   }
@@ -189,7 +189,7 @@
   .atom-model-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; }
   .atom-stage {
     position: relative;
-    width: clamp(220px, 60vw, 290px); height: clamp(220px, 60vw, 290px);
+    width: clamp(200px, 100%, 440px); aspect-ratio: 1 / 1;
     margin: 0 auto;
   }
   .shell-ring {
@@ -217,9 +217,11 @@
   .nuc-dot.p { background: var(--proton); }
   .nuc-dot.n { background: var(--neutron); }
 
+  /* Størrelse settes fra JS, proporsjonal med scenens størrelse — se
+     .nuc-dot over for samme begrunnelse. */
   .e-dot {
-    position: absolute; width: 11px; height: 11px; border-radius: 50%;
-    background: var(--electron); border: 2px solid var(--ink);
+    position: absolute; border-radius: 50%;
+    background: var(--electron); border-style: solid; border-color: var(--ink);
     transform: translate(-50%,-50%);
     transition: left .22s ease, top .22s ease, opacity .18s ease;
   }
@@ -360,11 +362,18 @@
   .pt-placeholder .ph-label { font-weight: 800; font-size: .5rem; color: var(--muted); }
 
   @media (min-width: 900px) {
-    .game-wrap { flex-direction: row; align-items: flex-start; gap: 32px; }
+    .game-wrap { flex-direction: row; align-items: center; gap: 48px; }
     .col-left, .col-right { flex: 1; }
     .pt-overlay { align-items: center; }
     .pt-panel { border-radius: 16px; }
     .pt-hint { display: none; }
+    /* Senter oppgaven vertikalt i det tilgjengelige vinduet i stedet for
+       at den blir liggende klistret øverst med mye tom plass under, på
+       skjermer høye nok til at det er rom for det. */
+    #screen-game.active {
+      display: flex; flex-direction: column; justify-content: center;
+      min-height: calc(100vh - 170px);
+    }
   }
 
   /* ══ SLUTTSKJERM ══ */
@@ -741,7 +750,11 @@ const ANIONS = [
 const MAX_P = 18, MAX_N = 22, MAX_E = 21;
 const SHELL_CAPACITIES = [2, 8, 8, 8];
 const MAX_SHELLS = SHELL_CAPACITIES.length;
-const NUC_DOT_MAX = 7, NUC_DOT_MIN = 2.6, E_DOT_RADIUS = 5.5;
+/* Kule- og elektronstørrelser er forhold, ikke faste pikselverdier, slik
+   at hele atommodellen skalerer sammen når scenen blir større på
+   bredere skjermer i stedet for at kulene forblir like store og
+   modellen ser gløsere/tommere ut jo mer plass den får. */
+const NUC_DOT_MAX_RATIO = 0.151, NUC_DOT_MIN_RATIO = 0.056, E_DOT_RATIO = 0.038;
 
 function shuffled(arr) {
   const a = arr.slice();
@@ -876,86 +889,64 @@ function computeShells(total) {
 }
 
 /* ══ KJERNEPAKKING: protoner frastøter hverandre, nøytroner er nøytrale ══
-   Fysisk regel (forenklet fra 3D til 2D, som brukeren ba om): protoner
-   skal ikke ligge inntil hverandre når det finnes nøytroner nok til å
-   virke som buffer mellom dem. Nøytron-nøytron-kontakt er derimot helt
-   uproblematisk — nøytroner har ingen elektrisk frastøtning.
+   Fysisk regel (forenklet fra 3D til 2D): protoner bør ikke ligge inntil
+   hverandre når det finnes nøytroner nok til å virke som buffer mellom
+   dem. Nøytron-nøytron-kontakt er derimot helt uproblematisk — nøytroner
+   har ingen elektrisk frastøtning, så de reguleres ikke.
 
-   Løsningen bruker at et vanlig kvadratisk rutenett er "topartsdelt":
-   fargelegger man rutene som et sjakkbrett (paritet på x+y), er INGEN
-   to ruter av samme farge naboer til hverandre. Så lenge protontallet
-   er ≤ den største av de to sjakkbrettfargene, kan derfor ALLE protoner
-   legges i én farge — det gir null proton-proton-naboskap, garantert
-   (ikke bare sannsynlig, slik en tilfeldig fordeling ville gitt).
-   Legger man et rutenett i en voksende spiral utover fra sentrum, og
-   fyller først protonenes fargegruppe og så resten med nøytroner, får
-   man nettopp helium-4s kjente PN/NP-sjakkbrettmønster helt av seg selv.
-
-   Bare når protontallet overstiger den største fargegruppen (svært
-   protontunge, i praksis ustabile/ikke-eksisterende konfigurasjoner)
-   blir noe proton-proton-naboskap uunngåelig — det er også fysisk
-   rimelig, ikke en svakhet ved modellen. */
-function squareSpiralCells(count) {
-  const cells = [{ x: 0, y: 0 }];
-  if (count <= 1) return cells.slice(0, count);
-  const dirs = [[1, 0], [0, 1], [-1, 0], [0, -1]];
-  let x = 0, y = 0, dirIdx = 0, stepLen = 1;
-  outer:
-  while (cells.length < count) {
-    for (let rep = 0; rep < 2; rep++) {
-      const [dx, dy] = dirs[dirIdx % 4];
-      for (let k = 0; k < stepLen; k++) {
-        x += dx; y += dy;
-        cells.push({ x, y });
-        if (cells.length >= count) break outer;
-      }
-      dirIdx++;
-    }
-    stepLen++;
-  }
-  return cells;
+   Formen skal være en rund klump (solsikke-/phyllotaksi-fordeling —
+   samme mønster som frø i en solsikke, gir jevn dekning av en sirkelflate
+   uten rutenett-følelse), ikke et rutenett. Alle nukleoner ligger på ÉN
+   felles spiral (ikke to separate, som ville gitt overlappende lag), og
+   hvilken posisjon som blir proton avgjøres ved å spre protonene jevnest
+   mulig langs SPIRALINDEKSEN (samme teknikk som brukes til å tegne rette
+   linjer på et rutenett). Gyllenvinkelen bak solsikke-mønsteret har ingen
+   enkle periodisiteter, så indekser som ligger nær hverandre i sekvensen
+   ligger som regel også nær hverandre i rommet — jevn spredning langs
+   indeksen gir dermed også en rimelig jevn spredning i rommet, og
+   helium-4 ender opp med to protoner tydelig adskilt av to nøytroner.
+   Dette er en heuristikk (ikke en matematisk garanti slik et rutenett
+   ville gitt), men gir riktig runding og lar kulene pakkes tettere —
+   opptil ca. 10 % overlapp er innenfor normalen for en tegnet klump. */
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+function sunflowerPoint(i, n, R) {
+  const r = R * Math.sqrt((i + 0.5) / n);
+  const theta = i * GOLDEN_ANGLE;
+  return { x: r * Math.cos(theta), y: r * Math.sin(theta) };
 }
 
-/* Kulestørrelse utledes av nukleontallet: kulene skal så vidt berøre
-   naborutene i gridet uten å overlappe, og hele klumpen skal vokse med
-   √(antall) siden det er en flate som fylles — akkurat som før, bare nå
-   fra et rutenett i stedet for en solsikke. Formen sentreres om sitt
-   eget tyngdepunkt (ikke rutenettets origo), siden spiralen sjelden
-   avsluttes symmetrisk. */
+/* Jevnest mulig fordeling av `protons` "treff" blant `total` posisjoner
+   langs spiralen (Bresenham-teknikk), i stedet for å samle alle protoner
+   først eller sist i sekvensen. */
+function nucleonTypesEven(protons, total) {
+  const types = new Array(total);
+  for (let i = 0; i < total; i++) {
+    types[i] = Math.floor((i + 1) * protons / total) > Math.floor(i * protons / total) ? 'p' : 'n';
+  }
+  return types;
+}
+
+/* Kulestørrelse utledes av nukleontallet slik at klumpen vokser med
+   √(antall) — en flate som fylles, ikke en lineær vekst. Pakkekonstanten
+   er kalibrert til å tillate inntil ca. 10 % overlapp mellom naboer i
+   stedet for at de så vidt berører hverandre, for en tettere, rundere
+   klump. */
+const NUC_PACK = 0.77 * 1.10;
 function nucleusGeometry(total, maxRadius) {
-  if (total <= 0) return { spacing: 0, dotRadius: 0, outerRadius: 0, cells: [] };
-  const raw = squareSpiralCells(total);
-  const cx = raw.reduce((s, c) => s + c.x, 0) / raw.length;
-  const cy = raw.reduce((s, c) => s + c.y, 0) / raw.length;
-  const cells = raw.map(c => ({ x: c.x, y: c.y, cx: c.x - cx, cy: c.y - cy }));
-  if (total === 1) {
-    return { spacing: NUC_DOT_MAX * 2, dotRadius: NUC_DOT_MAX, outerRadius: NUC_DOT_MAX, cells: [{ x: 0, y: 0, cx: 0, cy: 0 }] };
-  }
-  const maxDist = Math.max(...cells.map(c => Math.hypot(c.cx, c.cy)));
-  const dotRadius = Math.max(NUC_DOT_MIN, Math.min(NUC_DOT_MAX, maxRadius / ((maxDist + 0.5) * 2)));
-  const spacing = dotRadius * 2;
-  return { spacing, dotRadius, outerRadius: maxDist * spacing + dotRadius, cells };
+  const dotMax = maxRadius * NUC_DOT_MAX_RATIO, dotMin = maxRadius * NUC_DOT_MIN_RATIO;
+  if (total <= 0) return { dotRadius: 0, centerRadius: 0, outerRadius: 0 };
+  if (total === 1) return { dotRadius: dotMax, centerRadius: 0, outerRadius: dotMax };
+  let dotRadius = NUC_PACK * maxRadius / (Math.sqrt(total) + NUC_PACK);
+  dotRadius = Math.max(dotMin, Math.min(dotMax, dotRadius));
+  const centerRadius = dotRadius * Math.sqrt(total) / NUC_PACK;
+  return { dotRadius, centerRadius, outerRadius: centerRadius + dotRadius };
 }
 
-/* Sjakkbrett-fordeling: se forklaring over funksjonen den brukes fra. */
-function nucleonLayout(protons, neutrons, cells) {
-  const groupA = cells.filter(c => ((c.x + c.y) % 2 + 2) % 2 === 0);
-  const groupB = cells.filter(c => ((c.x + c.y) % 2 + 2) % 2 === 1);
-  let protonCells, neutronCells;
-  if (protons <= groupA.length) {
-    protonCells = groupA.slice(0, protons);
-    neutronCells = groupA.slice(protons).concat(groupB);
-  } else if (protons <= groupB.length) {
-    protonCells = groupB.slice(0, protons);
-    neutronCells = groupB.slice(protons).concat(groupA);
-  } else {
-    const bigger = groupA.length >= groupB.length ? groupA : groupB;
-    const smaller = bigger === groupA ? groupB : groupA;
-    protonCells = bigger.concat(smaller.slice(0, protons - bigger.length));
-    neutronCells = smaller.slice(protons - bigger.length);
-  }
-  return protonCells.map(c => ({ x: c.cx, y: c.cy, type: 'p' }))
-    .concat(neutronCells.map(c => ({ x: c.cx, y: c.cy, type: 'n' })));
+function nucleonLayout(protons, neutrons, centerRadius) {
+  const total = protons + neutrons;
+  if (total === 1) return [{ x: 0, y: 0, type: protons === 1 ? 'p' : 'n' }];
+  const types = nucleonTypesEven(protons, total);
+  return types.map((type, i) => ({ ...sunflowerPoint(i, total, centerRadius), type }));
 }
 
 function renderNucleus(nucleusEl, protons, neutrons, maxRadius) {
@@ -968,15 +959,15 @@ function renderNucleus(nucleusEl, protons, neutrons, maxRadius) {
   if (total === 0) return geo;
 
   const half = size / 2;
-  const layout = nucleonLayout(protons, neutrons, geo.cells);
+  const layout = nucleonLayout(protons, neutrons, geo.centerRadius);
   const frag = document.createDocumentFragment();
   layout.forEach(pt => {
     const dot = document.createElement('div');
     dot.className = 'nuc-dot ' + pt.type;
     dot.style.width = dot.style.height = (geo.dotRadius * 2) + 'px';
     dot.style.borderWidth = Math.max(1, geo.dotRadius * 0.28) + 'px';
-    dot.style.left = (half + pt.x * geo.spacing) + 'px';
-    dot.style.top = (half + pt.y * geo.spacing) + 'px';
+    dot.style.left = (half + pt.x) + 'px';
+    dot.style.top = (half + pt.y) + 'px';
     frag.appendChild(dot);
   });
   nucleusEl.appendChild(frag);
@@ -987,8 +978,9 @@ function renderElectronShells(stageEl, nucleusOuterRadius, electrons) {
   Array.from(stageEl.querySelectorAll('.shell-ring, .e-dot')).forEach(el => el.remove());
   const shells = computeShells(electrons);
   const half = (stageEl.clientWidth || 260) / 2;
-  const maxRingRadius = half - E_DOT_RADIUS - 3;
-  const inner = nucleusOuterRadius + 8;
+  const eDotRadius = Math.max(3, half * E_DOT_RATIO);
+  const maxRingRadius = half - eDotRadius - half * 0.02;
+  const inner = nucleusOuterRadius + half * 0.028;
   /* Delt på MAX_SHELLS (ikke på antall skall som faktisk tegnes), slik
      at ringavstanden er den samme uansett hvor mange skall atomet har. */
   const gap = (maxRingRadius - inner) / MAX_SHELLS;
@@ -1008,6 +1000,8 @@ function renderElectronShells(stageEl, nucleusOuterRadius, electrons) {
       const angle = offset + (2 * Math.PI * i) / count;
       const dot = document.createElement('div');
       dot.className = 'e-dot' + (REDUCED_MOTION ? '' : ' enter');
+      dot.style.width = dot.style.height = (eDotRadius * 2) + 'px';
+      dot.style.borderWidth = Math.max(1, eDotRadius * 0.32) + 'px';
       dot.style.left = (half + radius * Math.cos(angle)) + 'px';
       dot.style.top = (half + radius * Math.sin(angle)) + 'px';
       frag.appendChild(dot);
