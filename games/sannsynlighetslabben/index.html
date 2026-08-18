@@ -156,52 +156,8 @@
   .task-desc { font-weight: 800; font-size: 1.02rem; text-align: center; }
   .task-note { font-weight: 700; font-size: .82rem; color: var(--muted); text-align: center; margin-top: 4px; }
 
-  /* ══ VISUALISERING ══ */
+  /* ══ VISUALISERING: KASTEBRETTET ══ */
   .visual-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 6px 0; }
-  .visual-objects { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 84px; }
-
-  .coin {
-    width: 72px; height: 72px; border-radius: 50%; background: var(--yellow);
-    border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Chewy', cursive; font-size: 1.5rem;
-  }
-  .coin.flip { animation: coinFlip .22s ease; }
-  @keyframes coinFlip { 0% { transform: scaleX(1); } 50% { transform: scaleX(.15); } 100% { transform: scaleX(1); } }
-
-  .die {
-    width: 72px; height: 72px; border-radius: 14px; background: var(--card);
-    border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
-    display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr);
-    padding: 10px;
-  }
-  .die.flip { animation: dieFlip .2s ease; }
-  @keyframes dieFlip { 0% { transform: scale(1) rotate(0); } 50% { transform: scale(.85) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
-  .pip { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
-  .pip::after { content: ''; width: 62%; height: 62%; border-radius: 50%; background: var(--ink); display: block; }
-  .pip.off::after { content: none; }
-
-  .bag {
-    width: 84px; height: 92px;
-    border: 4px solid var(--ink);
-    border-radius: 0 0 40px 40px;
-    background: linear-gradient(#fef3c7, #fde68a);
-    box-shadow: 0 5px 0 var(--ink);
-    position: relative;
-    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px;
-  }
-  .bag::before {
-    content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-    width: 40px; height: 14px; border: 4px solid var(--ink); border-bottom: none;
-    border-radius: 10px 10px 0 0; background: #fde68a;
-  }
-  .bag.jiggle { animation: bagJiggle .22s ease; }
-  @keyframes bagJiggle { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-4deg); } }
-  .bag-drawn { font-weight: 900; font-size: .78rem; }
-
-  .draw-readout {
-    font-family: 'Chewy', cursive; font-size: 1.05rem; min-height: 1.4em;
-  }
 
   .composition-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
   .comp-chip {
@@ -209,6 +165,32 @@
     border: 3px solid var(--ink); border-radius: 8px; padding: 5px 10px; background: var(--card);
   }
   .comp-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); flex: none; }
+
+  /* the fly-and-land stage: a felt "table" window set into the card so every
+     throw is visible landing in its own well, wells filling like a physical
+     bar chart and cashing in for chips at 100 / 1000 */
+  .kast-board {
+    --felt: #0e3b2e; --felt-deep: #082a20; --felt-light: #17573f;
+    --chalk: #f6efdd; --chalk-dim: #cdc4a8;
+    --brass: #e8b23d; --brass-dim: #b98a26;
+    --cherry: #d6493a; --cherry-dim: #a8382c;
+    --wood: #2a1d14; --wood-light: #4a3524;
+    width: 100%; border-radius: 14px; padding: 8px 8px 0;
+    background: var(--felt-deep); box-shadow: inset 0 0 0 2px rgba(232,178,61,.18);
+  }
+  .kast-stage { position: relative; width: 100%; height: clamp(220px, 40vw, 320px); border-radius: 10px; overflow: hidden; }
+  .kast-stage canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+  .kast-wells { display: grid; padding: 6px 4px 10px; gap: 4px; }
+  .kast-well { text-align: center; font-family: 'Nunito', sans-serif; }
+  .kast-well .kast-well-label { font-weight: 900; font-size: .74rem; color: var(--brass); text-transform: uppercase; letter-spacing: .02em; }
+  .kast-well .kast-well-count { font-weight: 800; font-size: .8rem; color: var(--chalk); font-variant-numeric: tabular-nums; }
+  .kast-well .kast-well-pct { font-size: .68rem; color: var(--chalk-dim); font-variant-numeric: tabular-nums; }
+  .kast-toolbar { display: flex; justify-content: flex-end; padding: 4px 8px 6px; }
+  .kast-sound-btn {
+    background: none; border: none; color: var(--chalk-dim); font-size: .9rem;
+    padding: 2px 6px; opacity: .8;
+  }
+  .kast-sound-btn:hover { color: var(--chalk); opacity: 1; }
 
   /* ══ PROGNOSE ══ */
   .predict-block { display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -256,24 +238,6 @@
   .sim-card { display: none; flex-direction: column; gap: 12px; align-items: center; }
   .sim-card.show { display: flex; }
   .sim-counter { font-weight: 900; font-size: 1rem; }
-  .trace-strip { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; min-height: 32px; }
-  .trace-chip {
-    display: inline-flex; align-items: center; justify-content: center;
-    min-width: 30px; height: 28px; padding: 0 6px; font-weight: 900; font-size: .78rem;
-    border: 2px solid var(--ink); border-radius: 6px; background: var(--card);
-  }
-
-  .chart-wrap { width: 100%; }
-  .chart-bars {
-    display: flex; align-items: flex-end; gap: clamp(4px,2vw,10px);
-    height: clamp(110px,26vw,150px); width: 100%; padding: 0 2px;
-    border-bottom: 3px solid var(--ink);
-  }
-  .chart-bar-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
-  .chart-bar-count { font-weight: 900; font-size: clamp(.68rem,2.2vw,.85rem); }
-  .chart-bar-fill { width: 100%; max-width: 46px; border: 2px solid var(--ink); border-radius: 6px 6px 0 0; transition: height .25s ease; min-height: 2px; }
-  .chart-labels { display: flex; gap: clamp(4px,2vw,10px); padding: 6px 2px 0; }
-  .chart-label-col { flex: 1 1 0; min-width: 0; text-align: center; font-weight: 800; font-size: clamp(.62rem,2vw,.78rem); color: var(--muted); }
 
   .chart-text-list { width: 100%; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
   .chart-text-row { display: flex; justify-content: space-between; font-weight: 700; font-size: .85rem; border-bottom: 1px dashed var(--gridline); padding: 2px 4px; }
@@ -315,8 +279,7 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *, .coin.flip, .die.flip, .bag.jiggle, .chart-bar-fill, .lln-meter-fill,
-    .compare-card, .sim-card, .btn-primary, .btn-secondary, .cat-btn {
+    *, .lln-meter-fill, .compare-card, .sim-card, .btn-primary, .btn-secondary, .cat-btn {
       animation-duration: .01ms !important; transition-duration: .01ms !important;
     }
   }
@@ -370,9 +333,17 @@
           <p class="task-desc" id="taskDesc"></p>
           <p class="task-note" id="taskNote" hidden></p>
           <div class="visual-stage">
-            <div class="visual-objects" id="visualObjects" aria-hidden="true"></div>
             <div class="composition-list" id="compositionList" aria-hidden="true"></div>
-            <div class="draw-readout" id="drawReadout" aria-hidden="true"></div>
+            <div class="kast-board" id="kastBoard">
+              <div class="kast-stage" id="kastStage">
+                <canvas id="kastStaticCanvas"></canvas>
+                <canvas id="kastDynCanvas"></canvas>
+              </div>
+              <div class="kast-wells" id="kastWells"></div>
+              <div class="kast-toolbar">
+                <button type="button" class="kast-sound-btn" id="kastSoundBtn" aria-pressed="false" aria-label="Skru på lyd for kastebrettet">🔇 Lyd</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -386,11 +357,6 @@
       <div class="game-col">
         <div class="card sim-card" id="simCard">
           <span class="sim-counter" id="simCounter">0 / 0 kast</span>
-          <div class="trace-strip" id="traceStrip" aria-hidden="true"></div>
-          <div class="chart-wrap">
-            <div class="chart-bars" id="chartBars" aria-hidden="true"></div>
-            <div class="chart-labels" id="chartLabels" aria-hidden="true"></div>
-          </div>
           <div class="chart-text-list" id="chartTextList"></div>
           <div class="lln-box" id="llnBox">
             <div class="lln-row">
@@ -678,28 +644,567 @@ function announce(text) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
+   KASTEMOTOREN
+   Et generelt "kastebrett": alle forsøkstyper (mynt, terning, kulepose,
+   to mynter) flyr fra samme startpunkt og lander i brønner nederst,
+   sortert etter utfall. Brønnene ER søylediagrammet — de fylles fysisk
+   opp, og veksler løse brikker inn i jetonger ved 100 og 1000, slik at
+   en brønn aldri trenger vise mer enn 99 brikker + noen få jetonger,
+   uansett hvor mange av de opptil 500 kastene som har landet.
+   Motoren kjenner ikke til sannsynlighet eller poeng — spillmotoren
+   trekker de faktiske utfallene, kastemotoren viser dem bare fram i
+   riktig tempo.
+   ══════════════════════════════════════════════════════════════════ */
+const KastEngine = (function () {
+  const stageEl = $('kastStage');
+  const staticCanvas = $('kastStaticCanvas');
+  const dynCanvas = $('kastDynCanvas');
+  const wellsEl = $('kastWells');
+  const soundBtn = $('kastSoundBtn');
+  const ctxS = staticCanvas.getContext('2d');
+  const ctxD = dynCanvas.getContext('2d');
+  const dpr = Math.max(1, window.devicePixelRatio || 1);
+  let W = 0, H = 0;
+
+  let outcomes = [];        // [{key,label,shortLabel,color,theo}]
+  let keyToIndex = {};
+  let spriteKind = 'token'; // 'die' | 'token'
+  let columns = [];         // { count, reserved, settledValues: [] }
+
+  const SPRITE = 26, MIN_SPRITE = 10;
+  let boardSize = SPRITE;
+  const REDUCE = REDUCED_MOTION;
+  let SOUND = false;
+
+  let flying = [], dust = [];
+  let loopRunning = false;
+  let bulkQueue = [], bulkStart = 0;
+  let lastOverflowRedraw = 0;
+  let batch = null; // { onLand, onAllLanded, landed, total }
+
+  let audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); }
+    return audioCtx;
+  }
+  function playTone(freq, dur, type) {
+    if (!SOUND) return;
+    const ac = ensureAudio(); if (!ac) return;
+    const t0 = ac.currentTime;
+    const osc = ac.createOscillator(), gain = ac.createGain();
+    osc.type = type || 'triangle';
+    osc.frequency.setValueAtTime(freq, t0);
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.16, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    osc.connect(gain).connect(ac.destination);
+    osc.start(t0); osc.stop(t0 + dur + 0.02);
+  }
+  function landSound() { playTone(spriteKind === 'token' ? 1100 : 300, 0.1, spriteKind === 'token' ? 'sine' : 'triangle'); }
+  function playChipSound() { playTone(680, 0.08, 'square'); setTimeout(() => playTone(1020, 0.12, 'square'), 65); }
+
+  function resize() {
+    const rect = stageEl.getBoundingClientRect();
+    W = Math.max(160, Math.round(rect.width));
+    H = Math.max(140, Math.round(rect.height));
+    [staticCanvas, dynCanvas].forEach(c => { c.width = W * dpr; c.height = H * dpr; });
+    ctxS.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctxD.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (outcomes.length) { fitBoard(); retargetFlying(); redrawStatic(); }
+  }
+
+  function originPoint() { return { x: W / 2, y: 24 }; }
+  function wellBaseY() { return H - 8; }
+  function colWidth() { return W / Math.max(1, outcomes.length); }
+  function wellTop() { return H * 0.3; }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+  function drawFelt(ctx) {
+    ctx.clearRect(0, 0, W, H);
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#124a38'); g.addColorStop(1, '#0a2e23');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    ctx.save(); ctx.globalAlpha = .05; ctx.strokeStyle = '#f6efdd'; ctx.lineWidth = 1;
+    for (let x = -H; x < W; x += 14) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + H, H); ctx.stroke(); }
+    ctx.restore();
+
+    ctx.save(); ctx.strokeStyle = 'rgba(246,239,221,0.12)'; ctx.lineWidth = 1;
+    for (let i = 1; i < outcomes.length; i++) {
+      const x2 = colWidth() * i;
+      ctx.beginPath(); ctx.moveTo(x2, H * 0.26); ctx.lineTo(x2, H - 3); ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.save(); ctx.strokeStyle = 'rgba(232,178,61,0.55)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(3, H - 5); ctx.lineTo(W - 3, H - 5); ctx.stroke(); ctx.restore();
+
+    const o = originPoint();
+    ctx.save();
+    ctx.fillStyle = 'rgba(232,178,61,0.9)';
+    ctx.beginPath();
+    ctx.moveTo(o.x - 14, o.y - 9); ctx.lineTo(o.x + 14, o.y - 9); ctx.lineTo(o.x + 5, o.y + 5); ctx.lineTo(o.x - 5, o.y + 5);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(8,42,32,0.9)';
+    ctx.beginPath(); ctx.ellipse(o.x, o.y + 5, 5, 2, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function redrawStatic() { drawFelt(ctxS); for (let c = 0; c < columns.length; c++) drawColumnPile(ctxS, c); }
+
+  function capacityFor(size, wellW, availableH) {
+    const perRow = Math.max(1, Math.floor(wellW / size));
+    const rows = Math.max(1, Math.floor(availableH / (size - 4)));
+    return perRow * rows;
+  }
+  function tiersFor(count) {
+    let q = Math.floor(count / 100); const tiers = [];
+    while (q > 0) { tiers.push(q % 10); q = Math.floor(q / 10); }
+    return tiers;
+  }
+  function chipLabel(tierIndex) {
+    const value = 100 * Math.pow(10, tierIndex);
+    if (value >= 1000000) return Math.round(value / 1000000) + 'M';
+    if (value >= 1000) return Math.round(value / 1000) + 'K';
+    return String(value);
+  }
+  function chipSizeFor(wellW) { return clamp(wellW / 4, 14, 30); }
+  function chipLayoutFor(colIndex) {
+    const wellW = colWidth() - 14;
+    const chipSize = chipSizeFor(wellW);
+    const rowH = chipSize * 1.15;
+    const perRowChips = Math.max(1, Math.floor(wellW / (chipSize * 1.08)));
+    const tiers = tiersFor(columns[colIndex].count);
+    const rows = [];
+    for (let t = tiers.length - 1; t >= 0; t--) {
+      const n = tiers[t]; if (n <= 0) continue;
+      const subRows = Math.ceil(n / perRowChips);
+      for (let s = 0; s < subRows; s++) rows.push({ tier: t, n: Math.min(perRowChips, n - s * perRowChips) });
+    }
+    return { chipSize, rowH, rows, height: rows.length ? rows.length * rowH + 5 : 0 };
+  }
+  function chipStackHeight(colIndex) { return chipLayoutFor(colIndex).height; }
+  function looseBaseYFor(colIndex) { return wellBaseY() - chipStackHeight(colIndex); }
+
+  function fitBoard() {
+    const wellW = colWidth() - 14;
+    let minAvailableH = Infinity;
+    for (let i = 0; i < columns.length; i++) {
+      const h = looseBaseYFor(i) - wellTop();
+      if (h < minAvailableH) minAvailableH = h;
+    }
+    let size = SPRITE;
+    while (size > MIN_SPRITE && capacityFor(size, wellW, minAvailableH) < 99) size -= 2;
+    boardSize = Math.max(MIN_SPRITE, size);
+  }
+  function retargetFlying() {
+    flying.forEach(f => {
+      if (f.phase !== 'flight') return;
+      const baseY = looseBaseYFor(f.colIndex);
+      const t = slotPosition(f.colIndex, f.stackIndex, boardSize, baseY);
+      f.endX = t.x; f.endY = t.y; f.landSize = boardSize; f.looseBaseY = baseY;
+    });
+  }
+  function slotPosition(colIndex, stackIndex, size, baseY) {
+    size = size || SPRITE; if (baseY === undefined) baseY = wellBaseY();
+    const wellLeft = colWidth() * colIndex + 7, wellW = colWidth() - 14;
+    const perRow = Math.max(1, Math.floor(wellW / size));
+    const row = Math.floor(stackIndex / perRow), posInRow = stackIndex % perRow;
+    const gridW = perRow * size;
+    const startX = wellLeft + (wellW - gridW) / 2 + size / 2;
+    const jitterSeed = (colIndex * 97 + stackIndex * 53) % 7;
+    const x = startX + posInRow * size + (jitterSeed - 3) * 0.5;
+    const y = baseY - 7 - row * (size - 4);
+    return { x, y: Math.max(wellTop(), y) };
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+  const DIE_PIP_PATTERNS = {
+    1: [[1, 1]], 2: [[0, 0], [2, 2]], 3: [[0, 0], [1, 1], [2, 2]],
+    4: [[0, 0], [0, 2], [2, 0], [2, 2]], 5: [[0, 0], [0, 2], [1, 1], [2, 0], [2, 2]],
+    6: [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]]
+  };
+  function drawDie(ctx, cx, cy, size, angle, value) {
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(angle);
+    const r = size * 0.22;
+    ctx.fillStyle = '#f6efdd'; ctx.strokeStyle = '#2a1d14'; ctx.lineWidth = Math.max(1, size * 0.05);
+    roundRectPath(ctx, -size / 2, -size / 2, size, size, r); ctx.fill(); ctx.stroke();
+    const pat = DIE_PIP_PATTERNS[value] || DIE_PIP_PATTERNS[1];
+    ctx.fillStyle = '#d6493a';
+    const sp = size * 0.26;
+    pat.forEach(([px, py]) => { ctx.beginPath(); ctx.arc((px - 1) * sp, (py - 1) * sp, size * 0.085, 0, Math.PI * 2); ctx.fill(); });
+    ctx.restore();
+  }
+  function hexToRgb(hex) { const n = parseInt(hex.replace('#', ''), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function rgbToHex(r, g, b) { return '#' + [r, g, b].map(v => clamp(Math.round(v), 0, 255).toString(16).padStart(2, '0')).join(''); }
+  function lighten(hex, amt) { const [r, g, b] = hexToRgb(hex); return rgbToHex(r + (255 - r) * amt, g + (255 - g) * amt, b + (255 - b) * amt); }
+  function darken(hex, amt) { const [r, g, b] = hexToRgb(hex); return rgbToHex(r * (1 - amt), g * (1 - amt), b * (1 - amt)); }
+  function contrastText(hex) { const [r, g, b] = hexToRgb(hex); const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255; return lum > 0.6 ? '#082a20' : '#f6efdd'; }
+  function drawToken(ctx, cx, cy, r, angle, color, label) {
+    ctx.save(); ctx.translate(cx, cy);
+    const sx = Math.max(0.14, Math.abs(Math.cos(angle)));
+    ctx.scale(sx, 1);
+    const g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, r * 0.1, 0, 0, r);
+    g.addColorStop(0, lighten(color, 0.35)); g.addColorStop(0.65, color); g.addColorStop(1, darken(color, 0.25));
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = Math.max(1, r * 0.12); ctx.strokeStyle = darken(color, 0.4); ctx.stroke();
+    if (sx > 0.55) {
+      ctx.save(); ctx.scale(1 / sx, 1);
+      ctx.fillStyle = contrastText(color);
+      ctx.font = '800 ' + Math.round(r * (label.length > 1 ? 0.62 : 0.95)) + 'px "Nunito", sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, 0, r * 0.06);
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  function drawChip(ctx, cx, cy, size, tierIndex) {
+    const palette = [
+      { a: '#ffe6a8', b: '#e8b23d', c: '#b98a26', text: '#082a20' },
+      { a: '#f0857a', b: '#d6493a', c: '#a8382c', text: '#f6efdd' },
+      { a: '#fbf6e9', b: '#f6efdd', c: '#cdc4a8', text: '#2a1d14' }
+    ];
+    const p = palette[tierIndex % palette.length];
+    ctx.save(); ctx.translate(cx, cy);
+    const g = ctx.createRadialGradient(-size * 0.22, -size * 0.22, size * 0.08, 0, 0, size * 0.5);
+    g.addColorStop(0, p.a); g.addColorStop(0.6, p.b); g.addColorStop(1, p.c);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, size * 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.save(); ctx.setLineDash([size * 0.16, size * 0.12]); ctx.lineWidth = size * 0.1;
+    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+    ctx.beginPath(); ctx.arc(0, 0, size * 0.5 - size * 0.07, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    ctx.fillStyle = p.text; ctx.font = '800 ' + Math.round(size * 0.3) + 'px "Nunito", sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(chipLabel(tierIndex), 0, size * 0.02);
+    ctx.restore();
+  }
+  function drawChipRow(ctx, wellLeft, wellW, centerY, chipSize, tierIndex, n) {
+    const gap = chipSize * 1.08, totalW = (n - 1) * gap, startX = wellLeft + wellW / 2 - totalW / 2;
+    for (let i = 0; i < n; i++) drawChip(ctx, startX + i * gap, centerY, chipSize, tierIndex);
+  }
+
+  function drawLandedAt(ctx, colIndex, stackIndex, key, size, baseY) {
+    size = size || SPRITE;
+    const pos = slotPosition(colIndex, stackIndex, size, baseY);
+    if (spriteKind === 'die') drawDie(ctx, pos.x, pos.y, size * 0.86, 0, parseInt(key, 10));
+    else { const o = outcomes[colIndex]; drawToken(ctx, pos.x, pos.y, size * 0.42, 0, o.color, o.shortLabel); }
+  }
+
+  function drawColumnPile(ctx, colIndex) {
+    const wellLeft = colWidth() * colIndex + 7, wellW = colWidth() - 14;
+    const layout = chipLayoutFor(colIndex);
+    const baseY = wellBaseY();
+    layout.rows.forEach((row, r) => {
+      const rowCenterY = baseY - 5 - layout.rowH * r - layout.rowH / 2;
+      drawChipRow(ctx, wellLeft, wellW, rowCenterY, layout.chipSize, row.tier, row.n);
+    });
+    const looseBaseY = baseY - layout.height;
+    const availableH = looseBaseY - wellTop();
+    const cap = capacityFor(boardSize, wellW, availableH);
+    const col = columns[colIndex];
+    const bundledHundreds = Math.floor(col.count / 100);
+    const looseVals = col.settledValues.slice(bundledHundreds * 100);
+    const shown = Math.min(cap, looseVals.length);
+    for (let k = 0; k < shown; k++) drawLandedAt(ctx, colIndex, k, looseVals[k], boardSize, looseBaseY);
+    if (looseVals.length > cap) drawOverflowBadge(ctx, colIndex, looseVals.length - cap);
+  }
+  function drawOverflowBadge(ctx, colIndex, extra) {
+    const wellLeft = colWidth() * colIndex + 7, wellW = colWidth() - 14;
+    const cx = wellLeft + wellW / 2, topY = wellTop() - 12;
+    const label = '+' + extra;
+    ctx.save(); ctx.font = '800 11px "Nunito", sans-serif';
+    const tw = ctx.measureText(label).width, bw = tw + 14, bh = 18;
+    ctx.fillStyle = 'rgba(232,178,61,0.95)';
+    roundRectPath(ctx, cx - bw / 2, topY - bh / 2, bw, bh, bh / 2); ctx.fill();
+    ctx.fillStyle = '#082a20'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, cx, topY + 1); ctx.restore();
+  }
+
+  function randRange(a, b) { return a + Math.random() * (b - a); }
+  function easeInQuad(t) { return t * t; }
+
+  function spawnThrow(key, speedFactor) {
+    const colIndex = keyToIndex[key];
+    const col = columns[colIndex];
+    const predictedIndex = col.reserved % 100;
+    col.reserved++;
+    const baseY = looseBaseYFor(colIndex);
+    const o = originPoint();
+    const target = slotPosition(colIndex, predictedIndex, boardSize, baseY);
+
+    if (REDUCE) { landInstantly(colIndex, key); return; }
+
+    const dur = Math.max(240, 600 * (speedFactor || 1));
+    flying.push({
+      key, colIndex, stackIndex: predictedIndex, landSize: boardSize, looseBaseY: baseY,
+      startX: o.x, startY: o.y, endX: target.x, endY: target.y,
+      startTime: performance.now(), duration: dur,
+      arcHeight: randRange(24, 54), wobble: randRange(-28, 28), wobbleCycles: randRange(1.1, 2.3),
+      spins: randRange(2.2, 4.2) * (Math.random() < 0.5 ? -1 : 1),
+      phase: 'flight', settleStart: 0
+    });
+    ensureLoop();
+  }
+
+  function reportLand() {
+    if (!batch) return;
+    batch.landed++;
+    batch.onLand && batch.onLand(batch.landed, batch.total);
+  }
+
+  function landInstantly(colIndex, key) {
+    const col = columns[colIndex];
+    col.settledValues.push(key); col.count++;
+    if (col.count % 100 === 0) {
+      triggerCashInFx(colIndex); fitBoard(); retargetFlying(); redrawStatic();
+    } else {
+      const trueIndex = (col.count - 1) % 100;
+      const baseY = looseBaseYFor(colIndex);
+      const wellW = colWidth() - 14, availableH = baseY - wellTop();
+      const cap = capacityFor(boardSize, wellW, availableH);
+      if (trueIndex < cap) drawLandedAt(ctxS, colIndex, trueIndex, key, boardSize, baseY);
+      else redrawStatic();
+    }
+    updateWellsDOM();
+    reportLand();
+  }
+
+  // Decides a landed piece's TRUE resting slot from the live column state
+  // (not the guess made when it launched), so a straggler that lands right as
+  // its well cashes into a chip still ends up exactly where the pile is.
+  function resolveLanding(f) {
+    const col = columns[f.colIndex];
+    col.settledValues.push(f.key); col.count++;
+    if (col.count % 100 === 0) {
+      triggerCashInFx(f.colIndex); fitBoard(); retargetFlying(); redrawStatic();
+      f.showsOnStatic = false; f.settleX = f.endX; f.settleY = f.endY; f.settleSize = f.landSize;
+    } else {
+      const trueIndex = (col.count - 1) % 100;
+      const baseY = looseBaseYFor(f.colIndex);
+      const wellW = colWidth() - 14, availableH = baseY - wellTop();
+      const cap = capacityFor(boardSize, wellW, availableH);
+      const pos = slotPosition(f.colIndex, trueIndex, boardSize, baseY);
+      f.settleIndex = trueIndex; f.settleX = pos.x; f.settleY = pos.y; f.settleSize = boardSize; f.settleBaseY = baseY;
+      f.showsOnStatic = trueIndex < cap;
+      if (!f.showsOnStatic) {
+        const now = performance.now();
+        if (now - lastOverflowRedraw > 200) { redrawStatic(); lastOverflowRedraw = now; }
+      }
+    }
+    spawnDust(f.endX, f.endY);
+    landSound();
+    updateWellsDOM();
+    reportLand();
+  }
+
+  function triggerCashInFx(colIndex) {
+    const wellLeft = colWidth() * colIndex + 7, wellW = colWidth() - 14;
+    spawnSparkle(wellLeft + wellW / 2, wellBaseY() - 14);
+    playChipSound();
+  }
+  function spawnSparkle(x, y) {
+    if (REDUCE) return;
+    const n = 14, arr = [];
+    for (let i = 0; i < n; i++) {
+      const a = (Math.PI * 2 / n) * i + randRange(-0.2, 0.2);
+      arr.push({ x, y, vx: Math.cos(a) * randRange(45, 95), vy: Math.sin(a) * randRange(45, 95) - 35, maxLife: randRange(300, 480) });
+    }
+    dust.push({ parts: arr, start: performance.now(), color: '#ffe6a8' });
+  }
+  function spawnDust(x, y) {
+    if (REDUCE) return;
+    const n = 5, arr = [];
+    for (let i = 0; i < n; i++) {
+      const a = (Math.PI * 2 / n) * i + randRange(-0.3, 0.3);
+      arr.push({ x, y, vx: Math.cos(a) * randRange(14, 34), vy: Math.sin(a) * randRange(6, 16) - 8, maxLife: randRange(200, 300) });
+    }
+    dust.push({ parts: arr, start: performance.now() });
+  }
+
+  // Scales from a handful of throws to hundreds: the first throws always show
+  // one by one at full speed, a middle stretch ramps up, and any remainder is
+  // released in timed batches so even 500 throws finish in a few seconds.
+  function bulkThrow(values) {
+    bulkQueue = [];
+    let t = 0, idx = 0;
+    const count = values.length;
+    const soloCount = Math.min(count, 12);
+    const rampCount = Math.min(Math.max(count - soloCount, 0), 40);
+    const restCount = Math.max(count - soloCount - rampCount, 0);
+    for (let i = 0; i < soloCount; i++) { if (i > 0) t += 130; bulkQueue.push({ at: t, key: values[idx++], speedFactor: 1 }); }
+    for (let j = 0; j < rampCount; j++) { t += 45; bulkQueue.push({ at: t, key: values[idx++], speedFactor: 0.6 }); }
+    if (restCount > 0) {
+      const tickMs = 20;
+      const totalTailMs = Math.min(6000, Math.max(900, restCount * 3));
+      const ticks = Math.max(1, Math.round(totalTailMs / tickMs));
+      const perTick = Math.max(1, Math.ceil(restCount / ticks));
+      let remaining = restCount;
+      while (remaining > 0) {
+        t += tickMs;
+        const n = Math.min(perTick, remaining);
+        for (let k = 0; k < n; k++) bulkQueue.push({ at: t, key: values[idx++], speedFactor: 0.3 });
+        remaining -= n;
+      }
+    }
+    bulkStart = performance.now();
+    ensureLoop();
+  }
+
+  function ensureLoop() { if (!loopRunning) { loopRunning = true; requestAnimationFrame(tick); } }
+
+  function tick(now) {
+    if (bulkQueue.length) {
+      while (bulkQueue.length && (now - bulkStart) >= bulkQueue[0].at) {
+        const item = bulkQueue.shift();
+        spawnThrow(item.key, item.speedFactor);
+      }
+    }
+    ctxD.clearRect(0, 0, W, H);
+    for (let i = flying.length - 1; i >= 0; i--) {
+      const f = flying[i];
+      if (f.phase === 'flight') {
+        const t = (now - f.startTime) / f.duration;
+        if (t >= 1) { resolveLanding(f); f.phase = 'settle'; f.settleStart = now; }
+        else { drawFlying(f, t); continue; }
+      }
+      if (f.phase === 'settle') {
+        const st = Math.min(1, (now - f.settleStart) / 140);
+        drawSettling(f, st);
+        if (st >= 1) {
+          if (f.showsOnStatic) drawLandedAt(ctxS, f.colIndex, f.settleIndex, f.key, f.settleSize, f.settleBaseY);
+          flying.splice(i, 1);
+        }
+      }
+    }
+    for (let d = dust.length - 1; d >= 0; d--) { if (!drawDustSystem(dust[d], now)) dust.splice(d, 1); }
+
+    if (batch && batch.landed >= batch.total && !flying.length && !bulkQueue.length) {
+      const cb = batch.onAllLanded; batch = null; cb && cb();
+    }
+
+    if (flying.length || bulkQueue.length || dust.length) requestAnimationFrame(tick);
+    else loopRunning = false;
+  }
+
+  function drawFlying(f, t) {
+    const x = f.startX + (f.endX - f.startX) * t + f.wobble * Math.sin(t * Math.PI * f.wobbleCycles) * (1 - t);
+    const y = f.startY + (f.endY - f.startY) * easeInQuad(t) - f.arcHeight * 4 * t * (1 - t);
+    const scale = 0.7 + 0.3 * t;
+    const angle = t * f.spins * Math.PI * 2;
+    ctxD.save(); ctxD.globalAlpha = 0.16 * t + 0.05; ctxD.fillStyle = '#000';
+    ctxD.beginPath(); ctxD.ellipse(f.endX, f.endY + 3, SPRITE * 0.4 * scale, SPRITE * 0.14 * scale, 0, 0, Math.PI * 2); ctxD.fill(); ctxD.restore();
+    if (spriteKind === 'die') drawDie(ctxD, x, y, SPRITE * 0.86 * scale, angle, parseInt(f.key, 10));
+    else { const o = outcomes[f.colIndex]; drawToken(ctxD, x, y, SPRITE * 0.42 * scale, angle, o.color, o.shortLabel); }
+  }
+  function drawSettling(f, st) {
+    const squash = Math.sin(st * Math.PI);
+    const sy = 1 - squash * 0.28, sxs = 1 + squash * 0.22;
+    const size = f.landSize + (f.settleSize - f.landSize) * st;
+    const x = f.endX + (f.settleX - f.endX) * st, y = f.endY + (f.settleY - f.endY) * st;
+    ctxD.save(); ctxD.translate(x, y); ctxD.scale(sxs, sy); ctxD.translate(-x, -y);
+    if (spriteKind === 'die') drawDie(ctxD, x, y, size * 0.86, 0, parseInt(f.key, 10));
+    else { const o = outcomes[f.colIndex]; drawToken(ctxD, x, y, size * 0.42, 0, o.color, o.shortLabel); }
+    ctxD.restore();
+  }
+  function drawDustSystem(sys, now) {
+    const elapsed = now - sys.start; let alive = false;
+    const color = sys.color || '#f6efdd';
+    sys.parts.forEach(p => {
+      const lt = elapsed / p.maxLife; if (lt >= 1) return;
+      alive = true;
+      const px = p.x + p.vx * (elapsed / 1000), py = p.y + p.vy * (elapsed / 1000) + 30 * (elapsed / 1000) * (elapsed / 1000);
+      ctxD.save(); ctxD.globalAlpha = (1 - lt) * 0.5; ctxD.fillStyle = color;
+      ctxD.beginPath(); ctxD.arc(px, py, 2.2 * (1 - lt * 0.4), 0, Math.PI * 2); ctxD.fill(); ctxD.restore();
+    });
+    return alive;
+  }
+
+  function buildWellsDOM() {
+    wellsEl.style.gridTemplateColumns = 'repeat(' + outcomes.length + ', 1fr)';
+    wellsEl.innerHTML = '';
+    outcomes.forEach((o, i) => {
+      const div = document.createElement('div');
+      div.className = 'kast-well';
+      const theoTxt = (typeof o.theo === 'number') ? ' · teor. ' + (Math.round(o.theo * 1000) / 10) + '%' : '';
+      div.innerHTML = '<div class="kast-well-label">' + o.label + '</div>' +
+        '<div class="kast-well-count" id="kw-c-' + i + '">0</div>' +
+        '<div class="kast-well-pct" id="kw-p-' + i + '">0%' + theoTxt + '</div>';
+      wellsEl.appendChild(div);
+    });
+  }
+  function updateWellsDOM() {
+    let total = 0;
+    columns.forEach(c => total += c.count);
+    outcomes.forEach((o, i) => {
+      const cnt = columns[i].count;
+      const pct = total ? (cnt / total * 100) : 0;
+      const ce = document.getElementById('kw-c-' + i), pe = document.getElementById('kw-p-' + i);
+      if (ce) ce.textContent = String(cnt);
+      if (pe) {
+        const theoTxt = (typeof o.theo === 'number') ? ' · teor. ' + (Math.round(o.theo * 1000) / 10) + '%' : '';
+        pe.textContent = pct.toFixed(1).replace('.', ',') + '%' + theoTxt;
+      }
+    });
+  }
+
+  function reset(newOutcomes, kind) {
+    outcomes = newOutcomes.map(o => Object.assign({ shortLabel: (o.label || o.key || '?')[0].toUpperCase() }, o));
+    keyToIndex = {}; outcomes.forEach((o, i) => { keyToIndex[o.key] = i; });
+    spriteKind = kind;
+    columns = outcomes.map(() => ({ count: 0, reserved: 0, settledValues: [] }));
+    flying = []; dust = []; bulkQueue = []; batch = null;
+    buildWellsDOM();
+    updateWellsDOM();
+    fitBoard();
+    redrawStatic();
+  }
+
+  function throwMany(values, onLand, onAllLanded) {
+    if (!values.length) { onAllLanded && onAllLanded(); return; }
+    batch = { onLand, onAllLanded, landed: 0, total: values.length };
+    bulkThrow(values);
+  }
+
+  soundBtn.addEventListener('click', () => {
+    SOUND = !SOUND;
+    soundBtn.textContent = (SOUND ? '🔊' : '🔇') + ' Lyd';
+    soundBtn.setAttribute('aria-pressed', String(SOUND));
+    if (SOUND) ensureAudio();
+  });
+  function debounce(fn, ms) { let h; return function () { clearTimeout(h); h = setTimeout(fn, ms); }; }
+  window.addEventListener('resize', debounce(resize, 120));
+
+  return { reset, resize, throwMany };
+})();
+
+/* ══════════════════════════════════════════════════════════════════
    VISUALISERING AV FORSØKSOBJEKT
    ══════════════════════════════════════════════════════════════════ */
+function engineConfigFor(task) {
+  const theoFor = key => { const o = task.outcomes.find(x => x.key === key); return o ? o.prob : undefined; };
+  if (task.type === 'dice') {
+    return { kind: 'die', outcomes: task.graphOutcomes.map(o => ({ key: o.key, label: o.label, color: o.color, theo: theoFor(o.key) })) };
+  }
+  if (task.type === 'coin' || task.type === 'lln') {
+    return { kind: 'token', outcomes: task.graphOutcomes.map(o => ({ key: o.key, label: o.label, shortLabel: o.key, color: '#e8b23d', theo: theoFor(o.key) })) };
+  }
+  if (task.type === 'twoCoins') {
+    const shortMap = { KK: 'KK', one: '1', MM: 'MM' };
+    return { kind: 'token', outcomes: task.graphOutcomes.map(o => ({ key: o.key, label: o.label, shortLabel: shortMap[o.key] || o.label[0].toUpperCase(), color: o.color, theo: theoFor(o.key) })) };
+  }
+  // bag / bagCategory
+  return { kind: 'token', outcomes: task.graphOutcomes.map(o => ({ key: o.key, label: o.label, shortLabel: o.label[0].toUpperCase(), color: o.color, theo: theoFor(o.key) })) };
+}
+
 function renderVisual(task) {
-  const stage = $('visualObjects');
-  stage.innerHTML = '';
   const compList = $('compositionList');
   compList.innerHTML = '';
-  $('drawReadout').textContent = '';
-
-  if (task.type === 'coin' || task.type === 'lln') {
-    const c = document.createElement('div');
-    c.className = 'coin'; c.id = 'coinEl'; c.textContent = '?';
-    stage.appendChild(c);
-  } else if (task.type === 'dice') {
-    const d = document.createElement('div');
-    d.className = 'die'; d.id = 'dieEl';
-    for (let i = 0; i < 9; i++) { const p = document.createElement('span'); p.className = 'pip off'; d.appendChild(p); }
-    stage.appendChild(d);
-  } else if (task.type === 'bag' || task.type === 'bagCategory') {
-    const b = document.createElement('div');
-    b.className = 'bag'; b.id = 'bagEl';
-    stage.appendChild(b);
+  if (task.type === 'bag' || task.type === 'bagCategory') {
     task.composition.forEach(c => {
       const chip = document.createElement('span');
       chip.className = 'comp-chip';
@@ -709,33 +1214,12 @@ function renderVisual(task) {
     const note = $('taskNote');
     note.textContent = 'Kulen legges alltid tilbake i posen før neste trekning.';
     note.hidden = false;
-  } else if (task.type === 'twoCoins') {
-    const c1 = document.createElement('div'); c1.className = 'coin'; c1.id = 'coinEl1'; c1.textContent = '?';
-    const c2 = document.createElement('div'); c2.className = 'coin'; c2.id = 'coinEl2'; c2.textContent = '?';
-    stage.appendChild(c1); stage.appendChild(c2);
+  } else {
+    $('taskNote').hidden = true;
   }
-  if (task.type !== 'bag' && task.type !== 'bagCategory') { $('taskNote').hidden = true; }
-}
-
-const DIE_PATTERNS = {
-  1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8]
-};
-function setDieFace(value) {
-  const d = $('dieEl'); if (!d) return;
-  const pips = DIE_PATTERNS[value] || [];
-  Array.from(d.children).forEach((p, i) => p.classList.toggle('off', !pips.includes(i)));
-  if (!REDUCED_MOTION) { d.classList.remove('flip'); void d.offsetWidth; d.classList.add('flip'); }
-}
-function setCoinFace(el, key) {
-  if (!el) return;
-  el.textContent = key === 'K' ? 'K' : 'M';
-  if (!REDUCED_MOTION) { el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip'); }
-}
-function jiggleBag(label) {
-  const b = $('bagEl'); if (!b) return;
-  if (!REDUCED_MOTION) { b.classList.remove('jiggle'); void b.offsetWidth; b.classList.add('jiggle'); }
-  const r = $('drawReadout');
-  if (r) r.textContent = 'Trukket: ' + label;
+  const cfg = engineConfigFor(task);
+  KastEngine.resize();
+  KastEngine.reset(cfg.outcomes, cfg.kind);
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -801,24 +1285,13 @@ function lockPredictControl() {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   GRAF (STOLPEDIAGRAM + TEKSTLIG RESULTAT)
+   TEKSTLIG RESULTATLISTE (den visuelle fordelingen vises i kastebrettet)
    ══════════════════════════════════════════════════════════════════ */
-function renderChart(task, counts) {
-  const bars = $('chartBars'), labels = $('chartLabels'), textList = $('chartTextList');
-  const max = Math.max(1, ...task.graphOutcomes.map(o => counts[o.key] || 0));
-  bars.innerHTML = ''; labels.innerHTML = ''; textList.innerHTML = '';
+function renderChartText(task, counts) {
+  const textList = $('chartTextList');
+  textList.innerHTML = '';
   task.graphOutcomes.forEach(o => {
     const c = counts[o.key] || 0;
-    const col = document.createElement('div'); col.className = 'chart-bar-col';
-    const countEl = document.createElement('span'); countEl.className = 'chart-bar-count'; countEl.textContent = String(c);
-    const fill = document.createElement('div'); fill.className = 'chart-bar-fill';
-    fill.style.background = o.color; fill.style.height = (c / max * 100) + '%';
-    col.appendChild(countEl); col.appendChild(fill);
-    bars.appendChild(col);
-
-    const lab = document.createElement('div'); lab.className = 'chart-label-col'; lab.textContent = o.label;
-    labels.appendChild(lab);
-
     const row = document.createElement('div'); row.className = 'chart-text-row';
     row.innerHTML = `<span>${o.label}</span><span>${c} ganger</span>`;
     textList.appendChild(row);
@@ -826,58 +1299,20 @@ function renderChart(task, counts) {
 }
 
 /* ══════════════════════════════════════════════════════════════════
-   SIMULERINGSMOTOR
-   Små forsøk (≤20): hvert kast animeres individuelt.
-   Middels (21–100): kjøres i puljer.
-   Store (>100): kjøres i store puljer, fullføres på få sekunder.
-   De første 10 forsøkene vises alltid enkeltvis i sporfeltet.
+   SIMULERING
+   Utfallene trekkes umiddelbart (poengsettingen bruker aldri noe annet
+   enn disse tallene), men vises fram i kastebrettet i takt med
+   KastEngine sin egen tempoplan — rolig i starten, raskere mot slutten,
+   slik at selv 500 kast er overkommelig å se på.
    ══════════════════════════════════════════════════════════════════ */
-function runSimulationBatch(task, startCounts, startI, targetTotal, onDone, onProgress) {
-  const counts = Object.assign({}, startCounts);
-  let i = startI;
-  const traceN = Math.min(10, targetTotal);
-  const chunkSize = targetTotal <= 20 ? 1 : targetTotal <= 100 ? 5 : Math.max(10, Math.round(targetTotal / 30));
-  const stepDelay = targetTotal <= 20 ? 210 : targetTotal <= 100 ? 55 : 0;
-
-  function step() {
-    const n = (i < traceN) ? 1 : Math.min(chunkSize, targetTotal - i);
-    let lastDraw = null;
-    for (let k = 0; k < n; k++) {
-      const res = task.drawOne();
-      counts[res.graphKey] = (counts[res.graphKey] || 0) + 1;
-      lastDraw = res;
-      if (i < traceN) {
-        const chip = document.createElement('span');
-        chip.className = 'trace-chip';
-        chip.textContent = res.trace;
-        $('traceStrip').appendChild(chip);
-      }
-      i++;
-    }
-    if (lastDraw) updateVisualForDraw(task, lastDraw);
-    renderChart(task, counts);
-    $('simCounter').textContent = `${i} / ${targetTotal} kast`;
-    onProgress && onProgress(counts, i);
-
-    if (i < targetTotal) {
-      if (stepDelay > 0) setTimeout(() => requestAnimationFrame(step), stepDelay);
-      else requestAnimationFrame(step);
-    } else {
-      onDone(counts);
-    }
+function drawValues(task, count) {
+  const values = [], counts = {};
+  for (let k = 0; k < count; k++) {
+    const res = task.drawOne();
+    values.push(res.graphKey);
+    counts[res.graphKey] = (counts[res.graphKey] || 0) + 1;
   }
-  step();
-}
-function updateVisualForDraw(task, res) {
-  if (task.type === 'coin' || task.type === 'lln') setCoinFace($('coinEl'), res.graphKey);
-  else if (task.type === 'dice') setDieFace(parseInt(res.graphKey, 10));
-  else if (task.type === 'bag' || task.type === 'bagCategory') {
-    const opt = task.composition.find(c => c.key === res.graphKey);
-    jiggleBag(opt ? opt.label : res.graphKey);
-  } else if (task.type === 'twoCoins') {
-    setCoinFace($('coinEl1'), res.trace[0]);
-    setCoinFace($('coinEl2'), res.trace[1]);
-  }
+  return { values, counts };
 }
 
 /* ══════════════════════════════════════════════════════════════════
@@ -898,8 +1333,7 @@ function loadTask(i) {
   renderPredictControl(current);
 
   $('simCard').classList.remove('show');
-  $('traceStrip').innerHTML = '';
-  $('chartBars').innerHTML = ''; $('chartLabels').innerHTML = ''; $('chartTextList').innerHTML = '';
+  $('chartTextList').innerHTML = '';
   $('simCounter').textContent = `0 / ${current.trials} kast`;
   $('llnBox').classList.remove('show');
   $('compareCard').classList.remove('show');
@@ -916,9 +1350,19 @@ function runExperiment() {
   lockPredictControl();
   $('btnRun').disabled = true;
   $('simCard').classList.add('show');
+  $('simCounter').textContent = `0 / ${current.trials} kast`;
 
-  runSimulationBatch(current, {}, 0, current.trials, counts => {
-    simCounts = counts; simDone = current.trials; simRunning = false;
+  const { values, counts } = drawValues(current, current.trials);
+  simCounts = counts; simDone = current.trials;
+
+  KastEngine.throwMany(values, (landed, total) => {
+    $('simCounter').textContent = `${landed} / ${total} kast`;
+    const partial = {};
+    for (let k = 0; k < landed; k++) partial[values[k]] = (partial[values[k]] || 0) + 1;
+    renderChartText(current, partial);
+  }, () => {
+    simRunning = false;
+    renderChartText(current, counts);
     finishTaskSimulation(current, counts);
   });
 }
@@ -1008,16 +1452,24 @@ function setupLlnBox(task, counts20) {
   btn.textContent = `Fortsett til ${task.extendedTrials} kast`;
   btn.onclick = () => {
     btn.disabled = true;
-    runSimulationBatch(task, counts20, task.trials, task.extendedTrials, finalCounts => {
+    $('chartTextList').innerHTML = '';
+    const remaining = task.extendedTrials - task.trials;
+    const { values, counts: moreCounts } = drawValues(task, remaining);
+    const finalCounts = Object.assign({}, counts20);
+    Object.keys(moreCounts).forEach(k => { finalCounts[k] = (finalCounts[k] || 0) + moreCounts[k]; });
+    $('simCounter').textContent = `${task.trials} / ${task.extendedTrials} kast`;
+
+    KastEngine.throwMany(values, landed => {
+      $('simCounter').textContent = `${task.trials + landed} / ${task.extendedTrials} kast`;
+    }, () => {
       const lateK = finalCounts.K || 0;
       const latePct = Math.round(lateK / task.extendedTrials * 100);
       $('llnLateText').textContent = `${lateK} kron – ${latePct} %`;
       $('llnLateFill').style.width = latePct + '%';
       $('llnNote').hidden = false;
       btn.hidden = true;
+      renderChartText(task, finalCounts);
       announce(`Etter ${task.extendedTrials} kast: ${latePct} prosent kron.`);
-    }, (counts, i) => {
-      $('chartTextList').innerHTML = '';
     });
   };
 }
