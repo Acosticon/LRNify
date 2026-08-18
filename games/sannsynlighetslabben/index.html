@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Sannsynlighetslabben — LRNify</title>
+<meta name="description" content="Forutsi resultatet av tilfeldige forsøk som myntkast, terningkast og kuletrekning, kjør forsøket, og se hvor nær teoretisk sannsynlighet du kom.">
+<link rel="canonical" href="https://lrnify.no/games/sannsynlighetslabben/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Sannsynlighetslabben – LRNify">
+<meta property="og:description" content="Forutsi resultatet av tilfeldige forsøk som myntkast, terningkast og kuletrekning, kjør forsøket, og se hvor nær teoretisk sannsynlighet du kom.">
+<meta property="og:image" content="https://lrnify.no/media/og/sannsynlighetslabben.png">
+<meta property="og:url" content="https://lrnify.no/games/sannsynlighetslabben/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Sannsynlighetslabben – LRNify">
+<meta name="twitter:description" content="Forutsi resultatet av tilfeldige forsøk som myntkast, terningkast og kuletrekning, kjør forsøket, og se hvor nær teoretisk sannsynlighet du kom.">
+<meta name="twitter:image" content="https://lrnify.no/media/og/sannsynlighetslabben.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f6f8fb;
+    --ink:   #1c2530;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #5b6472;
+    --green: #16a34a;
+    --gridline:#e3e8f0;
+
+    --blue: #2563eb;
+    --blue-dark: #1d4ed8;
+    --red: #dc2626;
+    --red-dark:#991b1b;
+    --purple:#7c3aed;
+    --purple-dark:#5b21b6;
+    --amber:#d97706;
+    --amber-dark:#92400e;
+    --teal:#0d9488;
+    --teal-dark:#0f766e;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SCREENS ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .screen-hero { padding: 4px 0 4px; }
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 6px; }
+  .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.9rem,7vw,3rem); }
+  .screen-hero p  {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.9rem,2.4vw,1.05rem); margin-top: 8px; max-width: 440px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; width: 100%;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 12px; }
+
+  button { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover:not(:disabled)  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active:not(:disabled) { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+  .btn-primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  .btn-secondary {
+    font-weight: 900; background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 11px 20px; font-size: .95rem; width: 100%; max-width: 320px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn-secondary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); background: #fef3c7; }
+  .btn-secondary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .btn-secondary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  .btn-back {
+    font-weight: 800; color: var(--muted); text-decoration: none; font-size: .9rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  /* ══ EKSEMPEL PÅ STARTSKJERM ══ */
+  .example-body { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  .example-line { font-weight: 700; font-size: .92rem; }
+  .example-flow { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; font-weight: 900; }
+  .example-tag {
+    display: inline-flex; align-items: center; padding: 4px 12px; border-radius: 8px;
+    border: 3px solid var(--ink); font-family: 'Chewy', cursive; font-size: 1rem;
+  }
+  .example-tag.predict { background: var(--yellow); }
+  .example-tag.result  { background: #bbf7d0; }
+  .example-arrow { font-weight: 800; color: var(--muted); }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 40px; }
+  .game-wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; animation: fadeIn .3s ease; }
+
+  .hud { width: 100%; display: flex; justify-content: space-between; align-items: baseline; padding-top: 4px; max-width: 620px; margin: 0 auto; }
+  .hud-label { font-weight: 900; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .hud-score { font-family: 'Chewy', cursive; font-size: 1.1rem; color: var(--blue); }
+
+  .game-columns { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+  .game-col { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 620px; margin: 0 auto; }
+
+  .task-desc { font-weight: 800; font-size: 1.02rem; text-align: center; }
+  .task-note { font-weight: 700; font-size: .82rem; color: var(--muted); text-align: center; margin-top: 4px; }
+
+  /* ══ VISUALISERING ══ */
+  .visual-stage { display: flex; flex-direction: column; align-items: center; gap: 10px; margin: 6px 0; }
+  .visual-objects { display: flex; align-items: center; justify-content: center; gap: 14px; min-height: 84px; }
+
+  .coin {
+    width: 72px; height: 72px; border-radius: 50%; background: var(--yellow);
+    border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Chewy', cursive; font-size: 1.5rem;
+  }
+  .coin.flip { animation: coinFlip .22s ease; }
+  @keyframes coinFlip { 0% { transform: scaleX(1); } 50% { transform: scaleX(.15); } 100% { transform: scaleX(1); } }
+
+  .die {
+    width: 72px; height: 72px; border-radius: 14px; background: var(--card);
+    border: 4px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    display: grid; grid-template-columns: repeat(3,1fr); grid-template-rows: repeat(3,1fr);
+    padding: 10px;
+  }
+  .die.flip { animation: dieFlip .2s ease; }
+  @keyframes dieFlip { 0% { transform: scale(1) rotate(0); } 50% { transform: scale(.85) rotate(8deg); } 100% { transform: scale(1) rotate(0); } }
+  .pip { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+  .pip::after { content: ''; width: 62%; height: 62%; border-radius: 50%; background: var(--ink); display: block; }
+  .pip.off::after { content: none; }
+
+  .bag {
+    width: 84px; height: 92px;
+    border: 4px solid var(--ink);
+    border-radius: 0 0 40px 40px;
+    background: linear-gradient(#fef3c7, #fde68a);
+    box-shadow: 0 5px 0 var(--ink);
+    position: relative;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px;
+  }
+  .bag::before {
+    content: ''; position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 14px; border: 4px solid var(--ink); border-bottom: none;
+    border-radius: 10px 10px 0 0; background: #fde68a;
+  }
+  .bag.jiggle { animation: bagJiggle .22s ease; }
+  @keyframes bagJiggle { 0%,100% { transform: rotate(0); } 50% { transform: rotate(-4deg); } }
+  .bag-drawn { font-weight: 900; font-size: .78rem; }
+
+  .draw-readout {
+    font-family: 'Chewy', cursive; font-size: 1.05rem; min-height: 1.4em;
+  }
+
+  .composition-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .comp-chip {
+    display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: .85rem;
+    border: 3px solid var(--ink); border-radius: 8px; padding: 5px 10px; background: var(--card);
+  }
+  .comp-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--ink); flex: none; }
+
+  /* ══ PROGNOSE ══ */
+  .predict-block { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .predict-question { font-weight: 800; font-size: .98rem; text-align: center; }
+
+  .stepper { display: flex; align-items: center; gap: 14px; }
+  .stepper-btn {
+    width: 48px; height: 48px; min-width: 44px; min-height: 44px;
+    border: 3px solid var(--ink); background: var(--card); box-shadow: 0 4px 0 var(--ink);
+    font-size: 1.4rem; font-weight: 900; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .stepper-btn:hover:not(:disabled) { background: #fef3c7; }
+  .stepper-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .stepper-btn:disabled { opacity: .4; cursor: not-allowed; }
+  .stepper-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+  .stepper-value {
+    width: 90px; text-align: center; font-family: 'Chewy', cursive; font-size: 2rem;
+    border: 3px solid var(--ink); border-radius: 10px; padding: 6px 4px; background: var(--card);
+    -moz-appearance: textfield;
+  }
+  .stepper-value::-webkit-outer-spin-button, .stepper-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .stepper-value:disabled { opacity: .6; }
+  .stepper-value:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  .category-choices { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 380px; }
+  .category-choices[data-cols="3"] { }
+  .cat-btn {
+    display: flex; align-items: center; gap: 10px; justify-content: center;
+    min-height: 48px; font-weight: 900; font-size: .95rem;
+    background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 10px 16px; border-radius: 10px;
+    transition: transform .1s, box-shadow .1s, background .1s;
+  }
+  .cat-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--ink); flex: none; }
+  .cat-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); background: #fef3c7; }
+  .cat-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .cat-btn[aria-checked="true"] { background: var(--yellow); }
+  .cat-btn:disabled { opacity: .5; cursor: not-allowed; }
+  .cat-btn:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+  /* ══ SIMULERING ══ */
+  .sim-card { display: none; flex-direction: column; gap: 12px; align-items: center; }
+  .sim-card.show { display: flex; }
+  .sim-counter { font-weight: 900; font-size: 1rem; }
+  .trace-strip { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; min-height: 32px; }
+  .trace-chip {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 30px; height: 28px; padding: 0 6px; font-weight: 900; font-size: .78rem;
+    border: 2px solid var(--ink); border-radius: 6px; background: var(--card);
+  }
+
+  .chart-wrap { width: 100%; }
+  .chart-bars {
+    display: flex; align-items: flex-end; gap: clamp(4px,2vw,10px);
+    height: clamp(110px,26vw,150px); width: 100%; padding: 0 2px;
+    border-bottom: 3px solid var(--ink);
+  }
+  .chart-bar-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; gap: 4px; }
+  .chart-bar-count { font-weight: 900; font-size: clamp(.68rem,2.2vw,.85rem); }
+  .chart-bar-fill { width: 100%; max-width: 46px; border: 2px solid var(--ink); border-radius: 6px 6px 0 0; transition: height .25s ease; min-height: 2px; }
+  .chart-labels { display: flex; gap: clamp(4px,2vw,10px); padding: 6px 2px 0; }
+  .chart-label-col { flex: 1 1 0; min-width: 0; text-align: center; font-weight: 800; font-size: clamp(.62rem,2vw,.78rem); color: var(--muted); }
+
+  .chart-text-list { width: 100%; display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+  .chart-text-row { display: flex; justify-content: space-between; font-weight: 700; font-size: .85rem; border-bottom: 1px dashed var(--gridline); padding: 2px 4px; }
+
+  /* ══ LOV OM STORE TALL — ekstraseksjon ══ */
+  .lln-box { width: 100%; display: none; flex-direction: column; gap: 10px; align-items: center; margin-top: 4px; padding-top: 12px; border-top: 3px dashed var(--gridline); }
+  .lln-box.show { display: flex; }
+  .lln-row { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+  .lln-row-label { display: flex; justify-content: space-between; font-weight: 800; font-size: .85rem; }
+  .lln-meter { position: relative; width: 100%; height: 26px; border: 3px solid var(--ink); border-radius: 8px; background: #eef1f6; overflow: hidden; }
+  .lln-meter-fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--blue); width: 0%; transition: width .8s ease; }
+  .lln-meter-mid { position: absolute; left: 50%; top: -3px; bottom: -3px; width: 2px; background: var(--red); }
+
+  /* ══ SAMMENLIGNING ══ */
+  .compare-card { display: none; flex-direction: column; gap: 14px; }
+  .compare-card.show { display: flex; }
+  .compare-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; text-align: center; }
+  .compare-item { display: flex; flex-direction: column; gap: 4px; }
+  .compare-item-label { font-weight: 800; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .compare-item-value { font-family: 'Chewy', cursive; font-size: clamp(1.3rem,5vw,1.7rem); }
+  .compare-explain { font-weight: 700; font-size: .92rem; text-align: center; background: #fef9e7; border: 2px solid var(--ink); border-radius: 10px; padding: 10px 14px; }
+  .compare-points { text-align: center; font-weight: 900; font-size: .95rem; color: var(--blue); }
+
+  /* ══ SLUTTSKJERM ══ */
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: .95rem; gap: 12px; }
+  .result-row strong { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+  .rules-card { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+  .rules-card li { font-weight: 700; font-size: .9rem; margin-left: 18px; }
+
+  footer {
+    text-align: center; padding: 24px; color: var(--muted);
+    font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(28,37,48,.12);
+  }
+
+  @media (min-width: 880px) {
+    .game-columns { flex-direction: row; align-items: flex-start; }
+    .game-col { max-width: none; flex: 1 1 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .coin.flip, .die.flip, .bag.jiggle, .chart-bar-fill, .lln-meter-fill,
+    .compare-card, .sim-card, .btn-primary, .btn-secondary, .cat-btn {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🎲</div>
+      <h1>Sannsynlighetslabben</h1>
+      <p>Forutsi resultatet. Kjør forsøket. Se hvor nær du kommer.</p>
+    </div>
+    <div class="card">
+      <h2>Slik fungerer det</h2>
+      <div class="example-body">
+        <p class="example-line">En mynt kastes 10 ganger. Hvor mange kron forventer du?</p>
+        <div class="example-flow">
+          <span class="example-tag predict">5</span>
+          <span class="example-arrow">→ kjør forsøket →</span>
+          <span class="example-tag result">Faktisk: 6</span>
+        </div>
+        <p style="font-weight:700; font-size:.88rem; color:var(--muted); margin-top:6px;">
+          Poeng gis for hvor godt prognosen bygger på sannsynlighet — ikke for å gjette det tilfeldige utfallet perfekt.
+        </p>
+      </div>
+    </div>
+    <button class="btn-primary" id="btn-start">Start</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="hud">
+      <span class="hud-label" id="hudTaskLabel">Forsøk 1 av 8</span>
+      <span class="hud-score" id="hudScore">0 poeng</span>
+    </div>
+
+    <div class="game-columns">
+      <div class="game-col">
+        <div class="card">
+          <p class="task-desc" id="taskDesc"></p>
+          <p class="task-note" id="taskNote" hidden></p>
+          <div class="visual-stage">
+            <div class="visual-objects" id="visualObjects" aria-hidden="true"></div>
+            <div class="composition-list" id="compositionList" aria-hidden="true"></div>
+            <div class="draw-readout" id="drawReadout" aria-hidden="true"></div>
+          </div>
+        </div>
+
+        <div class="card predict-block">
+          <p class="predict-question" id="predictQuestion"></p>
+          <div id="predictControl"></div>
+          <button class="btn-primary" id="btnRun">Kjør forsøket</button>
+        </div>
+      </div>
+
+      <div class="game-col">
+        <div class="card sim-card" id="simCard">
+          <span class="sim-counter" id="simCounter">0 / 0 kast</span>
+          <div class="trace-strip" id="traceStrip" aria-hidden="true"></div>
+          <div class="chart-wrap">
+            <div class="chart-bars" id="chartBars" aria-hidden="true"></div>
+            <div class="chart-labels" id="chartLabels" aria-hidden="true"></div>
+          </div>
+          <div class="chart-text-list" id="chartTextList"></div>
+          <div class="lln-box" id="llnBox">
+            <div class="lln-row">
+              <div class="lln-row-label"><span>Etter 20 kast</span><span id="llnEarlyText">–</span></div>
+              <div class="lln-meter"><div class="lln-meter-fill" id="llnEarlyFill"></div><div class="lln-meter-mid"></div></div>
+            </div>
+            <div class="lln-row">
+              <div class="lln-row-label"><span>Etter <span id="llnLateCount">500</span> kast</span><span id="llnLateText">–</span></div>
+              <div class="lln-meter"><div class="lln-meter-fill" id="llnLateFill"></div><div class="lln-meter-mid"></div></div>
+            </div>
+            <button class="btn-secondary" id="btnContinueLln">Fortsett til 500 kast</button>
+            <p class="task-note" id="llnNote" hidden>Streken i midten viser 50 %. Med flere kast havner andelen ofte nærmere streken.</p>
+          </div>
+        </div>
+
+        <div class="card compare-card" id="compareCard">
+          <div class="compare-grid" id="compareGrid"></div>
+          <p class="compare-explain" id="compareExplain"></p>
+          <p class="compare-points" id="comparePoints"></p>
+          <button class="btn-primary" id="btnNext">Neste forsøk</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🧪</div>
+      <h1>Laboratorieresultat</h1>
+      <p>Her er resultatet ditt etter 8 forsøk.</p>
+    </div>
+    <div class="card result-card">
+      <div class="result-row"><span>Poeng</span><strong id="endScore">0 av 24</strong></div>
+      <div class="result-row"><span>Prognoser helt på forventningen</span><strong id="endExact">0 av 8</strong></div>
+      <div class="result-row"><span>Gjennomsnittlig avvik fra teori</span><strong id="endAvgDev">0</strong></div>
+    </div>
+    <div class="card rules-card">
+      <h2>Tre ting å huske</h2>
+      <ul>
+        <li>Sannsynlighet forteller hva vi forventer – ikke nøyaktig hva som skjer.</li>
+        <li>Tilfeldige utfall varierer.</li>
+        <li>Med mange forsøk blir fordelingen ofte mer stabil.</li>
+      </ul>
+    </div>
+    <button class="btn-primary" id="btn-again">Kjør nye forsøk</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ══════════════════════════════════════════════════════════════════
+   EKSPERIMENTMODELL
+   Hvert oppgaveobjekt har: id, type, beskrivelse, spørsmål, antall
+   forsøk (trials), grafutfall (graphOutcomes: key/label/color), en
+   drawOne()-funksjon som simulerer ett enkelt forsøk, hva spilleren
+   skal forutsi (predictType: 'number' | 'category'), teoretisk
+   forventning/riktig kategori, poengtoleranse og vanskelighetsgrad.
+   Den tilfeldige simuleringen brukes ALDRI som fasit for poeng —
+   poeng regnes alltid mot det teoretiske tallet/kategorien.
+   ══════════════════════════════════════════════════════════════════ */
+
+function randInt(min, max) { return min + Math.floor(Math.random() * (max - min + 1)); }
+
+function flipCoin() { return Math.random() < 0.5 ? 'K' : 'M'; }
+function rollDie() { return 1 + Math.floor(Math.random() * 6); }
+
+function weightedPick(composition) {
+  const total = composition.reduce((s, c) => s + c.count, 0);
+  let r = Math.random() * total;
+  for (const c of composition) {
+    if (r < c.count) return c;
+    r -= c.count;
+  }
+  return composition[composition.length - 1];
+}
+
+/* Tallprognoser: eksakt = 3p, innenfor tol2 = 2p, innenfor tol3 = 1p,
+   ellers 0p. Toleransen skaleres etter størrelsen på forventningen,
+   slik at store forsøk (f.eks. forventning 100) ikke krever like
+   presis treffsikkerhet som små (f.eks. forventning 5). */
+function computeTolerance(E) {
+  const tol2 = Math.max(1, Math.round(E * 0.1));
+  const tol3 = Math.max(tol2 + 1, Math.round(E * 0.3));
+  return { tol2, tol3 };
+}
+function scoreNumeric(prediction, E, tol) {
+  const diff = Math.abs(prediction - E);
+  if (diff === 0) return 3;
+  if (diff <= tol.tol2) return 2;
+  if (diff <= tol.tol3) return 1;
+  return 0;
+}
+function scoreCategory(predictedKey, correctKey) { return predictedKey === correctKey ? 3 : 0; }
+
+const COLOR_MAP = {
+  red: '#dc2626', blue: '#2563eb', green: '#16a34a', yellow: '#eab308',
+  purple: '#7c3aed', teal: '#0d9488', ink: '#1c2530'
+};
+
+/* ── Oppgave 1 & 2: mynt ── */
+function buildCoinTask(id, trials, difficulty) {
+  const E = trials * 0.5;
+  return {
+    id, type: 'coin', difficulty,
+    desc: `En rettferdig mynt kastes ${trials} ganger.`,
+    question: 'Hvor mange ganger forventer du å få kron?',
+    trials, predictType: 'number', predictLabel: 'kron',
+    graphOutcomes: [
+      { key: 'K', label: 'kron', color: COLOR_MAP.yellow },
+      { key: 'M', label: 'mynt', color: COLOR_MAP.blue }
+    ],
+    outcomes: [{ key: 'K', prob: 0.5 }, { key: 'M', prob: 0.5 }],
+    theoretical: E, tolerance: computeTolerance(E),
+    drawOne() { const k = flipCoin(); return { graphKey: k, trace: k }; },
+    getActual(counts) { return counts.K || 0; },
+    explanation: 'En rettferdig mynt gir kron eller mynt med lik sannsynlighet, men et enkelt forsøk trenger ikke lande nøyaktig på midten.'
+  };
+}
+
+/* ── Oppgave 3 & 8: terning ── */
+function buildDiceTask(id, trials, targetFaces, questionText, difficulty) {
+  const E = trials * (targetFaces.length / 6);
+  const faceLabels = ['1', '2', '3', '4', '5', '6'];
+  return {
+    id, type: 'dice', difficulty,
+    desc: `En terning kastes ${trials} ganger.`,
+    question: questionText,
+    trials, predictType: 'number',
+    predictLabel: targetFaces.length === 1 ? `en ${faceLabels[targetFaces[0] - 1]}'er` : targetFaces.map(f => faceLabels[f - 1]).join(' eller '),
+    graphOutcomes: faceLabels.map((l, i) => ({ key: String(i + 1), label: l, color: targetFaces.includes(i + 1) ? COLOR_MAP.purple : COLOR_MAP.ink })),
+    outcomes: faceLabels.map((l, i) => ({ key: String(i + 1), prob: 1 / 6 })),
+    theoretical: E, tolerance: computeTolerance(E),
+    drawOne() { const v = rollDie(); return { graphKey: String(v), trace: String(v) }; },
+    getActual(counts) { return targetFaces.reduce((s, f) => s + (counts[String(f)] || 0), 0); },
+    explanation: `Hvert av de seks tallene på terningen har samme sannsynlighet: 1/6 hver.`
+  };
+}
+
+/* ── Oppgave 4: pose, tallprognose ── */
+function buildBagNumberTask(id, trials, composition, predictKey, difficulty) {
+  const total = composition.reduce((s, c) => s + c.count, 0);
+  const target = composition.find(c => c.key === predictKey);
+  const E = trials * (target.count / total);
+  return {
+    id, type: 'bag', difficulty,
+    desc: `Posen har ${composition.map(c => `${c.count} ${c.label}${c.count === 1 ? '' : 'e'}`).join(' og ')} kule${total === 1 ? '' : 'r'}.`,
+    question: `Vi trekker en kule, legger den tilbake, og gjentar ${trials} ganger. Hvor mange ganger forventer du å trekke en ${target.label} kule?`,
+    trials, predictType: 'number', predictLabel: target.label,
+    graphOutcomes: composition.map(c => ({ key: c.key, label: c.label, color: COLOR_MAP[c.color] })),
+    outcomes: composition.map(c => ({ key: c.key, prob: c.count / total })),
+    composition,
+    theoretical: E, tolerance: computeTolerance(E),
+    drawOne() { const c = weightedPick(composition); return { graphKey: c.key, trace: c.label[0].toUpperCase() }; },
+    getActual(counts) { return counts[predictKey] || 0; },
+    explanation: 'Kulen legges alltid tilbake før neste trekning, så sannsynligheten er lik ved hvert eneste trekk.'
+  };
+}
+
+/* ── Oppgave 5: pose, kategorivalg ── */
+function buildBagCategoryTask(id, trials, composition, difficulty) {
+  const total = composition.reduce((s, c) => s + c.count, 0);
+  const correct = composition.reduce((a, c) => (c.count > a.count ? c : a), composition[0]);
+  return {
+    id, type: 'bagCategory', difficulty,
+    desc: `Posen har ${composition.map(c => `${c.count} ${c.label}${c.count === 1 ? '' : 'e'}`).join(', ')} kule${total === 1 ? '' : 'r'}.`,
+    question: `Vi trekker en kule, legger den tilbake, og gjentar ${trials} ganger. Hvilken farge tror du blir trukket oftest?`,
+    trials, predictType: 'category',
+    graphOutcomes: composition.map(c => ({ key: c.key, label: c.label, color: COLOR_MAP[c.color] })),
+    categoryOptions: composition.map(c => ({ key: c.key, label: c.label, color: COLOR_MAP[c.color] })),
+    outcomes: composition.map(c => ({ key: c.key, prob: c.count / total })),
+    composition,
+    correctKey: correct.key, correctLabel: correct.label,
+    drawOne() { const c = weightedPick(composition); return { graphKey: c.key, trace: c.label[0].toUpperCase() }; },
+    getMostFrequent(counts) {
+      let best = null;
+      composition.forEach(c => { if (!best || (counts[c.key] || 0) > (counts[best] || 0)) best = c.key; });
+      return best;
+    },
+    explanation: 'Fargen med flest kuler i posen har høyest sannsynlighet for å bli trukket oftest over mange forsøk.'
+  };
+}
+
+/* ── Oppgave 6: lov om store talls demonstrasjon (20 → 500 kast) ── */
+function buildLlnTask(id, difficulty) {
+  const trials = 20, extended = 500;
+  const E = trials * 0.5;
+  return {
+    id, type: 'lln', difficulty,
+    desc: 'En mynt kastes først 20 ganger.',
+    question: 'Hvor mange kron forventer du av de 20 første kastene?',
+    trials, extendedTrials: extended, predictType: 'number', predictLabel: 'kron',
+    graphOutcomes: [
+      { key: 'K', label: 'kron', color: COLOR_MAP.yellow },
+      { key: 'M', label: 'mynt', color: COLOR_MAP.blue }
+    ],
+    outcomes: [{ key: 'K', prob: 0.5 }, { key: 'M', prob: 0.5 }],
+    theoretical: E, tolerance: computeTolerance(E),
+    drawOne() { const k = flipCoin(); return { graphKey: k, trace: k }; },
+    getActual(counts) { return counts.K || 0; },
+    explanation: 'Etter få kast kan andelen kron ligge langt fra 50 %. Kjør videre til 500 kast for å se om andelen stabiliserer seg.'
+  };
+}
+
+/* ── Oppgave 7: to mynter, kategorivalg ── */
+function buildTwoCoinsTask(id, trials, difficulty) {
+  const options = [
+    { key: 'KK', label: 'To kron' },
+    { key: 'one', label: 'Én av hver' },
+    { key: 'MM', label: 'To mynt' }
+  ];
+  return {
+    id, type: 'twoCoins', difficulty,
+    desc: 'To mynter kastes samtidig, hver gang uavhengig av den andre.',
+    question: `Dette gjentas ${trials} ganger. Hvilket utfall tror du blir vanligst?`,
+    trials, predictType: 'category',
+    graphOutcomes: [
+      { key: 'KK', label: 'To kron', color: COLOR_MAP.yellow },
+      { key: 'one', label: 'Én av hver', color: COLOR_MAP.teal },
+      { key: 'MM', label: 'To mynt', color: COLOR_MAP.blue }
+    ],
+    categoryOptions: options.map(o => ({ ...o, color: o.key === 'KK' ? COLOR_MAP.yellow : o.key === 'one' ? COLOR_MAP.teal : COLOR_MAP.blue })),
+    outcomes: [{ key: 'KK', prob: 0.25 }, { key: 'one', prob: 0.5 }, { key: 'MM', prob: 0.25 }],
+    correctKey: 'one', correctLabel: 'Én av hver',
+    drawOne() {
+      const a = flipCoin(), b = flipCoin();
+      const graphKey = (a === 'K' && b === 'K') ? 'KK' : (a === 'M' && b === 'M') ? 'MM' : 'one';
+      return { graphKey, trace: a + b };
+    },
+    getMostFrequent(counts) {
+      let best = 'KK';
+      ['KK', 'one', 'MM'].forEach(k => { if ((counts[k] || 0) > (counts[best] || 0)) best = k; });
+      return best;
+    },
+    explanation: '«Én av hver» kan skje på to måter — kron-mynt eller mynt-kron — mens «to kron» og «to mynt» bare kan skje på én måte hver.'
+  };
+}
+
+function buildSession() {
+  return [
+    buildCoinTask(1, 10, 1),
+    buildCoinTask(2, 20, 2),
+    buildDiceTask(3, 60, [6], 'Hvor mange ganger forventer du å få en sekser?', 3),
+    buildBagNumberTask(4, 40, [
+      { key: 'red', label: 'rød', count: 3, color: 'red' },
+      { key: 'blue', label: 'blå', count: 1, color: 'blue' }
+    ], 'blue', 4),
+    buildBagCategoryTask(5, 50, [
+      { key: 'green', label: 'grønn', count: 5, color: 'green' },
+      { key: 'yellow', label: 'gul', count: 3, color: 'yellow' },
+      { key: 'red', label: 'rød', count: 2, color: 'red' }
+    ], 5),
+    buildLlnTask(6, 6),
+    buildTwoCoinsTask(7, 40, 7),
+    buildDiceTask(8, 60, [5, 6], 'Hvor mange ganger forventer du å få 5 eller 6?', 8)
+  ];
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   TILSTAND
+   ══════════════════════════════════════════════════════════════════ */
+let session = [], taskIndex = 0, current = null;
+let score = 0, exactCount = 0, deviationRecord = [];
+let prediction = null, predictionLocked = false, simRunning = false, taskScored = false;
+let simCounts = {}, simDone = 0;
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+function announce(text) {
+  const el = $('srAnnounce');
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = text; });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   VISUALISERING AV FORSØKSOBJEKT
+   ══════════════════════════════════════════════════════════════════ */
+function renderVisual(task) {
+  const stage = $('visualObjects');
+  stage.innerHTML = '';
+  const compList = $('compositionList');
+  compList.innerHTML = '';
+  $('drawReadout').textContent = '';
+
+  if (task.type === 'coin' || task.type === 'lln') {
+    const c = document.createElement('div');
+    c.className = 'coin'; c.id = 'coinEl'; c.textContent = '?';
+    stage.appendChild(c);
+  } else if (task.type === 'dice') {
+    const d = document.createElement('div');
+    d.className = 'die'; d.id = 'dieEl';
+    for (let i = 0; i < 9; i++) { const p = document.createElement('span'); p.className = 'pip off'; d.appendChild(p); }
+    stage.appendChild(d);
+  } else if (task.type === 'bag' || task.type === 'bagCategory') {
+    const b = document.createElement('div');
+    b.className = 'bag'; b.id = 'bagEl';
+    stage.appendChild(b);
+    task.composition.forEach(c => {
+      const chip = document.createElement('span');
+      chip.className = 'comp-chip';
+      chip.innerHTML = `<span class="comp-dot" style="background:${COLOR_MAP[c.color]}"></span>${c.label} × ${c.count}`;
+      compList.appendChild(chip);
+    });
+    const note = $('taskNote');
+    note.textContent = 'Kulen legges alltid tilbake i posen før neste trekning.';
+    note.hidden = false;
+  } else if (task.type === 'twoCoins') {
+    const c1 = document.createElement('div'); c1.className = 'coin'; c1.id = 'coinEl1'; c1.textContent = '?';
+    const c2 = document.createElement('div'); c2.className = 'coin'; c2.id = 'coinEl2'; c2.textContent = '?';
+    stage.appendChild(c1); stage.appendChild(c2);
+  }
+  if (task.type !== 'bag' && task.type !== 'bagCategory') { $('taskNote').hidden = true; }
+}
+
+const DIE_PATTERNS = {
+  1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8]
+};
+function setDieFace(value) {
+  const d = $('dieEl'); if (!d) return;
+  const pips = DIE_PATTERNS[value] || [];
+  Array.from(d.children).forEach((p, i) => p.classList.toggle('off', !pips.includes(i)));
+  if (!REDUCED_MOTION) { d.classList.remove('flip'); void d.offsetWidth; d.classList.add('flip'); }
+}
+function setCoinFace(el, key) {
+  if (!el) return;
+  el.textContent = key === 'K' ? 'K' : 'M';
+  if (!REDUCED_MOTION) { el.classList.remove('flip'); void el.offsetWidth; el.classList.add('flip'); }
+}
+function jiggleBag(label) {
+  const b = $('bagEl'); if (!b) return;
+  if (!REDUCED_MOTION) { b.classList.remove('jiggle'); void b.offsetWidth; b.classList.add('jiggle'); }
+  const r = $('drawReadout');
+  if (r) r.textContent = 'Trukket: ' + label;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   PROGNOSEKONTROLL
+   ══════════════════════════════════════════════════════════════════ */
+function renderPredictControl(task) {
+  const holder = $('predictControl');
+  holder.innerHTML = '';
+  $('predictQuestion').textContent = task.question;
+  prediction = null;
+  predictionLocked = false;
+
+  if (task.predictType === 'number') {
+    prediction = 0;
+    const wrap = document.createElement('div');
+    wrap.className = 'stepper';
+    const minus = document.createElement('button');
+    minus.type = 'button'; minus.className = 'stepper-btn'; minus.id = 'stepMinus';
+    minus.textContent = '−'; minus.setAttribute('aria-label', 'Reduser prognosen med 1');
+    const input = document.createElement('input');
+    input.type = 'number'; input.className = 'stepper-value'; input.id = 'stepValue';
+    input.min = '0'; input.max = String(task.trials); input.value = '0';
+    input.setAttribute('aria-label', 'Din prognose, antall ' + (task.predictLabel || ''));
+    const plus = document.createElement('button');
+    plus.type = 'button'; plus.className = 'stepper-btn'; plus.id = 'stepPlus';
+    plus.textContent = '+'; plus.setAttribute('aria-label', 'Øk prognosen med 1');
+
+    const clamp = v => Math.max(0, Math.min(task.trials, v));
+    const setVal = v => { prediction = clamp(v); input.value = String(prediction); };
+    minus.addEventListener('click', () => setVal((parseInt(input.value, 10) || 0) - 1));
+    plus.addEventListener('click', () => setVal((parseInt(input.value, 10) || 0) + 1));
+    input.addEventListener('input', () => { prediction = clamp(parseInt(input.value, 10) || 0); });
+    input.addEventListener('blur', () => setVal(parseInt(input.value, 10) || 0));
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); runExperiment(); } });
+
+    wrap.appendChild(minus); wrap.appendChild(input); wrap.appendChild(plus);
+    holder.appendChild(wrap);
+  } else {
+    const wrap = document.createElement('div');
+    wrap.className = 'category-choices';
+    wrap.setAttribute('role', 'radiogroup');
+    wrap.setAttribute('aria-label', task.question);
+    task.categoryOptions.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button'; btn.className = 'cat-btn'; btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', 'false'); btn.dataset.key = opt.key;
+      btn.innerHTML = `<span class="cat-dot" style="background:${opt.color}"></span>${opt.label}`;
+      btn.addEventListener('click', () => {
+        Array.from(wrap.children).forEach(b => b.setAttribute('aria-checked', 'false'));
+        btn.setAttribute('aria-checked', 'true');
+        prediction = opt.key;
+        $('btnRun').disabled = false;
+      });
+      wrap.appendChild(btn);
+    });
+    holder.appendChild(wrap);
+    $('btnRun').disabled = true;
+  }
+}
+function lockPredictControl() {
+  predictionLocked = true;
+  document.querySelectorAll('#predictControl button, #predictControl input').forEach(el => { el.disabled = true; });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   GRAF (STOLPEDIAGRAM + TEKSTLIG RESULTAT)
+   ══════════════════════════════════════════════════════════════════ */
+function renderChart(task, counts) {
+  const bars = $('chartBars'), labels = $('chartLabels'), textList = $('chartTextList');
+  const max = Math.max(1, ...task.graphOutcomes.map(o => counts[o.key] || 0));
+  bars.innerHTML = ''; labels.innerHTML = ''; textList.innerHTML = '';
+  task.graphOutcomes.forEach(o => {
+    const c = counts[o.key] || 0;
+    const col = document.createElement('div'); col.className = 'chart-bar-col';
+    const countEl = document.createElement('span'); countEl.className = 'chart-bar-count'; countEl.textContent = String(c);
+    const fill = document.createElement('div'); fill.className = 'chart-bar-fill';
+    fill.style.background = o.color; fill.style.height = (c / max * 100) + '%';
+    col.appendChild(countEl); col.appendChild(fill);
+    bars.appendChild(col);
+
+    const lab = document.createElement('div'); lab.className = 'chart-label-col'; lab.textContent = o.label;
+    labels.appendChild(lab);
+
+    const row = document.createElement('div'); row.className = 'chart-text-row';
+    row.innerHTML = `<span>${o.label}</span><span>${c} ganger</span>`;
+    textList.appendChild(row);
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SIMULERINGSMOTOR
+   Små forsøk (≤20): hvert kast animeres individuelt.
+   Middels (21–100): kjøres i puljer.
+   Store (>100): kjøres i store puljer, fullføres på få sekunder.
+   De første 10 forsøkene vises alltid enkeltvis i sporfeltet.
+   ══════════════════════════════════════════════════════════════════ */
+function runSimulationBatch(task, startCounts, startI, targetTotal, onDone, onProgress) {
+  const counts = Object.assign({}, startCounts);
+  let i = startI;
+  const traceN = Math.min(10, targetTotal);
+  const chunkSize = targetTotal <= 20 ? 1 : targetTotal <= 100 ? 5 : Math.max(10, Math.round(targetTotal / 30));
+  const stepDelay = targetTotal <= 20 ? 210 : targetTotal <= 100 ? 55 : 0;
+
+  function step() {
+    const n = (i < traceN) ? 1 : Math.min(chunkSize, targetTotal - i);
+    let lastDraw = null;
+    for (let k = 0; k < n; k++) {
+      const res = task.drawOne();
+      counts[res.graphKey] = (counts[res.graphKey] || 0) + 1;
+      lastDraw = res;
+      if (i < traceN) {
+        const chip = document.createElement('span');
+        chip.className = 'trace-chip';
+        chip.textContent = res.trace;
+        $('traceStrip').appendChild(chip);
+      }
+      i++;
+    }
+    if (lastDraw) updateVisualForDraw(task, lastDraw);
+    renderChart(task, counts);
+    $('simCounter').textContent = `${i} / ${targetTotal} kast`;
+    onProgress && onProgress(counts, i);
+
+    if (i < targetTotal) {
+      if (stepDelay > 0) setTimeout(() => requestAnimationFrame(step), stepDelay);
+      else requestAnimationFrame(step);
+    } else {
+      onDone(counts);
+    }
+  }
+  step();
+}
+function updateVisualForDraw(task, res) {
+  if (task.type === 'coin' || task.type === 'lln') setCoinFace($('coinEl'), res.graphKey);
+  else if (task.type === 'dice') setDieFace(parseInt(res.graphKey, 10));
+  else if (task.type === 'bag' || task.type === 'bagCategory') {
+    const opt = task.composition.find(c => c.key === res.graphKey);
+    jiggleBag(opt ? opt.label : res.graphKey);
+  } else if (task.type === 'twoCoins') {
+    setCoinFace($('coinEl1'), res.trace[0]);
+    setCoinFace($('coinEl2'), res.trace[1]);
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SPILLFLYT
+   ══════════════════════════════════════════════════════════════════ */
+function loadTask(i) {
+  taskIndex = i;
+  current = session[i];
+  taskScored = false;
+  simRunning = false;
+  simCounts = {}; simDone = 0;
+
+  $('hudTaskLabel').textContent = `Forsøk ${i + 1} av 8`;
+  $('hudScore').textContent = `${score} poeng`;
+  $('taskDesc').textContent = current.desc;
+
+  renderVisual(current);
+  renderPredictControl(current);
+
+  $('simCard').classList.remove('show');
+  $('traceStrip').innerHTML = '';
+  $('chartBars').innerHTML = ''; $('chartLabels').innerHTML = ''; $('chartTextList').innerHTML = '';
+  $('simCounter').textContent = `0 / ${current.trials} kast`;
+  $('llnBox').classList.remove('show');
+  $('compareCard').classList.remove('show');
+  $('btnRun').disabled = current.predictType === 'category';
+  $('btnRun').hidden = false;
+  $('btnRun').textContent = 'Kjør forsøket';
+
+  announce(`Forsøk ${i + 1} av 8. ${current.desc} ${current.question}`);
+}
+
+function runExperiment() {
+  if (predictionLocked || simRunning || prediction === null) return;
+  simRunning = true;
+  lockPredictControl();
+  $('btnRun').disabled = true;
+  $('simCard').classList.add('show');
+
+  runSimulationBatch(current, {}, 0, current.trials, counts => {
+    simCounts = counts; simDone = current.trials; simRunning = false;
+    finishTaskSimulation(current, counts);
+  });
+}
+
+function finishTaskSimulation(task, counts) {
+  if (!taskScored) {
+    let pts;
+    if (task.predictType === 'number') {
+      pts = scoreNumeric(prediction, task.theoretical, task.tolerance);
+      deviationRecord.push(Math.abs(prediction - task.theoretical));
+    } else {
+      pts = scoreCategory(prediction, task.correctKey);
+    }
+    score += pts;
+    if (pts === 3) exactCount++;
+    task.earnedPoints = pts;
+    taskScored = true;
+    $('hudScore').textContent = `${score} poeng`;
+  }
+  showComparison(task, counts);
+  if (task.type === 'lln') setupLlnBox(task, counts);
+}
+
+function showComparison(task, counts) {
+  const grid = $('compareGrid');
+  grid.innerHTML = '';
+  if (task.predictType === 'number') {
+    const actual = task.getActual(counts);
+    const items = [
+      ['Din prognose', String(prediction)],
+      ['Teori', String(task.theoretical)],
+      ['Resultat', String(actual)]
+    ];
+    items.forEach(([label, val]) => {
+      const it = document.createElement('div'); it.className = 'compare-item';
+      it.innerHTML = `<span class="compare-item-label">${label}</span><span class="compare-item-value">${val}</span>`;
+      grid.appendChild(it);
+    });
+    const diff = Math.abs(prediction - task.theoretical);
+    let msg;
+    if (diff === 0) msg = `🎯 Nøyaktig på den teoretiske forventningen! Resultatet ble ${actual} denne gangen — tilfeldigheten trenger ikke gi akkurat det tallet.`;
+    else if (task.earnedPoints === 2) msg = `★ God prognose, nære forventningen. Resultatet ble ${actual} denne gangen.`;
+    else if (task.earnedPoints === 1) msg = `Grei retning på prognosen. Resultatet ble ${actual} — tilfeldigheten gjør at utfallet varierer.`;
+    else msg = `Prognosen lå langt fra den teoretiske forventningen (${task.theoretical}). Resultatet ble ${actual}. ${task.explanation}`;
+    $('compareExplain').textContent = msg;
+  } else {
+    const mostFrequent = task.getMostFrequent(counts);
+    const label = key => (task.categoryOptions.find(o => o.key === key) || {}).label || key;
+    const items = [
+      ['Din prognose', label(prediction)],
+      ['Teoretisk mest sannsynlig', label(task.correctKey)],
+      ['Faktisk vanligst nå', label(mostFrequent)]
+    ];
+    items.forEach(([lb, val]) => {
+      const it = document.createElement('div'); it.className = 'compare-item';
+      it.innerHTML = `<span class="compare-item-label">${lb}</span><span class="compare-item-value" style="font-size:1.05rem">${val}</span>`;
+      grid.appendChild(it);
+    });
+    let msg;
+    if (task.earnedPoints === 3) msg = `Riktig! ${label(task.correctKey)} har høyest teoretisk sannsynlighet. ${task.explanation}`;
+    else msg = `Denne gangen var ${label(task.correctKey)} teoretisk mest sannsynlig, ikke ${label(prediction)}. ${task.explanation}`;
+    $('compareExplain').textContent = msg;
+  }
+  $('comparePoints').textContent = `+${task.earnedPoints} poeng (av 3)`;
+  $('compareCard').classList.add('show');
+  if (task.type !== 'lln') {
+    $('btnNext').focus();
+  }
+  announce('Forsøket er ferdig. ' + $('compareExplain').textContent);
+}
+
+/* ── Ekstra "20 mot 500 kast"-seksjon for lov om store talls-oppgaven ── */
+function setupLlnBox(task, counts20) {
+  const box = $('llnBox');
+  box.classList.add('show');
+  $('llnLateCount').textContent = String(task.extendedTrials);
+  const early = counts20.K || 0;
+  const earlyPct = Math.round(early / task.trials * 100);
+  $('llnEarlyText').textContent = `${early} kron – ${earlyPct} %`;
+  $('llnEarlyFill').style.width = earlyPct + '%';
+  $('llnLateText').textContent = '–';
+  $('llnLateFill').style.width = '0%';
+  $('llnNote').hidden = true;
+
+  const btn = $('btnContinueLln');
+  btn.hidden = false; btn.disabled = false;
+  btn.textContent = `Fortsett til ${task.extendedTrials} kast`;
+  btn.onclick = () => {
+    btn.disabled = true;
+    runSimulationBatch(task, counts20, task.trials, task.extendedTrials, finalCounts => {
+      const lateK = finalCounts.K || 0;
+      const latePct = Math.round(lateK / task.extendedTrials * 100);
+      $('llnLateText').textContent = `${lateK} kron – ${latePct} %`;
+      $('llnLateFill').style.width = latePct + '%';
+      $('llnNote').hidden = false;
+      btn.hidden = true;
+      announce(`Etter ${task.extendedTrials} kast: ${latePct} prosent kron.`);
+    }, (counts, i) => {
+      $('chartTextList').innerHTML = '';
+    });
+  };
+}
+
+function nextTask() {
+  if (taskIndex + 1 >= session.length) endGame();
+  else loadTask(taskIndex + 1);
+}
+
+function startGame() {
+  session = buildSession();
+  score = 0; exactCount = 0; deviationRecord = [];
+  showScreen('screen-game');
+  loadTask(0);
+}
+
+function endGame() {
+  $('endScore').textContent = `${score} av ${session.length * 3}`;
+  $('endExact').textContent = `${exactCount} av ${session.length}`;
+  const avg = deviationRecord.length ? (deviationRecord.reduce((a, b) => a + b, 0) / deviationRecord.length) : 0;
+  $('endAvgDev').textContent = String(Math.round(avg * 10) / 10);
+  showScreen('screen-end');
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   OPPSTART
+   ══════════════════════════════════════════════════════════════════ */
+$('btn-start').addEventListener('click', startGame);
+$('btnRun').addEventListener('click', runExperiment);
+$('btnNext').addEventListener('click', nextTask);
+$('btn-again').addEventListener('click', startGame);
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>
