@@ -228,12 +228,76 @@
     }
   }
 
+  /* ===== FILTERBAR ===== */
+  .filter-bar{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 20px 24px;
+  }
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+  }
+  .chip{
+    background:var(--card);
+    border:3px solid var(--ink);
+    box-shadow:0 4px 0 var(--ink);
+    color:var(--ink);
+    font-family:'Nunito',sans-serif;
+    font-weight:800;
+    font-size:.82rem;
+    padding:8px 14px;
+    cursor:pointer;
+    transition:transform .1s ease,box-shadow .1s ease,background .15s;
+    white-space:nowrap;
+  }
+  .chip:hover,.chip:focus-visible{transform:translateY(-2px);box-shadow:0 6px 0 var(--ink);outline:none;}
+  .chip:active{transform:translateY(4px);box-shadow:0 0 0 var(--ink);}
+  .chip.active{background:var(--yellow);}
+  .chip-beta.active{background:#dc2626;color:#fff;}
+  /* Under ~600px blir chip-raden for høy (opptil 5 rader) før man i det
+     hele tatt ser et spill. Da lar vi den i stedet skrolle sidelengs i én
+     rad — samme mønster som filter-chips i mange mobilapper. */
+  @media (max-width:600px){
+    .chip-row{
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      justify-content:flex-start;
+      width:100%;
+      padding-bottom:6px;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+    }
+    .chip-row::-webkit-scrollbar{display:none;}
+    .chip{flex:0 0 auto;}
+  }
+
   /* ===== GRID ===== */
   main{padding:0 20px 60px;max-width:1100px;margin:0 auto;}
   .grid{
     display:grid;
     grid-template-columns:repeat(auto-fill,minmax(210px,1fr));
     gap:22px;
+  }
+  /* To kolonner på mobil i stedet for én — auto-fill med 210px minbredde
+     gir bare plass til én kolonne på de fleste telefoner. */
+  @media (max-width:600px){
+    .grid{
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+    }
+    .card{min-height:0;}
+    .card .label{padding:10px 12px;}
+    .card .label .title{font-size:1.05rem;}
+    .card .label .tag{font-size:.68rem;}
+    .card .art .size,.card .art .beta{font-size:.62rem;padding:3px 6px;}
   }
   .card{
     background:var(--card);
@@ -334,9 +398,30 @@
     text-align:center;padding:24px;color:var(--muted);
     font-weight:700;font-size:.85rem;
     border-top:3px solid rgba(43,33,24,.12);
+    display:flex;flex-direction:column;align-items:center;gap:10px;
   }
+  .footer-social{
+    display:inline-flex;align-items:center;gap:6px;
+    color:var(--ink);text-decoration:none;font-weight:800;
+  }
+  .footer-social svg{width:18px;height:18px;}
+  .footer-social:hover,.footer-social:focus-visible{color:var(--muted);outline:none;}
 
-  /* ===== INFO-SEKSJONER (Om / Læreplan / Skoler / Kontakt) ===== */
+  /* ===== INFO-SEKSJONER (Blogg / Om / Læreplan / Skoler / Kontakt) ===== */
+  .blog-post-link{
+    display:block;
+    text-decoration:none;
+    color:var(--ink);
+    border:3px solid var(--ink);
+    padding:14px 16px;
+    margin:10px 0 14px;
+    background:var(--cream);
+    transition:background .15s;
+  }
+  .blog-post-link:hover,.blog-post-link:focus-visible{background:var(--yellow);outline:none;}
+  .blog-post-date{font-weight:800;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;}
+  .blog-post-title{font-family:'Chewy',cursive;font-size:1.15rem;margin-top:4px;line-height:1.2;}
+  .blog-post-excerpt{font-weight:600;font-size:.88rem;color:var(--ink);margin-top:6px;line-height:1.4;}
   .info-sections{
     max-width:900px;
     margin:20px auto 0;
@@ -455,6 +540,11 @@
     </div>
   </section>
 
+  <section class="filter-bar" aria-label="Filtrer innhold">
+    <div class="chip-row" id="categoryChips"></div>
+    <button class="chip chip-beta" id="betaToggle" type="button" aria-pressed="false" style="display:none;">🧪 Vis beta</button>
+  </section>
+
   <section class="cta-banner-wrap">
     <div class="cta-banner">
       <div class="cta-banner-text">
@@ -470,6 +560,15 @@
   </main>
 
   <section class="info-sections">
+    <div class="info-block" id="blogg">
+      <h2>Fra bloggen</h2>
+      <a class="blog-post-link" id="blogPostLink" href="/blog/" style="display:none;">
+        <div class="blog-post-date" id="blogPostDate"></div>
+        <div class="blog-post-title" id="blogPostTitle"></div>
+        <p class="blog-post-excerpt" id="blogPostExcerpt"></p>
+      </a>
+      <a class="btn-sticker" href="/blog/">Se alle innlegg →</a>
+    </div>
     <div class="info-block" id="om">
       <h2>Om LRNify</h2>
       <p>LRNify lager læringsspill og klasseromsverktøy som skal føles som ekte spill – ikke digitale arbeidsark. Alt kjører rett i nettleseren, uten installasjon, og er laget av en lærer som vet hva som faktisk fungerer i klasserommet.</p>
@@ -488,7 +587,13 @@
     </div>
   </section>
 
-  <footer>LRNify · lær gjennom lek · © 2026</footer>
+  <footer>
+    <div>LRNify · lær gjennom lek · © 2026</div>
+    <a class="footer-social" href="https://www.instagram.com/lrnify.no/" target="_blank" rel="noopener noreferrer" aria-label="LRNify på Instagram">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
+      @lrnify.no
+    </a>
+  </footer>
 
 <script>
 /* =========================================================
@@ -612,8 +717,12 @@ const gamesMode = document.getElementById('gamesMode');
 const toolsMode = document.getElementById('toolsMode');
 const activitiesMode = document.getElementById('activitiesMode');
 const lekMode = document.getElementById('lekMode');
+const categoryChips = document.getElementById('categoryChips');
+const betaToggle = document.getElementById('betaToggle');
 
 let currentMode = 'games';
+let activeCategory = 'all';
+let showBeta = false;
 
 // Lek-kortene ligger sammen med læringsspillene i games/, bare i en egen fane
 function getCardBasePath(){
@@ -674,6 +783,58 @@ function getCurrentItems(){
   return ACTIVITIES;
 }
 
+// Kategori-chipsene regnes ut fra alle elementene i fanen (uavhengig av
+// beta-filteret), slik at chip-raden ikke hopper rundt når beta skrus av/på.
+function renderFilterBar(){
+  const items = getCurrentItems();
+  const hasBeta = items.some(g => g.beta);
+  betaToggle.style.display = hasBeta ? 'inline-block' : 'none';
+
+  const categories = [...new Set(items.map(g => g.category))].sort((a,b)=>a.localeCompare(b,'nb'));
+
+  categoryChips.innerHTML = '';
+  const alleChip = document.createElement('button');
+  alleChip.className = 'chip';
+  alleChip.type = 'button';
+  alleChip.textContent = 'Alle';
+  alleChip.dataset.category = 'all';
+  alleChip.addEventListener('click', () => { activeCategory = 'all'; updateFilterUI(); applyFilters(); });
+  categoryChips.appendChild(alleChip);
+
+  categories.forEach(cat => {
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.type = 'button';
+    chip.textContent = cat;
+    chip.dataset.category = cat;
+    chip.addEventListener('click', () => { activeCategory = cat; updateFilterUI(); applyFilters(); });
+    categoryChips.appendChild(chip);
+  });
+
+  updateFilterUI();
+}
+
+function updateFilterUI(){
+  categoryChips.querySelectorAll('.chip').forEach(chip => {
+    const isActive = chip.dataset.category === activeCategory;
+    chip.classList.toggle('active', isActive);
+    chip.setAttribute('aria-pressed', String(isActive));
+  });
+  betaToggle.classList.toggle('active', showBeta);
+  betaToggle.textContent = showBeta ? '🧪 Skjul beta' : '🧪 Vis beta';
+  betaToggle.setAttribute('aria-pressed', String(showBeta));
+}
+
+function applyFilters(){
+  const items = getCurrentItems().filter(g =>
+    (showBeta || !g.beta) &&
+    (activeCategory === 'all' || g.category === activeCategory)
+  );
+  renderCards(items);
+}
+
+betaToggle.addEventListener('click', () => { showBeta = !showBeta; updateFilterUI(); applyFilters(); });
+
 function setMode(mode){
   currentMode = mode;
   const isGames = mode === 'games';
@@ -703,7 +864,9 @@ function setMode(mode){
     pageTitle.textContent = 'Velg et spill og hopp inn';
   }
 
-  renderCards(getCurrentItems());
+  activeCategory = 'all';
+  renderFilterBar();
+  applyFilters();
 }
 
 gamesMode.addEventListener('click', () => setMode('games'));
@@ -724,6 +887,32 @@ menuBtn.addEventListener('click',openMenu);
 drawerClose.addEventListener('click',closeMenu);
 scrim.addEventListener('click',closeMenu);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenu();});
+
+/* blogg-forhåndsvisning — henter siste innlegg fra feeden, så forsiden
+   ikke må oppdateres manuelt hver gang det publiseres noe nytt */
+fetch('/blog/feed.xml')
+  .then(res => res.text())
+  .then(xmlText => {
+    const feed = new DOMParser().parseFromString(xmlText, 'application/xml');
+    const item = feed.querySelector('item');
+    if(!item) return;
+
+    const title = item.querySelector('title')?.textContent || '';
+    const link = item.querySelector('link')?.textContent || '/blog/';
+    const description = item.querySelector('description')?.textContent || '';
+    const pubDate = item.querySelector('pubDate')?.textContent;
+    const dateStr = pubDate
+      ? new Date(pubDate).toLocaleDateString('nb-NO', { day:'numeric', month:'long', year:'numeric' })
+      : '';
+
+    document.getElementById('blogPostDate').textContent = dateStr;
+    document.getElementById('blogPostTitle').textContent = title;
+    document.getElementById('blogPostExcerpt').textContent = description;
+    const postLink = document.getElementById('blogPostLink');
+    postLink.href = link;
+    postLink.style.display = 'block';
+  })
+  .catch(() => { /* siden funker fint uten forhåndsvisning — "Se alle innlegg" står uansett der */ });
 </script>
 
 <!-- ===== LÆRERINNLOGGING ===== -->
