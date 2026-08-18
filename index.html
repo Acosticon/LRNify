@@ -228,6 +228,41 @@
     }
   }
 
+  /* ===== FILTERBAR ===== */
+  .filter-bar{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    max-width:1100px;
+    margin:0 auto;
+    padding:0 20px 24px;
+  }
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    justify-content:center;
+  }
+  .chip{
+    background:var(--card);
+    border:3px solid var(--ink);
+    box-shadow:0 4px 0 var(--ink);
+    color:var(--ink);
+    font-family:'Nunito',sans-serif;
+    font-weight:800;
+    font-size:.82rem;
+    padding:8px 14px;
+    cursor:pointer;
+    transition:transform .1s ease,box-shadow .1s ease,background .15s;
+    white-space:nowrap;
+  }
+  .chip:hover,.chip:focus-visible{transform:translateY(-2px);box-shadow:0 6px 0 var(--ink);outline:none;}
+  .chip:active{transform:translateY(4px);box-shadow:0 0 0 var(--ink);}
+  .chip.active{background:var(--yellow);}
+  .chip-beta.active{background:#dc2626;color:#fff;}
+
   /* ===== GRID ===== */
   main{padding:0 20px 60px;max-width:1100px;margin:0 auto;}
   .grid{
@@ -455,6 +490,11 @@
     </div>
   </section>
 
+  <section class="filter-bar" aria-label="Filtrer innhold">
+    <div class="chip-row" id="categoryChips"></div>
+    <button class="chip chip-beta" id="betaToggle" type="button" aria-pressed="false" style="display:none;">🧪 Vis beta</button>
+  </section>
+
   <section class="cta-banner-wrap">
     <div class="cta-banner">
       <div class="cta-banner-text">
@@ -610,8 +650,12 @@ const gamesMode = document.getElementById('gamesMode');
 const toolsMode = document.getElementById('toolsMode');
 const activitiesMode = document.getElementById('activitiesMode');
 const lekMode = document.getElementById('lekMode');
+const categoryChips = document.getElementById('categoryChips');
+const betaToggle = document.getElementById('betaToggle');
 
 let currentMode = 'games';
+let activeCategory = 'all';
+let showBeta = false;
 
 // Lek-kortene ligger sammen med læringsspillene i games/, bare i en egen fane
 function getCardBasePath(){
@@ -672,6 +716,58 @@ function getCurrentItems(){
   return ACTIVITIES;
 }
 
+// Kategori-chipsene regnes ut fra alle elementene i fanen (uavhengig av
+// beta-filteret), slik at chip-raden ikke hopper rundt når beta skrus av/på.
+function renderFilterBar(){
+  const items = getCurrentItems();
+  const hasBeta = items.some(g => g.beta);
+  betaToggle.style.display = hasBeta ? 'inline-block' : 'none';
+
+  const categories = [...new Set(items.map(g => g.category))].sort((a,b)=>a.localeCompare(b,'nb'));
+
+  categoryChips.innerHTML = '';
+  const alleChip = document.createElement('button');
+  alleChip.className = 'chip';
+  alleChip.type = 'button';
+  alleChip.textContent = 'Alle';
+  alleChip.dataset.category = 'all';
+  alleChip.addEventListener('click', () => { activeCategory = 'all'; updateFilterUI(); applyFilters(); });
+  categoryChips.appendChild(alleChip);
+
+  categories.forEach(cat => {
+    const chip = document.createElement('button');
+    chip.className = 'chip';
+    chip.type = 'button';
+    chip.textContent = cat;
+    chip.dataset.category = cat;
+    chip.addEventListener('click', () => { activeCategory = cat; updateFilterUI(); applyFilters(); });
+    categoryChips.appendChild(chip);
+  });
+
+  updateFilterUI();
+}
+
+function updateFilterUI(){
+  categoryChips.querySelectorAll('.chip').forEach(chip => {
+    const isActive = chip.dataset.category === activeCategory;
+    chip.classList.toggle('active', isActive);
+    chip.setAttribute('aria-pressed', String(isActive));
+  });
+  betaToggle.classList.toggle('active', showBeta);
+  betaToggle.textContent = showBeta ? '🧪 Skjul beta' : '🧪 Vis beta';
+  betaToggle.setAttribute('aria-pressed', String(showBeta));
+}
+
+function applyFilters(){
+  const items = getCurrentItems().filter(g =>
+    (showBeta || !g.beta) &&
+    (activeCategory === 'all' || g.category === activeCategory)
+  );
+  renderCards(items);
+}
+
+betaToggle.addEventListener('click', () => { showBeta = !showBeta; updateFilterUI(); applyFilters(); });
+
 function setMode(mode){
   currentMode = mode;
   const isGames = mode === 'games';
@@ -701,7 +797,9 @@ function setMode(mode){
     pageTitle.textContent = 'Velg et spill og hopp inn';
   }
 
-  renderCards(getCurrentItems());
+  activeCategory = 'all';
+  renderFilterBar();
+  applyFilters();
 }
 
 gamesMode.addEventListener('click', () => setMode('games'));
