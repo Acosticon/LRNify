@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>VILLE DU HELLER? — LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   VILLE DU HELLER? — LRNify party-aktivitet
+   Diagonal VS-splitt · shuffle-bag · konfetti · WebAudio-juice
+   ============================================================ */
+:root{
+  --bg:#0a0c1a;
+  --aA:#ff2e63; --aB:#ff8a3d;          /* venstre side (rosa→oransje) */
+  --bA:#00d4ff; --bB:#7c3aed;          /* høyre side (cyan→lilla) */
+  --cut:5.5;                            /* diagonal-forskyvning i % */
+  --ink:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  font-family:'Nunito',system-ui,sans-serif;
+  color:var(--ink);
+  user-select:none;
+}
+
+/* ---------- bakgrunn: drivende neon-orber ---------- */
+.orbs{position:fixed;inset:0;z-index:0;pointer-events:none;filter:blur(90px);opacity:.5}
+.orb{position:absolute;border-radius:50%;animation:drift 26s ease-in-out infinite alternate}
+.orb:nth-child(1){width:44vw;height:44vw;left:-12vw;top:-14vw;background:#ff2e63}
+.orb:nth-child(2){width:38vw;height:38vw;right:-10vw;bottom:-12vw;background:#7c3aed;animation-delay:-9s}
+.orb:nth-child(3){width:26vw;height:26vw;right:16vw;top:-10vw;background:#00d4ff;animation-delay:-17s}
+@keyframes drift{
+  0%{transform:translate(0,0) scale(1)}
+  100%{transform:translate(6vw,8vh) scale(1.25)}
+}
+
+/* ---------- scene ---------- */
+#stage{position:fixed;inset:0;z-index:1}
+#stage.shake{animation:shake .38s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{
+  10%,90%{transform:translate(-6px,2px)}
+  20%,80%{transform:translate(7px,-3px)}
+  30%,50%,70%{transform:translate(-9px,4px)}
+  40%,60%{transform:translate(8px,-4px)}
+}
+
+/* ---------- sidene ---------- */
+.side{
+  position:absolute;inset:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:filter .45s ease, opacity .45s ease;
+}
+.side.a{background:linear-gradient(135deg,var(--aA),var(--aB))}
+.side.b{background:linear-gradient(315deg,var(--bA),var(--bB))}
+/* subtil tekstur / dybde */
+.side::before{content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(120% 90% at 30% 20%, rgba(255,255,255,.16), transparent 55%),
+    radial-gradient(100% 80% at 80% 90%, rgba(0,0,0,.28), transparent 60%);
+  pointer-events:none}
+
+/* skyv innholdet inn i hver sin halvdel (flex sentrerer i content-boksen) */
+.side.a{padding-right:56%}
+.side.b{padding-left:56%}
+.opt{
+  position:relative;max-width:40vw;text-align:center;padding:1rem;
+  transition:transform .25s cubic-bezier(.34,1.56,.64,1);
+}
+.opt .txt{
+  font-weight:900;line-height:1.12;
+  font-size:clamp(1.5rem,4.6vmin + 1vw,4rem);
+  text-shadow:0 3px 0 rgba(0,0,0,.22), 0 10px 34px rgba(0,0,0,.35);
+  letter-spacing:.01em;
+}
+.opt .tag{
+  display:inline-block;margin-bottom:1.1rem;
+  font-family:'Bungee','Arial Black',sans-serif;font-size:clamp(.8rem,1.6vmin,1.15rem);
+  background:rgba(0,0,0,.28);padding:.35em .9em;border-radius:999px;
+  letter-spacing:.12em;
+}
+@media (hover:hover){
+  .side:hover .opt{transform:scale(1.07)}
+  .side:hover{filter:brightness(1.12) saturate(1.15)}
+}
+
+/* valgt / taper */
+.side.won{filter:brightness(1.15) saturate(1.3);z-index:3}
+.side.won .opt{transform:scale(1.13)}
+.side.lost{filter:grayscale(.85) brightness(.45);}
+.side.lost .opt{transform:scale(.92)}
+.stamp{
+  position:absolute;left:50%;top:-3.2em;transform:translateX(-50%) rotate(-9deg) scale(0);
+  font-family:'Bungee','Arial Black',sans-serif;font-size:clamp(1rem,2.6vmin,1.7rem);
+  color:#ffe600;border:4px solid #ffe600;border-radius:.4em;
+  padding:.15em .55em;letter-spacing:.08em;
+  text-shadow:0 2px 0 rgba(0,0,0,.4);box-shadow:0 6px 24px rgba(0,0,0,.35);
+  background:rgba(0,0,0,.35);
+  pointer-events:none;opacity:0;white-space:nowrap;
+}
+.side.won .stamp{animation:stampIn .45s cubic-bezier(.34,1.8,.64,1) forwards}
+@keyframes stampIn{
+  0%{opacity:0;transform:translateX(-50%) rotate(18deg) scale(2.6)}
+  100%{opacity:1;transform:translateX(-50%) rotate(-9deg) scale(1)}
+}
+
+/* inn/ut-animasjon per dilemma */
+.side.a.enter .opt{animation:inLeft .55s cubic-bezier(.22,1.4,.36,1) both}
+.side.b.enter .opt{animation:inRight .55s cubic-bezier(.22,1.4,.36,1) both}
+@keyframes inLeft{0%{opacity:0;transform:translateX(-14vw) scale(.85)}100%{opacity:1;transform:translateX(0) scale(1)}}
+@keyframes inRight{0%{opacity:0;transform:translateX(14vw) scale(.85)}100%{opacity:1;transform:translateX(0) scale(1)}}
+
+/* ---------- diagonal-glød ---------- */
+#seam{position:absolute;left:50%;top:50%;width:7px;height:150%;z-index:2;pointer-events:none;
+  background:linear-gradient(180deg,transparent,#fff 18%,#fff 82%,transparent);
+  box-shadow:0 0 22px 6px rgba(255,255,255,.55), 0 0 80px 22px rgba(255,255,255,.18);
+  transform:translate(-50%,-50%) rotate(var(--seamRot,6deg));
+  opacity:.85}
+
+/* ---------- VS-badge ---------- */
+#vs{
+  position:absolute;left:50%;top:50%;z-index:4;transform:translate(-50%,-50%);
+  width:clamp(72px,13vmin,120px);height:clamp(72px,13vmin,120px);
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+#vs .ring{position:absolute;inset:-6px;border-radius:50%;
+  background:conic-gradient(#ffe600,#ff2e63,#7c3aed,#00d4ff,#ffe600);
+  animation:spin 5s linear infinite;
+  filter:drop-shadow(0 0 18px rgba(255,230,0,.5))}
+#vs .core{position:absolute;inset:0;border-radius:50%;background:#12142a;
+  display:flex;align-items:center;justify-content:center;
+  border:3px solid rgba(255,255,255,.15)}
+#vs .core span{font-family:'Bungee','Arial Black',sans-serif;font-size:clamp(1.5rem,4.4vmin,2.6rem);
+  background:linear-gradient(180deg,#fff,#ffe600);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  transform:translateY(.05em)}
+@keyframes spin{to{transform:rotate(360deg)}}
+#vs.pop{animation:vsPop .5s cubic-bezier(.34,2,.64,1)}
+@keyframes vsPop{0%{transform:translate(-50%,-50%) scale(.2) rotate(-160deg)}100%{transform:translate(-50%,-50%) scale(1) rotate(0)}}
+
+/* ---------- topplinje ---------- */
+#top{
+  position:fixed;top:0;left:0;right:0;z-index:6;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.9rem 1.1rem;gap:.8rem;pointer-events:none;
+}
+#logo{font-family:'Bungee','Arial Black',sans-serif;font-size:clamp(.85rem,2vmin,1.25rem);
+  letter-spacing:.06em;opacity:.92;text-shadow:0 2px 12px rgba(0,0,0,.6);white-space:nowrap}
+#logo em{font-style:normal;color:#ffe600}
+#chip{
+  pointer-events:none;
+  font-weight:900;font-size:clamp(.85rem,2.1vmin,1.15rem);
+  background:rgba(10,12,26,.72);border:2px solid rgba(255,255,255,.25);
+  backdrop-filter:blur(8px);
+  padding:.45em 1.1em;border-radius:999px;white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+#chip.flip{animation:chipFlip .45s cubic-bezier(.34,1.56,.64,1)}
+@keyframes chipFlip{0%{transform:rotateX(90deg) scale(.7);opacity:0}100%{transform:rotateX(0) scale(1);opacity:1}}
+#hud{display:flex;align-items:center;gap:.55rem;pointer-events:auto}
+.hudbtn{
+  font-family:inherit;font-weight:900;color:#fff;cursor:pointer;
+  background:rgba(10,12,26,.72);border:2px solid rgba(255,255,255,.25);
+  backdrop-filter:blur(8px);border-radius:999px;
+  font-size:clamp(.8rem,1.9vmin,1.05rem);padding:.45em .9em;
+  transition:transform .15s, border-color .15s;
+}
+.hudbtn:hover{transform:scale(1.08);border-color:#ffe600}
+.hudbtn:active{transform:scale(.94)}
+#count{font-family:'Bungee','Arial Black',sans-serif;font-size:clamp(.8rem,1.9vmin,1.05rem);
+  background:rgba(10,12,26,.72);border:2px solid rgba(255,255,255,.25);
+  border-radius:999px;padding:.4em .8em;color:#ffe600}
+#count.tick{animation:tickPop .3s cubic-bezier(.34,2,.64,1)}
+@keyframes tickPop{50%{transform:scale(1.35)}}
+
+/* ---------- bunn: NESTE ---------- */
+#bottom{position:fixed;bottom:0;left:0;right:0;z-index:6;display:flex;flex-direction:column;
+  align-items:center;gap:.5rem;padding:1.1rem;pointer-events:none}
+#next{
+  pointer-events:auto;cursor:pointer;border:none;
+  font-family:'Bungee','Arial Black',sans-serif;color:#12142a;
+  font-size:clamp(1.05rem,2.8vmin,1.6rem);letter-spacing:.06em;
+  padding:.75em 2.2em;border-radius:999px;
+  background:linear-gradient(120deg,#ffe600,#ffb300);
+  box-shadow:0 6px 0 #b97900, 0 14px 40px rgba(255,200,0,.35);
+  transition:transform .12s;
+  position:relative;overflow:hidden;
+}
+#next::after{content:'';position:absolute;top:0;left:-120%;width:60%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);
+  transform:skewX(-20deg);animation:shine 2.6s ease-in-out infinite}
+@keyframes shine{0%,60%{left:-120%}100%{left:160%}}
+#next:hover{transform:scale(1.06)}
+#next:active{transform:translateY(4px) scale(.97);box-shadow:0 2px 0 #b97900}
+#next.pulse{animation:nextPulse 1s ease-in-out infinite}
+@keyframes nextPulse{50%{transform:scale(1.09);box-shadow:0 6px 0 #b97900, 0 14px 60px rgba(255,220,0,.7)}}
+#hint{font-size:clamp(.65rem,1.5vmin,.85rem);font-weight:800;opacity:.55;letter-spacing:.05em;
+  text-shadow:0 2px 8px rgba(0,0,0,.8)}
+@media (hover:none){#hint{display:none}}
+
+/* ---------- kategori-overlay ---------- */
+#catOverlay{position:fixed;inset:0;z-index:20;background:rgba(6,8,18,.86);
+  backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s}
+#catOverlay.open{opacity:1;pointer-events:auto}
+#catPanel{max-width:min(680px,92vw);max-height:86vh;overflow:auto;text-align:center;padding:1.5rem}
+#catPanel h2{font-family:'Bungee','Arial Black',sans-serif;font-size:clamp(1.3rem,4vmin,2.1rem);margin-bottom:.35rem}
+#catPanel p{font-weight:800;opacity:.65;margin-bottom:1.3rem;font-size:clamp(.85rem,2vmin,1rem)}
+#catGrid{display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin-bottom:1.4rem}
+.catchip{
+  cursor:pointer;font-family:inherit;font-weight:900;color:#fff;
+  font-size:clamp(.9rem,2.2vmin,1.1rem);
+  padding:.55em 1.1em;border-radius:999px;border:2px solid rgba(255,255,255,.3);
+  background:rgba(255,255,255,.07);
+  transition:transform .15s, opacity .2s, box-shadow .2s;
+}
+.catchip:hover{transform:scale(1.07)}
+.catchip:active{transform:scale(.93)}
+.catchip.on{border-color:transparent;box-shadow:0 4px 18px rgba(0,0,0,.45)}
+.catchip:not(.on){opacity:.38;filter:grayscale(.7)}
+#catClose{margin-top:.2rem}
+#bankInfo{font-family:'Bungee','Arial Black',sans-serif;color:#ffe600;font-size:clamp(.8rem,2vmin,1rem);margin-bottom:1.2rem}
+
+/* ---------- konfetti ---------- */
+#fx{position:fixed;inset:0;z-index:10;pointer-events:none}
+
+/* ---------- portrett (mobil): splitt topp/bunn ---------- */
+body.portrait .opt{max-width:84vw}
+body.portrait .side.a{padding:0;padding-bottom:52vh}
+body.portrait .side.b{padding:0;padding-top:52vh}
+body.portrait .side.a.enter .opt{animation-name:inTop}
+body.portrait .side.b.enter .opt{animation-name:inBottom}
+@keyframes inTop{0%{opacity:0;transform:translateY(-12vh) scale(.85)}100%{opacity:1;transform:none}}
+@keyframes inBottom{0%{opacity:0;transform:translateY(12vh) scale(.85)}100%{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<div class="orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<div id="stage">
+  <div class="side a" id="sideA">
+    <div class="opt"><span class="tag">A</span><div class="txt" id="txtA"></div><div class="stamp">DITT VALG!</div></div>
+  </div>
+  <div class="side b" id="sideB">
+    <div class="opt"><span class="tag">B</span><div class="txt" id="txtB"></div><div class="stamp">DITT VALG!</div></div>
+  </div>
+  <div id="seam"></div>
+  <div id="vs"><div class="ring"></div><div class="core"><span>VS</span></div></div>
+</div>
+
+<div id="top">
+  <div id="logo">VILLE DU <em>HELLER?</em></div>
+  <div id="chip"></div>
+  <div id="hud">
+    <div id="count">#1</div>
+    <button class="hudbtn" id="sndBtn" title="Lyd av/på">🔊</button>
+    <button class="hudbtn" id="catBtn">🎛️ Kategorier</button>
+  </div>
+</div>
+
+<div id="bottom">
+  <button id="next">NESTE ▶</button>
+  <div id="hint">⎵ neste &nbsp;·&nbsp; ← velg A &nbsp;·&nbsp; → velg B</div>
+</div>
+
+<div id="catOverlay">
+  <div id="catPanel">
+    <h2>🎛️ KATEGORIER</h2>
+    <p>Skru av og på hvilke dilemmaer som kan dukke opp</p>
+    <div id="catGrid"></div>
+    <div id="bankInfo"></div>
+    <button class="hudbtn" id="catAll">Alle på</button>
+    <button class="hudbtn" id="catClose">✓ Ferdig</button>
+  </div>
+</div>
+
+<canvas id="fx"></canvas>
+
+<script>
+/* ============================================================
+   DATA — kategorier og dilemma-bank
+   Format: [kategorinøkkel, "Alternativ A", "Alternativ B"]
+   ============================================================ */
+const CATS = {
+  sup:    {name:'Superkrefter', emoji:'🦸', c1:'#ff2e63', c2:'#ff8a3d'},
+  mat:    {name:'Mat & drikke', emoji:'🍕', c1:'#ff9f1c', c2:'#e71d36'},
+  dyr:    {name:'Dyr',          emoji:'🐾', c1:'#2ec4b6', c2:'#4c9f38'},
+  skole:  {name:'Skole',        emoji:'🎒', c1:'#3a86ff', c2:'#8338ec'},
+  ekkelt: {name:'Ekkelt',       emoji:'🤢', c1:'#80b918', c2:'#2b9348'},
+  absurd: {name:'Absurd',       emoji:'🤪', c1:'#ff006e', c2:'#ffbe0b'},
+  penger: {name:'Penger',       emoji:'💰', c1:'#ffd700', c2:'#f77f00'},
+  fremtid:{name:'Fremtid & tech', emoji:'🤖', c1:'#00d4ff', c2:'#7c3aed'},
+  toft:   {name:'Tøffe valg',   emoji:'⚖️', c1:'#8d99ae', c2:'#457b9d'},
+  pop:    {name:'Gaming & popkultur', emoji:'🎮', c1:'#9b5de5', c2:'#f15bb5'},
+  reise:  {name:'Reise & eventyr', emoji:'🌍', c1:'#06d6a0', c2:'#118ab2'},
+};
+
+const DILEMMAS = [
+// ---------- 🦸 SUPERKREFTER ----------
+["sup","Kunne fly","Være usynlig"],
+["sup","Være Supermann","Være Hulken"],
+["sup","Lese tanker","Se fremtiden"],
+["sup","Superstyrke","Superfart"],
+["sup","Stoppe tiden","Spole tilbake tiden"],
+["sup","Snakke med dyr","Snakke alle språk"],
+["sup","Teleportere deg hvor som helst","Kunne fly"],
+["sup","Aldri trenge søvn","Aldri trenge mat"],
+["sup","Laserøyne","Ispust"],
+["sup","Kontrollere ild","Kontrollere vann"],
+["sup","Krympe til maurstørrelse","Vokse til 20 meter"],
+["sup","Elastisk gummikropp","Kropp av stål"],
+["sup","Puste under vann","Hoppe 50 meter"],
+["sup","Flytte ting med tankene","Være usårbar"],
+["sup","Superhørsel","Røntgensyn"],
+["sup","Kunne klone deg selv","Bytte kropp med hvem som helst"],
+["sup","Være Batman","Være Spider-Man"],
+["sup","Aldri bli sliten","Aldri bli redd"],
+["sup","Bli usynlig når du er flau","Fly vekk når du er flau"],
+["sup","Skyte spaghetti fra hendene","Rape torden"],
+
+// ---------- 🍕 MAT & DRIKKE ----------
+["mat","Bare spise pizza resten av livet","Bare spise taco resten av livet"],
+["mat","Aldri spise godteri igjen","Aldri spise pizza igjen"],
+["mat","Miste smakssansen","Miste luktesansen"],
+["mat","Spise én levende meitemark","Spise ti døde fluer"],
+["mat","Ketchup på ALT du spiser","Aldri ketchup igjen"],
+["mat","Ananas på pizza hver dag","Aldri pizza igjen"],
+["mat","Bare spise søt mat","Bare spise salt mat"],
+["mat","Frokost til alle måltider","Middag til alle måltider"],
+["mat","Gratis godteri for alltid","Gratis taco for alltid"],
+["mat","Samme favorittrett hver dag","Aldri samme rett to ganger"],
+["mat","Alt du spiser smaker bacon","Alt du spiser smaker jordbær"],
+["mat","Aldri sjokolade igjen","Aldri potetgull igjen"],
+["mat","Is til frokost hver dag","Kake til kvelds hver dag"],
+["mat","Aldri mer pommes frites","Aldri mer burger"],
+["mat","Alltid spise med pinner","Alltid spise med hendene"],
+["mat","Spise verdens sterkeste chili","Spise en hel rå løk"],
+["mat","Maten din er alltid litt for kald","Drikken din er alltid lunken"],
+["mat","Drikke alt med teskje","Spise alt gjennom sugerør"],
+["mat","Bare drikke vann i ett år","Aldri brus igjen"],
+["mat","Spise en hel sitron","Drikke et glass eddik"],
+
+// ---------- 🐾 DYR ----------
+["dyr","Ha en drage","Ha en enhjørning"],
+["dyr","Være hund","Være katt"],
+["dyr","Forstå alt dyr sier","Alle dyr forstår deg"],
+["dyr","T-rex på størrelse med hund","Hamster på størrelse med hest"],
+["dyr","Slåss mot 100 duer","Slåss mot én sint svane"],
+["dyr","Slåss mot en hestestor and","Slåss mot 100 andestore hester"],
+["dyr","Være hai","Være ørn"],
+["dyr","Ha apehale","Ha kaninører"],
+["dyr","10 000 edderkopper i huset","Én slange i senga"],
+["dyr","Verdens raskeste snegle","Verdens tregeste gepard"],
+["dyr","Ri på en isbjørn","Svømme med delfiner"],
+["dyr","Alle hunder bjeffer på deg","Alle katter følger etter deg"],
+["dyr","Være maur i én uke","Være gullfisk i én måned"],
+["dyr","Ha gjeller","Ha vinger"],
+["dyr","Kjæledyr-dinosaur","Kjæledyr-robot"],
+["dyr","Bli slikket av en giraff","Bli klemt av en gorilla"],
+["dyr","Måke som vekkerklokke","Hane som nabo"],
+["dyr","Kunne snakke, men bare mjaue","Kunne synge, men bare bjeffe"],
+
+// ---------- 🎒 SKOLE ----------
+["skole","Aldri lekser igjen","Aldri prøver igjen"],
+["skole","Alltid 10 min for sent","Alltid én time for tidlig"],
+["skole","Glemme gymtøyet hver gang","Glemme matpakka hver gang"],
+["skole","Lærer som rapper alt","Lærer som synger opera"],
+["skole","Én hel dag friminutt i uka","10 min ekstra friminutt hver dag"],
+["skole","Prøve uten å ha lest","Presentasjon uten notater"],
+["skole","Bare ha gym","Bare ha kunst og håndverk"],
+["skole","Skolen starter kl. 06","Skolen slutter kl. 18"],
+["skole","Alltid få 5 uten å jobbe","Jobbe hardt for 6"],
+["skole","Gratis kantinemat hele året","Ingen lekser hele året"],
+["skole","Bytte klasse hver måned","Samme klasse i 10 år"],
+["skole","Skrive med feil hånd i en uke","Snakke i rim i en uke"],
+["skole","Rektor er bestevennen din","Foreldrene dine jobber på skolen"],
+["skole","Vite svaret, men aldri bli spurt","Bli spurt, men aldri vite svaret"],
+["skole","Sove i timen uten å bli tatt","Spise i timen uten å bli tatt"],
+
+// ---------- 🤢 EKKELT ----------
+["ekkelt","Alltid lukte litt fis","Aldri kunne lukte noe igjen"],
+["ekkelt","Tygge en fremmeds tyggis","Gå i en fremmeds svette sokker"],
+["ekkelt","Bade i slim","Bade i kald spagetti"],
+["ekkelt","Nyse ost","Grine ketchup"],
+["ekkelt","Ta på en snegle med tunga","Meitemark i munnen i 10 sekunder"],
+["ekkelt","Aldri dusje igjen","Aldri pusse tennene igjen"],
+["ekkelt","Svette sirup","Ha gress i stedet for hår"],
+["ekkelt","Trå barbeint i hundebæsj","Ta på tyggis under pulten"],
+["ekkelt","Drikke sokkevann","Spise en død flue"],
+["ekkelt","Lukte som fjøs på fest","Le som en geit på kino"],
+["ekkelt","Alltid klissete hender","Alltid våte sokker"],
+["ekkelt","Rape høyt hver gang du snakker","Prompe hver gang du ler"],
+["ekkelt","Finne et hår i maten","Finne en halv mark i eplet"],
+["ekkelt","Sove i et telt fullt av mygg","Sove i en søppelcontainer (ren-ish)"],
+
+// ---------- 🤪 ABSURD ----------
+["absurd","Ha pølser som fingre","Ha tomler som tær"],
+["absurd","Hikke resten av livet","Alltid nesten-nyse uten å få nyst"],
+["absurd","Være 1 meter høy","Være 2,5 meter høy"],
+["absurd","Permanent klovnenese","Permanente klovnesko"],
+["absurd","Tankene dine vises på en skjerm","Drømmene dine sendes på TV"],
+["absurd","Alltid gå baklengs","Alltid hoppe på ett bein"],
+["absurd","Snakke som en robot","Bevege deg i sakte film"],
+["absurd","Hår som aldri tørker","Negler som vokser 1 cm om dagen"],
+["absurd","Bo i et usynlig hus","Bo i et hus av glass"],
+["absurd","Bare kunne hviske","Bare kunne rope"],
+["absurd","Samme sang på hjernen for alltid","Aldri høre musikk igjen"],
+["absurd","Være laget av LEGO","Være laget av plastelina"],
+["absurd","Regnbuehår du ikke kan endre","Lyse i mørket"],
+["absurd","Alltid ha en fugl på hodet","Alltid ha en fisk i lomma"],
+["absurd","Latter som brannalarm","Nys som tåkelur"],
+["absurd","Alltid vinne i stein-saks-papir","Alltid finne parkeringsplass"],
+["absurd","Fødselsdag hver dag (uten gaver)","Fødselsdag hvert 4. år (med gaver)"],
+["absurd","Kunne bare gå i sikksakk","Kunne bare svinge til venstre"],
+
+// ---------- 💰 PENGER ----------
+["penger","10 millioner nå","1000 kr hver dag resten av livet"],
+["penger","Rik og ukjent","Berømt og blakk"],
+["penger","Du finner 500 kr","Bestevennen finner 5000 kr"],
+["penger","Gratis flyreiser for alltid","Gratis mat for alltid"],
+["penger","Drømmejobb med lav lønn","Kjedelig jobb med superlønn"],
+["penger","1 million i dag","1 krone som dobles hver dag i 30 dager"],
+["penger","Aldri betale for godteri","Aldri betale for spill"],
+["penger","Eie en øy","Eie et privatfly"],
+["penger","Vinne i lotto og dele med klassen","Vinne halvparten helt alene"],
+["penger","Alltid ha akkurat nok","Noen ganger rik, noen ganger blakk"],
+["penger","Lommepenger x10, men ingen bursdagsgaver","Vanlige lommepenger og gaver"],
+["penger","Gullhus uten wifi","Vanlig hus med superwifi"],
+
+// ---------- 🤖 FREMTID & TECH ----------
+["fremtid","Robot-bestevenn","Robot som gjør leksene dine"],
+["fremtid","Bo på Mars","Bo under havet"],
+["fremtid","Flyvende bil","Teleport-dør hjemme"],
+["fremtid","Aldri mer internett","Aldri mer godteri"],
+["fremtid","Mobil med evig batteri","Mobil som aldri knuser"],
+["fremtid","Laste ned kunnskap til hjernen","Slette flaue minner"],
+["fremtid","VR som føles helt ekte","Kunne styre drømmene dine"],
+["fremtid","KI som vet alt om deg","Tidsmaskin som bare virker én gang"],
+["fremtid","Se 100 år inn i fremtiden","Se 1000 år tilbake i tid"],
+["fremtid","Reise til fortiden","Reise til fremtiden"],
+["fremtid","Robot som lager all maten din","Robot som rydder rommet ditt"],
+["fremtid","Være den første på Mars","Oppdage liv i verdensrommet"],
+["fremtid","Chip som oversetter alle språk","Chip som gjør deg god i all sport"],
+
+// ---------- ⚖️ TØFFE VALG ----------
+["toft","Miste en arm","Miste et bein"],
+["toft","Miste synet","Miste hørselen"],
+["toft","Aldri se film igjen","Aldri høre musikk igjen"],
+["toft","Være verdens smarteste","Være verdens morsomste"],
+["toft","Aldri kunne lyve","Aldri bli trodd"],
+["toft","Glemme hvem du er","Alle andre glemmer deg"],
+["toft","Redde én venn","Redde 100 fremmede"],
+["toft","Alltid si det du tenker","Aldri få sagt det du mener"],
+["toft","Fattig med gode venner","Rik uten venner"],
+["toft","Kunne se fremtiden","Kunne endre fortiden"],
+["toft","Aldri føle smerte","Aldri føle frykt"],
+["toft","Vite alt, men ikke kunne fortelle det","Vite lite, men bli hørt av alle"],
+["toft","Leve ett liv på 200 år","Leve fem liv på 40 år"],
+["toft","Alltid være 10 minutter for sent ute","Alltid være 2 timer for tidlig"],
+["toft","Gjøre en feil alle ser","Se en venn gjøre samme feil"],
+
+// ---------- 🎮 GAMING & POPKULTUR ----------
+["pop","Bo i Minecraft","Bo i Mario-verdenen"],
+["pop","Uendelig V-bucks","Uendelig Robux"],
+["pop","Hovedrolle i en skrekkfilm","Hovedrolle i en romantisk komedie"],
+["pop","Alltid vinne i FIFA","Alltid vinne i Fortnite"],
+["pop","Middag med favorittartisten din","Være med i favorittserien din"],
+["pop","Lyssabel","Tryllestav"],
+["pop","Være Jedi","Gå på Galtvort"],
+["pop","Pokémon finnes på ekte","Dinosaurene kommer tilbake"],
+["pop","Være proffgamer","Være fotballproff"],
+["pop","Slette TikTok for alle","Slette YouTube for alle"],
+["pop","Kunne alle danser","Kunne alle sangtekster"],
+["pop","Superkjendis i ett år","Litt kjent hele livet"],
+["pop","Leve med lagringspunkter","Leve med pauseknapp"],
+["pop","Spille alt på hardeste vanskelighetsgrad","Aldri kunne lagre spillet"],
+
+// ---------- 🌍 REISE & EVENTYR ----------
+["reise","Bo i ørkenen","Bo på Nordpolen"],
+["reise","Sommer for alltid","Vinter for alltid"],
+["reise","Klatre Mount Everest","Dykke ned til Titanic"],
+["reise","Safari i Afrika","Nordlys på Svalbard"],
+["reise","Bo i trehytte","Bo i hule"],
+["reise","Miste bagasjen på hver reise","Alltid 12 timer forsinket"],
+["reise","Reise ut i verdensrommet","Reise til havets bunn"],
+["reise","Sove i telt i regnvær","Sove i bil i varmen"],
+["reise","Snakke språket overalt","Aldri bli syk på reise"],
+["reise","Ferie uten mobil i en måned","Ingen ferie i år"],
+["reise","Krysse Atlanteren i robåt","Gå Norge på langs"],
+["reise","Finne en skjult skatt","Oppdage en ukjent øy"],
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const stage=$('stage'), sideA=$('sideA'), sideB=$('sideB'),
+      txtA=$('txtA'), txtB=$('txtB'), chip=$('chip'),
+      countEl=$('count'), nextBtn=$('next'), vs=$('vs');
+
+let active = new Set(Object.keys(CATS));   // aktive kategorier
+let bag = [];                              // shuffle-bag (indekser)
+let current = null;
+let picked = false;
+let shown = 0;
+let soundOn = true;
+
+/* ---------- shuffle-bag: ingen repetisjon før alt er brukt ---------- */
+function refillBag(){
+  bag = DILEMMAS.map((d,i)=> active.has(d[0]) ? i : -1).filter(i=>i>=0);
+  for(let i=bag.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [bag[i],bag[j]]=[bag[j],bag[i]];
+  }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function nextDilemma(){
+  if(bag.length===0) refillBag();
+  if(bag.length===0) return;
+  const idx = bag.pop();
+  current = DILEMMAS[idx];
+  picked = false;
+  shown++;
+
+  const cat = CATS[current[0]];
+
+  // tekst + kategori-chip
+  txtA.textContent = current[1];
+  txtB.textContent = current[2];
+  chip.textContent = `${cat.emoji} ${cat.name}`;
+  chip.style.borderColor = cat.c1;
+  chip.classList.remove('flip'); void chip.offsetWidth; chip.classList.add('flip');
+
+  // farge-aksent per kategori: side B låner kategorien litt
+  document.documentElement.style.setProperty('--bA', cat.c1==='#ff2e63' ? '#00d4ff' : cat.c1);
+  document.documentElement.style.setProperty('--bB', '#7c3aed');
+
+  // nullstill valg
+  sideA.classList.remove('won','lost');
+  sideB.classList.remove('won','lost');
+  nextBtn.classList.remove('pulse');
+
+  // inn-animasjoner
+  for(const s of [sideA,sideB]){ s.classList.remove('enter'); void s.offsetWidth; s.classList.add('enter'); }
+  vs.classList.remove('pop'); void vs.offsetWidth; vs.classList.add('pop');
+  stage.classList.remove('shake'); void stage.offsetWidth; stage.classList.add('shake');
+
+  countEl.textContent = '#'+shown;
+  countEl.classList.remove('tick'); void countEl.offsetWidth; countEl.classList.add('tick');
+
+  sfx('whoosh');
+}
+
+function pick(which){
+  if(picked || !current) return;
+  picked = true;
+  const winner = which==='a' ? sideA : sideB;
+  const loser  = which==='a' ? sideB : sideA;
+  winner.classList.add('won');
+  loser.classList.add('lost');
+  nextBtn.classList.add('pulse');
+  confettiBurst(which);
+  sfx('win');
+}
+
+/* ============================================================
+   KONFETTI
+   ============================================================ */
+const fx = $('fx'), ctx = fx.getContext('2d');
+let parts = [];
+function sizeFx(){ fx.width=innerWidth*devicePixelRatio; fx.height=innerHeight*devicePixelRatio; }
+addEventListener('resize', sizeFx); sizeFx();
+
+function confettiBurst(which){
+  const colors = which==='a'
+    ? ['#ff2e63','#ff8a3d','#ffe600','#ffffff']
+    : ['#00d4ff','#7c3aed','#ffe600','#ffffff'];
+  const px = (which==='a' ? innerWidth*0.27 : innerWidth*0.73)*devicePixelRatio;
+  const py = innerHeight*0.5*devicePixelRatio;
+  for(let i=0;i<140;i++){
+    const ang = Math.random()*Math.PI*2, sp=(4+Math.random()*13)*devicePixelRatio;
+    parts.push({
+      x:px, y:py,
+      vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp-6*devicePixelRatio,
+      w:(5+Math.random()*7)*devicePixelRatio, h:(8+Math.random()*10)*devicePixelRatio,
+      r:Math.random()*Math.PI*2, vr:(Math.random()-.5)*.4,
+      c:colors[Math.floor(Math.random()*colors.length)],
+      life:60+Math.random()*40
+    });
+  }
+}
+(function loop(){
+  requestAnimationFrame(loop);
+  ctx.clearRect(0,0,fx.width,fx.height);
+  if(!parts.length) return;
+  const g = 0.35*devicePixelRatio;
+  parts = parts.filter(p=>p.life>0 && p.y<fx.height+40);
+  for(const p of parts){
+    p.vy+=g; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.vx*=.985; p.life--;
+    ctx.save();
+    ctx.translate(p.x,p.y); ctx.rotate(p.r);
+    ctx.globalAlpha = Math.min(1,p.life/25);
+    ctx.fillStyle = p.c;
+    ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    ctx.restore();
+  }
+})();
+
+/* ============================================================
+   LYD — liten WebAudio-synth (ingen filer)
+   ============================================================ */
+let AC=null;
+function ac(){ if(!AC) AC = new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+/* mykt "pling": sinus-klokke med rask attack og lang, myk hale */
+function pling(a,t,freq,vol=.10,dur=.6){
+  // grunntone + svak oktav gir klokkefølelse uten skarphet
+  [[freq,vol],[freq*2,vol*.25]].forEach(([f,v])=>{
+    const o=a.createOscillator(), g=a.createGain();
+    o.type='sine'; o.frequency.value=f;
+    g.gain.setValueAtTime(.0001,t);
+    g.gain.exponentialRampToValueAtTime(v,t+.015);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t+dur+.05);
+  });
+}
+function sfx(kind){
+  if(!soundOn) return;
+  try{
+    const a=ac(), t=a.currentTime;
+    if(kind==='whoosh'){
+      // nytt dilemma: to lette pling opp (E5 → A5)
+      pling(a,t,659.25,.08,.4);
+      pling(a,t+.09,880,.07,.5);
+    }else if(kind==='win'){
+      // valg: myk dur-treklang som klokkespill (C5-E5-G5-C6)
+      [523.25,659.25,783.99,1046.5].forEach((f,i)=>{
+        pling(a,t+i*.09,f,.09,.7);
+      });
+    }else if(kind==='blip'){
+      pling(a,t,987.77,.06,.25);
+    }
+  }catch(e){}
+}
+
+/* ============================================================
+   DIAGONAL — regn ut sømvinkel + clip-paths etter skjermform
+   ============================================================ */
+function layout(){
+  const W=innerWidth, H=innerHeight;
+  const portrait = H/W > 1.25;
+  document.body.classList.toggle('portrait', portrait);
+  const cut = 5.5; // % forskyvning
+  if(!portrait){
+    sideA.style.clipPath = `polygon(0 0, ${50+cut}% 0, ${50-cut}% 100%, 0 100%)`;
+    sideB.style.clipPath = `polygon(${50+cut}% 0, 100% 0, 100% 100%, ${50-cut}% 100%)`;
+    const ang = Math.atan((2*cut/100*W)/H)*180/Math.PI;
+    const seam=$('seam');
+    seam.style.width='7px'; seam.style.height='150%';
+    seam.style.transform=`translate(-50%,-50%) rotate(${ang}deg)`;
+  }else{
+    sideA.style.clipPath = `polygon(0 0, 100% 0, 100% ${50-cut}%, 0 ${50+cut}%)`;
+    sideB.style.clipPath = `polygon(0 ${50+cut}%, 100% ${50-cut}%, 100% 100%, 0 100%)`;
+    const ang = Math.atan((2*cut/100*H)/W)*180/Math.PI;
+    const seam=$('seam');
+    seam.style.width='150%'; seam.style.height='7px';
+    seam.style.transform=`translate(-50%,-50%) rotate(${-ang}deg)`;
+  }
+}
+addEventListener('resize', layout);
+
+/* ============================================================
+   KATEGORI-VELGER
+   ============================================================ */
+const catOverlay=$('catOverlay'), catGrid=$('catGrid'), bankInfo=$('bankInfo');
+function renderCats(){
+  catGrid.innerHTML='';
+  for(const [key,cat] of Object.entries(CATS)){
+    const b=document.createElement('button');
+    b.className='catchip'+(active.has(key)?' on':'');
+    b.textContent=`${cat.emoji} ${cat.name}`;
+    if(active.has(key)) b.style.background=`linear-gradient(120deg,${cat.c1},${cat.c2})`;
+    b.onclick=()=>{
+      if(active.has(key)){
+        if(active.size===1) return;      // minst én kategori må være på
+        active.delete(key);
+      }else active.add(key);
+      refillBag(); renderCats(); sfx('blip');
+    };
+    catGrid.appendChild(b);
+  }
+  const n = DILEMMAS.filter(d=>active.has(d[0])).length;
+  bankInfo.textContent = `${n} dilemmaer i potten`;
+}
+$('catBtn').onclick=()=>{ renderCats(); catOverlay.classList.add('open'); sfx('blip'); };
+$('catClose').onclick=()=>{ catOverlay.classList.remove('open'); sfx('blip'); };
+$('catAll').onclick=()=>{ active=new Set(Object.keys(CATS)); refillBag(); renderCats(); sfx('blip'); };
+catOverlay.addEventListener('click',e=>{ if(e.target===catOverlay) catOverlay.classList.remove('open'); });
+
+/* ============================================================
+   INPUT
+   ============================================================ */
+sideA.addEventListener('click',()=>pick('a'));
+sideB.addEventListener('click',()=>pick('b'));
+nextBtn.addEventListener('click',e=>{ e.stopPropagation(); nextDilemma(); });
+$('sndBtn').onclick=e=>{
+  soundOn=!soundOn;
+  e.currentTarget.textContent = soundOn?'🔊':'🔇';
+  if(soundOn) sfx('blip');
+};
+addEventListener('keydown',e=>{
+  if(catOverlay.classList.contains('open')){
+    if(e.key==='Escape') catOverlay.classList.remove('open');
+    return;
+  }
+  if(e.key===' '||e.key==='Enter'){ e.preventDefault(); nextDilemma(); }
+  else if(e.key==='ArrowLeft'||e.key==='ArrowUp') pick('a');
+  else if(e.key==='ArrowRight'||e.key==='ArrowDown') pick('b');
+});
+
+/* ============================================================
+   START
+   ============================================================ */
+layout();
+refillBag();
+nextDilemma();
+</script>
+</body>
+</html>
