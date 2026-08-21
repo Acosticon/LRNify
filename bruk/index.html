@@ -75,6 +75,11 @@
   .graf-legend .rad{ display:flex; align-items:center; gap:6px; }
   .legend-strek{ width:16px; height:3px; border-radius:2px; display:inline-block; }
 
+  /* Søylediagram — dagens topp 10 spill */
+  #grafSpill{ display:block; width:100%; height:auto; }
+  #grafSpill rect{ transition:opacity .1s; }
+  #grafSpill rect:hover{ opacity:.8; }
+
   .chip{
     display:inline-flex; align-items:center; gap:8px; border:3px solid var(--ink); border-radius:20px;
     padding:6px 14px 6px 10px; font-weight:800; font-size:.85rem; cursor:pointer; background:#fff;
@@ -142,6 +147,15 @@
 
   <div id="rapport" class="skjult">
     <div class="tall-rad" id="nokkeltall"></div>
+
+    <div class="kort">
+      <h2>🏆 Dagens topp 10 spill</h2>
+      <p class="fotnote" style="margin:-8px 0 14px;" id="topSpillDato"></p>
+      <div id="topSpillBoks">
+        <svg id="grafSpill" viewBox="0 0 800 300" preserveAspectRatio="none" role="img" aria-label="Dagens topp 10 spill"></svg>
+      </div>
+      <p class="tom skjult" id="topSpillTom">Ingen spill registrert i dag ennå.</p>
+    </div>
 
     <div class="kort">
       <h2>Sider</h2>
@@ -317,8 +331,10 @@ function tegn(data, fra){
   const totalt=Object.values(perDag).reduce((a,b)=>a+b,0);
   const sider=Object.entries(perSide).sort((a,b)=>(b[1].visning||0)-(a[1].visning||0));
   const dagerMedTall=dagsliste.filter(d=>perDag[d]).length;
+  const iDag=dato(new Date());
 
   document.getElementById('nokkeltall').innerHTML=[
+    ['I dag', (perDag[iDag]||0).toLocaleString('nb-NO')],
     ['Sidevisninger', totalt.toLocaleString('nb-NO')],
     ['Sider i bruk', sider.length],
     ['Snitt per dag', dagerMedTall ? Math.round(totalt/dagerMedTall).toLocaleString('nb-NO') : '0'],
@@ -368,6 +384,7 @@ function tegn(data, fra){
   });
 
   tegnGraf();
+  tegnTopSpillGraf(iDag);
 }
 
 function maksDag(perDag){
@@ -390,6 +407,20 @@ function aktiveSerier(){
    aldri kan regne seg fram til to ulike x-verdier for samme dag. */
 const GRAF={ W:800, H:260, padL:38, padR:12, padT:14, padB:10 };
 
+/* Runde, lesbare trinn på y-aksen (0, 20, 40 … ikke 0, 17, 34 …) — samme
+   triks brukes både på linjegrafen og søylediagrammet under. */
+function penTrinn(maks, antallLinjer){
+  if(maks<=0) return { steg:1, maks:1 };
+  const raatt=maks/antallLinjer;
+  const mag=Math.pow(10, Math.floor(Math.log10(raatt)));
+  const norm=raatt/mag;
+  /* Tellingene er alltid hele tall, så trinnet skal aldri bli mindre enn 1
+     — ellers ville f.eks. 0.2-trinn rundet til samme heltall flere ganger
+     på rad (0, 0, 0, 1, 1 …) når totalen i perioden er lav. */
+  const steg=Math.max(1, Math.round((norm<1.5?1:norm<3?2:norm<7?5:10)*mag));
+  return { steg, maks:Math.ceil(maks/steg)*steg };
+}
+
 function tegnGraf(){
   const svg=document.getElementById('graf');
   const legend=document.getElementById('grafLegend');
@@ -399,7 +430,8 @@ function tegnGraf(){
   const xFor=i=> n<=1 ? padL+plotW/2 : padL+i/(n-1)*plotW;
 
   const aktive=aktiveSerier();
-  const maksY=Math.max(1,...aktive.flatMap(s=>s.verdier));
+  const maksRaatt=Math.max(1,...aktive.flatMap(s=>s.verdier));
+  const {steg,maks:maksY}=penTrinn(maksRaatt,4);
   const yFor=v=> padT+plotH-(v/maksY*plotH);
 
   let inn='';
@@ -413,18 +445,38 @@ function tegnGraf(){
     }
   });
 
-  /* Rutenett: bare grunnlinjen (0) og en linje ved maks. */
-  inn+=`<line x1="${padL}" y1="${yFor(0).toFixed(1)}" x2="${W-padR}" y2="${yFor(0).toFixed(1)}" stroke="#c3c2b7" stroke-width="1"></line>`;
-  inn+=`<text x="2" y="${(yFor(0)+4).toFixed(1)}" class="akse-tekst">0</text>`;
-  if(maksY>1){
-    inn+=`<line x1="${padL}" y1="${yFor(maksY).toFixed(1)}" x2="${W-padR}" y2="${yFor(maksY).toFixed(1)}" stroke="#e1e0d9" stroke-width="1"></line>`;
-    inn+=`<text x="2" y="${(yFor(maksY)+4).toFixed(1)}" class="akse-tekst">${Math.round(maksY).toLocaleString('nb-NO')}</text>`;
+  /* Rutenett: grunnlinjen og jevne trinn opp til et rundt maks-tall. */
+  for(let v=0; v<=maksY+steg*.001; v+=steg){
+    const y=yFor(v);
+    inn+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="${v===0?'#c3c2b7':'#e1e0d9'}" stroke-width="1"></line>`;
+    inn+=`<text x="2" y="${(y+4).toFixed(1)}" class="akse-tekst">${Math.round(v).toLocaleString('nb-NO')}</text>`;
   }
 
-  /* Linjene, med en endepunkt-prikk (radius ≥4, hvit ring) på siste dag. */
+  /* Fylte flater under linjene, mykt nedtonet mot bunnen — gjør det lettere
+     å skille seriene fra hverandre enn strek alene. */
+  inn+=`<defs>${aktive.map((s,idx)=>`
+    <linearGradient id="graf-grad-${idx}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${s.farge}" stop-opacity=".32"></stop>
+      <stop offset="100%" stop-color="${s.farge}" stop-opacity="0"></stop>
+    </linearGradient>`).join('')}</defs>`;
+
+  aktive.forEach((s,idx)=>{
+    const linjeSti=s.verdier.map((v,i)=>(i===0?'M':'L')+xFor(i).toFixed(1)+' '+yFor(v).toFixed(1)).join(' ');
+    const flateSti=`${linjeSti} L${xFor(n-1).toFixed(1)} ${yFor(0).toFixed(1)} L${xFor(0).toFixed(1)} ${yFor(0).toFixed(1)} Z`;
+    inn+=`<path d="${flateSti}" fill="url(#graf-grad-${idx})" stroke="none"></path>`;
+  });
+
+  /* Linjene, med en liten prikk per dag (når det ikke blir for tett) og en
+     større endepunkt-prikk (hvit ring) på siste dag. */
   aktive.forEach(s=>{
     const dSti=s.verdier.map((v,i)=>(i===0?'M':'L')+xFor(i).toFixed(1)+' '+yFor(v).toFixed(1)).join(' ');
     inn+=`<path d="${dSti}" fill="none" stroke="${s.farge}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>`;
+    if(n<=31){
+      s.verdier.forEach((v,i)=>{
+        if(i===n-1) return;
+        inn+=`<circle cx="${xFor(i).toFixed(1)}" cy="${yFor(v).toFixed(1)}" r="2.5" fill="${s.farge}"></circle>`;
+      });
+    }
     const siste=s.verdier[s.verdier.length-1]||0;
     inn+=`<circle cx="${xFor(n-1).toFixed(1)}" cy="${yFor(siste).toFixed(1)}" r="4.5" fill="${s.farge}" stroke="#fff" stroke-width="2"></circle>`;
   });
@@ -523,6 +575,70 @@ function tegnDagTabell(){
         </tr>`).join('')}
       </tbody>
     </table>`;
+}
+
+/* Søylediagram over dagens topp 10 spill. Et «spill» er en side under
+   /games/ eller /spill/ — se bruk/lrnify-bruk.js for hvordan sidenavnet
+   utledes av adressen. Bruker perDagSide, som allerede er summert per side
+   per dag av tegn(), så ingen nye kall mot Firebase trengs. */
+const SPILL_PREFIKS=/^(games|spill)-/;
+
+function tegnTopSpillGraf(iDag){
+  document.getElementById('topSpillDato').textContent='I dag, '+norskDato(iDag);
+
+  const rader=Object.entries(perDagSide)
+    .filter(([side])=>SPILL_PREFIKS.test(side))
+    .map(([side,dager])=>[side.replace(SPILL_PREFIKS,''), dager[iDag]||0])
+    .filter(([,n])=>n>0)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,10);
+
+  const svg=document.getElementById('grafSpill');
+  const boks=document.getElementById('topSpillBoks');
+  const tom=document.getElementById('topSpillTom');
+
+  if(!rader.length){
+    svg.innerHTML='';
+    boks.classList.add('skjult');
+    tom.classList.remove('skjult');
+    return;
+  }
+  boks.classList.remove('skjult');
+  tom.classList.add('skjult');
+
+  const W=800, H=300, padL=32, padR=10, padT=28, padB=78;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  const n=rader.length;
+  const bredde=plotW/n;
+  const barBredde=Math.min(50, bredde*.62);
+
+  const maksRaatt=Math.max(1,...rader.map(([,v])=>v));
+  const {steg,maks:maksY}=penTrinn(maksRaatt,4);
+  const yFor=v=> padT+plotH-(v/maksY*plotH);
+  const bunn=padT+plotH;
+
+  let inn='';
+
+  /* Rutenett, samme prinsipp som linjegrafen: grunnlinjen og jevne trinn. */
+  for(let v=0; v<=maksY+steg*.001; v+=steg){
+    const y=yFor(v);
+    inn+=`<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="${v===0?'#c3c2b7':'#e1e0d9'}" stroke-width="1"></line>`;
+    inn+=`<text x="0" y="${(y+4).toFixed(1)}" class="akse-tekst">${Math.round(v).toLocaleString('nb-NO')}</text>`;
+  }
+
+  rader.forEach(([navn,verdi],i)=>{
+    const cx=padL+bredde*(i+.5);
+    const x=cx-barBredde/2;
+    const y=yFor(verdi);
+    const farge=SIDEFARGER[i%SIDEFARGER.length];
+    const kortNavn=navn.length>11 ? navn.slice(0,10)+'…' : navn;
+
+    inn+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barBredde.toFixed(1)}" height="${(bunn-y).toFixed(1)}" rx="6" fill="${farge}" stroke="#2b2118" stroke-width="2"><title>${navn}: ${verdi.toLocaleString('nb-NO')}</title></rect>`;
+    inn+=`<text x="${cx.toFixed(1)}" y="${(y-7).toFixed(1)}" text-anchor="middle" class="akse-tekst" font-weight="900">${verdi.toLocaleString('nb-NO')}</text>`;
+    inn+=`<text x="${cx.toFixed(1)}" y="${(bunn+16).toFixed(1)}" text-anchor="end" class="akse-tekst" transform="rotate(-38 ${cx.toFixed(1)} ${(bunn+16).toFixed(1)})"><title>${navn}</title>${kortNavn}</text>`;
+  });
+
+  svg.innerHTML=inn;
 }
 </script>
 </body>
