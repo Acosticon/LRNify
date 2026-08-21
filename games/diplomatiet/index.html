@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Diplomatiet – LRNify</title>
+<link rel="canonical" href="https://lrnify.no/games/diplomatiet/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Diplomatiet – LRNify">
+<meta property="og:description" content="Led en nasjon gjennom åtte runder med diplomati mot seks AI-styrte naboland – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
+<meta property="og:image" content="https://lrnify.no/media/cards/diplomatiet.png">
+<meta property="og:url" content="https://lrnify.no/games/diplomatiet/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Diplomatiet – LRNify">
+<meta name="twitter:description" content="Led en nasjon gjennom åtte runder med diplomati mot seks AI-styrte naboland – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
+<meta name="twitter:image" content="https://lrnify.no/media/cards/diplomatiet.png">
+<meta name="description" content="Led en nasjon gjennom åtte runder med diplomati mot seks AI-styrte naboland – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ─── Tittelskjerm ─────────────────────────────────── -->
+<div class="screen active" id="screen-title">
+  <div class="title-card">
+    <p class="title-eyebrow">Et spillteori-spill fra LRNify</p>
+    <h1 class="title-name">Diplomatiet</h1>
+    <p class="title-tagline">Du leder en nasjon gjennom åtte runder med diplomati. Seks naboland venter – og hver av dem husker nøyaktig hva du gjorde sist.</p>
+
+    <div class="title-rules">
+      <div class="rule-card">
+        <span class="rule-icon">🤝</span>
+        <p><strong>Samarbeid</strong> bygger tillit og handel – men bare hvis motparten gjør det samme tilbake.</p>
+      </div>
+      <div class="rule-card">
+        <span class="rule-icon">⚔️</span>
+        <p><strong>Svik</strong> gir rask gevinst – men naboer husker, og noen hevner seg aldri.</p>
+      </div>
+      <div class="rule-card">
+        <span class="rule-icon">🎓</span>
+        <p>Dette er <strong>fangens dilemma</strong> i praksis – den mest kjente modellen i spillteorien, spilt mot seks ulike strategier.</p>
+      </div>
+    </div>
+
+    <div id="resume-banner" class="resume-banner" hidden>
+      <p>Du har et pågående parti (runde <span id="resume-round"></span> av 8).</p>
+      <button id="btn-resume" class="btn-secondary" type="button">Fortsett partiet</button>
+    </div>
+
+    <div class="title-start">
+      <label for="player-name-input">Navnet ditt (leder av nasjonen)</label>
+      <input id="player-name-input" type="text" maxlength="40" placeholder="F.eks. Kansler Berg" autocomplete="off"/>
+      <button id="btn-start-game" class="btn-primary" type="button">Start et nytt parti</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Spillskjerm ──────────────────────────────────── -->
+<div class="screen" id="screen-game">
+  <div class="hud-bar">
+    <span class="hud-title">Diplomatiet</span>
+    <span class="hud-round" id="hud-round">Runde 1 / 8</span>
+    <div class="hud-spacer"></div>
+    <div id="meters" class="hud-meters"></div>
+  </div>
+  <div class="game-layout">
+    <div class="map-panel">
+      <div id="map-wrap"></div>
+    </div>
+    <aside class="side-panel">
+      <div id="panel"></div>
+      <button id="btn-send-round" class="btn-primary btn-send" type="button" disabled>Velg holdning (0/6)</button>
+    </aside>
+  </div>
+</div>
+
+<!-- ─── Telegram-overlegg (rundeoppgjør) ─────────────── -->
+<div class="overlay" id="telegram-overlay">
+  <div class="telegram-paper">
+    <p class="telegram-masthead">Diplomatisk depesje · <span id="telegram-round"></span></p>
+    <div id="telegram-rows"></div>
+    <button id="btn-telegram-continue" class="btn-primary" type="button">Fortsett</button>
+  </div>
+</div>
+
+<!-- ─── Rapportskjerm ────────────────────────────────── -->
+<div class="screen" id="screen-report">
+  <div id="report-root"></div>
+</div>
+
+<script type="module" src="main.js"></script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>
