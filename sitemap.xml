@@ -58,4 +58,7 @@
   <!-- Lærermateriell -->
   <url><loc>https://lrnify.no/games/lopeilden/laerer.html</loc></url>
   <url><loc>https://lrnify.no/games/lopeilden/kortspill.html</loc></url>
+
+  <!-- Om tjenesten -->
+  <url><loc>https://lrnify.no/personvern/</loc><priority>0.3</priority></url>
 </urlset>
