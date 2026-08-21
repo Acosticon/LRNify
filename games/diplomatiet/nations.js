@@ -83,6 +83,7 @@ export const NATIONS = [
     emblem: '🕊️',
     color: '#4FA88C',
     strategy: 'alwaysCooperate',
+    order: 1,
     tagline: 'Et handelsrike bygget på tillit og åpne grenser.',
     quotes: {
       cooperate: [
@@ -109,6 +110,7 @@ export const NATIONS = [
     emblem: '🐉',
     color: '#B23A3A',
     strategy: 'alwaysDefect',
+    order: 6,
     tagline: 'Et ekspansjonistisk keiserdømme som kun forstår styrke.',
     quotes: {
       cooperate: [
@@ -135,6 +137,7 @@ export const NATIONS = [
     emblem: '🦅',
     color: '#C68A3A',
     strategy: 'titForTat',
+    order: 2,
     tagline: 'En stolt granne som speiler alt du gjør, trekk for trekk.',
     quotes: {
       cooperate: [
@@ -161,6 +164,7 @@ export const NATIONS = [
     emblem: '⛰️',
     color: '#5C7A99',
     strategy: 'grudger',
+    order: 3,
     tagline: 'Et stolt fjellfolk som aldri glemmer et svik.',
     quotes: {
       cooperate: [
@@ -187,6 +191,7 @@ export const NATIONS = [
     emblem: '🎲',
     color: '#8B5FA3',
     strategy: 'random',
+    order: 5,
     tagline: 'En kaotisk bystat styrt av rivaliserende handelshus.',
     quotes: {
       cooperate: [
@@ -213,6 +218,7 @@ export const NATIONS = [
     emblem: '⚖️',
     color: '#C9A227',
     strategy: 'pavlov',
+    order: 4,
     tagline: 'En pragmatisk nordstat som kun bryr seg om hva som fungerte sist.',
     quotes: {
       cooperate: [
@@ -235,3 +241,6 @@ export const NATIONS = [
 ];
 
 export const NATION_BY_ID = Object.fromEntries(NATIONS.map(n => [n.id, n]));
+
+// Kampanjerekkefølge: stigende vanskelighetsgrad, fra forutsigbar til kaotisk/fiendtlig.
+export const CAMPAIGN_ORDER = [...NATIONS].sort((a, b) => a.order - b.order);
