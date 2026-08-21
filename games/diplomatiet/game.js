@@ -4,8 +4,17 @@
 // Kampanjestruktur: spilleren møter én nasjon om gangen, i stigende
 // vanskelighetsgrad (se CAMPAIGN_ORDER i nations.js). Hvert møte varer
 // ROUNDS_PER_ENCOUNTER runder, og etterfølges av en refleksjon før neste
-// motstander. Målerne (velstand/sikkerhet/anseelse) er kumulative for
-// hele kampanjen.
+// motstander.
+//
+// To atskilte tall styrer spillet:
+//  - POENG (myScore/theirScore): den faktiske spillteori-matrisen, klassisk
+//    Axelrod-skala (T=5, R=3, P=1, S=0). Symmetrisk – begge sider får poeng
+//    etter samme tabell, og fristelsen til å svike er reell: DC gir deg 5
+//    poeng der og da, mer enn noe samarbeid kan gi i én runde.
+//  - TILLIT (rel.score): en sekundær, narrativ konsekvens av valgene dine.
+//    Styrer allianser, krig og hvordan nasjonen omtaler deg i rapporten –
+//    men er bevisst IKKE det samme tallet som poengsummen, slik at "vinne
+//    på poeng" og "bli likt" kan trekke i ulike retninger.
 
 import { NATIONS, NATION_BY_ID, CAMPAIGN_ORDER, STRATEGIES, STRATEGY_THEORY } from './nations.js';
 
@@ -15,22 +24,28 @@ export const RELATION_WAR_THRESHOLD = -60;
 export const ALLIANCE_STREAK_NEEDED = 3;
 export const WAR_PEACE_STREAK_NEEDED = 3;
 
-const PAYOFFS = {
-  CC: { velstand: 3, sikkerhet: 1, relation: 8 },
-  DC: { velstand: 5, sikkerhet: 2, relation: -15 }, // du sviker, de samarbeider
-  CD: { velstand: -2, sikkerhet: -4, relation: -10 }, // du samarbeider, de sviker
-  DD: { velstand: -1, sikkerhet: -1, relation: -5 },
+// Klassisk fangens dilemma-matrise (Axelrod-skala). "me"/"them" er poengene
+// til henholdsvis spilleren og nasjonen for akkurat dette utfallet.
+export const PAYOFFS = {
+  CC: { me: 3, them: 3 }, // R – gjensidig samarbeid
+  DC: { me: 5, them: 0 }, // T / S – du sviker, de samarbeider
+  CD: { me: 0, them: 5 }, // S / T – du samarbeider, de sviker
+  DD: { me: 1, them: 1 }, // P – gjensidig svik
 };
 
-const clamp = (v, min = 0, max = 100) => Math.min(max, Math.max(min, v));
-const clampRel = v => clamp(v, -100, 100);
+// Tillitsendring per utfall – sekundær, narrativ konsekvens (ikke poeng).
+const TRUST_DELTAS = { CC: 8, DC: -15, CD: -10, DD: -5 };
+
+const clampRel = v => Math.min(100, Math.max(-100, v));
 
 // ─── Starttilstand ──────────────────────────────────────
 export function createInitialState(playerName) {
   const relations = Object.fromEntries(NATIONS.map(n => [n.id, {
-    score: 0,
+    score: 0, // tillit
+    myScore: 0, // poeng, spiller
+    theirScore: 0, // poeng, nasjon
     history: [],
-    scoreHistory: [],
+    trustHistory: [],
     allianceActive: false,
     allianceStreak: 0,
     allianceBrokenByPlayer: false,
@@ -44,7 +59,6 @@ export function createInitialState(playerName) {
     playerName: (playerName || 'Lederen').trim().slice(0, 40) || 'Lederen',
     campaignIndex: 0,
     roundInEncounter: 1,
-    meters: { velstand: 50, sikkerhet: 50, anseelse: 50 },
     relations,
     log: [],
     lastRoundEvent: null,
@@ -75,27 +89,15 @@ export function resolveEncounterRound(state, playerMove) {
   const nationMove = STRATEGIES[nation.strategy](rel.history);
   const key = playerMove + nationMove;
   const payoff = PAYOFFS[key];
-  const event = { nationId: nation.id, playerMove, nationMove, outcome: key };
+  const trustDelta = TRUST_DELTAS[key];
+  const event = { nationId: nation.id, playerMove, nationMove, outcome: key, myPoints: payoff.me, theirPoints: payoff.them };
 
-  // Løpende allianse-bonus / krig-drenering, uavhengig av dette trekket.
-  if (rel.allianceActive) {
-    s.meters.velstand = clamp(s.meters.velstand + 2);
-    s.meters.sikkerhet = clamp(s.meters.sikkerhet + 1);
-  }
-  if (rel.warActive) {
-    s.meters.sikkerhet = clamp(s.meters.sikkerhet - 3);
-  }
-
-  s.meters.velstand = clamp(s.meters.velstand + payoff.velstand);
-  s.meters.sikkerhet = clamp(s.meters.sikkerhet + payoff.sikkerhet);
-  rel.score = clampRel(rel.score + payoff.relation);
+  rel.myScore += payoff.me;
+  rel.theirScore += payoff.them;
+  rel.score = clampRel(rel.score + trustDelta);
   rel.history.push({ player: playerMove, nation: nationMove });
 
   if (playerMove === 'D') rel.playerEverDefected = true;
-
-  if (key === 'CC') s.meters.anseelse = clamp(s.meters.anseelse + 1);
-  else if (key === 'DC') s.meters.anseelse = clamp(s.meters.anseelse - 2);
-  else if (key === 'DD') s.meters.anseelse = clamp(s.meters.anseelse - 1);
 
   // Allianse: 3 påfølgende gjensidige samarbeid danner en allianse.
   // Alliansen brytes umiddelbart – med forsterket straff – hvis du sviker en alliert.
@@ -104,13 +106,11 @@ export function resolveEncounterRound(state, playerMove) {
     rel.allianceStreak = 0;
     rel.allianceBrokenByPlayer = true;
     rel.score = clampRel(rel.score - 20);
-    s.meters.anseelse = clamp(s.meters.anseelse - 5);
     event.allianceBroken = true;
   } else if (key === 'CC') {
     rel.allianceStreak += 1;
     if (rel.allianceStreak >= ALLIANCE_STREAK_NEEDED && !rel.allianceActive) {
       rel.allianceActive = true;
-      s.meters.anseelse = clamp(s.meters.anseelse + 3);
       event.allianceFormed = true;
     }
   } else {
@@ -131,10 +131,8 @@ export function resolveEncounterRound(state, playerMove) {
     }
   }
 
-  event.relDelta = rel.score - state.relations[nation.id].score;
-  event.velstandDelta = payoff.velstand;
-  event.sikkerhetDelta = payoff.sikkerhet;
-  rel.scoreHistory.push(rel.score);
+  event.trustDelta = rel.score - state.relations[nation.id].score;
+  rel.trustHistory.push(rel.score);
 
   s.log.push({
     round: s.roundInEncounter,
@@ -142,12 +140,11 @@ export function resolveEncounterRound(state, playerMove) {
     playerMove,
     nationMove,
     outcome: key,
-    relDelta: event.relDelta,
-    velstandDelta: payoff.velstand,
-    sikkerhetDelta: payoff.sikkerhet,
+    myPoints: payoff.me,
+    theirPoints: payoff.them,
+    trustDelta: event.trustDelta,
   });
 
-  s.meters.anseelse = clamp(s.meters.anseelse);
   s.lastRoundEvent = event;
   checkAchievements(s);
   s.roundInEncounter += 1;
@@ -191,7 +188,12 @@ export function getStats(state) {
   const warCount = rels.filter(r => r.warActive).length;
   const everWarCount = rels.filter(r => r.everWar).length;
   const avgRelation = rels.reduce((a, r) => a + r.score, 0) / rels.length;
-  const sorted = [...NATIONS].sort((a, b) => state.relations[b.id].score - state.relations[a.id].score);
+  const totalMyScore = rels.reduce((a, r) => a + r.myScore, 0);
+  const totalTheirScore = rels.reduce((a, r) => a + r.theirScore, 0);
+  const sortedByTrust = [...NATIONS].sort((a, b) => state.relations[b.id].score - state.relations[a.id].score);
+  const sortedByScoreDiff = [...NATIONS].sort((a, b) =>
+    (state.relations[b.id].myScore - state.relations[b.id].theirScore) -
+    (state.relations[a.id].myScore - state.relations[a.id].theirScore));
   const correctGuesses = NATIONS.filter(n => {
     const guess = state.reflectionGuesses[n.id];
     return guess && isGuessCorrect(n.id, guess);
@@ -199,7 +201,9 @@ export function getStats(state) {
   return {
     totalMoves, cooperateCount, defectCount, cooperateRate,
     allianceCount, allianceBrokenCount, warCount, everWarCount, avgRelation, correctGuesses,
-    bestNation: sorted[0], worstNation: sorted[sorted.length - 1],
+    totalMyScore, totalTheirScore,
+    bestNation: sortedByTrust[0], worstNation: sortedByTrust[sortedByTrust.length - 1],
+    bestScoreNation: sortedByScoreDiff[0], worstScoreNation: sortedByScoreDiff[sortedByScoreDiff.length - 1],
   };
 }
 
@@ -218,6 +222,7 @@ const ACHIEVEMENT_DEFS = [
   { id: 'fjellets_tillit', label: '⛰️ Fjellets tillit', check: s => !s.relations.kaldur.playerEverDefected && s.relations.kaldur.score >= 50 },
   { id: 'balansekunstner', label: '⚖️ Balansekunstner', check: s => { const r = getStats(s); return r.totalMoves >= 20 && r.cooperateRate >= 0.4 && r.cooperateRate <= 0.6; } },
   { id: 'strategianalytiker', label: '🎓 Strategianalytiker', check: s => getStats(s).correctGuesses >= 5 },
+  { id: 'strategisk_overtak', label: '📈 Strategisk overtak', check: s => { const r = getStats(s); return r.totalMoves >= 20 && r.totalMyScore > r.totalTheirScore; } },
 ];
 
 function checkAchievements(state) {
@@ -243,17 +248,17 @@ const EPITHETS = [
   },
   {
     id: 'erobreren', weight: 90,
-    check: s => { const r = getStats(s); return r.cooperateRate < 0.3 && s.meters.sikkerhet >= 60; },
-    frame: 'Ettertiden vil huske en leder som forsto at styrke slår tillit.',
+    check: s => { const r = getStats(s); return r.cooperateRate < 0.3 && r.totalMyScore > r.totalTheirScore; },
+    frame: 'Ettertiden vil huske en leder som forsto at fristelsen er reell.',
     title: 'Erobreren {navn}',
-    blurb: 'Du sviktet oftere enn du samarbeidet, og bygget en sikkerhet ingen nabo kunne matche. Kortsiktig lønte det seg strålende – men isolasjonen som fulgte, er prisen ingen payoff-matrise viser deg på forhånd.',
+    blurb: `Du sviktet oftere enn du samarbeidet, og det ga faktisk resultater: ${'{poeng}'}. Kortsiktig lønte det seg strålende – men isolasjonen og mistilliten som fulgte, er prisen ingen poengsum viser deg på forhånd.`,
   },
   {
     id: 'godtroende', weight: 85,
-    check: s => { const r = getStats(s); return r.cooperateRate >= 0.55 && s.meters.velstand < 45 && r.avgRelation < 10; },
+    check: s => { const r = getStats(s); return r.cooperateRate >= 0.55 && r.totalMyScore < r.totalTheirScore; },
     frame: 'Ettertiden vil huske en leder som ga mer tillit enn den fikk tilbake.',
     title: 'Den Godtroende {navn}',
-    blurb: 'Du valgte samarbeid gang på gang, også når det kostet deg dyrt. Noen naboer utnyttet det systematisk. I spillteorien kalles dette «sucker\'s payoff» – og det er nøyaktig det du fikk.',
+    blurb: 'Du valgte samarbeid gang på gang, også når det kostet deg dyrt. Noen naboer utnyttet det systematisk og endte med flere poeng enn deg. I spillteorien kalles dette «sucker\'s payoff» – og det er nøyaktig det du fikk.',
   },
   {
     id: 'fredsmegler', weight: 80,
@@ -264,10 +269,10 @@ const EPITHETS = [
   },
   {
     id: 'kalkulerte', weight: 70,
-    check: s => s.meters.velstand >= 65 && s.meters.sikkerhet >= 55 && getStats(s).avgRelation >= 0,
+    check: s => { const r = getStats(s); return r.totalMyScore >= r.totalTheirScore && r.avgRelation >= 0 && r.cooperateRate > 0.3 && r.cooperateRate < 0.7; },
     frame: 'Ettertiden vil huske en leder som spilte spillet, ikke følelsene.',
     title: 'Den Kalkulerte {navn}',
-    blurb: 'Du blandet samarbeid og svik akkurat der det lønte seg, og endte med både velstand og sikkerhet i pluss. Ingen elsket deg. De færreste hatet deg heller. Det var visst poenget.',
+    blurb: 'Du blandet samarbeid og svik akkurat der det lønte seg, og endte med flere poeng enn motstanderne dine i sum. Ingen elsket deg. De færreste hatet deg heller. Det var visst poenget.',
   },
   {
     id: 'glemt', weight: 0,
@@ -282,38 +287,41 @@ export function getEpithet(state) {
   const hit = EPITHETS
     .filter(e => { try { return e.check(state); } catch { return false; } })
     .sort((a, b) => b.weight - a.weight)[0] || EPITHETS[EPITHETS.length - 1];
+  const stats = getStats(state);
+  const blurb = hit.blurb.replace('{poeng}', `${stats.totalMyScore} poeng mot deres ${stats.totalTheirScore}`);
   return {
     id: hit.id,
     frame: hit.frame,
     title: hit.title.replace(/{navn}/g, state.playerName),
-    blurb: hit.blurb,
+    blurb,
   };
 }
 
 // ─── Høydepunkter per nasjon (for rapportkort) ──────────
 export function getHighlights(state, nationId) {
-  const scored = state.log.filter(l => l.nationId === nationId && l.relDelta !== 0);
+  const scored = state.log.filter(l => l.nationId === nationId && l.trustDelta !== 0);
   if (!scored.length) return { win: null, loss: null };
-  const sorted = [...scored].sort((a, b) => b.relDelta - a.relDelta);
-  const win = sorted[0].relDelta > 0 ? sorted[0] : null;
-  const loss = sorted[sorted.length - 1].relDelta < 0 ? sorted[sorted.length - 1] : null;
+  const sorted = [...scored].sort((a, b) => b.trustDelta - a.trustDelta);
+  const win = sorted[0].trustDelta > 0 ? sorted[0] : null;
+  const loss = sorted[sorted.length - 1].trustDelta < 0 ? sorted[sorted.length - 1] : null;
   return { win, loss };
 }
 
 // ─── Spillteori-prompt (LLM-seam, følger samme mønster som 3s1f) ─
 export function buildReportPrompt(state) {
   const r = getStats(state);
-  const rel = NATIONS.map(n => `${n.name}: ${state.relations[n.id].score}`).join(', ');
+  const scores = NATIONS.map(n => `${n.name}: du ${state.relations[n.id].myScore} – de ${state.relations[n.id].theirScore}`).join(', ');
   return `Du er spillteoretiker og skal kommentere en elevs partie i "Diplomatiet", et undervisningsspill om fangens dilemma.
 Spilleren "${state.playerName}" møtte ${TOTAL_ENCOUNTERS} nasjoner etter tur, ${ROUNDS_PER_ENCOUNTER} runder hver, med ulike klassiske strategier (alltid samarbeid, alltid svik, tit-for-tat, hevngjerrig, tilfeldig, pavlov).
-Samarbeidsrate: ${(r.cooperateRate * 100).toFixed(0)}%. Sluttmålere: velstand ${state.meters.velstand}, sikkerhet ${state.meters.sikkerhet}, anseelse ${state.meters.anseelse}.
-Forholdsscore per nasjon: ${rel}.
+Poengmatrisen er klassisk Axelrod-skala: gjensidig samarbeid gir begge 3 poeng, gjensidig svik gir begge 1 poeng, og den som sviker mens motparten samarbeider får 5 poeng mot motpartens 0.
+Samarbeidsrate: ${(r.cooperateRate * 100).toFixed(0)}%. Total poengsum: du ${r.totalMyScore}, motstanderne til sammen ${r.totalTheirScore}.
+Poeng per nasjon: ${scores}.
 Svar KUN med JSON, ingen markdown:
 {"headline":"maks 8 ord","lesson":"3-4 setninger som forklarer et spillteorikonsept forankret i disse konkrete tallene"}`;
 }
 
 // ─── Lagring ────────────────────────────────────────────
-const SAVE_KEY = 'diplomatiet.save.v2';
+const SAVE_KEY = 'diplomatiet.save.v3';
 
 export function saveGame(state) {
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch { /* privat modus / full disk */ }

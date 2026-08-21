@@ -89,7 +89,7 @@ function renderEncounterScreen() {
 
   $('#encounter-progress').innerHTML = createProgressStrip(state);
   $('#hud-round').textContent = `Runde ${state.roundInEncounter} / ${ROUNDS_PER_ENCOUNTER}`;
-  renderMeters();
+  renderScoreboard(nation, rel);
 
   $('#encounter-nation-header').innerHTML = `
     <span class="panel-emblem">${nation.emblem}</span>
@@ -99,7 +99,7 @@ function renderEncounterScreen() {
     </div>`;
   $('#encounter-tagline').textContent = nation.tagline;
   $('#encounter-status').innerHTML = `
-    <span>Forhold: <strong style="color:${scoreColor(rel.score)}">${rel.score}</strong></span>
+    <span>Tillit: <strong style="color:${scoreColor(rel.score)}">${rel.score}</strong></span>
     ${rel.allianceActive ? '<span class="voice-tag gold">Allianse</span>' : ''}
     ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}`;
 
@@ -131,10 +131,13 @@ function renderActionArea() {
     const encounterDone = isEncounterComplete(state);
     area.innerHTML = `
       <div class="round-reveal">
-        <p class="round-reveal-title">Du ${ev.playerMove === 'C' ? 'samarbeidet' : 'sviktet'}, de ${ev.nationMove === 'C' ? 'samarbeidet' : 'sviktet'}
-          <span class="telegram-delta" style="color:${ev.relDelta >= 0 ? '#3E8E7E' : '#C9524B'}">${ev.relDelta > 0 ? '+' : ''}${ev.relDelta}</span>
-        </p>
+        <p class="round-reveal-title">Du ${ev.playerMove === 'C' ? 'samarbeidet' : 'sviktet'}, de ${ev.nationMove === 'C' ? 'samarbeidet' : 'sviktet'}</p>
+        <div class="round-points">
+          <span class="round-points-you">Du: <strong>+${ev.myPoints}</strong> poeng</span>
+          <span class="round-points-them">${esc(nation.name)}: <strong>+${ev.theirPoints}</strong> poeng</span>
+        </div>
         <p class="telegram-quote">«${esc(quote)}»</p>
+        <p class="round-trust">Tillit <span style="color:${ev.trustDelta >= 0 ? '#3E8E7E' : '#C9524B'}">${ev.trustDelta > 0 ? '+' : ''}${ev.trustDelta}</span></p>
         ${special.join('')}
       </div>
       <button class="btn-primary btn-send" id="btn-next-round">${encounterDone ? 'Se oppsummering →' : 'Neste runde →'}</button>`;
@@ -153,18 +156,11 @@ function handleChoice(move) {
   renderEncounterScreen();
 }
 
-function renderMeters() {
-  const meters = [
-    ['velstand', 'Velstand', '💰'],
-    ['sikkerhet', 'Sikkerhet', '🛡️'],
-    ['anseelse', 'Anseelse', '🌍'],
-  ];
-  $('#meters').innerHTML = meters.map(([key, label, icon]) => `
-    <div class="meter">
-      <span class="meter-label">${icon} ${label}</span>
-      <div class="meter-track"><div class="meter-fill" style="width:${state.meters[key]}%"></div></div>
-      <span class="meter-val">${state.meters[key]}</span>
-    </div>`).join('');
+function renderScoreboard(nation, rel) {
+  $('#scoreboard').innerHTML = `
+    <span class="score-you">Du <strong>${rel.myScore}</strong></span>
+    <span class="score-vs">–</span>
+    <span class="score-them">${esc(nation.name)} <strong>${rel.theirScore}</strong></span>`;
 }
 
 // ─── Refleksjonsskjerm ──────────────────────────────────
@@ -179,22 +175,31 @@ function showReflectionScreen() {
 
   const hlRow = (item, kind) => item ? `
     <div class="highlight ${kind}">
-      <span class="highlight-tag">${kind === 'win' ? 'Beste runde' : 'Verste runde'}</span>
+      <span class="highlight-tag">${kind === 'win' ? 'Beste runde (tillit)' : 'Verste runde (tillit)'}</span>
       <span class="highlight-text">Runde ${item.round}: ${item.outcome}</span>
-      <span class="highlight-delta">${item.relDelta > 0 ? '+' : ''}${item.relDelta}</span>
+      <span class="highlight-delta">${item.trustDelta > 0 ? '+' : ''}${item.trustDelta}</span>
     </div>` : '';
+
+  const diff = rel.myScore - rel.theirScore;
+  const resultLabel = diff > 0 ? 'Du vant på poeng' : diff < 0 ? `${nation.name} vant på poeng` : 'Uavgjort på poeng';
 
   $('#reflection-summary').innerHTML = `
     <div class="voice-card-header">
       <span class="voice-icon">${nation.emblem}</span>
       <span class="voice-name">${esc(nation.leader)}<span class="voice-sub">${esc(nation.name)}</span></span>
       <span class="voice-score" style="color:${scoreColor(rel.score)}">
-        ${rel.score}
+        Tillit ${rel.score}
         ${rel.allianceActive ? '<span class="voice-tag gold">Allianse</span>' : ''}
         ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}
       </span>
     </div>
-    ${renderSparkline(rel.scoreHistory, nation.color)}
+    <div class="score-result">
+      <span class="score-you">Du <strong>${rel.myScore}</strong></span>
+      <span class="score-vs">–</span>
+      <span class="score-them">${esc(nation.name)} <strong>${rel.theirScore}</strong></span>
+      <span class="score-result-label">${resultLabel}</span>
+    </div>
+    ${renderSparkline(rel.trustHistory, nation.color)}
     ${hlRow(hl.win, 'win')}
     ${hlRow(hl.loss, 'loss')}`;
 

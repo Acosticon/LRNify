@@ -57,23 +57,24 @@ function generateFallbackReport(state) {
 
 function buildLessonText(state, stats) {
   const pct = Math.round(stats.cooperateRate * 100);
-  const best = stats.bestNation, worst = stats.worstNation;
-  const worstTheory = STRATEGY_THEORY[worst.strategy].name.toLowerCase();
-  const bestScore = state.relations[best.id].score;
-  const worstScore = state.relations[worst.id].score;
+  const bestScoreNation = stats.bestScoreNation, worstScoreNation = stats.worstScoreNation;
+  const bestDiff = state.relations[bestScoreNation.id].myScore - state.relations[bestScoreNation.id].theirScore;
+  const worstDiff = state.relations[worstScoreNation.id].myScore - state.relations[worstScoreNation.id].theirScore;
 
   const lines = [];
-  lines.push(`Du valgte samarbeid i ${pct} % av alle diplomatiske trekk. I et <em>gjentatt</em> fangens dilemma – der du møter samme motpart runde etter runde – er dette langt fra tilfeldig: i motsetning til et enkeltstående spill lønner svik seg sjelden over tid, fordi motparten husker og svarer i neste runde.`);
+  lines.push(`Poengmatrisen er den samme hver runde: gjensidig samarbeid gir dere 3 poeng hver, gjensidig svik gir dere 1 poeng hver – men sviker du mens motparten samarbeider, får <em>du</em> 5 poeng og <em>de</em> 0. Det er selve fangens dilemma: fristelsen til å svike er reell og lønner seg der og da, uansett hva motparten gjør.`);
+
+  lines.push(`Totalt endte du på <strong>${stats.totalMyScore} poeng</strong>, mot <strong>${stats.totalTheirScore}</strong> samlet for motstanderne. ${stats.totalMyScore > stats.totalTheirScore ? 'Du vant nettoduellen på poeng.' : stats.totalMyScore < stats.totalTheirScore ? 'Motstanderne vant nettoduellen på poeng, samlet sett.' : 'Det endte helt likt.'}`);
 
   if (stats.cooperateRate < 0.35) {
-    lines.push(`Med en så lav samarbeidsrate spilte du i praksis en «alltid svik»-strategi selv. Det er en <em>dominant strategi</em> i ett enkeltstående spill – uansett hva motparten gjør, gir svik deg isolert sett mer der og da – men i et gjentatt spill bygger den fiender i stedet for handelspartnere.`);
+    lines.push(`Med en samarbeidsrate på bare ${pct} % spilte du i praksis en «alltid svik»-strategi selv. Det er en <em>dominant strategi</em> i ett enkeltstående spill – uansett hva motparten gjør, gir svik deg isolert sett mer der og da – men i et <em>gjentatt</em> spill svarer motparten i neste runde, og gjensidig svik (1 poeng hver) gir mindre enn gjensidig samarbeid (3 poeng hver) ville gjort.`);
   } else if (stats.cooperateRate > 0.7) {
-    lines.push(`Med en så høy samarbeidsrate lente du deg mot en nesten ubetinget «alltid samarbeid»-tilnærming – sjenerøst, men sårbart mot enhver motpart som systematisk utnytter tilliten din, slik ${esc(worst.name)} kan ha gjort.`);
+    lines.push(`Med en samarbeidsrate på ${pct} % lente du deg mot en nesten ubetinget «alltid samarbeid»-tilnærming. Det maksimerer poengene <em>hvis</em> motparten også samarbeider – men er sårbart mot enhver motpart som systematisk sviker, slik ${esc(worstScoreNation.name)} endte opp med å gjøre (der differansen ble ${worstDiff > 0 ? '+' : ''}${worstDiff} poeng for deg).`);
   } else {
-    lines.push(`Den blandede stilen din minner om <em>tit-for-tat</em> – strategien som vant Robert Axelrods berømte dataturnering i 1980, nettopp fordi den var samarbeidsvillig, men aldri lot et svik gå ustraffet.`);
+    lines.push(`Med en samarbeidsrate på ${pct} % minner den blandede stilen din om <em>tit-for-tat</em> – strategien som vant Robert Axelrods berømte dataturnering i 1980, nettopp fordi den var samarbeidsvillig, men aldri lot et svik gå ustraffet.`);
   }
 
-  lines.push(`Forholdet ditt til ${esc(best.name)} endte sterkest (${bestScore > 0 ? '+' : ''}${bestScore}), mens ${esc(worst.name)} – som spilte «${esc(worstTheory)}» – endte svakest (${worstScore}). Det finnes ingen enkelt <em>Nash-likevekt</em> som passer alle motstandere likt: det beste mottrekket avhenger alltid av hvilken strategi du står overfor.`);
+  lines.push(`Du vant tydeligst på poeng mot ${esc(bestScoreNation.name)} (${bestDiff > 0 ? '+' : ''}${bestDiff} i differanse), mens ${esc(worstScoreNation.name)} kom best ut av dere to. Det finnes ingen enkelt <em>Nash-likevekt</em> som passer alle motstandere likt: det beste mottrekket avhenger alltid av hvilken strategi du står overfor.`);
 
   lines.push(`Underveis gjettet du riktig strategi hos ${stats.correctGuesses} av ${NATIONS.length} nasjoner – å kjenne igjen mønsteret er halve jobben i et gjentatt spill.`);
 
@@ -102,6 +103,7 @@ export function renderSparkline(scoreHistory, color) {
 export function renderReport(state, reportData) {
   const achievements = getAchievements(state);
   const epithet = getEpithet(state);
+  const stats = getStats(state);
 
   const scoreColor = v => (v >= 25 ? '#3E8E7E' : v <= -25 ? '#C9524B' : '#C9A227');
 
@@ -116,10 +118,13 @@ export function renderReport(state, reportData) {
 
     const hlRow = (item, kind) => item ? `
       <div class="highlight ${kind}">
-        <span class="highlight-tag">${kind === 'win' ? 'Beste runde' : 'Verste runde'}</span>
+        <span class="highlight-tag">${kind === 'win' ? 'Beste runde (tillit)' : 'Verste runde (tillit)'}</span>
         <span class="highlight-text">Runde ${item.round}: ${item.outcome}</span>
-        <span class="highlight-delta">${item.relDelta > 0 ? '+' : ''}${item.relDelta}</span>
+        <span class="highlight-delta">${item.trustDelta > 0 ? '+' : ''}${item.trustDelta}</span>
       </div>` : '';
+
+    const diff = rel.myScore - rel.theirScore;
+    const resultLabel = diff > 0 ? 'Du vant på poeng' : diff < 0 ? 'De vant på poeng' : 'Uavgjort';
 
     return `
       <article class="voice-card" style="--voice-accent:${n.color}">
@@ -127,12 +132,18 @@ export function renderReport(state, reportData) {
           <span class="voice-icon">${n.emblem}</span>
           <span class="voice-name">${esc(n.leader)}<span class="voice-sub">${esc(n.name)}</span></span>
           <span class="voice-score" style="color:${scoreColor(rel.score)}">
-            ${rel.score}
+            Tillit ${rel.score}
             ${rel.allianceActive ? '<span class="voice-tag gold">Allianse</span>' : ''}
             ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}
           </span>
         </div>
-        ${renderSparkline(rel.scoreHistory, n.color)}
+        <div class="score-result">
+          <span class="score-you">Du <strong>${rel.myScore}</strong></span>
+          <span class="score-vs">–</span>
+          <span class="score-them">De <strong>${rel.theirScore}</strong></span>
+          <span class="score-result-label">${resultLabel}</span>
+        </div>
+        ${renderSparkline(rel.trustHistory, n.color)}
         <p class="voice-strategy">Strategi: <strong>${esc(theory.name)}</strong> – ${esc(theory.desc)}
           ${guess ? `<span class="guess-tag ${guessCorrect ? 'correct' : 'wrong'}">${guessCorrect ? '✓ Du gjettet riktig' : '✗ Du gjettet feil'}</span>` : ''}
         </p>
@@ -153,6 +164,13 @@ export function renderReport(state, reportData) {
       </div>
 
       <h2 class="report-headline">${esc(reportData.headline)}</h2>
+
+      <div class="score-result score-result-total">
+        <span class="score-you">Du <strong>${stats.totalMyScore}</strong></span>
+        <span class="score-vs">–</span>
+        <span class="score-them">Motstanderne <strong>${stats.totalTheirScore}</strong></span>
+        <span class="score-result-label">Total poengsum, alle møter</span>
+      </div>
 
       <div class="report-section report-lesson">
         <p class="report-section-title">🎓 Spillteorien bak Diplomatiet</p>
