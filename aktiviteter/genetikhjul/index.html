@@ -4,18 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Genetisk Hjul — LRNify</title>
-<meta name="description" content="Bygg din egen genetiske profil ved å trekke egenskaper, og se hele klassens profiler samlet live.">
+<meta name="description" content="Kartlegg genetisk variasjon i klassen: hver elev svarer på seks synlige trekk, og tavla viser hvordan klassen fordeler seg.">
 <link rel="canonical" href="https://lrnify.no/aktiviteter/genetikhjul/index.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LRNify">
 <meta property="og:title" content="Genetisk hjul – LRNify">
-<meta property="og:description" content="Bygg din egen genetiske profil ved å trekke egenskaper, og se hele klassens profiler samlet live.">
+<meta property="og:description" content="Kartlegg genetisk variasjon i klassen: hver elev svarer på seks synlige trekk, og tavla viser hvordan klassen fordeler seg.">
 <meta property="og:image" content="https://lrnify.no/media/aktiviteter/genetikhjul.png">
 <meta property="og:url" content="https://lrnify.no/aktiviteter/genetikhjul/index.html">
 <meta property="og:locale" content="nb_NO">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Genetisk hjul – LRNify">
-<meta name="twitter:description" content="Bygg din egen genetiske profil ved å trekke egenskaper, og se hele klassens profiler samlet live.">
+<meta name="twitter:description" content="Kartlegg genetisk variasjon i klassen: hver elev svarer på seks synlige trekk, og tavla viser hvordan klassen fordeler seg.">
 <meta name="twitter:image" content="https://lrnify.no/media/aktiviteter/genetikhjul.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -209,7 +209,7 @@
 <body>
 
 <h1>🧬 Genetisk Hjul</h1>
-<div class="sub">Bygg din egen genetiske profil — og se klassens live</div>
+<div class="sub">Seks synlige trekk — se hvor variert klassen er</div>
 
 <!-- ══ ROLLEVALG ══ -->
 <div class="top-screen" id="screen-role">
@@ -267,9 +267,9 @@
     <div class="center-msg" id="done-msg">Takk! Profilen din er sendt inn og vises nå på tavla.</div>
     <div class="wheel-wrap"><div id="wheel-final"></div></div>
     <div class="final-number" id="final-number"></div>
-    <p class="fagnote liten">Merk: disse seks trekkene er ikke egentlig enkle
-      dominant/recessiv-gener. De påvirkes av flere gener samtidig — hjulet
-      viser hvordan en kartlegging gjøres, ikke hvordan arven faktisk virker.</p>
+    <p class="fagnote liten">Tallet ditt sier hvor du havner blant 64 mulige
+      kombinasjoner av seks synlige trekk. Det viser hvor variert klassen er —
+      ikke hva du har arvet, og ikke hvilke gener du har.</p>
     <div class="action-row">
       <button class="btn secondary" onclick="toggleFullscreen('wheel-final')">⛶ Fullskjerm</button>
       <button class="btn secondary" onclick="downloadWheelImage('wheel-final')">📷 Last ned bilde</button>
@@ -284,14 +284,17 @@
   <div id="setup-bar" style="text-align:center;">
     <button type="button" class="link-back" onclick="showTopScreen('screen-role')">← Bytt rolle</button>
     <div class="fagnote" role="note">
-      <strong>Før du starter:</strong> de seks trekkene her er skolebokas klassiske
-      eksempler på enkel arv — men nyere genetikk viser at ingen av dem faktisk
-      styres av ett enkelt gen med én dominant og én recessiv variant.
-      Tungerulling, øreflipp, hårvirvel, tommelbøy, hårfeste og øyefarge
-      påvirkes alle av flere gener, og noen også av miljø og vane.
-      Bruk hjulet til å vise <em>hvordan</em> et arvemønster kan kartlegges i en
-      klasse — og bruk gjerne fasiten over som poenget: virkeligheten er mer
-      sammensatt enn to bokstaver.
+      <strong>Hva aktiviteten viser:</strong> dette er en kartlegging av
+      <em>genetisk variasjon</em> — seks synlige trekk, altså fenotyper, slik de
+      faktisk fordeler seg i klassen. Med seks ja/nei-trekk finnes 64 mulige
+      kombinasjoner, og poenget er hvor spredt en klasse legger seg utover dem:
+      to elever kan dele fem trekk og likevel havne i hvert sitt felt.
+      <br><br>
+      <strong>Det aktiviteten ikke viser:</strong> arv. Hjulet sier ingenting om
+      genotype, og ingen av de seks trekkene styres av ett enkelt gen med én
+      dominant og én recessiv variant — de påvirkes av flere gener, og noen også
+      av miljø og vane. Brukes hjulet som eksempel på mendelsk arv, blir det
+      feil. Brukt som det er ment — hvor like og ulike er vi? — stemmer det.
     </div>
     <label class="field-label" for="larer-input-kode" style="display:block; margin-bottom:8px;">
       Klassekoden elevene skal skrive inn — bytt den gjerne til noe du husker
@@ -415,25 +418,35 @@ function ensureAuth(){
 const KODE_REGEX = /^[A-Z0-9-]{3,24}$/;
 function normaliserKode(v){ return String(v || '').trim().toUpperCase(); }
 
-/* ============ GENENE ============ */
+/* ============ TREKKENE ============
+   Seks synlige trekk — fenotyper, ikke genotyper. Aktiviteten kartlegger
+   variasjon i klassen: hvordan fordeler disse seks ja/nei-trekkene seg, og
+   hvor spredt legger klassen seg utover de 64 mulige kombinasjonene.
+
+   domLabel/recLabel er bare navn på de to sidene av hvert trekk, og det er
+   dem eleven ser. Feltnavnene dom/rec er arv fra en tidligere versjon som
+   også oppga genotypekoder (T-/tt); de kodene er fjernet, fordi ingen av
+   disse trekkene faktisk styres av ett gen med én dominant og én recessiv
+   variant. Skal noe her brukes til å forklare arv, må det bygges om.
+   ================================== */
 const GENES = [
   { key:'T', navn:'Tunge-rulling', tittel:'Tunga 👅', sporsmal:'Kan du rulle tunga til et rør?',
-    domLabel:'Kan rulle', recLabel:'Kan ikke rulle', domCode:'T-', recCode:'tt', yesIsDom:true,
+    domLabel:'Kan rulle', recLabel:'Kan ikke rulle', yesIsDom:true,
     yesEmoji:'😛', noEmoji:'😐' },
   { key:'E', navn:'Øreflipp', tittel:'Øreflippen 👂', sporsmal:'Henger øreflippen din løst ned (ikke festet direkte til hodet)?',
-    domLabel:'Løs øreflipp', recLabel:'Fast øreflipp', domCode:'E-', recCode:'ee', yesIsDom:true,
+    domLabel:'Løs øreflipp', recLabel:'Fast øreflipp', yesIsDom:true,
     yesEmoji:'👂', noEmoji:'👂' },
   { key:'H', navn:'Hårvirvel', tittel:'Hårvirvelen 🌀', sporsmal:'Virvler håret ditt med klokka, sett bakfra?',
-    domLabel:'Med klokka', recLabel:'Mot klokka', domCode:'H-', recCode:'hh', yesIsDom:true,
+    domLabel:'Med klokka', recLabel:'Mot klokka', yesIsDom:true,
     yesEmoji:'🌀', noEmoji:'🔄' },
   { key:'D', navn:'Tommelbøy', tittel:'Tommelen 👍', sporsmal:'Kan du bøye tommelen tydelig bakover ("haiker-tommel")?',
-    domLabel:'Rett tommel', recLabel:'Haiker-tommel', domCode:'D-', recCode:'dd', yesIsDom:false,
+    domLabel:'Rett tommel', recLabel:'Haiker-tommel', yesIsDom:false,
     yesEmoji:'👍', noEmoji:'👍' },
   { key:'W', navn:'Hårfeste', tittel:'Hårfestet 📐', sporsmal:'Har du en tydelig spiss i hårfestet (widow\'s peak)?',
-    domLabel:"Widow's peak", recLabel:'Rett hårfeste', domCode:'W-', recCode:'ww', yesIsDom:true,
+    domLabel:"Widow's peak", recLabel:'Rett hårfeste', yesIsDom:true,
     yesEmoji:'📐', noEmoji:'➖' },
   { key:'B', navn:'Øyefarge', tittel:'Øynene 👀', sporsmal:'Har du mørke (brune) øyne?',
-    domLabel:'Mørke øyne', recLabel:'Lyse øyne', domCode:'B-', recCode:'bb', yesIsDom:true,
+    domLabel:'Mørke øyne', recLabel:'Lyse øyne', yesIsDom:true,
     yesEmoji:'🟤', noEmoji:'🔵' },
 ];
 
