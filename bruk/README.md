@@ -137,10 +137,14 @@ To naturlige neste steg:
 
 ## Sider som ikke telles
 
-Med vilje utenfor: dashbordet selv (`/bruk/`), `delete.html`, `blog/_mal.html`,
-`media/`, `LRNify_thumbs/`, og de nummererte arbeidskopiene i
-`spill/matyrint/`. Noen filer mangler `</body>` og er hoppet over fordi de er
-tomme eller ikke er ekte sider (`games/games.html`, `inbox/`, `vm/index.html`,
-`games/geografi/asia_land/`, `loype/*/media/`).
+Med vilje utenfor: dashbordet selv (`/bruk/`), `blog/_mal.html`, `media/`,
+`LRNify_thumbs/`, og de nummererte arbeidskopiene i `spill/matyrint/`.
+`inbox/` er hoppet over fordi den ikke er en ekte side.
+
+De tomme stubbene og de utdaterte kopiene som sto her tidligere
+(`delete.html`, `games/games.html`, `vm/`, `games/geografi/asia_land/`,
+`loype/*/media/`, `media/cards/index.html`, `spill/koblinger/`,
+`games/fotballquiz/`) er fjernet fra repoet — de lå publisert uten å høre
+til noen ressurs.
 
 Skal en ny side telles, legg til linja før `</body>`.

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="nb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -97,9 +97,22 @@ h1 b{color:var(--yellow);-webkit-text-stroke:2px var(--ink);font-weight:400}
 </div>
 
 <script>
-let secs = 0;
+/* Klokka måler mot Date.now(), ikke ved å telle tikk. Nettlesere struper
+   timere i faner som ikke er synlige, så en teller ville stått stille mens
+   klokka i virkeligheten gikk videre. elapsedMs holder tida fra tidligere
+   perioder, startedAt er da den inneværende perioden begynte. */
+let elapsedMs = 0;
+let startedAt = 0;
 let timer = null;
 let running = false;
+
+function totalMs() {
+  return elapsedMs + (running ? Date.now() - startedAt : 0);
+}
+
+function vis() {
+  document.getElementById('display').textContent = fmt(Math.floor(totalMs() / 1000));
+}
 
 function fmt(s) {
   const m = Math.floor(s / 60), r = s % 60;
@@ -109,25 +122,26 @@ function fmt(s) {
 function startStop() {
   const btn = document.getElementById('start-btn');
   if (running) {
-    clearInterval(timer);
+    elapsedMs = totalMs();
     running = false;
+    clearInterval(timer);
     btn.textContent = '▶ Start';
   } else {
+    startedAt = Date.now();
     running = true;
     btn.textContent = '⏸ Pause';
-    timer = setInterval(() => {
-      secs++;
-      document.getElementById('display').textContent = fmt(secs);
-    }, 1000);
+    timer = setInterval(vis, 200);
   }
+  vis();
 }
 
 function nullstill() {
   clearInterval(timer);
   running = false;
-  secs = 0;
-  document.getElementById('display').textContent = fmt(0);
+  elapsedMs = 0;
+  startedAt = 0;
   document.getElementById('start-btn').textContent = '▶ Start';
+  vis();
 }
 
 function fullskjerm() {
@@ -137,5 +151,6 @@ function fullskjerm() {
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
 </body>
 </html>

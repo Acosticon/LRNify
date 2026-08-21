@@ -11,21 +11,28 @@
 
   <!-- Læringsspill -->
   <url><loc>https://lrnify.no/games/geografi/kartografen/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/straffekonk/index.html</loc></url>
   <url><loc>https://lrnify.no/games/operasjonfrihet/index.html</loc></url>
   <url><loc>https://lrnify.no/games/koblinger/index.html</loc></url>
   <url><loc>https://lrnify.no/games/fotballgloser/index.html</loc></url>
   <url><loc>https://lrnify.no/games/3s1f/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/lopeilden/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/lopeilden/laerer.html</loc></url>
-  <url><loc>https://lrnify.no/games/lopeilden/kortspill.html</loc></url>
   <url><loc>https://lrnify.no/games/einstein/index.html</loc></url>
   <url><loc>https://lrnify.no/games/brokstigen/index.html</loc></url>
   <url><loc>https://lrnify.no/games/myldresprak/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/beinjakten/index.html</loc></url>
   <url><loc>https://lrnify.no/games/ordkjedeverkstedet/index.html</loc></url>
   <url><loc>https://lrnify.no/games/ordtoget/index.html</loc></url>
-  <url><loc>https://lrnify.no/games/ordtoget/mobil.html</loc></url>
-  <url><loc>https://lrnify.no/games/ordtoget/pc.html</loc></url>
+  <url><loc>https://lrnify.no/games/setningskirurgen/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/tidslinjen/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/vinkeljakten/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/vinkelforsvarer/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/vinkelspillet/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/likningsbalansen/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/lopeilden/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/klimakoden/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/grafkjoreren/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/jakten/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/atombyggeren/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/sannsynlighetslabben/index.html</loc></url>
 
   <!-- Klasseromsressurser -->
   <url><loc>https://lrnify.no/tools/klassekart/index.html</loc></url>
@@ -34,6 +41,7 @@
   <url><loc>https://lrnify.no/tools/stoppeklokke/index.html</loc></url>
   <url><loc>https://lrnify.no/tools/lyd/index.html</loc></url>
   <url><loc>https://lrnify.no/tools/graftegner/index.html</loc></url>
+  <url><loc>https://lrnify.no/tools/navnelapp/index.html</loc></url>
 
   <!-- Aktiviteter -->
   <url><loc>https://lrnify.no/aktiviteter/terningspill/index.html</loc></url>
@@ -42,4 +50,12 @@
   <url><loc>https://lrnify.no/aktiviteter/genetikhjul/index.html</loc></url>
   <url><loc>https://lrnify.no/aktiviteter/temaspinner/index.html</loc></url>
   <url><loc>https://lrnify.no/aktiviteter/tankesky/index.html</loc></url>
+  <url><loc>https://lrnify.no/aktiviteter/villeduheller/index.html</loc></url>
+
+  <!-- Lek -->
+  <url><loc>https://lrnify.no/games/straffekonk/index.html</loc></url>
+
+  <!-- Lærermateriell -->
+  <url><loc>https://lrnify.no/games/lopeilden/laerer.html</loc></url>
+  <url><loc>https://lrnify.no/games/lopeilden/kortspill.html</loc></url>
 </urlset>

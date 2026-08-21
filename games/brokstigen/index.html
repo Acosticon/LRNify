@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -497,6 +497,17 @@ button:active, .diff-btn:active { transform: translateY(4px); box-shadow: 0 2px 
 @keyframes badge-float { 0% { opacity:0; transform:translate(-50%,-40%) scale(.6); } 40% { opacity:1; } 100% { opacity:0; transform:translate(-50%,-90%) scale(1); } }
 .feedback-badge.p1 { color: #d8c7ff; } .feedback-badge.p2 { color: #ffd0a8; } .feedback-badge.wrong { color: #ffb3b3; }
 .player-status { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+/* Trykkflater for nettbrett og telefon. Spillet var opprinnelig bare
+   tastatur (A og L), altså ubrukelig på enheter uten fysisk tastatur.
+   Radene vises bare når nettleseren melder om berøring — på PC står
+   tastene fortsatt alene, slik de alltid har gjort. */
+.touch-row { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.touch-row[hidden] { display: none; }
+.touch-btn { padding: 1.15rem 0.5rem; border: 4px solid; font-family: 'Fraunces', serif; font-size: 1.5rem; font-weight: 700; cursor: pointer; color: var(--ink); background: var(--surface); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.touch-btn.p1 { border-color: var(--p1); background: var(--p1-dim); color: #d8c7ff; }
+.touch-btn.p2 { border-color: var(--p2); background: var(--p2-dim); color: #ffd0a8; }
+.touch-btn:active { transform: translateY(3px); }
+.touch-btn:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
 .pstatus { padding: 0.55rem 0.7rem; font-size: 0.72rem; display: flex; align-items: center; justify-content: space-between; border: 3px solid; }
 .pstatus.p1 { border-color: var(--p1); background: var(--p1-dim); color: #d8c7ff; }
 .pstatus.p2 { border-color: var(--p2); background: var(--p2-dim); color: #ffd0a8; }
@@ -808,14 +819,14 @@ button:active, .diff-btn:active { transform: translateY(4px); box-shadow: 0 2px 
 
     <div class="top-hud">
       <div>
-        <div>Round</div>
+        <div>Runde</div>
         <span class="hud-val" id="roundDisplay">1</span>
       </div>
       <div style="text-align:center; font-size:0.7rem; color:var(--muted)">
-        Press <strong style="color:var(--p1)">A</strong> or <strong style="color:var(--p2)">L</strong> only when fractions match
+        Trykk <strong style="color:var(--p1)">A</strong> eller <strong style="color:var(--p2)">L</strong> bare når brøkene er likeverdige
       </div>
       <div style="text-align:right">
-        <div>Time</div>
+        <div>Tid</div>
         <span class="hud-val" id="timeDisplay">0.0s</span>
       </div>
     </div>
@@ -850,7 +861,7 @@ button:active, .diff-btn:active { transform: translateY(4px); box-shadow: 0 2px 
           <div class="pstatus p1">
             <div>
               <div class="ps-key">A</div>
-              <div class="ps-step" id="p1step">Step 0/8</div>
+              <div class="ps-step" id="p1step">Trinn 0/8</div>
             </div>
             <div class="ps-action" id="p1action"></div>
           </div>
@@ -858,9 +869,13 @@ button:active, .diff-btn:active { transform: translateY(4px); box-shadow: 0 2px 
             <div class="ps-action" id="p2action" style="text-align:right"></div>
             <div style="text-align:right">
               <div class="ps-key">L</div>
-              <div class="ps-step" id="p2step">Step 0/8</div>
+              <div class="ps-step" id="p2step">Trinn 0/8</div>
             </div>
           </div>
+        </div>
+        <div class="touch-row" id="touchRow" hidden>
+          <button class="touch-btn p1" type="button" id="touchP1" aria-label="Sir Lilla-Lars klatrer">Sir Lilla-Lars</button>
+          <button class="touch-btn p2" type="button" id="touchP2" aria-label="Oransje-Olav klatrer">Oransje-Olav</button>
         </div>
       </div>
 
@@ -876,34 +891,6 @@ button:active, .diff-btn:active { transform: translateY(4px); box-shadow: 0 2px 
       </div>
 
     </div><!-- /arena -->
-  </div>
-</div>
-
-<!-- RESULT -->
-<div class="screen" id="resultScreen">
-  <div class="winner-banner" id="winnerBanner">—</div>
-  <div class="result-sub" id="winnerSub">reached the top first!</div>
-
-  <div class="result-stats">
-    <div class="pstat-card p1">
-      <div class="pstat-name">Sir Purple Pete (A)</div>
-      <div class="pstat-row"><span>Best step</span><span id="r1step">—</span></div>
-      <div class="pstat-row"><span>Correct climbs</span><span id="r1correct">—</span></div>
-      <div class="pstat-row"><span>Wrong presses</span><span id="r1wrong">—</span></div>
-      <div class="pstat-row"><span>Avg reaction</span><span id="r1avg">—</span></div>
-    </div>
-    <div class="pstat-card p2">
-      <div class="pstat-name">Dame Orange Olga (L)</div>
-      <div class="pstat-row"><span>Best step</span><span id="r2step">—</span></div>
-      <div class="pstat-row"><span>Correct climbs</span><span id="r2correct">—</span></div>
-      <div class="pstat-row"><span>Wrong presses</span><span id="r2wrong">—</span></div>
-      <div class="pstat-row"><span>Avg reaction</span><span id="r2avg">—</span></div>
-    </div>
-  </div>
-
-  <div class="action-row">
-    <button class="btn-secondary" onclick="goToStart()">Change quest</button>
-    <button class="btn-primary" onclick="startGame()">Quest again →</button>
   </div>
 </div>
 
@@ -1054,8 +1041,8 @@ function updateHolds() {
 }
 
 function updateStepLabels() {
-  document.getElementById('p1step').textContent = 'Step '+P[1].step+'/'+STEPS;
-  document.getElementById('p2step').textContent = 'Step '+P[2].step+'/'+STEPS;
+  document.getElementById('p1step').textContent = 'Trinn '+P[1].step+'/'+STEPS;
+  document.getElementById('p2step').textContent = 'Trinn '+P[2].step+'/'+STEPS;
 }
 
 
@@ -1329,7 +1316,7 @@ function resetFinale() {
 
 function endingCard(p, winner) {
   const avg = avgTimeFor(p);
-  const title = p === 1 ? 'Sir Purple Pete (A)' : 'Dame Orange Olga (L)';
+  const title = p === 1 ? 'Sir Lilla-Lars (A)' : 'Oransje-Olav (L)';
   const mood = p === winner ? '👑 vinner' : '😭 trøsterunde';
   return `
     <div class="ending-card p${p} ${p === winner ? 'winner' : 'loser'}">
@@ -1346,7 +1333,7 @@ function showFinalePanel(winner) {
   if (!panel) return;
   panel.classList.add('ending');
   panel.querySelectorAll('.ending-panel').forEach(el => el.remove());
-  const winName = winner === 1 ? 'Sir Purple Pete' : 'Dame Orange Olga';
+  const winName = winner === 1 ? 'Sir Lilla-Lars' : 'Oransje-Olav';
   const overlay = document.createElement('div');
   overlay.className = 'ending-panel';
   overlay.innerHTML = `
@@ -1536,14 +1523,29 @@ function goToStart() {
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// ---- KEYBOARD ----
+// ---- TASTATUR ----
 document.addEventListener('keydown', e => {
   if (e.repeat) return;
   if (e.key.toLowerCase() === 'a') { e.preventDefault(); handlePress(1); }
   if (e.key.toLowerCase() === 'l') { e.preventDefault(); handlePress(2); }
 });
+
+// ---- BERØRING ----
+// pointerdown, ikke click: reaksjonstida måles i millisekunder, og click
+// kommer først etter at fingeren slippes.
+if (navigator.maxTouchPoints > 0) {
+  const touchRow = document.getElementById('touchRow');
+  if (touchRow) touchRow.hidden = false;
+  [[1, 'touchP1'], [2, 'touchP2']].forEach(([player, id]) => {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    btn.addEventListener('pointerdown', e => { e.preventDefault(); handlePress(player); });
+    btn.addEventListener('contextmenu', e => e.preventDefault());
+  });
+}
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
 </body>
 </html>

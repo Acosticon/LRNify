@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="nb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -230,6 +230,10 @@ let currentPhase = null;
 let timerSecs = 0;
 let timerInterval = null;
 let timerRunning = false;
+/* Tidspunktet fasen skal være ferdig. Vi regner mot dette i stedet for å
+   telle ned ett sekund per tikk: nettlesere struper timere i faner som
+   ikke er synlige, så en ren teller ville stått stille mens økta gikk. */
+let timerEndsAt = 0;
 let audioCtx = null;
 
 const PHASES = ['think','pair','share'];
@@ -316,9 +320,10 @@ function toggleTimer(){
     document.getElementById('btn-ss').textContent = '▶ Start';
   } else {
     timerRunning = true;
+    timerEndsAt = Date.now() + timerSecs * 1000;
     document.getElementById('btn-ss').textContent = '⏸ Pause';
     timerInterval = setInterval(()=>{
-      timerSecs--;
+      timerSecs = Math.max(0, Math.ceil((timerEndsAt - Date.now()) / 1000));
       updateTimerDisplay();
       if(timerSecs <= 0){
         clearInterval(timerInterval);
@@ -327,12 +332,14 @@ function toggleTimer(){
         document.getElementById('timer-display').classList.add('flash');
         beep();
       }
-    }, 1000);
+    }, 250);
   }
 }
 
 function adjustLive(delta){
   timerSecs = Math.max(0, timerSecs + delta * 60);
+  // Går klokka, må sluttidspunktet flyttes like mye som visningen.
+  if(timerRunning) timerEndsAt = Date.now() + timerSecs * 1000;
   document.getElementById('timer-display').classList.remove('flash');
   updateTimerDisplay();
 }
@@ -371,5 +378,6 @@ function beep(){
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
 </body>
 </html>

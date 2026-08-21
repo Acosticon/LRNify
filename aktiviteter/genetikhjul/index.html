@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="nb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -80,6 +80,12 @@
     box-shadow:4px 4px 0 var(--ink);
   }
   .sex-btn.active{ background:var(--yellow); }
+  .fagnote{ text-align:left; max-width:620px; margin:14px auto 0; padding:12px 14px;
+    border-left:4px solid var(--yellow); background:rgba(250,204,21,.12);
+    border-radius:6px; font-size:.9rem; line-height:1.5; }
+  .fagnote.liten{ font-size:.82rem; margin-top:12px; }
+  @media print{ .fagnote{ break-inside:avoid; } }
+  .sex-btn-wide{ font-size:.9rem; font-weight:800; padding-left:14px; padding-right:14px; }
   .progress{ display:flex; gap:6px; justify-content:center; margin:18px 0 8px; }
   .dot{ width:12px; height:12px; border-radius:50%; border:2px solid var(--ink); background:#fff; }
   .dot.done{ background:var(--green); }
@@ -235,10 +241,11 @@
       <label class="field-label">Fornavn</label>
       <input type="text" id="input-navn" placeholder="Skriv fornavnet ditt" autocomplete="off" maxlength="24">
     </div>
-    <label class="field-label" id="kjonn-label" style="margin-top:16px; display:block;">Kjønn</label>
+    <label class="field-label" id="kjonn-label" style="margin-top:16px; display:block;">Kjønn <span style="font-weight:600; opacity:.75;">— pynt i midten av hjulet, ikke en del av genetikken</span></label>
     <div class="sex-row">
       <div class="sex-btn" id="sex-m" onclick="setSex('M')">♂</div>
       <div class="sex-btn" id="sex-f" onclick="setSex('F')">♀</div>
+      <div class="sex-btn sex-btn-wide" id="sex-x" onclick="setSex('X')">Vil ikke svare</div>
     </div>
     <button class="btn" onclick="goToQuiz()">Start →</button>
     <div class="error hidden" id="err-navn"></div>
@@ -260,6 +267,9 @@
     <div class="center-msg" id="done-msg">Takk! Profilen din er sendt inn og vises nå på tavla.</div>
     <div class="wheel-wrap"><div id="wheel-final"></div></div>
     <div class="final-number" id="final-number"></div>
+    <p class="fagnote liten">Merk: disse seks trekkene er ikke egentlig enkle
+      dominant/recessiv-gener. De påvirkes av flere gener samtidig — hjulet
+      viser hvordan en kartlegging gjøres, ikke hvordan arven faktisk virker.</p>
     <div class="action-row">
       <button class="btn secondary" onclick="toggleFullscreen('wheel-final')">⛶ Fullskjerm</button>
       <button class="btn secondary" onclick="downloadWheelImage('wheel-final')">📷 Last ned bilde</button>
@@ -273,6 +283,16 @@
 
   <div id="setup-bar" style="text-align:center;">
     <button type="button" class="link-back" onclick="showTopScreen('screen-role')">← Bytt rolle</button>
+    <div class="fagnote" role="note">
+      <strong>Før du starter:</strong> de seks trekkene her er skolebokas klassiske
+      eksempler på enkel arv — men nyere genetikk viser at ingen av dem faktisk
+      styres av ett enkelt gen med én dominant og én recessiv variant.
+      Tungerulling, øreflipp, hårvirvel, tommelbøy, hårfeste og øyefarge
+      påvirkes alle av flere gener, og noen også av miljø og vane.
+      Bruk hjulet til å vise <em>hvordan</em> et arvemønster kan kartlegges i en
+      klasse — og bruk gjerne fasiten over som poenget: virkeligheten er mer
+      sammensatt enn to bokstaver.
+    </div>
     <label class="field-label" for="larer-input-kode" style="display:block; margin-bottom:8px;">
       Klassekoden elevene skal skrive inn — bytt den gjerne til noe du husker
     </label>
@@ -488,6 +508,7 @@ window.setSex = function(s){
   state.kjonn = s;
   document.getElementById('sex-m').classList.toggle('active', s==='M');
   document.getElementById('sex-f').classList.toggle('active', s==='F');
+  document.getElementById('sex-x').classList.toggle('active', s==='X');
 };
 
 window.goToQuiz = function(){
@@ -497,7 +518,7 @@ window.goToQuiz = function(){
     if(v.length > 24){ showErr('err-navn','Bruk bare fornavnet — maks 24 tegn.'); return; }
     state.navn = v;
   }
-  if(!state.kjonn){ showErr('err-navn','Velg kjønn.'); return; }
+  if(!state.kjonn){ showErr('err-navn','Velg ett av de tre alternativene. «Vil ikke svare» er helt greit — feltet er bare pynt i midten av hjulet.'); return; }
   document.getElementById('step-navn').classList.add('hidden');
   document.getElementById('step-quiz').classList.remove('hidden');
   renderProgress();
@@ -1150,5 +1171,6 @@ function lagKlassekode(){
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
 </body>
 </html>
