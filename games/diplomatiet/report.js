@@ -1,8 +1,8 @@
-// report.js – Sluttrapport: forholdskurve for alle nasjoner, seks stemmer,
-// et ettermæle, og en egen «spillteorien bak»-leksjon forankret i spillerens tall.
+// report.js – Sluttrapport: seks stemmer med hver sin mini-kurve, et
+// ettermæle, og en egen «spillteorien bak»-leksjon forankret i spillerens tall.
 
 import {
-  NATIONS, STRATEGY_THEORY, TOTAL_ROUNDS,
+  NATIONS, STRATEGY_THEORY, TOTAL_ENCOUNTERS, ROUNDS_PER_ENCOUNTER,
   getAchievements, getEpithet, getHighlights, getStats, getRelationTier,
   buildReportPrompt, escapeHtml as esc,
 } from './game.js';
@@ -45,11 +45,11 @@ function generateFallbackReport(state) {
   const stats = getStats(state);
 
   const headline = (() => {
-    if (stats.allianceBrokenCount >= 1) return 'Et brutt løfte definerte disse åtte rundene';
+    if (stats.allianceBrokenCount >= 1) return 'Et brutt løfte definerte kampanjen';
     if (stats.cooperateRate >= 0.65 && stats.warCount === 0) return 'Diplomatiet valgte tillit, og tilliten lønte seg';
     if (stats.cooperateRate < 0.3) return 'Opprustning ga makt, men ingen venner';
     if (stats.everWarCount >= 2) return 'Flere fronter, få seire';
-    return 'Åtte runder med beregnet balansegang';
+    return 'Seks møter med beregnet balansegang';
   })();
 
   return { headline, lesson: buildLessonText(state, stats) };
@@ -63,7 +63,7 @@ function buildLessonText(state, stats) {
   const worstScore = state.relations[worst.id].score;
 
   const lines = [];
-  lines.push(`Du valgte samarbeid i ${pct} % av alle diplomatiske trekk. I et <em>gjentatt</em> fangens dilemma – der du møter samme motpart runde etter runde – er dette langt fra tilfeldig: i motsetning til et enkeltstående spill lønner svik seg sjelden over tid, fordi motparten husker og svarer i neste runde.`);
+  lines.push(`Du valgte samarbeid i ${pct} % av alle diplomatiske trekk. I et <em>gjentatt</em> fangens dilemma – der du møter samme motpart runde etter runde – er dette langt fra tilfeldig: i motsetning til et enkeltstående spill lønner svik seg sjelden over tid, fordi motparten husker og svarer i neste runde.`);
 
   if (stats.cooperateRate < 0.35) {
     lines.push(`Med en så lav samarbeidsrate spilte du i praksis en «alltid svik»-strategi selv. Det er en <em>dominant strategi</em> i ett enkeltstående spill – uansett hva motparten gjør, gir svik deg isolert sett mer der og da – men i et gjentatt spill bygger den fiender i stedet for handelspartnere.`);
@@ -75,53 +75,27 @@ function buildLessonText(state, stats) {
 
   lines.push(`Forholdet ditt til ${esc(best.name)} endte sterkest (${bestScore > 0 ? '+' : ''}${bestScore}), mens ${esc(worst.name)} – som spilte «${esc(worstTheory)}» – endte svakest (${worstScore}). Det finnes ingen enkelt <em>Nash-likevekt</em> som passer alle motstandere likt: det beste mottrekket avhenger alltid av hvilken strategi du står overfor.`);
 
+  lines.push(`Underveis gjettet du riktig strategi hos ${stats.correctGuesses} av ${NATIONS.length} nasjoner – å kjenne igjen mønsteret er halve jobben i et gjentatt spill.`);
+
   return lines.join(' ');
 }
 
-// ─── Forholdskurve for alle nasjoner ──────────────────
-function renderChart(history) {
-  const W = 680, H = 260, PAD = { t: 16, r: 16, b: 30, l: 40 };
-  const iw = W - PAD.l - PAD.r;
-  const ih = H - PAD.t - PAD.b;
-  const maxRound = Math.max(TOTAL_ROUNDS, ...history.map(h => h.round));
-
-  const x = round => PAD.l + (round / maxRound) * iw;
-  const y = val => PAD.t + (1 - (val + 100) / 200) * ih;
-
-  const gridY = [-100, -50, 0, 50, 100].map(v => `
-    <line x1="${PAD.l}" y1="${y(v)}" x2="${W - PAD.r}" y2="${y(v)}"
-          stroke="#28323D" stroke-width="1" ${v === 0 ? 'stroke-dasharray="3 3"' : ''}/>
-    <text x="${PAD.l - 8}" y="${y(v)}" text-anchor="end" dominant-baseline="middle"
-          fill="#7C8896" font-size="10">${v}</text>`).join('');
-
-  const gridX = history.filter(h => h.round > 0).map(h => `
-    <text x="${x(h.round)}" y="${H - 8}" text-anchor="middle"
-          fill="#7C8896" font-size="10">${h.round}</text>`).join('');
-
-  const lines = NATIONS.map(n => {
-    const pts = history.map(h => `${x(h.round)},${y(h[n.id])}`).join(' ');
-    const last = history[history.length - 1];
-    return `
-      <polyline points="${pts}" fill="none" stroke="${n.color}"
-                stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round" opacity="0.9"/>
-      <circle cx="${x(last.round)}" cy="${y(last[n.id])}" r="4.5" fill="${n.color}"
-              stroke="#0B0E13" stroke-width="2"/>`;
-  }).join('');
+// ─── Mini-kurve for én nasjons forholdsutvikling ──────
+export function renderSparkline(scoreHistory, color) {
+  if (!scoreHistory.length) return '<p class="voice-sparkline-empty">Ingen møter ennå.</p>';
+  const W = 160, H = 46, PAD = 5;
+  const n = scoreHistory.length;
+  const x = i => (n > 1 ? PAD + (i / (n - 1)) * (W - 2 * PAD) : W / 2);
+  const y = v => PAD + (1 - (v + 100) / 200) * (H - 2 * PAD);
+  const pts = scoreHistory.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const last = scoreHistory[scoreHistory.length - 1];
 
   return `
-    <div class="chart-wrap">
-      <svg viewBox="0 0 ${W} ${H}" class="report-chart" role="img"
-           aria-label="Forholdsscore for alle nasjoner gjennom ${maxRound} runder">
-        ${gridY}${gridX}${lines}
-      </svg>
-      <div class="chart-legend">
-        ${NATIONS.map(n => `
-          <span class="chart-legend-item">
-            <span class="chart-swatch" style="background:${n.color}"></span>
-            ${n.emblem} ${esc(n.name)}
-          </span>`).join('')}
-      </div>
-    </div>`;
+    <svg viewBox="0 0 ${W} ${H}" class="voice-sparkline" role="img" aria-label="Utvikling i forhold over ${n} runder">
+      <line x1="${PAD}" y1="${y(0).toFixed(1)}" x2="${W - PAD}" y2="${y(0).toFixed(1)}" stroke="#28323D" stroke-width="1" stroke-dasharray="2 2"/>
+      <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="${x(n - 1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="3.5" fill="${color}" stroke="#0B0E13" stroke-width="1.5"/>
+    </svg>`;
 }
 
 // ─── Rapportskjerm ────────────────────────────────────
@@ -137,6 +111,8 @@ export function renderReport(state, reportData) {
     const tier = getRelationTier(rel.score);
     const quote = tier === 'Positive' ? n.quotes.finalPositive : tier === 'Negative' ? n.quotes.finalNegative : n.quotes.finalNeutral;
     const theory = STRATEGY_THEORY[n.strategy];
+    const guess = state.reflectionGuesses[n.id];
+    const guessCorrect = guess === n.strategy;
 
     const hlRow = (item, kind) => item ? `
       <div class="highlight ${kind}">
@@ -156,7 +132,10 @@ export function renderReport(state, reportData) {
             ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}
           </span>
         </div>
-        <p class="voice-strategy">Strategi: <strong>${esc(theory.name)}</strong> – ${esc(theory.desc)}</p>
+        ${renderSparkline(rel.scoreHistory, n.color)}
+        <p class="voice-strategy">Strategi: <strong>${esc(theory.name)}</strong> – ${esc(theory.desc)}
+          ${guess ? `<span class="guess-tag ${guessCorrect ? 'correct' : 'wrong'}">${guessCorrect ? '✓ Du gjettet riktig' : '✗ Du gjettet feil'}</span>` : ''}
+        </p>
         <p class="voice-text">${esc(quote)}</p>
         ${hlRow(hl.win, 'win')}
         ${hlRow(hl.loss, 'loss')}
@@ -165,7 +144,7 @@ export function renderReport(state, reportData) {
 
   return `
     <div class="report-inner">
-      <p class="report-eyebrow">Diplomatisk sluttrapport · Etter ${TOTAL_ROUNDS} runder</p>
+      <p class="report-eyebrow">Diplomatisk sluttrapport · Etter ${TOTAL_ENCOUNTERS} møter · ${ROUNDS_PER_ENCOUNTER} runder hver</p>
 
       <div class="epithet">
         <p class="epithet-frame">${esc(epithet.frame)}</p>
@@ -174,11 +153,6 @@ export function renderReport(state, reportData) {
       </div>
 
       <h2 class="report-headline">${esc(reportData.headline)}</h2>
-
-      <div class="report-section">
-        <p class="report-section-title">Slik utviklet forholdene seg</p>
-        ${renderChart(state.relationHistory)}
-      </div>
 
       <div class="report-section report-lesson">
         <p class="report-section-title">🎓 Spillteorien bak Diplomatiet</p>

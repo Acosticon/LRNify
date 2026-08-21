@@ -103,31 +103,43 @@ button { font-family: var(--font-u); cursor: pointer; }
 .meter-fill { height: 100%; background: linear-gradient(90deg, var(--emerald), var(--gold)); border-radius: 4px; transition: width .3s; }
 .meter-val { font-family: var(--font-mono); font-size: 12px; color: var(--muted); min-width: 20px; }
 
-/* ─── Spillområde ──────────────────────────────────── */
-.game-layout { flex: 1; display: flex; gap: 20px; padding: 20px; max-width: var(--max-w); width: 100%; margin: 0 auto; min-height: 0; }
-.map-panel { flex: 1.4; display: flex; align-items: center; justify-content: center; min-width: 0; }
-#map-wrap { width: 100%; max-width: 620px; }
-#map-wrap svg { width: 100%; height: auto; display: block; }
-
-.map-nation { cursor: pointer; outline: none; }
-.map-nation path { transition: filter .15s, stroke-width .15s; }
-.map-nation:hover path, .map-nation:focus-visible path { filter: brightness(1.25); }
-.map-nation.is-selected path { filter: brightness(1.35); }
-
-.side-panel { flex: 1; display: flex; flex-direction: column; gap: 14px; min-width: 300px; max-width: 380px; }
-#panel {
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg);
-  padding: 20px; flex: 1; box-shadow: var(--shadow-card);
+/* ─── Fremdriftsstripe (kampanjeposisjon) ──────────── */
+.progress-wrap { width: 100%; max-width: 720px; margin: 18px auto 0; padding: 0 16px; }
+.progress-wrap svg { width: 100%; height: auto; display: block; }
+.progress-node.is-locked { opacity: .55; }
+.pulse-ring { animation: pulse-ring 2s ease-in-out infinite; transform-origin: center; }
+@keyframes pulse-ring {
+  0%, 100% { opacity: .7; transform: scale(1); }
+  50% { opacity: .25; transform: scale(1.08); }
 }
-.panel-placeholder { display: flex; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--muted); font-size: 14px; padding: 20px; }
+
+/* ─── Kapittelintro ────────────────────────────────── */
+#screen-intro { align-items: center; justify-content: center; padding: 32px 16px; gap: 0; }
+.intro-card {
+  max-width: 560px; width: 100%; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  padding: 8px 36px 40px; text-align: center; box-shadow: var(--shadow-card);
+}
+.intro-chapter { font-family: var(--font-mono); font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin: 22px 0 18px; }
+.intro-emblem { font-size: 56px; display: block; margin-bottom: 12px; }
+.intro-name { font-size: 28px; font-style: italic; margin-bottom: 4px; }
+.intro-leader { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.intro-tagline { color: var(--text-dim); line-height: 1.6; font-size: 14.5px; margin-bottom: 28px; }
+
+/* ─── Møte- og refleksjonsskjerm ────────────────────── */
+.encounter-layout { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 24px 16px 40px; }
+.encounter-card, .reflection-card {
+  width: 100%; max-width: 480px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 22px; box-shadow: var(--shadow-card);
+}
+.reflection-card { max-width: 560px; display: flex; flex-direction: column; gap: 16px; }
 
 .panel-nation-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .panel-emblem { font-size: 34px; }
 .panel-name { font-family: var(--font-d); font-size: 18px; }
 .panel-leader { font-size: 12.5px; color: var(--muted); }
 .panel-tagline { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
-.panel-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
-.panel-lastround { font-size: 12.5px; color: var(--muted); margin-bottom: 16px; font-style: italic; }
+.panel-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); margin-bottom: 18px; }
 
 .voice-tag { font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
 .voice-tag.gold { background: rgba(201,162,39,.18); color: var(--gold); border: 1px solid rgba(201,162,39,.4); }
@@ -136,36 +148,39 @@ button { font-family: var(--font-u); cursor: pointer; }
 .panel-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .choice-btn {
   border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text);
-  border-radius: var(--r); padding: 12px 8px; font-size: 13.5px; font-weight: 600; transition: all .15s;
+  border-radius: var(--r); padding: 16px 8px; font-size: 14.5px; font-weight: 600; transition: all .15s;
 }
-.choice-btn:hover { border-color: var(--text-dim); }
-.choice-btn.coop.active { background: rgba(62,142,126,.2); border-color: var(--emerald); color: var(--emerald); }
-.choice-btn.def.active { background: rgba(201,82,75,.2); border-color: var(--crimson); color: var(--crimson); }
+.choice-btn:hover { border-color: var(--text-dim); transform: translateY(-1px); }
+.choice-btn.coop:hover { border-color: var(--emerald); color: var(--emerald); }
+.choice-btn.def:hover { border-color: var(--crimson); color: var(--crimson); }
 
 .btn-send { width: 100%; }
 
-/* ─── Telegram-overlegg ────────────────────────────── */
-.overlay { display: none; position: fixed; inset: 0; z-index: 40; background: rgba(5,6,9,.72); align-items: center; justify-content: center; padding: 20px; }
-.overlay.active { display: flex; }
-.telegram-paper {
-  max-width: 620px; width: 100%; max-height: 86vh; overflow-y: auto;
-  background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--r-lg);
-  padding: 26px 24px; box-shadow: var(--shadow-lift);
-}
-.telegram-masthead { font-family: var(--font-mono); font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 16px; border-bottom: 1px dashed var(--border-strong); padding-bottom: 12px; }
-
-.telegram-row { display: flex; gap: 12px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); border-left: 3px solid var(--voice-accent, var(--border)); padding-left: 12px; margin-bottom: 4px; }
-.telegram-row:last-of-type { border-bottom: none; }
-.telegram-emblem { font-size: 24px; line-height: 1; }
-.telegram-body { flex: 1; }
-.telegram-title { font-size: 13.5px; font-weight: 600; margin-bottom: 4px; }
+/* Rundeutfall (vises inline i møtekortet) */
+.round-reveal { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; margin-bottom: 14px; }
+.round-reveal-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
 .telegram-quote { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
-.telegram-special { font-size: 12px; margin-top: 6px; padding: 6px 10px; border-radius: var(--r); }
+.telegram-special { font-size: 12px; margin-top: 8px; padding: 6px 10px; border-radius: var(--r); }
 .telegram-special.gold { background: rgba(201,162,39,.12); color: var(--gold); }
 .telegram-special.red { background: rgba(201,82,75,.12); color: var(--crimson); }
 .telegram-delta { font-family: var(--font-mono); font-size: 14px; font-weight: 700; white-space: nowrap; }
 
-.telegram-paper .btn-primary { width: 100%; margin-top: 18px; }
+/* Refleksjon: quiz */
+.reflection-voice-card { padding: 0; border: none; background: none; box-shadow: none; }
+.quiz-title { margin-top: 4px; }
+.quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.quiz-option {
+  border: 1px solid var(--border-strong); background: var(--surface2); color: var(--text);
+  border-radius: var(--r); padding: 10px 8px; font-size: 13px; font-weight: 600; transition: all .15s;
+}
+.quiz-option:hover:not(:disabled) { border-color: var(--gold); }
+.quiz-option:disabled { cursor: default; }
+.quiz-option.correct { border-color: var(--emerald); background: rgba(62,142,126,.2); color: var(--emerald); }
+.quiz-option.wrong { border-color: var(--crimson); background: rgba(201,82,75,.2); color: var(--crimson); }
+.quiz-feedback { font-size: 13px; line-height: 1.5; padding: 10px 12px; border-radius: var(--r); background: var(--surface2); }
+.quiz-feedback.correct { color: var(--emerald); }
+.quiz-feedback.wrong { color: var(--text-dim); }
+.quiz-feedback strong { color: var(--text); }
 
 /* ─── Rapportskjerm ────────────────────────────────── */
 #screen-report { align-items: center; padding: 40px 16px 60px; }
@@ -182,12 +197,6 @@ button { font-family: var(--font-u); cursor: pointer; }
 .report-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 22px; margin-bottom: 18px; box-shadow: var(--shadow-card); }
 .report-section-title { font-family: var(--font-d); font-size: 15px; color: var(--text); margin-bottom: 14px; }
 
-.chart-wrap { display: flex; flex-direction: column; gap: 14px; }
-.report-chart { width: 100%; height: auto; }
-.chart-legend { display: flex; flex-wrap: wrap; gap: 12px 18px; }
-.chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-dim); }
-.chart-swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-
 .report-lesson .lesson-text { color: var(--text-dim); line-height: 1.7; font-size: 14.5px; }
 .report-lesson .lesson-text em { color: var(--gold); font-style: normal; font-weight: 600; }
 
@@ -201,6 +210,12 @@ button { font-family: var(--font-u); cursor: pointer; }
 .voice-strategy { font-size: 12px; color: var(--muted); margin-bottom: 10px; line-height: 1.5; }
 .voice-strategy strong { color: var(--text-dim); }
 .voice-text { font-size: 13.5px; color: var(--text-dim); line-height: 1.6; margin-bottom: 10px; font-style: italic; }
+
+.voice-sparkline { width: 100%; height: auto; display: block; margin-bottom: 10px; }
+.voice-sparkline-empty { font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+.guess-tag { display: block; font-size: 11px; margin-top: 4px; font-weight: 700; }
+.guess-tag.correct { color: var(--emerald); }
+.guess-tag.wrong { color: var(--crimson); }
 
 .highlight { display: flex; align-items: center; gap: 8px; font-size: 11.5px; padding: 6px 0; border-top: 1px dashed var(--border); }
 .highlight-tag { color: var(--muted); text-transform: uppercase; letter-spacing: .5px; font-size: 10px; white-space: nowrap; }
@@ -225,16 +240,16 @@ button { font-family: var(--font-u); cursor: pointer; }
 
 /* ─── Responsiv ────────────────────────────────────── */
 @media (max-width: 980px) {
-  .game-layout { flex-direction: column; padding: 14px; }
-  .side-panel { max-width: none; }
   .report-voices { grid-template-columns: 1fr; }
   .title-rules { grid-template-columns: 1fr; }
 }
 @media (max-width: 560px) {
-  .title-card { padding: 28px 20px; }
+  .title-card, .intro-card { padding: 28px 20px; }
   .title-name { font-size: 32px; }
   .hud-bar { flex-wrap: wrap; gap: 10px; }
   .hud-meters { gap: 10px; flex-wrap: wrap; }
   .meter-track { width: 50px; }
   .epithet-title { font-size: 26px; }
+  .encounter-card, .reflection-card { padding: 18px; }
+  .quiz-options { grid-template-columns: 1fr; }
 }

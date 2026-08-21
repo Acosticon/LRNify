@@ -1,15 +1,19 @@
-// main.js – app-kontroller: skjermbytte, wiring, lagring/gjenoppta.
+// main.js – app-kontroller for kampanjeflyten:
+// tittel → (kapittelintro → møte → refleksjon) × 6 → sluttrapport.
 
 import {
-  createInitialState, setStance, isRoundReady, isGameOver, resolveRound,
-  saveGame, loadGame, clearSave, TOTAL_ROUNDS, escapeHtml as esc,
+  createInitialState, getCurrentNation, isCampaignComplete, isEncounterComplete,
+  resolveEncounterRound, advanceToNextNation, getStrategyGuessOptions, recordGuess, isGuessCorrect,
+  getHighlights, saveGame, loadGame, clearSave,
+  ROUNDS_PER_ENCOUNTER, TOTAL_ENCOUNTERS, STRATEGY_THEORY,
+  escapeHtml as esc,
 } from './game.js';
-import { NATIONS, NATION_BY_ID } from './nations.js';
-import { createMapSVG, setupMapListeners } from './map.js';
-import { generateReport, renderReport } from './report.js';
+import { createProgressStrip } from './map.js';
+import { generateReport, renderReport, renderSparkline } from './report.js';
 
 let state = null;
-let selectedNationId = null;
+let awaitingChoice = true; // encounter-skjerm: true = vis valgknapper, false = vis utfall + "neste"
+let currentGuess = null; // reflection-skjerm: valgt strategi-id før bekreftet
 
 const $ = sel => document.querySelector(sel);
 const scoreColor = v => (v >= 25 ? '#3E8E7E' : v <= -25 ? '#C9524B' : '#C9A227');
@@ -22,26 +26,27 @@ function showScreen(id) {
 // ─── Init ───────────────────────────────────────────────
 function init() {
   const saved = loadGame();
-  if (saved && saved.round <= TOTAL_ROUNDS && saved.round > 1) {
+  if (saved && !isCampaignComplete(saved)) {
     $('#resume-banner').hidden = false;
-    $('#resume-round').textContent = saved.round;
     $('#btn-resume').addEventListener('click', () => {
       state = saved;
-      selectedNationId = null;
-      startGameScreen();
+      routeFromState();
     });
   }
 
   $('#btn-start-game').addEventListener('click', startNewGame);
   $('#player-name-input').addEventListener('keydown', e => { if (e.key === 'Enter') startNewGame(); });
-  $('#btn-send-round').addEventListener('click', sendRound);
-  $('#btn-telegram-continue').addEventListener('click', continueAfterTelegram);
+  $('#btn-start-encounter').addEventListener('click', () => {
+    showScreen('#screen-encounter');
+    awaitingChoice = true;
+    renderEncounterScreen();
+  });
+  $('#reflection-continue').addEventListener('click', goToNextNation);
 
   document.body.addEventListener('click', e => {
     if (e.target.id === 'btn-restart') {
       clearSave();
       state = null;
-      selectedNationId = null;
       $('#resume-banner').hidden = true;
       showScreen('#screen-title');
     }
@@ -52,24 +57,100 @@ function init() {
 function startNewGame() {
   const name = $('#player-name-input').value.trim();
   state = createInitialState(name);
-  selectedNationId = null;
   saveGame(state);
-  startGameScreen();
+  showIntroScreen();
 }
 
-function startGameScreen() {
-  showScreen('#screen-game');
-  renderGameScreen();
+// Ruter til riktig skjerm basert på lagret/gjeldende tilstand (brukes ved gjenoppta).
+function routeFromState() {
+  if (isCampaignComplete(state)) { goToReport(); return; }
+  if (isEncounterComplete(state)) { showReflectionScreen(); return; }
+  showScreen('#screen-encounter');
+  awaitingChoice = true;
+  renderEncounterScreen();
 }
 
-// ─── Spillskjerm ────────────────────────────────────────
-function renderGameScreen() {
-  $('#hud-round').textContent = `Runde ${state.round} / ${TOTAL_ROUNDS}`;
+// ─── Kapittelintro ──────────────────────────────────────
+function showIntroScreen() {
+  const nation = getCurrentNation(state);
+  showScreen('#screen-intro');
+  $('#intro-progress').innerHTML = createProgressStrip(state);
+  $('#intro-chapter-label').textContent = `Møte ${state.campaignIndex + 1} av ${TOTAL_ENCOUNTERS}`;
+  $('#intro-emblem').textContent = nation.emblem;
+  $('#intro-name').textContent = nation.name;
+  $('#intro-leader').textContent = nation.leader;
+  $('#intro-tagline').textContent = nation.tagline;
+}
+
+// ─── Møteskjerm ─────────────────────────────────────────
+function renderEncounterScreen() {
+  const nation = getCurrentNation(state);
+  const rel = state.relations[nation.id];
+
+  $('#encounter-progress').innerHTML = createProgressStrip(state);
+  $('#hud-round').textContent = `Runde ${state.roundInEncounter} / ${ROUNDS_PER_ENCOUNTER}`;
   renderMeters();
-  $('#map-wrap').innerHTML = createMapSVG(state, { selectedNationId });
-  setupMapListeners($('#map-wrap'), onNationClick);
-  renderPanel();
-  renderSendButton();
+
+  $('#encounter-nation-header').innerHTML = `
+    <span class="panel-emblem">${nation.emblem}</span>
+    <div>
+      <p class="panel-name">${esc(nation.name)}</p>
+      <p class="panel-leader">${esc(nation.leader)}</p>
+    </div>`;
+  $('#encounter-tagline').textContent = nation.tagline;
+  $('#encounter-status').innerHTML = `
+    <span>Forhold: <strong style="color:${scoreColor(rel.score)}">${rel.score}</strong></span>
+    ${rel.allianceActive ? '<span class="voice-tag gold">Allianse</span>' : ''}
+    ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}`;
+
+  renderActionArea();
+}
+
+function renderActionArea() {
+  const area = $('#encounter-action-area');
+  if (awaitingChoice) {
+    area.innerHTML = `
+      <div class="panel-choice">
+        <button class="choice-btn coop" data-move="C">🤝 Samarbeid</button>
+        <button class="choice-btn def" data-move="D">⚔️ Svik</button>
+      </div>`;
+    area.querySelectorAll('.choice-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleChoice(btn.dataset.move));
+    });
+  } else {
+    const ev = state.lastRoundEvent;
+    const nation = getCurrentNation(state);
+    const quoteArr = ev.nationMove === 'C' ? nation.quotes.cooperate : nation.quotes.defect;
+    const quote = quoteArr[Math.floor(Math.random() * quoteArr.length)];
+    const special = [];
+    if (ev.allianceFormed) special.push(`<p class="telegram-special gold">🕊️ Allianse dannet! ${esc(nation.quotes.allianceFormed)}</p>`);
+    if (ev.allianceBroken) special.push(`<p class="telegram-special red">💔 Alliansen er brutt. ${esc(nation.quotes.allianceBroken)}</p>`);
+    if (ev.warStart) special.push(`<p class="telegram-special red">⚔️ Konflikt utbrutt. ${esc(nation.quotes.warStart)}</p>`);
+    if (ev.peaceRestored) special.push(`<p class="telegram-special gold">🕊️ Fred gjenopprettet. ${esc(nation.quotes.peaceRestored)}</p>`);
+
+    const encounterDone = isEncounterComplete(state);
+    area.innerHTML = `
+      <div class="round-reveal">
+        <p class="round-reveal-title">Du ${ev.playerMove === 'C' ? 'samarbeidet' : 'sviktet'}, de ${ev.nationMove === 'C' ? 'samarbeidet' : 'sviktet'}
+          <span class="telegram-delta" style="color:${ev.relDelta >= 0 ? '#3E8E7E' : '#C9524B'}">${ev.relDelta > 0 ? '+' : ''}${ev.relDelta}</span>
+        </p>
+        <p class="telegram-quote">«${esc(quote)}»</p>
+        ${special.join('')}
+      </div>
+      <button class="btn-primary btn-send" id="btn-next-round">${encounterDone ? 'Se oppsummering →' : 'Neste runde →'}</button>`;
+
+    $('#btn-next-round').addEventListener('click', () => {
+      if (encounterDone) showReflectionScreen();
+      else { awaitingChoice = true; renderEncounterScreen(); }
+    });
+  }
+}
+
+function handleChoice(move) {
+  state = resolveEncounterRound(state, move);
+  saveGame(state);
+  awaitingChoice = false;
+  renderEncounterScreen();
 }
 
 function renderMeters() {
@@ -86,107 +167,76 @@ function renderMeters() {
     </div>`).join('');
 }
 
-function onNationClick(id) {
-  selectedNationId = id;
-  $('#map-wrap').innerHTML = createMapSVG(state, { selectedNationId });
-  setupMapListeners($('#map-wrap'), onNationClick);
-  renderPanel();
-}
+// ─── Refleksjonsskjerm ──────────────────────────────────
+function showReflectionScreen() {
+  showScreen('#screen-reflection');
+  currentGuess = null;
+  const nation = getCurrentNation(state);
+  const rel = state.relations[nation.id];
+  const hl = getHighlights(state, nation.id);
 
-function renderPanel() {
-  const panel = $('#panel');
-  if (!selectedNationId) {
-    panel.innerHTML = `<div class="panel-placeholder"><p>Velg en nasjon på kartet for å bestemme din holdning denne runden.</p></div>`;
-    return;
-  }
-  const n = NATION_BY_ID[selectedNationId];
-  const rel = state.relations[n.id];
-  const current = state.pendingStances[n.id];
-  const lastRound = rel.history[rel.history.length - 1];
+  $('#reflection-progress').innerHTML = createProgressStrip(state);
 
-  panel.innerHTML = `
-    <div class="panel-nation" style="--voice-accent:${n.color}">
-      <div class="panel-nation-header">
-        <span class="panel-emblem">${n.emblem}</span>
-        <div>
-          <p class="panel-name">${esc(n.name)}</p>
-          <p class="panel-leader">${esc(n.leader)}</p>
-        </div>
-      </div>
-      <p class="panel-tagline">${esc(n.tagline)}</p>
-      <div class="panel-status">
-        <span>Forhold: <strong style="color:${scoreColor(rel.score)}">${rel.score}</strong></span>
+  const hlRow = (item, kind) => item ? `
+    <div class="highlight ${kind}">
+      <span class="highlight-tag">${kind === 'win' ? 'Beste runde' : 'Verste runde'}</span>
+      <span class="highlight-text">Runde ${item.round}: ${item.outcome}</span>
+      <span class="highlight-delta">${item.relDelta > 0 ? '+' : ''}${item.relDelta}</span>
+    </div>` : '';
+
+  $('#reflection-summary').innerHTML = `
+    <div class="voice-card-header">
+      <span class="voice-icon">${nation.emblem}</span>
+      <span class="voice-name">${esc(nation.leader)}<span class="voice-sub">${esc(nation.name)}</span></span>
+      <span class="voice-score" style="color:${scoreColor(rel.score)}">
+        ${rel.score}
         ${rel.allianceActive ? '<span class="voice-tag gold">Allianse</span>' : ''}
         ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}
-      </div>
-      <p class="panel-lastround">${lastRound
-        ? `Forrige runde: du ${lastRound.player === 'C' ? 'samarbeidet' : 'sviktet'}, de ${lastRound.nation === 'C' ? 'samarbeidet' : 'sviktet'}.`
-        : 'Dere har ingen felles historie ennå.'}</p>
-      <div class="panel-choice">
-        <button class="choice-btn coop ${current === 'C' ? 'active' : ''}" data-move="C">🤝 Samarbeid</button>
-        <button class="choice-btn def ${current === 'D' ? 'active' : ''}" data-move="D">⚔️ Svik</button>
-      </div>
-    </div>`;
+      </span>
+    </div>
+    ${renderSparkline(rel.scoreHistory, nation.color)}
+    ${hlRow(hl.win, 'win')}
+    ${hlRow(hl.loss, 'loss')}`;
 
-  panel.querySelectorAll('.choice-btn').forEach(btn => {
+  renderQuiz(nation);
+}
+
+function renderQuiz(nation) {
+  const options = getStrategyGuessOptions();
+  $('#reflection-question').textContent = `Hvilken strategi tror du ${nation.name} spilte?`;
+  $('#reflection-options').innerHTML = options.map(o => `
+    <button class="quiz-option" data-id="${o.id}">${esc(o.name)}</button>`).join('');
+  $('#reflection-feedback').innerHTML = '';
+  $('#reflection-continue').disabled = true;
+  $('#reflection-continue').textContent = state.campaignIndex + 1 >= TOTAL_ENCOUNTERS ? 'Se sluttrapport →' : 'Neste motstander →';
+
+  $('#reflection-options').querySelectorAll('.quiz-option').forEach(btn => {
     btn.addEventListener('click', () => {
-      state = setStance(state, n.id, btn.dataset.move);
+      if (currentGuess) return; // allerede svart
+      currentGuess = btn.dataset.id;
+      state = recordGuess(state, nation.id, currentGuess);
       saveGame(state);
-      renderGameScreen();
+
+      const correct = isGuessCorrect(nation.id, currentGuess);
+      $('#reflection-options').querySelectorAll('.quiz-option').forEach(b => {
+        b.disabled = true;
+        if (b.dataset.id === nation.strategy) b.classList.add('correct');
+        else if (b.dataset.id === currentGuess) b.classList.add('wrong');
+      });
+      $('#reflection-feedback').innerHTML = `
+        <p class="quiz-feedback ${correct ? 'correct' : 'wrong'}">
+          ${correct ? '✓ Riktig!' : '✗ Ikke helt.'} ${esc(nation.name)} spilte <strong>${esc(STRATEGY_THEORY[nation.strategy].name)}</strong> – ${esc(STRATEGY_THEORY[nation.strategy].desc)}
+        </p>`;
+      $('#reflection-continue').disabled = false;
     });
   });
 }
 
-function renderSendButton() {
-  const ready = isRoundReady(state);
-  const count = NATIONS.filter(n => state.pendingStances[n.id]).length;
-  const btn = $('#btn-send-round');
-  btn.disabled = !ready;
-  btn.textContent = ready ? 'Send diplomatiske signaler' : `Velg holdning (${count}/${NATIONS.length})`;
-}
-
-// ─── Runde-oppgjør ──────────────────────────────────────
-function sendRound() {
-  if (!isRoundReady(state)) return;
-  const roundPlayed = state.round;
-  state = resolveRound(state);
+function goToNextNation() {
+  state = advanceToNextNation(state);
   saveGame(state);
-  renderTelegram(roundPlayed, state.lastRoundEvents);
-  selectedNationId = null;
-}
-
-function renderTelegram(roundPlayed, events) {
-  const rows = events.map(ev => {
-    const n = NATION_BY_ID[ev.nationId];
-    const quoteArr = ev.nationMove === 'C' ? n.quotes.cooperate : n.quotes.defect;
-    const quote = quoteArr[Math.floor(Math.random() * quoteArr.length)];
-    const special = [];
-    if (ev.allianceFormed) special.push(`<p class="telegram-special gold">🕊️ Allianse dannet! ${esc(n.quotes.allianceFormed)}</p>`);
-    if (ev.allianceBroken) special.push(`<p class="telegram-special red">💔 Alliansen er brutt. ${esc(n.quotes.allianceBroken)}</p>`);
-    if (ev.warStart) special.push(`<p class="telegram-special red">⚔️ Konflikt utbrutt. ${esc(n.quotes.warStart)}</p>`);
-    if (ev.peaceRestored) special.push(`<p class="telegram-special gold">🕊️ Fred gjenopprettet. ${esc(n.quotes.peaceRestored)}</p>`);
-
-    return `
-      <div class="telegram-row" style="--voice-accent:${n.color}">
-        <span class="telegram-emblem">${n.emblem}</span>
-        <div class="telegram-body">
-          <p class="telegram-title">${esc(n.name)} — du ${ev.playerMove === 'C' ? 'samarbeidet' : 'sviktet'}, de ${ev.nationMove === 'C' ? 'samarbeidet' : 'sviktet'}</p>
-          <p class="telegram-quote">«${esc(quote)}»</p>
-          ${special.join('')}
-        </div>
-        <span class="telegram-delta" style="color:${ev.relDelta >= 0 ? '#3E8E7E' : '#C9524B'}">${ev.relDelta > 0 ? '+' : ''}${ev.relDelta}</span>
-      </div>`;
-  }).join('');
-
-  $('#telegram-round').textContent = `Runde ${roundPlayed}`;
-  $('#telegram-rows').innerHTML = rows;
-  $('#telegram-overlay').classList.add('active');
-}
-
-function continueAfterTelegram() {
-  $('#telegram-overlay').classList.remove('active');
-  if (isGameOver(state)) goToReport();
-  else renderGameScreen();
+  if (isCampaignComplete(state)) goToReport();
+  else showIntroScreen();
 }
 
 // ─── Rapport ────────────────────────────────────────────

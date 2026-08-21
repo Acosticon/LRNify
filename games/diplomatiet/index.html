@@ -8,15 +8,15 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LRNify">
 <meta property="og:title" content="Diplomatiet – LRNify">
-<meta property="og:description" content="Led en nasjon gjennom åtte runder med diplomati mot seks AI-styrte naboland – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
+<meta property="og:description" content="Led en nasjon gjennom seks møter med diplomati, ett naboland om gangen – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
 <meta property="og:image" content="https://lrnify.no/media/cards/diplomatiet.png">
 <meta property="og:url" content="https://lrnify.no/games/diplomatiet/index.html">
 <meta property="og:locale" content="nb_NO">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Diplomatiet – LRNify">
-<meta name="twitter:description" content="Led en nasjon gjennom åtte runder med diplomati mot seks AI-styrte naboland – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
+<meta name="twitter:description" content="Led en nasjon gjennom seks møter med diplomati, ett naboland om gangen – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
 <meta name="twitter:image" content="https://lrnify.no/media/cards/diplomatiet.png">
-<meta name="description" content="Led en nasjon gjennom åtte runder med diplomati mot seks AI-styrte naboland – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
+<meta name="description" content="Led en nasjon gjennom seks møter med diplomati, ett naboland om gangen – hver med sin egen spillteori-strategi. Fangens dilemma i praksis.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -29,7 +29,7 @@
   <div class="title-card">
     <p class="title-eyebrow">Et spillteori-spill fra LRNify</p>
     <h1 class="title-name">Diplomatiet</h1>
-    <p class="title-tagline">Du leder en nasjon gjennom åtte runder med diplomati. Seks naboland venter – og hver av dem husker nøyaktig hva du gjorde sist.</p>
+    <p class="title-tagline">Du leder en nasjon gjennom seks møter med diplomati, ett naboland om gangen. Hver av dem husker nøyaktig hva du gjorde sist – og etter hvert møte stopper vi opp og ser hva som skjedde.</p>
 
     <div class="title-rules">
       <div class="rule-card">
@@ -42,12 +42,12 @@
       </div>
       <div class="rule-card">
         <span class="rule-icon">🎓</span>
-        <p>Dette er <strong>fangens dilemma</strong> i praksis – den mest kjente modellen i spillteorien, spilt mot seks ulike strategier.</p>
+        <p>Dette er <strong>fangens dilemma</strong> i praksis – den mest kjente modellen i spillteorien, spilt mot seks ulike strategier, én om gangen.</p>
       </div>
     </div>
 
     <div id="resume-banner" class="resume-banner" hidden>
-      <p>Du har et pågående parti (runde <span id="resume-round"></span> av 8).</p>
+      <p>Du har et pågående parti.</p>
       <button id="btn-resume" class="btn-secondary" type="button">Fortsett partiet</button>
     </div>
 
@@ -59,31 +59,54 @@
   </div>
 </div>
 
-<!-- ─── Spillskjerm ──────────────────────────────────── -->
-<div class="screen" id="screen-game">
-  <div class="hud-bar">
-    <span class="hud-title">Diplomatiet</span>
-    <span class="hud-round" id="hud-round">Runde 1 / 8</span>
-    <div class="hud-spacer"></div>
-    <div id="meters" class="hud-meters"></div>
-  </div>
-  <div class="game-layout">
-    <div class="map-panel">
-      <div id="map-wrap"></div>
+<!-- ─── Kapittelintro (før hvert møte) ───────────────── -->
+<div class="screen" id="screen-intro">
+  <div class="intro-card">
+    <div id="intro-progress" class="progress-wrap"></div>
+    <p class="intro-chapter" id="intro-chapter-label">Møte 1 av 6</p>
+    <div class="intro-nation">
+      <span class="intro-emblem" id="intro-emblem"></span>
+      <h2 class="intro-name" id="intro-name"></h2>
+      <p class="intro-leader" id="intro-leader"></p>
+      <p class="intro-tagline" id="intro-tagline"></p>
     </div>
-    <aside class="side-panel">
-      <div id="panel"></div>
-      <button id="btn-send-round" class="btn-primary btn-send" type="button" disabled>Velg holdning (0/6)</button>
-    </aside>
+    <button id="btn-start-encounter" class="btn-primary" type="button">Start forhandlinger</button>
   </div>
 </div>
 
-<!-- ─── Telegram-overlegg (rundeoppgjør) ─────────────── -->
-<div class="overlay" id="telegram-overlay">
-  <div class="telegram-paper">
-    <p class="telegram-masthead">Diplomatisk depesje · <span id="telegram-round"></span></p>
-    <div id="telegram-rows"></div>
-    <button id="btn-telegram-continue" class="btn-primary" type="button">Fortsett</button>
+<!-- ─── Møteskjerm (ett-mot-én) ───────────────────────── -->
+<div class="screen" id="screen-encounter">
+  <div class="hud-bar">
+    <span class="hud-title">Diplomatiet</span>
+    <span class="hud-round" id="hud-round">Runde 1 / 5</span>
+    <div class="hud-spacer"></div>
+    <div id="meters" class="hud-meters"></div>
+  </div>
+  <div id="encounter-progress" class="progress-wrap"></div>
+  <div class="encounter-layout">
+    <div class="encounter-card">
+      <div class="panel-nation-header" id="encounter-nation-header"></div>
+      <p class="panel-tagline" id="encounter-tagline"></p>
+      <div class="panel-status" id="encounter-status"></div>
+      <div id="encounter-action-area" class="encounter-action-area"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Refleksjonsskjerm (etter hvert møte) ─────────── -->
+<div class="screen" id="screen-reflection">
+  <div id="reflection-progress" class="progress-wrap"></div>
+  <div class="encounter-layout">
+    <div class="reflection-card">
+      <p class="report-section-title">Slik gikk møtet</p>
+      <div id="reflection-summary" class="voice-card reflection-voice-card"></div>
+
+      <p class="report-section-title quiz-title" id="reflection-question">Hvilken strategi tror du de spilte?</p>
+      <div id="reflection-options" class="quiz-options"></div>
+      <div id="reflection-feedback"></div>
+
+      <button id="reflection-continue" class="btn-primary btn-send" type="button" disabled>Neste motstander →</button>
+    </div>
   </div>
 </div>
 
