@@ -98,6 +98,26 @@ export function advanceToNextNation(state) {
   return s;
 }
 
+// ─── Duell: to strategier mot hverandre (Laboratoriet) ──
+// Ren simulering, ingen spillertilstand involvert – brukes til å se to
+// AI-styrte strategier møtes over N runder med samme poengmatrise.
+export function simulateDuel(strategyIdA, strategyIdB, rounds) {
+  const log = [];
+  let scoreA = 0, scoreB = 0;
+  for (let i = 0; i < rounds; i++) {
+    // Strategifunksjonene forventer { nation: mitt forrige trekk, player: motstanderens }.
+    const historyForA = log.map(r => ({ player: r.moveB, nation: r.moveA }));
+    const historyForB = log.map(r => ({ player: r.moveA, nation: r.moveB }));
+    const moveA = STRATEGIES[strategyIdA](historyForA);
+    const moveB = STRATEGIES[strategyIdB](historyForB);
+    const payoff = PAYOFFS[moveA + moveB];
+    scoreA += payoff.me;
+    scoreB += payoff.them;
+    log.push({ round: i + 1, moveA, moveB, pointsA: payoff.me, pointsB: payoff.them });
+  }
+  return { log, scoreA, scoreB };
+}
+
 // ─── Refleksjon: gjett strategien ───────────────────────
 const STRATEGY_KEYS = Object.keys(STRATEGY_THEORY);
 
