@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Arealarkitekten — LRNify</title>
+<meta name="description" content="Bygg figurer på et rutenett under areal- og omkretskrav, og oppdag at samme areal kan gi svært ulik omkrets.">
+<link rel="canonical" href="https://lrnify.no/games/arealarkitekten/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Arealarkitekten – LRNify">
+<meta property="og:description" content="Bygg figurer på et rutenett under areal- og omkretskrav, og oppdag at samme areal kan gi svært ulik omkrets.">
+<meta property="og:image" content="https://lrnify.no/media/og/arealarkitekten.png">
+<meta property="og:url" content="https://lrnify.no/games/arealarkitekten/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Arealarkitekten – LRNify">
+<meta name="twitter:description" content="Bygg figurer på et rutenett under areal- og omkretskrav, og oppdag at samme areal kan gi svært ulik omkrets.">
+<meta name="twitter:image" content="https://lrnify.no/media/og/arealarkitekten.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #241b12;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+    --gridline:#d8ccb0;
+    --teal: #0d9488;
+    --teal-dark: #0f766e;
+    --margin-bg: #ece3cf;
+    --hole-warn: #dc2626;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SKJERMER ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .screen-hero { padding: 4px 0 4px; }
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 6px; }
+  .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.9rem,7vw,3rem); }
+  .screen-hero p  {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.9rem,2.4vw,1.05rem); margin-top: 8px; max-width: 440px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; width: 100%;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 12px; }
+
+  button { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+  .btn-primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .btn-back {
+    font-weight: 800; color: var(--muted); text-decoration: none; font-size: .9rem;
+    padding: 4px 0; background: none; border: none; box-shadow: none; cursor: pointer;
+  }
+  .btn-back:hover { color: var(--ink); }
+
+  .btn-secondary {
+    font-weight: 900; background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 11px 16px; font-size: .92rem; flex: 1;
+    transition: transform .1s, box-shadow .1s, background .1s;
+  }
+  .btn-secondary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); background: #fef3c7; }
+  .btn-secondary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .btn-secondary:disabled { opacity: .4; cursor: not-allowed; }
+  .btn-secondary:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+  /* ══ EKSEMPEL PÅ STARTSKJERM ══ */
+  .example-body { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .example-grid { display: grid; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(2, 34px); gap: 0; }
+  .example-grid .ex-cell { background: var(--yellow); border: 3px solid var(--ink); }
+  .example-stats { display: flex; gap: 18px; font-weight: 900; font-family: 'Chewy', cursive; font-size: 1.05rem; }
+  .example-stats span { display: block; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .example-list { text-align: left; font-weight: 700; font-size: .88rem; color: var(--muted); margin-top: 4px; padding-left: 18px; }
+  .example-list li { margin-bottom: 2px; }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 16px 120px; }
+  .game-wrap { max-width: 620px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; align-items: center; animation: fadeIn .3s ease; padding-top: 6px; }
+
+  .hud { width: 100%; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .hud-label { font-weight: 900; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .hud-score { font-weight: 900; font-family: 'Chewy', cursive; font-size: 1.05rem; color: var(--ink); background: var(--yellow); border: 3px solid var(--ink); padding: 3px 10px; box-shadow: 0 3px 0 var(--ink); }
+
+  .task-card {
+    width: 100%; background: var(--card); border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px 22px; text-align: center;
+  }
+  .task-req { display: flex; flex-direction: column; align-items: center; }
+  .task-req .req-label { font-weight: 800; font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .task-req .req-value { font-family: 'Chewy', cursive; font-size: 1.4rem; }
+  .task-extra { width: 100%; font-weight: 800; font-size: .8rem; color: var(--teal-dark); border-top: 2px dashed var(--gridline); padding-top: 8px; margin-top: 2px; }
+
+  /* ══ BRETTET ══ */
+  .board-wrap { width: 100%; max-width: 480px; margin: 0 auto; }
+  .board {
+    position: relative; display: grid; width: 100%; aspect-ratio: 1 / 1;
+    background-color: var(--cream);
+    background-image:
+      linear-gradient(to right, var(--gridline) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--gridline) 1px, transparent 1px);
+    background-position: -1px -1px;
+    outline: 2px solid var(--gridline);
+  }
+  .board-row { display: contents; }
+  .cell {
+    background: var(--cream); background-clip: padding-box;
+    border-style: solid; border-width: 3px; border-color: transparent; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    min-width: 0; min-height: 0;
+    transition: background-color .1s ease;
+  }
+  .cell.filled { background: var(--yellow); }
+  .cell.filled:hover { background: #fde047; }
+  .cell:not(.filled):not(.margin):hover { background: #fff3d6; }
+  .cell.margin { background: var(--margin-bg); cursor: default; }
+  .cell.margin.filled { background: var(--margin-bg); }
+  .cell:focus-visible { outline: 3px solid var(--teal); outline-offset: -3px; z-index: 2; }
+  @keyframes cellPop { 0% { transform: scale(.7); } 100% { transform: scale(1); } }
+  .cell.filled:not(.no-anim) { animation: cellPop .12s ease; }
+  .cell.solved-flash { animation: solvedFlash .5s ease; }
+  @keyframes solvedFlash { 0%,100% { background: var(--yellow); } 50% { background: var(--green); } }
+
+  .peri-num {
+    position: absolute; transform: translate(-50%, -50%); z-index: 3;
+    background: var(--ink); color: #fff; font-family: 'Chewy', cursive;
+    font-size: clamp(.6rem, 2.2vw, .85rem); line-height: 1;
+    width: clamp(16px, 4.4vw, 22px); height: clamp(16px, 4.4vw, 22px);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--yellow);
+    opacity: 0; animation: periIn .18s ease forwards;
+  }
+  @keyframes periIn { from { opacity: 0; transform: translate(-50%,-50%) scale(.3); } to { opacity: 1; transform: translate(-50%,-50%) scale(1); } }
+
+  /* ══ STATUSLINJE ══ */
+  .status-line { width: 100%; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .status-item {
+    flex: 1; min-width: 140px; background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 9px 12px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  }
+  .status-item .status-label { font-weight: 800; font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .status-item .status-nums { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+  .status-item .status-check { font-weight: 900; font-size: .74rem; color: var(--green); min-height: 1em; }
+  .status-item.match { border-color: var(--green); }
+  .status-item.no-target .status-nums { font-size: 1.1rem; color: var(--muted); }
+
+  /* ══ KONTROLLER ══ */
+  .controls-wrap {
+    width: 100%; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px;
+    padding: 10px 0 6px;
+  }
+  .controls-row { display: flex; gap: 10px; width: 100%; }
+  #btnCount { width: 100%; }
+  #btnDeliver {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 14px 20px; font-size: 1.05rem; width: 100%;
+    transition: transform .12s, box-shadow .12s;
+  }
+  #btnDeliver:hover { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  #btnDeliver:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+  #btnDeliver:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  #btnDeliver:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+
+  /* ══ TILBAKEMELDING ══ */
+  .feedback-panel {
+    width: 100%; max-width: 480px; margin: 0 auto; background: var(--card);
+    border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 16px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    text-align: center;
+  }
+  .feedback-panel[hidden] { display: none; }
+  .feedback-panel.success { background: #f0fdf4; }
+  .feedback-title { font-family: 'Chewy', cursive; font-size: 1.25rem; }
+  .feedback-title.err { color: #b91c1c; }
+  .feedback-title.ok { color: var(--green); }
+  .feedback-list { text-align: left; font-weight: 700; font-size: .88rem; color: var(--ink); padding-left: 20px; }
+  .feedback-list li { margin-bottom: 4px; }
+  .feedback-note { font-weight: 700; font-size: .88rem; color: var(--muted); }
+  .feedback-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; }
+  .feedback-btns .btn-primary, .feedback-btns .btn-secondary { max-width: 220px; }
+
+  /* ══ SLUTTSKJERM ══ */
+  .result-card { display: flex; flex-direction: column; gap: 10px; }
+  .result-row { display: flex; justify-content: space-between; align-items: baseline; font-weight: 800; font-size: .95rem; gap: 12px; }
+  .result-row strong { font-family: 'Chewy', cursive; font-size: 1.3rem; }
+
+  .compare-wrap { display: flex; gap: 22px; justify-content: center; align-items: flex-end; flex-wrap: wrap; margin-top: 6px; }
+  .compare-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .compare-shape { background: var(--yellow); border: 3px solid var(--ink); }
+  .compare-caption { font-weight: 800; font-size: .8rem; }
+
+  footer {
+    text-align: center; padding: 24px; color: var(--muted);
+    font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(43,33,24,.12);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, .cell, .cell.filled, .peri-num, .status-item, .feedback-panel, .btn-primary, .btn-secondary {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .status-item { min-width: 120px; padding: 7px 8px; }
+    .task-card { padding: 10px 12px; gap: 8px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">📐</div>
+      <h1>Arealarkitekten</h1>
+      <p>Bygg figuren slik at både areal og omkrets stemmer.</p>
+    </div>
+    <div class="card">
+      <h2>Slik spiller du</h2>
+      <div class="example-body">
+        <div class="example-grid" aria-hidden="true">
+          <div class="ex-cell"></div><div class="ex-cell"></div><div class="ex-cell"></div>
+          <div class="ex-cell"></div><div class="ex-cell"></div><div class="ex-cell"></div>
+        </div>
+        <div class="example-stats">
+          <div>Areal = 6<span>flateenheter</span></div>
+          <div>Omkrets = 10<span>ytre kanter</span></div>
+        </div>
+        <ul class="example-list">
+          <li>6 ruter inni figuren</li>
+          <li>10 ytre kanter rundt</li>
+        </ul>
+      </div>
+      <p style="font-weight:700; font-size:.9rem; color:var(--muted); margin-top:14px;">
+        8 byggeoppdrag. Trykk på en rute for å fylle den, trykk igjen for å tømme den. Areal og omkrets regnes ut med det samme.
+      </p>
+    </div>
+    <button class="btn-primary" id="btn-start">Start</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+
+    <div class="hud">
+      <span class="hud-label" id="hudTaskLabel">Oppdrag 1 av 8</span>
+      <span class="hud-score" id="hudScore">0 / 12 poeng</span>
+    </div>
+
+    <div class="task-card" id="taskCard">
+      <div class="task-req">
+        <span class="req-label">Areal</span>
+        <span class="req-value" id="taskAreaReq">6</span>
+      </div>
+      <div class="task-req">
+        <span class="req-label">Omkrets</span>
+        <span class="req-value" id="taskPerimeterReq">–</span>
+      </div>
+      <div class="task-extra" id="taskExtra" hidden></div>
+    </div>
+
+    <div class="board-wrap">
+      <div class="board" id="board" role="grid" aria-label="Byggerute"></div>
+    </div>
+
+    <div class="status-line" aria-live="polite" id="statusLine">
+      <div class="status-item" id="statusAreaBox">
+        <span class="status-label">Areal</span>
+        <span class="status-nums" id="statusAreaNums">0 / 6</span>
+        <span class="status-check" id="statusAreaCheck"></span>
+      </div>
+      <div class="status-item" id="statusPerimeterBox">
+        <span class="status-label">Omkrets</span>
+        <span class="status-nums" id="statusPerimeterNums">0 / 10</span>
+        <span class="status-check" id="statusPerimeterCheck"></span>
+      </div>
+    </div>
+
+    <div class="feedback-panel" id="feedbackPanel" hidden></div>
+
+    <div class="controls-wrap">
+      <div class="controls-row">
+        <button class="btn-secondary" id="btnCount" type="button">Tell omkrets</button>
+      </div>
+      <div class="controls-row">
+        <button class="btn-secondary" id="btnUndo" type="button" disabled>Angre</button>
+        <button class="btn-secondary" id="btnReset" type="button">Nullstill</button>
+      </div>
+      <div class="controls-row">
+        <button id="btnDeliver" type="button">Lever figur</button>
+      </div>
+    </div>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+    <div class="sr-only" id="srCount" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">📐🎉</div>
+      <h1>Alle oppdrag er ferdig!</h1>
+      <p>Her er resultatet ditt.</p>
+    </div>
+    <div class="card result-card">
+      <div class="result-row"><span>Oppdrag løst</span><strong id="endSolved">0 av 8</strong></div>
+      <div class="result-row"><span>Bonusfigurer funnet</span><strong id="endBonus">0 av 4</strong></div>
+      <div class="result-row"><span>Poeng</span><strong id="endPoints">0 av 12</strong></div>
+    </div>
+    <div class="card">
+      <h2>Samme areal, ulik omkrets</h2>
+      <div class="compare-wrap">
+        <div class="compare-item">
+          <div class="compare-shape" style="width:66px; height:44px;"></div>
+          <span class="compare-caption">Areal 6 · Omkrets 10</span>
+        </div>
+        <div class="compare-item">
+          <div class="compare-shape" style="width:132px; height:22px;"></div>
+          <span class="compare-caption">Areal 6 · Omkrets 14</span>
+        </div>
+      </div>
+      <p style="font-weight:700; font-size:.9rem; color:var(--muted); margin-top:14px;">
+        Areal forteller hvor mye plass figuren dekker. Omkrets forteller hvor lang kanten rundt den er.
+      </p>
+    </div>
+    <button class="btn-primary" id="btn-again">Bygg igjen</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ══════════════════ OPPGAVEDATA ══════════════════
+   Alle 8 oppdrag er faste (ikke tilfeldig generert) og verifisert med
+   P = 4n − 2a (n = antall ruter, a = antall delte kanter) — se
+   scratchpad/test-geom.js under utvikling. requiredHoles er antall hull
+   løsningen MÅ ha (0 for de fleste, 1 for oppdrag 7). extra:'row4' krever
+   minst én rad med 4 sammenhengende fylte ruter (oppdrag 6). margin:true
+   gir en ubyggbar ytre ramme slik at et hull aldri kan forveksles med et
+   hakk mot brettkanten (oppdrag 7). */
+const LEVELS = [
+  { id:1, area:6,  perimeter:null, boardSize:6, margin:false, bonus:false, requiredHoles:0, extra:null },
+  { id:2, area:6,  perimeter:10,   boardSize:6, margin:false, bonus:false, requiredHoles:0, extra:null },
+  { id:3, area:6,  perimeter:14,   boardSize:7, margin:false, bonus:true,  requiredHoles:0, extra:null },
+  { id:4, area:8,  perimeter:14,   boardSize:7, margin:false, bonus:true,  requiredHoles:0, extra:null },
+  { id:5, area:12, perimeter:16,   boardSize:8, margin:false, bonus:true,  requiredHoles:0, extra:null },
+  { id:6, area:10, perimeter:16,   boardSize:7, margin:false, bonus:false, requiredHoles:0, extra:'row4' },
+  { id:7, area:12, perimeter:20,   boardSize:7, margin:true,  bonus:false, requiredHoles:1, extra:null },
+  { id:8, area:16, perimeter:24,   boardSize:8, margin:false, bonus:true,  requiredHoles:0, extra:null },
+];
+
+/* ══════════════════ GEOMETRIMOTOR ══════════════════ */
+function cellsFromBoard(board, N) {
+  const cells = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) if (board[r][c]) cells.push([r, c]);
+  return cells;
+}
+function isFilledAt(board, N, r, c) {
+  if (r < 0 || r >= N || c < 0 || c >= N) return false;
+  return !!board[r][c];
+}
+function computeArea(board, N) { return cellsFromBoard(board, N).length; }
+function computePerimeter(board, N) {
+  let p = 0;
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    if (!board[r][c]) continue;
+    let sides = 4;
+    if (isFilledAt(board, N, r - 1, c)) sides--;
+    if (isFilledAt(board, N, r + 1, c)) sides--;
+    if (isFilledAt(board, N, r, c - 1)) sides--;
+    if (isFilledAt(board, N, r, c + 1)) sides--;
+    p += sides;
+  }
+  return p;
+}
+function countComponents(cells) {
+  const set = new Set(cells.map(([r, c]) => r + ',' + c));
+  const visited = new Set();
+  let comps = 0;
+  for (const [r, c] of cells) {
+    const key = r + ',' + c;
+    if (visited.has(key)) continue;
+    comps++;
+    const stack = [[r, c]];
+    visited.add(key);
+    while (stack.length) {
+      const [cr, cc] = stack.pop();
+      for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+        const nr = cr + dr, nc = cc + dc, nk = nr + ',' + nc;
+        if (set.has(nk) && !visited.has(nk)) { visited.add(nk); stack.push([nr, nc]); }
+      }
+    }
+  }
+  return comps;
+}
+/* Hulldeteksjon: flood fill starter fra en tenkt ramme UTENFOR brettet
+   (padding på 1 rundt), ikke fra kantcellene. Alt tomrom som ikke nås av
+   denne flood fillen er et hull — inkludert i oppgaver med margrad, der
+   margradcellene alltid er tomme og dermed alltid del av "utsiden". */
+function countHoles(board, N) {
+  const P = N + 2;
+  const visited = Array.from({ length: P }, () => new Array(P).fill(false));
+  const queue = [[0, 0]];
+  visited[0][0] = true;
+  let qi = 0;
+  while (qi < queue.length) {
+    const [r, c] = queue[qi++];
+    for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+      const nr = r + dr, nc = c + dc;
+      if (nr < 0 || nr >= P || nc < 0 || nc >= P || visited[nr][nc]) continue;
+      const br = nr - 1, bc = nc - 1;
+      const filled = (br >= 0 && br < N && bc >= 0 && bc < N) ? !!board[br][bc] : false;
+      if (filled) continue;
+      visited[nr][nc] = true;
+      queue.push([nr, nc]);
+    }
+  }
+  const holeCells = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    if (!board[r][c] && !visited[r + 1][c + 1]) holeCells.push([r, c]);
+  }
+  return countComponents(holeCells);
+}
+function hasRow4(board, N) {
+  for (let r = 0; r < N; r++) {
+    let run = 0;
+    for (let c = 0; c < N; c++) {
+      if (board[r][c]) { run++; if (run >= 4) return true; } else run = 0;
+    }
+  }
+  return false;
+}
+
+/* ══════════════════ KANONISK FORM (bonus) ══════════════════
+   8 varianter (4 rotasjoner × speiling), normalisert til origo,
+   sortert, og den leksikografisk minste brukes som nøkkel. To figurer
+   er samme form hvis og bare hvis nøklene er like. */
+function canonicalKey(cells) {
+  const transforms = [
+    (r, c) => [r, c], (r, c) => [c, -r], (r, c) => [-r, -c], (r, c) => [-c, r],
+    (r, c) => [r, -c], (r, c) => [-c, -r], (r, c) => [-r, c], (r, c) => [c, r],
+  ];
+  let best = null;
+  for (const t of transforms) {
+    const pts = cells.map(([r, c]) => t(r, c));
+    const minR = Math.min(...pts.map(p => p[0]));
+    const minC = Math.min(...pts.map(p => p[1]));
+    const norm = pts.map(([r, c]) => [r - minR, c - minC]);
+    norm.sort((a, b) => a[0] - b[0] || a[1] - b[1]);
+    const key = norm.map(p => p.join(',')).join(';');
+    if (best === null || key < best) best = key;
+  }
+  return best;
+}
+
+/* ══════════════════ VALIDERING ══════════════════ */
+function validateDelivery(level, board, N) {
+  const cells = cellsFromBoard(board, N);
+  const area = cells.length;
+  const perimeter = computePerimeter(board, N);
+  const areaOk = area === level.area;
+  const perimeterOk = level.perimeter === null || perimeter === level.perimeter;
+  const connected = area === 0 ? true : countComponents(cells) === 1;
+  const holes = countHoles(board, N);
+  const holesOk = holes === level.requiredHoles;
+  const extraOk = level.extra === 'row4' ? hasRow4(board, N) : true;
+
+  const messages = [];
+  if (!connected) messages.push('Alle rutene må henge sammen side mot side.');
+  if (holes > level.requiredHoles) {
+    messages.push(level.requiredHoles === 0
+      ? 'Figuren har et hull. Denne oppgaven tillater ikke hull.'
+      : 'Figuren har mer enn ett hull. Denne oppgaven tillater nøyaktig ett hull.');
+  } else if (holes < level.requiredHoles) {
+    messages.push('Figuren mangler et hull. Denne oppgaven krever nøyaktig ett hull.');
+  }
+  if (level.extra === 'row4' && !extraOk) messages.push('Figuren mangler en rad med 4 sammenhengende ruter.');
+  if (!areaOk || !perimeterOk) messages.push('Areal og omkrets må stemme før du kan levere.');
+
+  const success = connected && holesOk && extraOk && areaOk && perimeterOk && area > 0;
+  return { success, messages, area, perimeter };
+}
+
+/* ══════════════════ SPILLTILSTAND ══════════════════ */
+let levelIndex = 0;
+let N = 0, marginActive = false;
+let board = [];
+let undoSnapshot = null;
+let baseScore = 0, bonusScore = 0;
+let solvedCount = 0, bonusCount = 0;
+let taskSolved = false;      // grunnpoeng registrert for gjeldende oppdrag
+let bonusPhase = false;      // eleven bygger på ny form for bonus
+let bonusEarned = false;
+let originalKey = null;
+let boardLocked = false;
+let periNumsVisible = false;
+
+function currentLevel() { return LEVELS[levelIndex]; }
+
+function makeEmptyBoard(size) {
+  return Array.from({ length: size }, () => new Array(size).fill(false));
+}
+function isMargin(r, c) {
+  return marginActive && (r === 0 || c === 0 || r === N - 1 || c === N - 1);
+}
+function firstBuildableCell() {
+  return marginActive ? { r: 1, c: 1 } : { r: 0, c: 0 };
+}
+function cloneBoard(b) { return b.map(row => row.slice()); }
+
+/* ══════════════════ RENDERING ══════════════════ */
+const boardEl = $('board');
+const srAnnounce = $('srAnnounce');
+const srCount = $('srCount');
+
+function announce(text) {
+  srAnnounce.textContent = '';
+  requestAnimationFrame(() => { srAnnounce.textContent = text; });
+}
+
+function buildBoardDOM() {
+  boardEl.innerHTML = '';
+  boardEl.style.gridTemplateColumns = 'repeat(' + N + ', 1fr)';
+  boardEl.style.gridTemplateRows = 'repeat(' + N + ', 1fr)';
+  boardEl.style.backgroundSize = (100 / N) + '% ' + (100 / N) + '%';
+  boardEl.setAttribute('aria-label', 'Byggerute, ' + N + ' ganger ' + N + ' ruter');
+
+  for (let r = 0; r < N; r++) {
+    const rowEl = document.createElement('div');
+    rowEl.className = 'board-row';
+    rowEl.setAttribute('role', 'row');
+    for (let c = 0; c < N; c++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'cell no-anim';
+      btn.setAttribute('role', 'gridcell');
+      btn.dataset.r = r; btn.dataset.c = c;
+      const first = firstBuildableCell();
+      btn.tabIndex = (r === first.r && c === first.c) ? 0 : -1;
+      if (isMargin(r, c)) {
+        btn.classList.add('margin');
+        btn.setAttribute('aria-label', 'Kant, rad ' + (r + 1) + ', kolonne ' + (c + 1) + '. Kan ikke bygges i.');
+      }
+      btn.addEventListener('click', () => onCellClick(r, c));
+      rowEl.appendChild(btn);
+    }
+    boardEl.appendChild(rowEl);
+  }
+  boardEl.addEventListener('keydown', onBoardKeydown);
+}
+
+function cellLabel(r, c, filled) {
+  return 'Rute rad ' + (r + 1) + ', kolonne ' + (c + 1) + ', ' + (filled ? 'fylt' : 'tom') + '.';
+}
+
+/* Figuren tegnes med tydelig ytterkant og uten indre streker mellom
+   naboruter: hver side av en fylt rute får en tykk svart kant bare når
+   naboen på den siden IKKE er fylt (inkludert utenfor brettet). Er begge
+   fylt forsvinner kanten mellom dem — det er hele det pedagogiske
+   poenget med visningen. */
+function renderBoard() {
+  clearPerimeterNumbers();
+  const cellEls = boardEl.querySelectorAll('.cell');
+  cellEls.forEach(el => {
+    const r = +el.dataset.r, c = +el.dataset.c;
+    const filled = !!board[r][c];
+    el.classList.toggle('filled', filled);
+    el.disabled = boardLocked || isMargin(r, c);
+    if (!isMargin(r, c)) el.setAttribute('aria-label', cellLabel(r, c, filled));
+
+    const edge = (dr, dc) => (filled !== isFilledAt(board, N, r + dr, c + dc)) ? 'var(--ink)' : 'transparent';
+    el.style.borderTopColor = edge(-1, 0);
+    el.style.borderRightColor = edge(0, 1);
+    el.style.borderBottomColor = edge(1, 0);
+    el.style.borderLeftColor = edge(0, -1);
+  });
+  $('btnUndo').disabled = boardLocked || !undoSnapshot;
+  $('btnReset').disabled = boardLocked;
+}
+
+function updateStatus() {
+  const level = currentLevel();
+  const area = computeArea(board, N);
+  const perimeter = computePerimeter(board, N);
+
+  const areaBox = $('statusAreaBox');
+  $('statusAreaNums').textContent = area + ' / ' + level.area;
+  const areaMatch = area === level.area;
+  areaBox.classList.toggle('match', areaMatch);
+  $('statusAreaCheck').textContent = areaMatch ? '✓ Riktig areal' : '';
+
+  const periBox = $('statusPerimeterBox');
+  if (level.perimeter === null) {
+    periBox.classList.add('no-target');
+    periBox.classList.remove('match');
+    $('statusPerimeterNums').textContent = String(perimeter);
+    $('statusPerimeterCheck').textContent = 'Ingen omkretskrav i dette oppdraget';
+  } else {
+    periBox.classList.remove('no-target');
+    $('statusPerimeterNums').textContent = perimeter + ' / ' + level.perimeter;
+    const periMatch = perimeter === level.perimeter;
+    periBox.classList.toggle('match', periMatch);
+    $('statusPerimeterCheck').textContent = periMatch ? '✓ Riktig omkrets' : '';
+  }
+
+  const periText = level.perimeter === null ? ('Omkrets ' + perimeter + ', ingen krav.') : ('Omkrets ' + perimeter + ' av ' + level.perimeter + '.');
+  announce('Areal ' + area + ' av ' + level.area + '. ' + periText);
+}
+
+/* ══════════════════ TASTATURNAVIGASJON (rullende tabindex) ══════════════════ */
+function onBoardKeydown(e) {
+  const key = e.key;
+  if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Home','End'].includes(key)) return;
+  const active = document.activeElement;
+  if (!active || !active.classList.contains('cell')) return;
+  e.preventDefault();
+  // Med margrad (oppdrag 7) er ytterste rad/kolonne ubyggbar og ikke
+  // fokuserbar (disabled) — tastaturnavigasjon skal derfor stoppe ved den
+  // byggbare sonens grense, ikke ved selve brettkanten.
+  const lo = marginActive ? 1 : 0;
+  const hi = marginActive ? N - 2 : N - 1;
+  let r = +active.dataset.r, c = +active.dataset.c;
+  if (key === 'ArrowUp') r = Math.max(lo, r - 1);
+  else if (key === 'ArrowDown') r = Math.min(hi, r + 1);
+  else if (key === 'ArrowLeft') c = Math.max(lo, c - 1);
+  else if (key === 'ArrowRight') c = Math.min(hi, c + 1);
+  else if (key === 'Home') { r = lo; c = lo; }
+  else if (key === 'End') { r = hi; c = hi; }
+  moveFocus(r, c);
+}
+function moveFocus(r, c) {
+  boardEl.querySelectorAll('.cell').forEach(el => { el.tabIndex = -1; });
+  const target = boardEl.querySelector('.cell[data-r="' + r + '"][data-c="' + c + '"]');
+  if (target) { target.tabIndex = 0; target.focus(); }
+}
+
+/* ══════════════════ BYGGING ══════════════════ */
+function onCellClick(r, c) {
+  if (boardLocked || isMargin(r, c)) return;
+  undoSnapshot = cloneBoard(board);
+  $('btnUndo').disabled = false;
+  board[r][c] = !board[r][c];
+  renderBoard();
+  updateStatus();
+  hideFeedback();
+}
+
+function undo() {
+  if (!undoSnapshot) return;
+  board = undoSnapshot;
+  undoSnapshot = null;
+  $('btnUndo').disabled = true;
+  renderBoard();
+  updateStatus();
+  hideFeedback();
+  announce('Angret siste endring.');
+}
+
+function resetBoard() {
+  undoSnapshot = cloneBoard(board);
+  $('btnUndo').disabled = false;
+  board = makeEmptyBoard(N);
+  renderBoard();
+  updateStatus();
+  hideFeedback();
+  announce('Brettet er nullstilt.');
+}
+
+/* ══════════════════ TELL OMKRETS ══════════════════ */
+function clearPerimeterNumbers() {
+  boardEl.querySelectorAll('.peri-num').forEach(el => el.remove());
+  periNumsVisible = false;
+}
+function toggleCountPerimeter() {
+  if (periNumsVisible) { clearPerimeterNumbers(); return; }
+  clearPerimeterNumbers();
+  const sides = [
+    { d: 'top',    dr: -1, dc: 0,  x: 0.5, y: 0 },
+    { d: 'right',  dr: 0,  dc: 1,  x: 1,   y: 0.5 },
+    { d: 'bottom', dr: 1,  dc: 0,  x: 0.5, y: 1 },
+    { d: 'left',   dr: 0,  dc: -1, x: 0,   y: 0.5 },
+  ];
+  let n = 0;
+  const markers = [];
+  for (let r = 0; r < N; r++) for (let c = 0; c < N; c++) {
+    if (!board[r][c]) continue;
+    for (const s of sides) {
+      if (isFilledAt(board, N, r + s.dr, c + s.dc)) continue;
+      n++;
+      markers.push({ n, left: ((c + s.x) / N) * 100, top: ((r + s.y) / N) * 100 });
+    }
+  }
+  markers.forEach((m, i) => {
+    const span = document.createElement('span');
+    span.className = 'peri-num';
+    span.textContent = m.n;
+    span.style.left = m.left + '%';
+    span.style.top = m.top + '%';
+    if (!REDUCED_MOTION) span.style.animationDelay = (i * (280 / Math.max(1, markers.length))) + 'ms';
+    boardEl.appendChild(span);
+  });
+  periNumsVisible = true;
+  srCount.textContent = 'Omkrets talt: ' + n + ' kanter.';
+}
+
+/* ══════════════════ LEVERING & BONUS ══════════════════ */
+function hideFeedback() {
+  const panel = $('feedbackPanel');
+  panel.hidden = true;
+  panel.classList.remove('success');
+  panel.innerHTML = '';
+}
+
+function showRejection(messages) {
+  const panel = $('feedbackPanel');
+  panel.hidden = false;
+  panel.classList.remove('success');
+  panel.innerHTML =
+    '<span class="feedback-title err">Ikke helt ennå</span>' +
+    '<ul class="feedback-list">' + messages.map(m => '<li>' + m + '</li>').join('') + '</ul>';
+  announce(messages.join(' '));
+}
+
+function deliverFigure() {
+  const level = currentLevel();
+  const result = validateDelivery(level, board, N);
+
+  if (!result.success) {
+    showRejection(result.messages);
+    return;
+  }
+
+  if (!bonusPhase) {
+    // Første godkjente løsning for dette oppdraget
+    if (!taskSolved) {
+      taskSolved = true;
+      baseScore += 1;
+      solvedCount += 1;
+      updateScoreHud();
+    }
+    flashSolved();
+    const cells = cellsFromBoard(board, N);
+    originalKey = canonicalKey(cells);
+
+    const panel = $('feedbackPanel');
+    panel.hidden = false;
+    panel.classList.add('success');
+    if (level.bonus) {
+      panel.innerHTML =
+        '<span class="feedback-title ok">✓ Figuren er godkjent!</span>' +
+        '<span class="feedback-note">Klarer du en annen form med samme areal og omkrets?</span>' +
+        '<div class="feedback-btns">' +
+          '<button class="btn-secondary" id="btnTryAnother" type="button">Prøv en annen form</button>' +
+          '<button class="btn-primary" id="btnNextTask" type="button">Neste oppdrag</button>' +
+        '</div>';
+      $('btnTryAnother').addEventListener('click', startBonusAttempt);
+      $('btnNextTask').addEventListener('click', goToNextTask);
+      announce('Figuren er godkjent. Grunnpoeng registrert. Klarer du en annen form med samme areal og omkrets?');
+    } else {
+      panel.innerHTML =
+        '<span class="feedback-title ok">✓ Figuren er godkjent!</span>' +
+        '<div class="feedback-btns"><button class="btn-primary" id="btnNextTask" type="button">Neste oppdrag</button></div>';
+      $('btnNextTask').addEventListener('click', goToNextTask);
+      announce('Figuren er godkjent. Grunnpoeng registrert.');
+    }
+    boardLocked = true;
+    renderBoard();
+    return;
+  }
+
+  // Bonusforsøk
+  const cells = cellsFromBoard(board, N);
+  const newKey = canonicalKey(cells);
+  if (newKey === originalKey) {
+    showRejection(['Det er den samme formen, bare snudd. Prøv en annen.']);
+    return;
+  }
+  bonusEarned = true;
+  bonusScore += 1;
+  bonusCount += 1;
+  bonusPhase = false;
+  updateScoreHud();
+  flashSolved();
+
+  const panel = $('feedbackPanel');
+  panel.hidden = false;
+  panel.classList.add('success');
+  panel.innerHTML =
+    '<span class="feedback-title ok">✓ Ny form godkjent! +1 bonuspoeng</span>' +
+    '<div class="feedback-btns"><button class="btn-primary" id="btnNextTask" type="button">Neste oppdrag</button></div>';
+  $('btnNextTask').addEventListener('click', goToNextTask);
+  announce('Ny form godkjent. Ett bonuspoeng registrert.');
+  boardLocked = true;
+  renderBoard();
+}
+
+function flashSolved() {
+  if (REDUCED_MOTION) return;
+  boardEl.querySelectorAll('.cell.filled').forEach(el => el.classList.add('solved-flash'));
+}
+
+function startBonusAttempt() {
+  bonusPhase = true;
+  boardLocked = false;
+  undoSnapshot = null;
+  $('btnUndo').disabled = true;
+  board = makeEmptyBoard(N);
+  hideFeedback();
+  renderBoard();
+  updateStatus();
+  clearPerimeterNumbers();
+  announce('Brettet er tomt. Bygg en annen form med samme areal og omkrets.');
+}
+
+function updateScoreHud() {
+  $('hudScore').textContent = (baseScore + bonusScore) + ' / 12 poeng';
+}
+
+/* ══════════════════ OPPDRAGSFLYT ══════════════════ */
+function loadLevel(i) {
+  levelIndex = i;
+  const level = currentLevel();
+  N = level.boardSize;
+  marginActive = level.margin;
+  board = makeEmptyBoard(N);
+  undoSnapshot = null;
+  taskSolved = false;
+  bonusPhase = false;
+  bonusEarned = false;
+  originalKey = null;
+  boardLocked = false;
+
+  $('hudTaskLabel').textContent = 'Oppdrag ' + (i + 1) + ' av ' + LEVELS.length;
+  $('taskAreaReq').textContent = level.area;
+  $('taskPerimeterReq').textContent = level.perimeter === null ? '–' : level.perimeter;
+
+  const extraEl = $('taskExtra');
+  if (level.extra === 'row4') {
+    extraEl.hidden = false;
+    extraEl.textContent = 'Spesialkrav: minst én rad med 4 sammenhengende ruter';
+  } else if (level.requiredHoles > 0) {
+    extraEl.hidden = false;
+    extraEl.textContent = 'Spesialkrav: figuren skal ha nøyaktig ' + level.requiredHoles + ' hull';
+  } else {
+    extraEl.hidden = true;
+    extraEl.textContent = '';
+  }
+
+  buildBoardDOM();
+  renderBoard();
+  updateStatus();
+  hideFeedback();
+  $('btnUndo').disabled = true;
+
+  const periText = level.perimeter === null ? 'Ingen omkretskrav i dette oppdraget.' : ('Omkretskrav ' + level.perimeter + '.');
+  announce('Oppdrag ' + (i + 1) + ' av ' + LEVELS.length + '. Arealkrav ' + level.area + '. ' + periText);
+}
+
+function goToNextTask() {
+  if (levelIndex + 1 >= LEVELS.length) { endGame(); return; }
+  loadLevel(levelIndex + 1);
+}
+
+function startGame() {
+  baseScore = 0; bonusScore = 0; solvedCount = 0; bonusCount = 0;
+  updateScoreHud();
+  showScreen('screen-game');
+  loadLevel(0);
+}
+
+function endGame() {
+  $('endSolved').textContent = solvedCount + ' av ' + LEVELS.length;
+  const bonusLevels = LEVELS.filter(l => l.bonus).length;
+  $('endBonus').textContent = bonusCount + ' av ' + bonusLevels;
+  $('endPoints').textContent = (baseScore + bonusScore) + ' av 12';
+  showScreen('screen-end');
+}
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+
+/* ══════════════════ OPPSTART ══════════════════ */
+$('btn-start').addEventListener('click', startGame);
+$('btn-again').addEventListener('click', startGame);
+$('btnUndo').addEventListener('click', undo);
+$('btnReset').addEventListener('click', resetBoard);
+$('btnDeliver').addEventListener('click', deliverFigure);
+$('btnCount').addEventListener('click', toggleCountPerimeter);
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>
