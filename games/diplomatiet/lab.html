@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Laboratoriet – Diplomatiet – LRNify</title>
+<link rel="canonical" href="https://lrnify.no/games/diplomatiet/lab.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Laboratoriet – Diplomatiet – LRNify">
+<meta property="og:description" content="Sett to spillteori-strategier opp mot hverandre og se fangens dilemma utspille seg runde for runde. Gjett hvem som vinner før duellen starter.">
+<meta property="og:image" content="https://lrnify.no/media/cards/diplomatiet.png">
+<meta property="og:url" content="https://lrnify.no/games/diplomatiet/lab.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Laboratoriet – Diplomatiet – LRNify">
+<meta name="twitter:description" content="Sett to spillteori-strategier opp mot hverandre og se fangens dilemma utspille seg runde for runde. Gjett hvem som vinner før duellen starter.">
+<meta name="twitter:image" content="https://lrnify.no/media/cards/diplomatiet.png">
+<meta name="description" content="Sett to spillteori-strategier opp mot hverandre og se fangens dilemma utspille seg runde for runde. Gjett hvem som vinner før duellen starter.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- ─── Oppsett ───────────────────────────────────────── -->
+<div class="screen active" id="screen-setup">
+  <div class="intro-card lab-setup-card">
+    <p class="title-eyebrow">Laboratoriet</p>
+    <h1 class="title-name lab-title">Sett opp en duell</h1>
+    <p class="title-tagline">Velg to strategier, gjett hvem som vinner, og se dem møtes runde for runde med samme poengmatrise som i kampanjen.</p>
+
+    <div class="lab-fighter-row">
+      <div class="lab-fighter-pick">
+        <label for="fighter-a-select">Kjemper 1</label>
+        <select id="fighter-a-select"></select>
+      </div>
+      <span class="lab-vs">mot</span>
+      <div class="lab-fighter-pick">
+        <label for="fighter-b-select">Kjemper 2</label>
+        <select id="fighter-b-select"></select>
+      </div>
+    </div>
+
+    <div class="lab-rounds-row">
+      <span class="lab-rounds-label">Antall runder</span>
+      <div class="lab-rounds-options" id="rounds-options">
+        <button class="lab-rounds-btn" data-rounds="5" type="button">5</button>
+        <button class="lab-rounds-btn" data-rounds="10" type="button">10</button>
+        <button class="lab-rounds-btn" data-rounds="20" type="button">20</button>
+      </div>
+    </div>
+
+    <p class="lab-guess-question">Hvem tror du vinner på poeng?</p>
+    <div class="lab-guess-row" id="guess-options"></div>
+
+    <button id="btn-start-duel" class="btn-primary" type="button" disabled>Start duellen</button>
+    <a class="lab-back-link" href="index.html">← Tilbake til kampanjen</a>
+  </div>
+</div>
+
+<!-- ─── Duell (steg-for-steg) ─────────────────────────── -->
+<div class="screen" id="screen-duel">
+  <div class="hud-bar">
+    <span class="hud-title">Laboratoriet</span>
+    <span class="hud-round" id="duel-round">Runde 0 / 10</span>
+    <div class="hud-spacer"></div>
+    <div id="duel-scoreboard" class="scoreboard"></div>
+  </div>
+  <div class="encounter-layout">
+    <div class="encounter-card">
+      <div class="lab-duel-header" id="duel-header"></div>
+      <div id="duel-history" class="history-strip-wrap"></div>
+      <div class="lab-duel-actions">
+        <button id="btn-next-round" class="btn-primary btn-send" type="button">Neste runde →</button>
+        <button id="btn-play-all" class="btn-secondary" type="button">Spill alle runder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Resultat ──────────────────────────────────────── -->
+<div class="screen" id="screen-duel-result">
+  <div class="encounter-layout">
+    <div class="reflection-card">
+      <p class="report-section-title">Duellen er over</p>
+      <div id="duel-result-summary"></div>
+      <div id="duel-guess-feedback"></div>
+      <div class="lab-result-actions">
+        <button id="btn-new-duel" class="btn-primary" type="button">Ny duell</button>
+        <a class="btn-secondary lab-back-btn" href="index.html">← Tilbake til kampanjen</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="lab.js"></script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>

@@ -185,6 +185,7 @@ export function renderReport(state, reportData) {
       <div class="report-actions">
         <button class="btn-primary" id="btn-restart">Spill igjen</button>
         <button class="btn-secondary" id="btn-share-result">Del resultatet</button>
+        <a class="btn-secondary lab-back-btn" href="lab.html">🔬 Utforsk i Laboratoriet</a>
       </div>
     </div>`;
 }
