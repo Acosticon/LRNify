@@ -136,7 +136,6 @@ button { font-family: var(--font-u); cursor: pointer; }
 .panel-name { font-family: var(--font-d); font-size: 18px; }
 .panel-leader { font-size: 12.5px; color: var(--muted); }
 .panel-tagline { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
-.panel-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); margin-bottom: 18px; }
 
 .matrix-details { margin-bottom: 18px; }
 .matrix-details summary { cursor: pointer; font-size: 12.5px; color: var(--gold); font-weight: 600; list-style: none; }
@@ -152,11 +151,19 @@ button { font-family: var(--font-u); cursor: pointer; }
 .matrix-table .cell-dd { background: rgba(201,162,39,.08); }
 .matrix-table .cell-dc { background: rgba(201,82,75,.1); }
 .matrix-table .cell-cd { background: rgba(201,82,75,.1); }
+.matrix-table td { font-size: 15px; font-weight: 700; }
 .matrix-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
 
-.voice-tag { font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
-.voice-tag.gold { background: rgba(201,162,39,.18); color: var(--gold); border: 1px solid rgba(201,162,39,.4); }
-.voice-tag.red { background: rgba(201,82,75,.18); color: var(--crimson); border: 1px solid rgba(201,82,75,.4); }
+/* Historikk-stripe: hele møtet mot inneværende nasjon, runde for runde */
+.history-strip-wrap { margin-bottom: 18px; }
+.history-empty { font-size: 12.5px; color: var(--muted); font-style: italic; }
+.history-strip { display: flex; flex-direction: column; gap: 6px; }
+.history-row { display: flex; align-items: center; gap: 10px; }
+.history-label { flex: 0 0 auto; width: 90px; font-size: 11.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-icons { display: flex; gap: 4px; flex-wrap: wrap; }
+.history-icon { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 5px; font-size: 13px; }
+.history-icon.coop { background: rgba(62,142,126,.16); }
+.history-icon.def { background: rgba(201,82,75,.14); }
 
 .panel-choice { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .choice-btn {
@@ -176,11 +183,7 @@ button { font-family: var(--font-u); cursor: pointer; }
 .round-points-you, .round-points-them { font-size: 13px; color: var(--text-dim); }
 .round-points-you strong { color: var(--emerald); font-family: var(--font-mono); font-size: 16px; }
 .round-points-them strong { color: var(--gold); font-family: var(--font-mono); font-size: 16px; }
-.telegram-quote { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-dim); line-height: 1.5; margin-bottom: 8px; }
-.round-trust { font-size: 12px; color: var(--muted); }
-.telegram-special { font-size: 12px; margin-top: 8px; padding: 6px 10px; border-radius: var(--r); }
-.telegram-special.gold { background: rgba(201,162,39,.12); color: var(--gold); }
-.telegram-special.red { background: rgba(201,82,75,.12); color: var(--crimson); }
+.telegram-quote { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
 
 /* Poengoppgjør (refleksjon + rapport) */
 .score-result { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; }

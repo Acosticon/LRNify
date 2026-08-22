@@ -29,16 +29,16 @@
   <div class="title-card">
     <p class="title-eyebrow">Et spillteori-spill fra LRNify</p>
     <h1 class="title-name">Diplomatiet</h1>
-    <p class="title-tagline">Du leder en nasjon gjennom seks møter med diplomati, ett naboland om gangen. Hver av dem husker nøyaktig hva du gjorde sist – og etter hvert møte stopper vi opp og ser hva som skjedde.</p>
+    <p class="title-tagline">Du møter seks naboland, ett om gangen. I fem runder mot hver skal du samarbeide eller svike – og lese mønsteret i hvordan de svarer.</p>
 
     <div class="title-rules">
       <div class="rule-card">
         <span class="rule-icon">🤝</span>
-        <p><strong>Samarbeid</strong> bygger tillit og handel – men bare hvis motparten gjør det samme tilbake.</p>
+        <p><strong>Samarbeid</strong> gir dere begge poeng – men bare hvis motparten gjør det samme.</p>
       </div>
       <div class="rule-card">
         <span class="rule-icon">⚔️</span>
-        <p><strong>Svik</strong> gir rask gevinst – men naboer husker, og noen hevner seg aldri.</p>
+        <p><strong>Svik</strong> gir deg flest poeng der og da – men naboer husker mønsteret ditt.</p>
       </div>
       <div class="rule-card">
         <span class="rule-icon">🎓</span>
@@ -87,20 +87,20 @@
     <div class="encounter-card">
       <div class="panel-nation-header" id="encounter-nation-header"></div>
       <p class="panel-tagline" id="encounter-tagline"></p>
-      <div class="panel-status" id="encounter-status"></div>
+      <div id="encounter-history" class="history-strip-wrap"></div>
 
       <details class="matrix-details">
-        <summary>Vis poengmatrisen</summary>
+        <summary>Vis poengmatrisen (dine poeng)</summary>
         <table class="matrix-table">
           <thead>
             <tr><th></th><th>De samarbeider</th><th>De sviker</th></tr>
           </thead>
           <tbody>
-            <tr><th>Du samarbeider</th><td class="cell-cc">Du 3 · De 3</td><td class="cell-cd">Du 0 · De 5</td></tr>
-            <tr><th>Du sviker</th><td class="cell-dc">Du 5 · De 0</td><td class="cell-dd">Du 1 · De 1</td></tr>
+            <tr><th>Du samarbeider</th><td class="cell-cc">3</td><td class="cell-cd">0</td></tr>
+            <tr><th>Du sviker</th><td class="cell-dc">5</td><td class="cell-dd">1</td></tr>
           </tbody>
         </table>
-        <p class="matrix-note">Samme matrise gjelder mot alle nasjoner, hver runde.</p>
+        <p class="matrix-note">Tabellen viser bare dine poeng – matrisen er symmetrisk, så den samme tabellen gjelder motstanderen (speilvendt).</p>
       </details>
 
       <div id="encounter-action-area" class="encounter-action-area"></div>

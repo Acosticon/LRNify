@@ -30,10 +30,8 @@ function escapeXml(value) {
 }
 
 function statusGlyph(rel) {
-  if (rel.warActive) return '⚔️';
-  if (rel.allianceActive) return '🕊️';
-  if (rel.score >= 25) return '🙂';
-  if (rel.score <= -25) return '☹️';
+  if (rel.myScore > rel.theirScore) return '🏆';
+  if (rel.myScore < rel.theirScore) return '📉';
   return '';
 }
 
@@ -63,7 +61,7 @@ export function createProgressStrip(state) {
       labelOpacity = 1;
       labelWeight = 700;
     } else if (isDone) {
-      ring = rel.warActive ? CRIMSON : rel.allianceActive ? GOLD : n.color;
+      ring = rel.myScore > rel.theirScore ? GOLD : rel.myScore < rel.theirScore ? CRIMSON : n.color;
       fill = hexToRgba(n.color, 0.2);
       const glyph = statusGlyph(rel);
       content = `
