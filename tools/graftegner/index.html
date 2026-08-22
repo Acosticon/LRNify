@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="nb">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -835,7 +835,7 @@
         const input = document.createElement("input");
         input.type = "text";
         input.value = item.expression;
-        input.placeholder = "For eksempel: 2x^2 - 3x + 1";
+        input.placeholder = "For eksempel: 2x^2 - 3x + 1  ·  sin(x)  ·  sqrt(x)";
         input.dataset.id = item.id;
         input.className = "expression-input";
         input.addEventListener("input", () => {
@@ -1090,6 +1090,21 @@
       return low >= "a" && low <= "z";
     }
 
+    /* Kjente funksjoner og konstanter.
+       Enkeltbokstaver er fortsatt parametere (a, b, c … får hver sin
+       skyvekontroll), så bare navn på to bokstaver eller mer slås opp her.
+       Et ukjent flerbokstavsnavn skal gi en feilmelding — ikke tolkes som
+       et produkt av enkeltbokstaver. Uten denne sjekken ble "sin(x)" lest
+       som s · i · n · (x) og tegnet som den rette linja y = x.
+       Vinkler regnes i radianer, som i Math. */
+    const FUNCTIONS = {
+      sin: "Math.sin", cos: "Math.cos", tan: "Math.tan",
+      asin: "Math.asin", acos: "Math.acos", atan: "Math.atan",
+      sqrt: "Math.sqrt", abs: "Math.abs", exp: "Math.exp",
+      log: "Math.log10", ln: "Math.log"
+    };
+    const CONSTANTS = { pi: "Math.PI" };
+
     function tokenize(expression) {
       const tokens = [];
       let i = 0;
@@ -1115,9 +1130,27 @@
         }
 
         if (isLetter(ch)) {
-          tokens.push({ type: ch.toLowerCase() === "x" ? "variable" : "parameter", value: ch });
+          let name = ch;
           i++;
-          continue;
+          while (i < expression.length && isLetter(expression[i])) {
+            name += expression[i];
+            i++;
+          }
+          const low = name.toLowerCase();
+
+          if (name.length === 1) {
+            tokens.push({ type: low === "x" ? "variable" : "parameter", value: name });
+            continue;
+          }
+          if (FUNCTIONS[low]) {
+            tokens.push({ type: "function", value: low });
+            continue;
+          }
+          if (CONSTANTS[low]) {
+            tokens.push({ type: "constant", value: low });
+            continue;
+          }
+          throw new Error(`Ukjent navn: ${name}. Skriv gangetegn mellom bokstaver (a*b), eller bruk en av ${Object.keys(FUNCTIONS).join(", ")}.`);
         }
 
         if ("+-*/^()".includes(ch)) {
@@ -1129,7 +1162,20 @@
         throw new Error(`Ugyldig tegn: ${ch}`);
       }
 
-      return insertImplicitMultiplication(tokens);
+      const withProducts = insertImplicitMultiplication(tokens);
+
+      /* Et funksjonsnavn må ha en parentes etter seg. Uten denne sjekken
+         ville "sin" alene bli til "Math.sin" — en gyldig JS-verdi, men
+         ingen graf. */
+      withProducts.forEach((token, index) => {
+        if (token.type !== "function") return;
+        const next = withProducts[index + 1];
+        if (!next || next.value !== "(") {
+          throw new Error(`${token.value} må ha en parentes etter seg, for eksempel ${token.value}(x).`);
+        }
+      });
+
+      return withProducts;
     }
 
     function insertImplicitMultiplication(tokens) {
@@ -1146,8 +1192,11 @@
     }
 
     function needsImplicitMultiplication(left, right) {
-      const leftCanEndFactor = left.type === "number" || left.type === "variable" || left.type === "parameter" || left.value === ")";
-      const rightCanStartFactor = right.type === "number" || right.type === "variable" || right.type === "parameter" || right.value === "(";
+      const leftCanEndFactor = left.type === "number" || left.type === "variable"
+        || left.type === "parameter" || left.type === "constant" || left.value === ")";
+      const rightCanStartFactor = right.type === "number" || right.type === "variable"
+        || right.type === "parameter" || right.type === "constant"
+        || right.type === "function" || right.value === "(";
       return leftCanEndFactor && rightCanStartFactor;
     }
 
@@ -1156,6 +1205,8 @@
         if (token.type === "number") return token.value;
         if (token.type === "variable") return "x";
         if (token.type === "parameter") return `vars["${token.value}"]`;
+        if (token.type === "function") return FUNCTIONS[token.value];
+        if (token.type === "constant") return CONSTANTS[token.value];
         if (token.value === "^") return "**";
         return token.value;
       }).join(" ");
@@ -1167,7 +1218,8 @@
         .split(",").join(".")
         .split("−").join("-")
         .split("×").join("*")
-        .split("÷").join("/");
+        .split("÷").join("/")
+        .split("π").join("pi");
 
       if (!cleaned) throw new Error("Skriv inn et funksjonsuttrykk.");
 
@@ -1178,8 +1230,16 @@
       try {
         const fn = new Function("x", "vars", `"use strict"; return (${jsExpression});`);
         const testVars = Object.fromEntries(variables.map(name => [name, variableValues[name] ?? 1]));
-        const testValue = fn(1, testVars);
-        if (typeof testValue !== "number" || Number.isNaN(testValue)) throw new Error();
+        /* Prøv flere x-verdier, ikke bare x = 1. Funksjoner som er
+           udefinerte akkurat der — sqrt(x-5), 1/(x-1), log(x) ved x ≤ 0 —
+           er fullt gyldige, og ble tidligere avvist som utolkbare.
+           Uttrykket godtas så lenge det gir et tall et sted. */
+        const probes = [1, 2, 0.5, -1, 6, 10, -10, 0];
+        const gotNumber = probes.some(value => {
+          const result = fn(value, testVars);
+          return typeof result === "number" && Number.isFinite(result);
+        });
+        if (!gotNumber) throw new Error();
         return { fn, variables };
       } catch {
         throw new Error("Uttrykket kunne ikke tolkes. Sjekk parenteser og operatorer.");
@@ -1971,5 +2031,6 @@
   </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
 </body>
 </html>

@@ -1,15 +1,14 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="nb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Personvern — LRNify</title>
-<meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root{ --cream:#fff9f0; --ink:#2b2118; --yellow:#facc15; --muted:#7a6f63; --card:#fff; --red:#b91c1c; --red-light:#fee2e2; }
+  :root{ --cream:#fff9f0; --ink:#2b2118; --yellow:#facc15; --muted:#7a6f63; --card:#fff; }
   *{box-sizing:border-box;}
   body{
     margin:0; font-family:'Nunito',sans-serif; background:var(--cream); color:var(--ink);
@@ -23,11 +22,6 @@
   ul{ padding-left:22px; }
   a{ color:var(--ink); }
   .kort{ background:var(--card); border:3px solid var(--ink); border-radius:14px; padding:18px 20px; box-shadow:4px 4px 0 var(--ink); margin:0 0 12px; }
-  .varsel{
-    background:var(--red-light); border:3px solid var(--red); border-radius:14px;
-    padding:16px 18px; font-weight:700; color:var(--red); margin-bottom:28px;
-  }
-  .fyllinn{ background:#fff3c4; padding:1px 5px; border-radius:4px; font-weight:800; }
   code{ background:#efe7d8; padding:2px 6px; border-radius:5px; font-size:.92em; }
   footer{ text-align:center; margin-top:48px; color:var(--muted); font-size:.85rem; }
 </style>
@@ -36,14 +30,7 @@
 <div class="wrap">
 
 <h1>🔒 Personvern</h1>
-<div class="oppdatert">Sist oppdatert: <span class="fyllinn">[fyll inn dato]</span></div>
-
-<div class="varsel">
-  Dette er et UTKAST — ikke publisert. Feltene merket <span class="fyllinn">gult</span>
-  må fylles ut, og siden bør leses av noen med kjennskap til norsk
-  personvernregelverk før den legges ut, siden LRNify (indirekte, via
-  lærere) behandler opplysninger om barn. Se «Om dette utkastet» nederst.
-</div>
+<div class="oppdatert">Sist oppdatert: 21. august 2026</div>
 
 <p>
   LRNify er gratis læringsspill og klasseromsverktøy for norsk skole. Denne
@@ -53,28 +40,63 @@
 
 <h2>Behandlingsansvarlig</h2>
 <div class="kort">
-  <p style="margin:0"><span class="fyllinn">[Navn på ansvarlig / foretak]</span><br>
-  <span class="fyllinn">[Adresse, org.nr. hvis foretak]</span><br>
+  <p style="margin:0">Stig Conradi Voice (enkeltpersonforetak)<br>
+  Org.nr. 922&nbsp;831&nbsp;912<br>
   E-post: <a href="mailto:kontakt@lrnify.no">kontakt@lrnify.no</a></p>
 </div>
 
-<h2>Elever logger aldri inn</h2>
+<h2>Elever oppretter aldri konto</h2>
 <p>
-  Elever bruker LRNify uten konto og uten navn — de blir med i en aktivitet
-  ved å taste inn en romkode læreren har fått opp på skjermen. Vi lagrer
-  aldri elevers etternavn, fødselsdato, karakterer eller vurderinger.
+  Elever logger aldri inn med en konto hos oss. De blir med i en aktivitet ved
+  å taste inn en romkode læreren viser på skjermen. Vi lagrer aldri elevers
+  etternavn, fødselsdato, adresse, karakterer eller vurderinger.
 </p>
 <p>
-  I noen spill er det mulighet for å legge inn frivillige <em>initialer</em>
-  i forbindelse med en highscore-liste (f.eks. i Kartografen). Det er
-  beskrevet under <a href="#ledertavle">Ledertavla i Kartografen</a>.
+  Noen aktiviteter ber likevel eleven om å oppgi noe, for at læreren skal
+  kunne se hvem som har svart. Her er alt, aktivitet for aktivitet:
+</p>
+<div class="kort">
+  <ul style="margin:0">
+    <li><strong>Genetisk hjul</strong> — fornavn, og hvis eleven vil, kjønn
+      («Vil ikke svare» er et fullverdig valg). I tillegg de seks
+      ja/nei-svarene om synlige trekk.</li>
+    <li><strong>Temaspinner</strong> — fornavn, og hvilket tema eleven trakk.</li>
+    <li><strong>KRLE Terningspill</strong> — et lagnavn elevene skriver selv,
+      og lagets svar. Skriver de fornavnene sine som lagnavn, er det de som
+      lagres.</li>
+    <li><strong>Tankesky</strong> — ordene som sendes inn. Ikke navn.</li>
+    <li><strong>KlassePoll</strong> — bare antall stemmer per alternativ.
+      Ikke navn, og ikke hvem som stemte hva.</li>
+  </ul>
+</div>
+<p>
+  Alle disse aktivitetene gir nettleseren en <strong>anonym pålogging</strong>
+  hos Firebase. Den er usynlig for eleven og krever ingen handling, men den
+  lagrer en tilfeldig identifikator i nettleseren. Vi bruker den bare til to
+  ting: å hindre at samme enhet stemmer to ganger i en avstemning, og å se at
+  det er læreren som opprettet rommet som styrer det. Identifikatoren er ikke
+  koblet til noe navn, og vi bruker den ikke til å følge noen mellom sider
+  eller besøk.
+</p>
+<div class="kort">
+  <p style="margin:0"><strong>Rom er åpne for den som har koden.</strong>
+  Et rom kan leses av hvem som helst som kjenner eller gjetter romkoden — det
+  kreves ingen innlogging. Koden er kort (tre til seks tegn), og i Genetisk
+  hjul velger læreren den selv. Bruk derfor ikke rommene til noe som ikke
+  tåler å bli sett av andre enn klassen, og velg helst en kode som ikke er
+  lett å gjette. Vi jobber med å stramme inn dette.</p>
+</div>
+<p>
+  I geografispillet Kartografen kan eleven i tillegg skrive inn tre
+  <em>initialer</em> til en ledertavle som er åpen for alle. Det er beskrevet
+  under <a href="#ledertavle">Ledertavla i Kartografen</a>.
 </p>
 
 <h2>Hva vi lagrer om lærere som logger inn</h2>
 <p>Innlogging er valgfritt og gir tilgang til å lagre og gjenbruke ting på tvers av økter. Logger du inn (med Google, eller e-post og selvvalgt passord), lagrer vi:</p>
 <ul>
   <li><strong>Navn og e-postadresse</strong> — hentet fra innloggingen din, brukes til å vise hvem som er innlogget.</li>
-  <li><strong>Klasselister du velger å lagre</strong> — elevenes <em>fornavn</em>, og valgfritt kjønn (for kjønnsbalanserte grupper). Dette er den eneste elevrelaterte informasjonen som lagres hos oss, og den lagres fordi <em>du</em> aktivt velger å lagre den, for å slippe å taste inn de samme navnene på nytt i hvert verktøy.</li>
+  <li><strong>Klasselister du velger å lagre</strong> — elevenes <em>fornavn</em>, og valgfritt kjønn (for kjønnsbalanserte grupper). Den lagres fordi <em>du</em> aktivt velger å lagre den, for å slippe å taste inn de samme navnene på nytt i hvert verktøy. Se avsnittet over for hva elever selv oppgir i enkelte aktiviteter.</li>
   <li><strong>Rom du oppretter</strong> (f.eks. i KlassePoll) — knyttet til kontoen din slik at du finner dem igjen, med aggregerte tall (f.eks. antall stemmer per svaralternativ) — aldri navngitte enkeltsvar.</li>
 </ul>
 <p>
@@ -99,8 +121,9 @@
   «Spill på tid» lagres initialene sammen med tiden når runden er helt feilfri;
   i «Arkade» lagres de sammen med poengsummen så snart runden gir mer enn
   0 poeng. Dette havner i en ledertavle som er <strong>synlig for alle som
-  spiller</strong> — ikke bare for din klasse. Dette er den eneste funksjonen
-  på LRNify der noe en elev har skrevet blir liggende åpent.
+  spiller</strong> — ikke bare for din klasse, og uten at man trenger en
+  romkode for å se den. Det er forskjellen fra romaktivitetene over: der må
+  man i det minste kjenne koden.
 </p>
 <p>
   Initialene er det eneste eleven oppgir. Vi lagrer ingen IP-adresse, ingen
@@ -133,37 +156,114 @@
 </p>
 <p>
   Vi lagrer <strong>ikke</strong> IP-adresse, nettleser, enhet, hvor du kom
-  fra, hvor du befinner deg, eller noe annet om den enkelte besøkende, og vi
-  skriver ingenting til maskinen din. Tallene kan derfor ikke knyttes til en
-  person, og to besøk kan ikke skilles fra hverandre i ettertid. Statistikken
-  ligger i vår egen database i EU/EØS, og deles ikke med noen
-  analyseleverandør.
+  fra, hvor du befinner deg, eller noe annet om den enkelte besøkende, og
+  tellingen skriver ingenting til maskinen din. Tallene kan derfor ikke
+  knyttes til en person, og to besøk kan ikke skilles fra hverandre i
+  ettertid. Statistikken ligger i vår egen database i EU/EØS, og deles ikke
+  med noen analyseleverandør. Det samme gjelder tellingen av trykk på
+  deleknappen.
+</p>
+<p>
+  Merk at dette gjelder <em>tellingen</em>. Andre deler av tjenesten lagrer
+  ting i nettleseren din — den anonyme påloggingen i romaktivitetene, og de
+  lokale innstillingene beskrevet lenger nede.
 </p>
 
 <h2>Hvorfor (behandlingsgrunnlag)</h2>
 <p>
-  Vi behandler lærerens navn og e-post for å levere tjenesten lærer har bedt
-  om (opprette og logge inn på en konto). Klasselister lagres kun fordi og
-  når læreren selv aktivt oppretter dem — <span class="fyllinn">[vurder om
-  dette skal begrunnes som berettiget interesse, samtykke, eller avtale
-  med skoleeier — bør avklares juridisk]</span>.
+  <strong>Lærerens navn og e-post</strong> behandles for å levere tjenesten
+  læreren har bedt om: å opprette og logge inn på en konto (GDPR art. 6.1.b).
+</p>
+<p>
+  <strong>Elevfornavn</strong> — i klasselister læreren lagrer, og i Genetisk
+  hjul og Temaspinner — behandles på grunnlag av berettiget interesse
+  (GDPR art. 6.1.f). Interesseavveiingen vår:
+</p>
+<div class="kort">
+  <ul style="margin:0">
+    <li><strong>Formålet</strong> er avgrenset og praktisk: læreren skal
+      slippe å taste inn de samme navnene på nytt i hvert verktøy, og skal
+      kunne se hvem i klassen som har svart underveis i en økt.</li>
+    <li><strong>Omfanget</strong> er lite: bare fornavn, aldri etternavn,
+      fødselsdato, adresse, karakterer eller vurderinger. Et fornavn alene
+      identifiserer sjelden en person utenfor klasserommet.</li>
+    <li><strong>Inngrepet</strong> er begrenset: opplysningene brukes ikke til
+      profilering, markedsføring eller analyse, deles ikke med noen, og
+      selges aldri.</li>
+    <li><strong>Alternativet</strong> — å taste inn navn på nytt hver time —
+      ville i praksis gjort verktøyene ubrukelige i en travel skolehverdag.</li>
+    <li><strong>Kontrollen</strong> ligger hos læreren, som selv velger om en
+      klasseliste skal lagres, og kan slette den når som helst.</li>
+  </ul>
+</div>
+<p>
+  Fordi det gjelder barn, veier vi dette strengt: er du lærer og heller vil
+  la være å lagre klasselister, virker alle verktøyene like godt uten at du
+  logger inn — da taster du bare inn navnene for den ene økta, og ingenting
+  lagres hos oss.
+</p>
+<p>
+  Er du skoleeier eller rektor og trenger en databehandleravtale for å ta
+  LRNify i bruk, ta kontakt på
+  <a href="mailto:kontakt@lrnify.no">kontakt@lrnify.no</a>.
 </p>
 
 <h2>Hvor lagres opplysningene</h2>
 <p>
-  Vi bruker Google Firebase (Realtime Database og Authentication), med data
-  lagret i Google sin <code>europe-west1</code>-region (Belgia, EU/EØS).
-  Google er vår databehandler. <span class="fyllinn">[legg ved / lenk til
-  databehandleravtale med Google, hvis en er inngått]</span>.
+  Vi bruker Google Firebase (Realtime Database, Firestore og Authentication),
+  med data lagret i Google sin <code>europe-west1</code>-region (Belgia,
+  EU/EØS). Google er vår databehandler, og behandlingen skjer på vilkårene i
+  <a href="https://cloud.google.com/terms/data-processing-addendum" target="_blank" rel="noopener">Google
+  Cloud Data Processing Addendum</a>, som følger med bruken av Firebase.
+</p>
+
+<h2>Tjenester som laster inn i nettleseren din</h2>
+<p>
+  LRNify har ingen annonser, ingen sporingspiksler og ingen analyseleverandør.
+  Men noen sider henter skrifter, kode eller bilder fra andre selskaper, og da
+  ser de nettleseren din og IP-adressen din — slik det alltid er når en
+  nettside laster noe utenfra. Vi sender aldri navn, svar eller annet innhold
+  til dem. Dette er hele lista:
+</p>
+<div class="kort">
+  <ul style="margin:0">
+    <li><strong>Google Fonts</strong> (<code>fonts.googleapis.com</code>,
+      <code>fonts.gstatic.com</code>) — skrifttypene på de fleste sidene.</li>
+    <li><strong>Google</strong> (<code>www.gstatic.com</code>) — programkoden
+      til Firebase, på sidene som bruker rom eller innlogging.</li>
+    <li><strong>flagcdn.com</strong> — flaggbilder i Kartografen.</li>
+    <li><strong>api.ordbokene.no</strong> (Språkrådet og Universitetet i
+      Bergen) — slår opp ord i Ordtoget som ikke finnes i den innebygde
+      ordlista. Bare selve ordet sendes.</li>
+    <li><strong>Wikipedia</strong> — portrettbilder i Operasjon Frihet.</li>
+    <li><strong>raw.githubusercontent.com</strong> og
+      <strong>cdnjs.cloudflare.com</strong> — ikoner og et QR-bibliotek på
+      enkelte sider.</li>
+  </ul>
+</div>
+<p>
+  Vi jobber med å hente mest mulig av dette fra lrnify.no selv, slik at færre
+  tredjeparter er involvert.
+</p>
+
+<h2>Mikrofon i Lydmåleren</h2>
+<p>
+  <a href="/tools/lyd/">Lydmåleren</a> ber om tilgang til mikrofonen for å
+  vise lydnivået i rommet. Lyden behandles kun i nettleseren mens måleren er
+  åpen. Ingenting tas opp, lagres eller sendes noe sted, og målingen stopper
+  når du lukker fanen. Du kan alltid nekte tilgangen — da virker resten av
+  siden som før.
 </p>
 
 <h2>Hvor lenge</h2>
 <p>
   Så lenge kontoen din er aktiv. Du kan slette en lagret klasse eller et
   lagret rom selv, når som helst, i verktøyet du opprettet dem i. Ønsker du
-  hele kontoen slettet: <span class="fyllinn">[beskriv rutine — i dag finnes
-  ingen «slett konto»-knapp i grensesnittet; til noen har bedt om det, må
-  det gjøres manuelt av oss på e-post-forespørsel til kontakt@lrnify.no]</span>.
+  hele kontoen slettet, send en e-post til
+  <a href="mailto:kontakt@lrnify.no">kontakt@lrnify.no</a> fra adressen du er
+  registrert med, så sletter vi kontoen og alt som er lagret på den innen 30
+  dager. Det finnes ingen selvbetjent «slett konto»-knapp ennå; sletting gjøres
+  manuelt av oss.
 </p>
 <p>
   Tider på ledertavla i Kartografen blir stående til noen ber om at de
@@ -178,21 +278,42 @@
 <p>
   LRNify bruker ikke sporings- eller annonsecookies, og besøksstatistikken vår
   bruker ingen informasjonskapsler i det hele tatt (se avsnittet over).
-  Nettleseren din lagrer enkelte innstillinger lokalt (lydvalg, husket
-  romkode, klasselister du jobber med) for at verktøyene skal huske valgene
-  dine mellom besøk.
+  Nettleseren din lagrer likevel noe lokalt, uten at det er
+  informasjonskapsler i vanlig forstand:
+</p>
+<ul>
+  <li><strong>Innstillinger og framgang</strong> — lydvalg, husket romkode,
+    lagrede klassekart, hvor langt du er kommet i et spill. Ligger bare hos
+    deg, og forsvinner når du tømmer nettleserdata.</li>
+  <li><strong>Anonym pålogging</strong> — i romaktivitetene lagrer Firebase en
+    tilfeldig identifikator, slik at samme enhet ikke kan stemme to ganger og
+    slik at læreren beholder styringen av rommet sitt. Den er ikke knyttet til
+    noe navn og brukes ikke til å følge deg mellom sider.</li>
+</ul>
+<p>
+  Ingenting av dette brukes til markedsføring, og vi deler det ikke med
+  noen.
 </p>
 
-<h2>Om dette utkastet</h2>
+<h2>Hva vi jobber med</h2>
 <p>
-  Denne siden er skrevet som et startpunkt basert på hva systemet faktisk
-  lagrer i dag (se <code>auth/README.md</code> i kildekoden for den tekniske
-  beskrivelsen), ikke som et ferdig juridisk dokument. Før publisering bør
-  noen med kjennskap til norsk personvernrett (personopplysningsloven/GDPR)
-  særlig vurdere: (1) behandlingsgrunnlaget for elevfornavn i klasselister,
-  gitt at disse gjelder barn, (2) om det trengs en databehandleravtale eller
-  informasjon rettet mot skoleeiere/rektorer som lar lærere bruke verktøyet,
-  og (3) en reell rutine for sletting av hele kontoer.
+  Vi mener det er riktigere å si hva som ikke er på plass ennå, enn å la det
+  være usagt. Akkurat nå står dette på lista:
+</p>
+<div class="kort">
+  <ul style="margin:0">
+    <li><strong>Strammere tilgang til rom.</strong> I dag kan et rom leses av
+      den som kjenner koden. Vi vil binde lesetilgangen til læreren som
+      opprettet rommet, og slette rom automatisk etter kort tid.</li>
+    <li><strong>Færre tredjeparter.</strong> Skrifter og biblioteker skal
+      hentes fra lrnify.no selv.</li>
+    <li><strong>Selvbetjent sletting.</strong> En «slett konto»-knapp i
+      <a href="/konto/">kontosiden</a>, så du ikke må sende e-post.</li>
+  </ul>
+</div>
+<p>
+  Ser du noe på denne siden som ikke stemmer med det du opplever i tjenesten,
+  vil vi gjerne høre det: <a href="mailto:kontakt@lrnify.no">kontakt@lrnify.no</a>.
 </p>
 
 <footer>LRNify · <a href="/">Tilbake til forsiden</a></footer>

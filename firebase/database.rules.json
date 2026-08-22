@@ -162,7 +162,7 @@
               ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24"
             },
             "kjonn": {
-              ".validate": "newData.isString() && newData.val().matches(/^(M|F)$/)"
+              ".validate": "newData.isString() && newData.val().matches(/^(M|F|X)$/)"
             },
             "svar": {
               ".validate": "newData.hasChildren(['T', 'E', 'H', 'D', 'W', 'B'])",

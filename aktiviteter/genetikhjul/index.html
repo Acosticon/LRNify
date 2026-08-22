@@ -1,21 +1,21 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="nb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Genetisk Hjul — LRNify</title>
-<meta name="description" content="Bygg din egen genetiske profil ved å trekke egenskaper, og se hele klassens profiler samlet live.">
+<meta name="description" content="Kartlegg genetisk variasjon i klassen: hver elev svarer på seks synlige trekk, og tavla viser hvordan klassen fordeler seg.">
 <link rel="canonical" href="https://lrnify.no/aktiviteter/genetikhjul/index.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LRNify">
 <meta property="og:title" content="Genetisk hjul – LRNify">
-<meta property="og:description" content="Bygg din egen genetiske profil ved å trekke egenskaper, og se hele klassens profiler samlet live.">
+<meta property="og:description" content="Kartlegg genetisk variasjon i klassen: hver elev svarer på seks synlige trekk, og tavla viser hvordan klassen fordeler seg.">
 <meta property="og:image" content="https://lrnify.no/media/aktiviteter/genetikhjul.png">
 <meta property="og:url" content="https://lrnify.no/aktiviteter/genetikhjul/index.html">
 <meta property="og:locale" content="nb_NO">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Genetisk hjul – LRNify">
-<meta name="twitter:description" content="Bygg din egen genetiske profil ved å trekke egenskaper, og se hele klassens profiler samlet live.">
+<meta name="twitter:description" content="Kartlegg genetisk variasjon i klassen: hver elev svarer på seks synlige trekk, og tavla viser hvordan klassen fordeler seg.">
 <meta name="twitter:image" content="https://lrnify.no/media/aktiviteter/genetikhjul.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -80,6 +80,12 @@
     box-shadow:4px 4px 0 var(--ink);
   }
   .sex-btn.active{ background:var(--yellow); }
+  .fagnote{ text-align:left; max-width:620px; margin:14px auto 0; padding:12px 14px;
+    border-left:4px solid var(--yellow); background:rgba(250,204,21,.12);
+    border-radius:6px; font-size:.9rem; line-height:1.5; }
+  .fagnote.liten{ font-size:.82rem; margin-top:12px; }
+  @media print{ .fagnote{ break-inside:avoid; } }
+  .sex-btn-wide{ font-size:.9rem; font-weight:800; padding-left:14px; padding-right:14px; }
   .progress{ display:flex; gap:6px; justify-content:center; margin:18px 0 8px; }
   .dot{ width:12px; height:12px; border-radius:50%; border:2px solid var(--ink); background:#fff; }
   .dot.done{ background:var(--green); }
@@ -203,7 +209,7 @@
 <body>
 
 <h1>🧬 Genetisk Hjul</h1>
-<div class="sub">Bygg din egen genetiske profil — og se klassens live</div>
+<div class="sub">Seks synlige trekk — se hvor variert klassen er</div>
 
 <!-- ══ ROLLEVALG ══ -->
 <div class="top-screen" id="screen-role">
@@ -235,10 +241,11 @@
       <label class="field-label">Fornavn</label>
       <input type="text" id="input-navn" placeholder="Skriv fornavnet ditt" autocomplete="off" maxlength="24">
     </div>
-    <label class="field-label" id="kjonn-label" style="margin-top:16px; display:block;">Kjønn</label>
+    <label class="field-label" id="kjonn-label" style="margin-top:16px; display:block;">Kjønn <span style="font-weight:600; opacity:.75;">— pynt i midten av hjulet, ikke en del av genetikken</span></label>
     <div class="sex-row">
       <div class="sex-btn" id="sex-m" onclick="setSex('M')">♂</div>
       <div class="sex-btn" id="sex-f" onclick="setSex('F')">♀</div>
+      <div class="sex-btn sex-btn-wide" id="sex-x" onclick="setSex('X')">Vil ikke svare</div>
     </div>
     <button class="btn" onclick="goToQuiz()">Start →</button>
     <div class="error hidden" id="err-navn"></div>
@@ -260,6 +267,9 @@
     <div class="center-msg" id="done-msg">Takk! Profilen din er sendt inn og vises nå på tavla.</div>
     <div class="wheel-wrap"><div id="wheel-final"></div></div>
     <div class="final-number" id="final-number"></div>
+    <p class="fagnote liten">Tallet ditt sier hvor du havner blant 64 mulige
+      kombinasjoner av seks synlige trekk. Det viser hvor variert klassen er —
+      ikke hva du har arvet, og ikke hvilke gener du har.</p>
     <div class="action-row">
       <button class="btn secondary" onclick="toggleFullscreen('wheel-final')">⛶ Fullskjerm</button>
       <button class="btn secondary" onclick="downloadWheelImage('wheel-final')">📷 Last ned bilde</button>
@@ -273,6 +283,19 @@
 
   <div id="setup-bar" style="text-align:center;">
     <button type="button" class="link-back" onclick="showTopScreen('screen-role')">← Bytt rolle</button>
+    <div class="fagnote" role="note">
+      <strong>Hva aktiviteten viser:</strong> dette er en kartlegging av
+      <em>genetisk variasjon</em> — seks synlige trekk, altså fenotyper, slik de
+      faktisk fordeler seg i klassen. Med seks ja/nei-trekk finnes 64 mulige
+      kombinasjoner, og poenget er hvor spredt en klasse legger seg utover dem:
+      to elever kan dele fem trekk og likevel havne i hvert sitt felt.
+      <br><br>
+      <strong>Det aktiviteten ikke viser:</strong> arv. Hjulet sier ingenting om
+      genotype, og ingen av de seks trekkene styres av ett enkelt gen med én
+      dominant og én recessiv variant — de påvirkes av flere gener, og noen også
+      av miljø og vane. Brukes hjulet som eksempel på mendelsk arv, blir det
+      feil. Brukt som det er ment — hvor like og ulike er vi? — stemmer det.
+    </div>
     <label class="field-label" for="larer-input-kode" style="display:block; margin-bottom:8px;">
       Klassekoden elevene skal skrive inn — bytt den gjerne til noe du husker
     </label>
@@ -395,25 +418,35 @@ function ensureAuth(){
 const KODE_REGEX = /^[A-Z0-9-]{3,24}$/;
 function normaliserKode(v){ return String(v || '').trim().toUpperCase(); }
 
-/* ============ GENENE ============ */
+/* ============ TREKKENE ============
+   Seks synlige trekk — fenotyper, ikke genotyper. Aktiviteten kartlegger
+   variasjon i klassen: hvordan fordeler disse seks ja/nei-trekkene seg, og
+   hvor spredt legger klassen seg utover de 64 mulige kombinasjonene.
+
+   domLabel/recLabel er bare navn på de to sidene av hvert trekk, og det er
+   dem eleven ser. Feltnavnene dom/rec er arv fra en tidligere versjon som
+   også oppga genotypekoder (T-/tt); de kodene er fjernet, fordi ingen av
+   disse trekkene faktisk styres av ett gen med én dominant og én recessiv
+   variant. Skal noe her brukes til å forklare arv, må det bygges om.
+   ================================== */
 const GENES = [
   { key:'T', navn:'Tunge-rulling', tittel:'Tunga 👅', sporsmal:'Kan du rulle tunga til et rør?',
-    domLabel:'Kan rulle', recLabel:'Kan ikke rulle', domCode:'T-', recCode:'tt', yesIsDom:true,
+    domLabel:'Kan rulle', recLabel:'Kan ikke rulle', yesIsDom:true,
     yesEmoji:'😛', noEmoji:'😐' },
   { key:'E', navn:'Øreflipp', tittel:'Øreflippen 👂', sporsmal:'Henger øreflippen din løst ned (ikke festet direkte til hodet)?',
-    domLabel:'Løs øreflipp', recLabel:'Fast øreflipp', domCode:'E-', recCode:'ee', yesIsDom:true,
+    domLabel:'Løs øreflipp', recLabel:'Fast øreflipp', yesIsDom:true,
     yesEmoji:'👂', noEmoji:'👂' },
   { key:'H', navn:'Hårvirvel', tittel:'Hårvirvelen 🌀', sporsmal:'Virvler håret ditt med klokka, sett bakfra?',
-    domLabel:'Med klokka', recLabel:'Mot klokka', domCode:'H-', recCode:'hh', yesIsDom:true,
+    domLabel:'Med klokka', recLabel:'Mot klokka', yesIsDom:true,
     yesEmoji:'🌀', noEmoji:'🔄' },
   { key:'D', navn:'Tommelbøy', tittel:'Tommelen 👍', sporsmal:'Kan du bøye tommelen tydelig bakover ("haiker-tommel")?',
-    domLabel:'Rett tommel', recLabel:'Haiker-tommel', domCode:'D-', recCode:'dd', yesIsDom:false,
+    domLabel:'Rett tommel', recLabel:'Haiker-tommel', yesIsDom:false,
     yesEmoji:'👍', noEmoji:'👍' },
   { key:'W', navn:'Hårfeste', tittel:'Hårfestet 📐', sporsmal:'Har du en tydelig spiss i hårfestet (widow\'s peak)?',
-    domLabel:"Widow's peak", recLabel:'Rett hårfeste', domCode:'W-', recCode:'ww', yesIsDom:true,
+    domLabel:"Widow's peak", recLabel:'Rett hårfeste', yesIsDom:true,
     yesEmoji:'📐', noEmoji:'➖' },
   { key:'B', navn:'Øyefarge', tittel:'Øynene 👀', sporsmal:'Har du mørke (brune) øyne?',
-    domLabel:'Mørke øyne', recLabel:'Lyse øyne', domCode:'B-', recCode:'bb', yesIsDom:true,
+    domLabel:'Mørke øyne', recLabel:'Lyse øyne', yesIsDom:true,
     yesEmoji:'🟤', noEmoji:'🔵' },
 ];
 
@@ -488,6 +521,7 @@ window.setSex = function(s){
   state.kjonn = s;
   document.getElementById('sex-m').classList.toggle('active', s==='M');
   document.getElementById('sex-f').classList.toggle('active', s==='F');
+  document.getElementById('sex-x').classList.toggle('active', s==='X');
 };
 
 window.goToQuiz = function(){
@@ -497,7 +531,7 @@ window.goToQuiz = function(){
     if(v.length > 24){ showErr('err-navn','Bruk bare fornavnet — maks 24 tegn.'); return; }
     state.navn = v;
   }
-  if(!state.kjonn){ showErr('err-navn','Velg kjønn.'); return; }
+  if(!state.kjonn){ showErr('err-navn','Velg ett av de tre alternativene. «Vil ikke svare» er helt greit — feltet er bare pynt i midten av hjulet.'); return; }
   document.getElementById('step-navn').classList.add('hidden');
   document.getElementById('step-quiz').classList.remove('hidden');
   renderProgress();
@@ -1150,5 +1184,6 @@ function lagKlassekode(){
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
 </body>
 </html>

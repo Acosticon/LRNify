@@ -378,22 +378,29 @@
   .card .label .title{font-family:'Chewy',cursive;font-size:1.3rem;line-height:1.1;}
   .card .label .tag{font-weight:800;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:4px;}
 
-  /* låst-tilstand (klar for Fase 2 — ikke aktiv ennå) */
+  /* låst-tilstand (klar for Fase 2 — ikke aktiv ennå).
+     Låsen sier hva den betyr: et kort uten forklaring leses som en
+     betalingsmur på et produkt som er gratis. */
   .card[data-locked="true"]{
     opacity:.6;
     pointer-events:none;
     position:relative;
   }
   .card[data-locked="true"]::after{
-  content:'🔒';
-  position:absolute;
-  inset:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(255,255,255,.7);
-  font-size:3rem;
-}
+    content:'🔒 Kommer snart';
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:0 10px;
+    background:rgba(255,255,255,.78);
+    font-family:'Chewy',cursive;
+    font-size:1.05rem;
+    line-height:1.2;
+    color:var(--ink);
+  }
   footer{
     text-align:center;padding:24px;color:var(--muted);
     font-weight:700;font-size:.85rem;
@@ -517,6 +524,7 @@
     <a href="#laereplan">Læreplan (LK20)</a>
     <a href="#skoler">For skoler</a>
     <a href="#kontakt">Kontakt</a>
+    <a href="/personvern/">Personvern</a>
     <!-- Kun for admin-kontoer, se auth/lrnify-auth.js#erAdmin. Skjult til
          innlogging er avklart, for å unngå et glimt av lenken for alle. -->
     <a href="/bruk/" id="adminLenke" style="display:none;">📊 Bruksstatistikk</a>
@@ -588,7 +596,7 @@
   </section>
 
   <footer>
-    <div>LRNify · lær gjennom lek · © 2026</div>
+    <div>LRNify · lær gjennom lek · © 2026 · <a href="/personvern/" style="color:inherit;">Personvern</a></div>
     <a class="footer-social" href="https://www.instagram.com/lrnify.no/" target="_blank" rel="noopener noreferrer" aria-label="LRNify på Instagram">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.5" y2="6.5"/></svg>
       @lrnify.no
@@ -685,6 +693,14 @@ const TEACHER_RESOURCES = [
    AKTIVITETER
    Disse ligger i aktiviteter/-mappen.
    Legg til flere ved å kopiere objektet under og endre title/file/category.
+
+   Kortbilde: renderCards() henter media/aktiviteter/{mappenavn}.png
+   automatisk — ingen egen konfig trengs her. Alle sju har nå et bilde;
+   "Tankesky" og "Ville du heller..." fikk sitt generert som et enkelt
+   systematisk emblem (ikon + fagfarge på rund plate, se
+   media/cards/README-kort.md) i stedet for en bestilt illustrasjon —
+   bytt gjerne ut med ekte kortkunst i samme filnavn og størrelse
+   (1000×1000) når/hvis den lages.
    ========================================================= */
 const ACTIVITIES = [
   { title:"Terningspill", file:"terningspill/index.html", category:"KRLE", icon:"globe", color:"#0891b2", size: "S", locked:false },
@@ -758,7 +774,7 @@ function renderCards(items){
     a.className = 'card';
     a.href = g.locked ? '#' : (getCardBasePath() + g.file);
     a.setAttribute('role','listitem');
-    a.setAttribute('aria-label', g.title + (g.locked ? ' (låst)' : '') );
+    a.setAttribute('aria-label', g.title + (g.locked ? ' – kommer snart, ikke tilgjengelig ennå' : '') );
     a.dataset.locked = g.locked;
     a.dataset.category = g.category;
     a.style.transform = 'rotate(' + ((i % 2 === 0) ? -1 : 1) + 'deg)';

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="no">
+<html lang="nb">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -176,6 +176,7 @@ let totalSecs=5*60;
 let remainingSecs=totalSecs;
 let timer=null;
 let running=false;
+let endsAt=0;
 
 // Web Audio for alarm
 let audioCtx=null;
@@ -216,6 +217,16 @@ function updateDisplay(){
   document.getElementById('status-msg').style.display=remainingSecs<=0?'block':'none';
 }
 
+function tick(){
+  remainingSecs=Math.max(0,Math.ceil((endsAt-Date.now())/1000));
+  if(remainingSecs<=0){
+    remainingSecs=0;clearInterval(timer);running=false;
+    document.getElementById('start-btn').textContent='▶ Start';
+    beep();
+  }
+  updateDisplay();
+}
+
 function startStop(){
   if(running){
     clearInterval(timer);running=false;
@@ -225,15 +236,14 @@ function startStop(){
     if(remainingSecs<=0)return;
     running=true;
     document.getElementById('start-btn').textContent='⏸ Pause';
-    timer=setInterval(()=>{
-      remainingSecs--;
-      if(remainingSecs<=0){
-        remainingSecs=0;clearInterval(timer);running=false;
-        document.getElementById('start-btn').textContent='▶ Start';
-        beep();
-      }
-      updateDisplay();
-    },1000);
+    /* Vi regner mot et sluttidspunkt i stedet for å telle ned én gang per
+       tikk. Nettlesere struper timere i faner som ikke er synlige, ofte
+       til ett kall i minuttet — en nedtelling som bare telte tikk kunne
+       da bli flere minutter for sen når læreren byttet faneark.
+       Nå henter vi tida på nytt hvert tikk, så visningen tar seg inn
+       igjen med én gang fanen er framme, og alarmen går til riktig tid. */
+    endsAt=Date.now()+remainingSecs*1000;
+    timer=setInterval(tick,250);
   }
   updateDisplay();
 }
@@ -275,5 +285,6 @@ updateDisplay();
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
 </body>
 </html>
