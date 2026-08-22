@@ -687,6 +687,15 @@ const TEACHER_RESOURCES = [
    AKTIVITETER
    Disse ligger i aktiviteter/-mappen.
    Legg til flere ved å kopiere objektet under og endre title/file/category.
+
+   Kortbilde: renderCards() henter media/aktiviteter/{mappenavn}.png
+   automatisk — ingen egen konfig trengs her. "Tankesky" og
+   "Ville du heller..." mangler denne fila i dag (bekreftet: aldri
+   lagt til i git-historikken); begge faller trygt tilbake til det
+   generiske ikonet (icon:"sky"/"train"), men ser dermed mindre
+   ferdige ut enn resten av fanen. Legg PNG-en i media/aktiviteter/
+   med samme filnavn som mappa (tankesky.png, villeduheller.png) for
+   å lukke det — ingen kodeendring nødvendig utover selve bildet.
    ========================================================= */
 const ACTIVITIES = [
   { title:"Terningspill", file:"terningspill/index.html", category:"KRLE", icon:"globe", color:"#0891b2", size: "S", locked:false },
