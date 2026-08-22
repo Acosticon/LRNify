@@ -95,13 +95,10 @@ button { font-family: var(--font-u); cursor: pointer; }
 .hud-title { font-family: var(--font-d); font-style: italic; font-size: 17px; color: var(--gold); }
 .hud-round { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-dim); background: var(--surface2); padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); }
 .hud-spacer { flex: 1; }
-.hud-meters { display: flex; gap: 18px; }
 
-.meter { display: flex; align-items: center; gap: 8px; }
-.meter-label { font-size: 12px; color: var(--text-dim); white-space: nowrap; }
-.meter-track { width: 70px; height: 6px; background: var(--surface3); border-radius: 4px; overflow: hidden; }
-.meter-fill { height: 100%; background: linear-gradient(90deg, var(--emerald), var(--gold)); border-radius: 4px; transition: width .3s; }
-.meter-val { font-family: var(--font-mono); font-size: 12px; color: var(--muted); min-width: 20px; }
+.scoreboard { display: flex; align-items: baseline; gap: 8px; font-size: 13.5px; color: var(--text-dim); white-space: nowrap; }
+.scoreboard strong { font-family: var(--font-mono); font-size: 16px; color: var(--text); }
+.scoreboard .score-vs { color: var(--muted); }
 
 /* ─── Fremdriftsstripe (kampanjeposisjon) ──────────── */
 .progress-wrap { width: 100%; max-width: 720px; margin: 18px auto 0; padding: 0 16px; }
@@ -141,6 +138,22 @@ button { font-family: var(--font-u); cursor: pointer; }
 .panel-tagline { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
 .panel-status { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); margin-bottom: 18px; }
 
+.matrix-details { margin-bottom: 18px; }
+.matrix-details summary { cursor: pointer; font-size: 12.5px; color: var(--gold); font-weight: 600; list-style: none; }
+.matrix-details summary::-webkit-details-marker { display: none; }
+.matrix-details summary::before { content: '▸ '; }
+.matrix-details[open] summary::before { content: '▾ '; }
+.matrix-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; }
+.matrix-table th, .matrix-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
+.matrix-table thead th { background: var(--surface2); color: var(--muted); font-weight: 600; font-size: 11px; }
+.matrix-table tbody th { background: var(--surface2); color: var(--text-dim); font-weight: 600; text-align: left; padding-left: 10px; }
+.matrix-table td { font-family: var(--font-mono); color: var(--text); }
+.matrix-table .cell-cc { background: rgba(62,142,126,.12); }
+.matrix-table .cell-dd { background: rgba(201,162,39,.08); }
+.matrix-table .cell-dc { background: rgba(201,82,75,.1); }
+.matrix-table .cell-cd { background: rgba(201,82,75,.1); }
+.matrix-note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
 .voice-tag { font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
 .voice-tag.gold { background: rgba(201,162,39,.18); color: var(--gold); border: 1px solid rgba(201,162,39,.4); }
 .voice-tag.red { background: rgba(201,82,75,.18); color: var(--crimson); border: 1px solid rgba(201,82,75,.4); }
@@ -158,12 +171,25 @@ button { font-family: var(--font-u); cursor: pointer; }
 
 /* Rundeutfall (vises inline i møtekortet) */
 .round-reveal { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 16px; margin-bottom: 14px; }
-.round-reveal-title { font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-.telegram-quote { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-dim); line-height: 1.5; }
+.round-reveal-title { font-size: 14px; font-weight: 600; margin-bottom: 10px; }
+.round-points { display: flex; gap: 16px; margin-bottom: 10px; }
+.round-points-you, .round-points-them { font-size: 13px; color: var(--text-dim); }
+.round-points-you strong { color: var(--emerald); font-family: var(--font-mono); font-size: 16px; }
+.round-points-them strong { color: var(--gold); font-family: var(--font-mono); font-size: 16px; }
+.telegram-quote { font-family: var(--font-mono); font-size: 12.5px; color: var(--text-dim); line-height: 1.5; margin-bottom: 8px; }
+.round-trust { font-size: 12px; color: var(--muted); }
 .telegram-special { font-size: 12px; margin-top: 8px; padding: 6px 10px; border-radius: var(--r); }
 .telegram-special.gold { background: rgba(201,162,39,.12); color: var(--gold); }
 .telegram-special.red { background: rgba(201,82,75,.12); color: var(--crimson); }
-.telegram-delta { font-family: var(--font-mono); font-size: 14px; font-weight: 700; white-space: nowrap; }
+
+/* Poengoppgjør (refleksjon + rapport) */
+.score-result { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r); padding: 12px 14px; }
+.score-result .score-you, .score-result .score-them { font-size: 13.5px; color: var(--text-dim); }
+.score-result .score-you strong, .score-result .score-them strong { font-family: var(--font-mono); font-size: 18px; color: var(--text); }
+.score-result .score-vs { color: var(--muted); }
+.score-result-label { margin-left: auto; font-size: 11.5px; color: var(--gold); font-weight: 600; text-transform: uppercase; letter-spacing: .3px; }
+.score-result-total { margin: -8px 0 22px; justify-content: center; }
+.score-result-total .score-result-label { margin-left: 0; }
 
 /* Refleksjon: quiz */
 .reflection-voice-card { padding: 0; border: none; background: none; box-shadow: none; }
@@ -247,9 +273,10 @@ button { font-family: var(--font-u); cursor: pointer; }
   .title-card, .intro-card { padding: 28px 20px; }
   .title-name { font-size: 32px; }
   .hud-bar { flex-wrap: wrap; gap: 10px; }
-  .hud-meters { gap: 10px; flex-wrap: wrap; }
-  .meter-track { width: 50px; }
+  .scoreboard { font-size: 12px; }
   .epithet-title { font-size: 26px; }
   .encounter-card, .reflection-card { padding: 18px; }
   .quiz-options { grid-template-columns: 1fr; }
+  .score-result { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .score-result-label { margin-left: 0; }
 }

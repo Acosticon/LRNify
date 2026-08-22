@@ -80,7 +80,7 @@
     <span class="hud-title">Diplomatiet</span>
     <span class="hud-round" id="hud-round">Runde 1 / 5</span>
     <div class="hud-spacer"></div>
-    <div id="meters" class="hud-meters"></div>
+    <div id="scoreboard" class="scoreboard"></div>
   </div>
   <div id="encounter-progress" class="progress-wrap"></div>
   <div class="encounter-layout">
@@ -88,6 +88,21 @@
       <div class="panel-nation-header" id="encounter-nation-header"></div>
       <p class="panel-tagline" id="encounter-tagline"></p>
       <div class="panel-status" id="encounter-status"></div>
+
+      <details class="matrix-details">
+        <summary>Vis poengmatrisen</summary>
+        <table class="matrix-table">
+          <thead>
+            <tr><th></th><th>De samarbeider</th><th>De sviker</th></tr>
+          </thead>
+          <tbody>
+            <tr><th>Du samarbeider</th><td class="cell-cc">Du 3 · De 3</td><td class="cell-cd">Du 0 · De 5</td></tr>
+            <tr><th>Du sviker</th><td class="cell-dc">Du 5 · De 0</td><td class="cell-dd">Du 1 · De 1</td></tr>
+          </tbody>
+        </table>
+        <p class="matrix-note">Samme matrise gjelder mot alle nasjoner, hver runde.</p>
+      </details>
+
       <div id="encounter-action-area" class="encounter-action-area"></div>
     </div>
   </div>
