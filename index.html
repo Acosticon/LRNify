@@ -378,7 +378,7 @@
   .card .label .title{font-family:'Chewy',cursive;font-size:1.3rem;line-height:1.1;}
   .card .label .tag{font-weight:800;font-size:.75rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:4px;}
 
-  /* låst-tilstand (klar for Fase 2 — ikke aktiv ennå).
+  /* låst-tilstand — brukes i dag til "kommer snart"-kort.
      Låsen sier hva den betyr: et kort uten forklaring leses som en
      betalingsmur på et produkt som er gratis. */
   .card[data-locked="true"]{
@@ -400,6 +400,26 @@
     font-size:1.05rem;
     line-height:1.2;
     color:var(--ink);
+  }
+
+  /* admin-forhåndsvisning: samme kort som elever ser som "kommer snart",
+     men en innlogget admin (LRNifyAuth.erAdmin()) kan faktisk åpne det —
+     ingen låst-overlay, bare en liten merkelapp så det ikke forveksles
+     med et ferdig publisert spill. */
+  .card[data-admin-preview="true"]{opacity:1;pointer-events:auto;}
+  .card[data-admin-preview="true"]::after{content:none;}
+  .card[data-admin-preview="true"] .art::before{
+    content:'👁️ Kun admin';
+    position:absolute;
+    inset:auto 0 0 0;
+    z-index:10;
+    background:var(--ink);
+    color:var(--cream);
+    font-weight:800;
+    font-size:.68rem;
+    letter-spacing:.03em;
+    text-align:center;
+    padding:4px 6px;
   }
   footer{
     text-align:center;padding:24px;color:var(--muted);
@@ -608,7 +628,12 @@
    SPILLDATA — eneste sted du redigerer for å legge til spill.
    ENDRE "file" til det EKSAKTE filnavnet i games/-mappen.
    "category" brukes ikke til filtrering ennå (klar for seinere).
-   "locked" styrer betalingsmur (Fase 2) — la stå false nå.
+   "locked" viser kortet som "🔒 Kommer snart" og gjør det bevisst
+   ikke-klikkbart for vanlige besøkende — for et spill som ikke finnes i
+   games/ ennå, eller som er ferdig men ikke skal vises for alle enda.
+   En innlogget admin (LRNifyAuth.erAdmin()) ser samme kort, men får
+   lenken til å virke — se isAdminUser/data-admin-preview under.
+   Samme flagg er tenkt gjenbrukt til betalingsmur i Fase 2 seinere.
    ========================================================= */
 const GAMES = [
   { title:"Kartografen",           file:"geografi/kartografen/index.html",   category:"Geografi", icon:"globe", color:"#0f766e", size: "L", locked:false },
@@ -749,6 +774,11 @@ let currentMode = 'games';
 let activeCategory = 'all';
 let showBeta = false;
 
+// Satt av LRNifyAuth.erAdmin() nederst på sida. Før den har svart antar vi
+// nei, slik at ingen ser et ulåst "kommer snart"-kort i det korte glimtet
+// før innloggingsstatusen er avklart.
+let isAdminUser = false;
+
 // Lek-kortene ligger sammen med læringsspillene i games/, bare i en egen fane
 function getCardBasePath(){
   if(currentMode === 'games' || currentMode === 'lek') return 'games/';
@@ -770,12 +800,19 @@ function renderCards(items){
     currentMode === 'lek' ? 'Lek' : 'Aktiviteter');
 
   items.forEach((g,i)=>{
+    // En admin ser fortsatt at kortet er merket "kommer snart" (se
+    // data-admin-preview under), men får lenken til å faktisk virke —
+    // resten av besøkende er uberørt av dette.
+    const adminPreview = g.locked && isAdminUser;
+    const stillLocked = g.locked && !isAdminUser;
+
     const a = document.createElement('a');
     a.className = 'card';
-    a.href = g.locked ? '#' : (getCardBasePath() + g.file);
+    a.href = stillLocked ? '#' : (getCardBasePath() + g.file);
     a.setAttribute('role','listitem');
-    a.setAttribute('aria-label', g.title + (g.locked ? ' – kommer snart, ikke tilgjengelig ennå' : '') );
-    a.dataset.locked = g.locked;
+    a.setAttribute('aria-label', g.title + (stillLocked ? ' – kommer snart, ikke tilgjengelig ennå' : adminPreview ? ' – kommer snart, kun synlig for admin' : '') );
+    a.dataset.locked = stillLocked;
+    a.dataset.adminPreview = adminPreview;
     a.dataset.category = g.category;
     a.style.transform = 'rotate(' + ((i % 2 === 0) ? -1 : 1) + 'deg)';
 
@@ -960,10 +997,17 @@ if(iMenyen) LRNifyAuth.mountLoginWidget(iMenyen);
 
 LRNifyAuth.onAuthChange(bruker=>{
   const adminLenke=document.getElementById('adminLenke');
-  if(!adminLenke) return;
-  if(!bruker){ adminLenke.style.display='none'; return; }
+  if(!bruker){
+    if(adminLenke) adminLenke.style.display='none';
+    if(isAdminUser){ isAdminUser=false; applyFilters(); }
+    return;
+  }
   LRNifyAuth.erAdmin().then(erAdmin=>{
-    adminLenke.style.display = erAdmin ? '' : 'none';
+    if(adminLenke) adminLenke.style.display = erAdmin ? '' : 'none';
+    // Kortene for "kommer snart"-spillene er allerede tegnet på dette
+    // tidspunktet (erAdmin() svarer asynkront) — tegn dem på nytt så en
+    // admin får opp de ulåste kortene uten å måtte bytte fane.
+    if(isAdminUser !== erAdmin){ isAdminUser = erAdmin; applyFilters(); }
   });
 });
 </script>
