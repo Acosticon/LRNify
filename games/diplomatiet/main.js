@@ -4,7 +4,7 @@
 import {
   createInitialState, getCurrentNation, isCampaignComplete, isEncounterComplete,
   resolveEncounterRound, advanceToNextNation, getStrategyGuessOptions, recordGuess, isGuessCorrect,
-  getHighlights, saveGame, loadGame, clearSave,
+  getHighlights, getScoreDiffHistory, saveGame, loadGame, clearSave,
   ROUNDS_PER_ENCOUNTER, TOTAL_ENCOUNTERS, STRATEGY_THEORY,
   escapeHtml as esc,
 } from './game.js';
@@ -16,7 +16,6 @@ let awaitingChoice = true; // encounter-skjerm: true = vis valgknapper, false = 
 let currentGuess = null; // reflection-skjerm: valgt strategi-id før bekreftet
 
 const $ = sel => document.querySelector(sel);
-const scoreColor = v => (v >= 25 ? '#3E8E7E' : v <= -25 ? '#C9524B' : '#C9A227');
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
@@ -98,12 +97,26 @@ function renderEncounterScreen() {
       <p class="panel-leader">${esc(nation.leader)}</p>
     </div>`;
   $('#encounter-tagline').textContent = nation.tagline;
-  $('#encounter-status').innerHTML = `
-    <span>Tillit: <strong style="color:${scoreColor(rel.score)}">${rel.score}</strong></span>
-    ${rel.allianceActive ? '<span class="voice-tag gold">Allianse</span>' : ''}
-    ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}`;
+  $('#encounter-history').innerHTML = renderHistoryStrip(rel, nation);
 
   renderActionArea();
+}
+
+// Viser hele møtehistorikken mot inneværende nasjon, runde for runde – slik
+// at mønsteret i motstanderens svar er synlig, ikke bare forrige runde.
+function renderHistoryStrip(rel, nation) {
+  if (!rel.history.length) return '<p class="history-empty">Ingen runder spilt ennå – velg for å starte mønsteret.</p>';
+  const icon = m => (m === 'C' ? '🤝' : '⚔️');
+  const row = (label, pick) => `
+    <div class="history-row">
+      <span class="history-label">${esc(label)}</span>
+      <span class="history-icons">${rel.history.map(h => `<span class="history-icon ${pick(h) === 'C' ? 'coop' : 'def'}">${icon(pick(h))}</span>`).join('')}</span>
+    </div>`;
+  return `
+    <div class="history-strip">
+      ${row('Du', h => h.player)}
+      ${row(nation.name, h => h.nation)}
+    </div>`;
 }
 
 function renderActionArea() {
@@ -122,11 +135,6 @@ function renderActionArea() {
     const nation = getCurrentNation(state);
     const quoteArr = ev.nationMove === 'C' ? nation.quotes.cooperate : nation.quotes.defect;
     const quote = quoteArr[Math.floor(Math.random() * quoteArr.length)];
-    const special = [];
-    if (ev.allianceFormed) special.push(`<p class="telegram-special gold">🕊️ Allianse dannet! ${esc(nation.quotes.allianceFormed)}</p>`);
-    if (ev.allianceBroken) special.push(`<p class="telegram-special red">💔 Alliansen er brutt. ${esc(nation.quotes.allianceBroken)}</p>`);
-    if (ev.warStart) special.push(`<p class="telegram-special red">⚔️ Konflikt utbrutt. ${esc(nation.quotes.warStart)}</p>`);
-    if (ev.peaceRestored) special.push(`<p class="telegram-special gold">🕊️ Fred gjenopprettet. ${esc(nation.quotes.peaceRestored)}</p>`);
 
     const encounterDone = isEncounterComplete(state);
     area.innerHTML = `
@@ -137,8 +145,6 @@ function renderActionArea() {
           <span class="round-points-them">${esc(nation.name)}: <strong>+${ev.theirPoints}</strong> poeng</span>
         </div>
         <p class="telegram-quote">«${esc(quote)}»</p>
-        <p class="round-trust">Tillit <span style="color:${ev.trustDelta >= 0 ? '#3E8E7E' : '#C9524B'}">${ev.trustDelta > 0 ? '+' : ''}${ev.trustDelta}</span></p>
-        ${special.join('')}
       </div>
       <button class="btn-primary btn-send" id="btn-next-round">${encounterDone ? 'Se oppsummering →' : 'Neste runde →'}</button>`;
 
@@ -175,9 +181,9 @@ function showReflectionScreen() {
 
   const hlRow = (item, kind) => item ? `
     <div class="highlight ${kind}">
-      <span class="highlight-tag">${kind === 'win' ? 'Beste runde (tillit)' : 'Verste runde (tillit)'}</span>
+      <span class="highlight-tag">${kind === 'win' ? 'Beste runde' : 'Verste runde'}</span>
       <span class="highlight-text">Runde ${item.round}: ${item.outcome}</span>
-      <span class="highlight-delta">${item.trustDelta > 0 ? '+' : ''}${item.trustDelta}</span>
+      <span class="highlight-delta">${item.diff > 0 ? '+' : ''}${item.diff}</span>
     </div>` : '';
 
   const diff = rel.myScore - rel.theirScore;
@@ -187,11 +193,6 @@ function showReflectionScreen() {
     <div class="voice-card-header">
       <span class="voice-icon">${nation.emblem}</span>
       <span class="voice-name">${esc(nation.leader)}<span class="voice-sub">${esc(nation.name)}</span></span>
-      <span class="voice-score" style="color:${scoreColor(rel.score)}">
-        Tillit ${rel.score}
-        ${rel.allianceActive ? '<span class="voice-tag gold">Allianse</span>' : ''}
-        ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}
-      </span>
     </div>
     <div class="score-result">
       <span class="score-you">Du <strong>${rel.myScore}</strong></span>
@@ -199,7 +200,7 @@ function showReflectionScreen() {
       <span class="score-them">${esc(nation.name)} <strong>${rel.theirScore}</strong></span>
       <span class="score-result-label">${resultLabel}</span>
     </div>
-    ${renderSparkline(rel.trustHistory, nation.color)}
+    ${renderSparkline(getScoreDiffHistory(rel), nation.color)}
     ${hlRow(hl.win, 'win')}
     ${hlRow(hl.loss, 'loss')}`;
 

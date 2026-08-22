@@ -3,7 +3,7 @@
 
 import {
   NATIONS, STRATEGY_THEORY, TOTAL_ENCOUNTERS, ROUNDS_PER_ENCOUNTER,
-  getAchievements, getEpithet, getHighlights, getStats, getRelationTier,
+  getAchievements, getEpithet, getHighlights, getStats, getOutlookTier, getScoreDiffHistory,
   buildReportPrompt, escapeHtml as esc,
 } from './game.js';
 
@@ -45,10 +45,10 @@ function generateFallbackReport(state) {
   const stats = getStats(state);
 
   const headline = (() => {
-    if (stats.allianceBrokenCount >= 1) return 'Et brutt løfte definerte kampanjen';
-    if (stats.cooperateRate >= 0.65 && stats.warCount === 0) return 'Diplomatiet valgte tillit, og tilliten lønte seg';
-    if (stats.cooperateRate < 0.3) return 'Opprustning ga makt, men ingen venner';
-    if (stats.everWarCount >= 2) return 'Flere fronter, få seire';
+    if (stats.wonCount === NATIONS.length) return 'Ren seier på poeng, mot alle seks';
+    if (stats.totalMyScore >= stats.totalTheirScore && stats.cooperateRate > 0.3 && stats.cooperateRate < 0.7) return 'Tilpasning slo fast strategi';
+    if (stats.cooperateRate < 0.3) return 'Svik ga poeng, men ingen faste allierte';
+    if (stats.cooperateRate > 0.7 && stats.totalMyScore < stats.totalTheirScore) return 'Samarbeid som ikke ble gjengjeldt nok';
     return 'Seks møter med beregnet balansegang';
   })();
 
@@ -57,7 +57,7 @@ function generateFallbackReport(state) {
 
 function buildLessonText(state, stats) {
   const pct = Math.round(stats.cooperateRate * 100);
-  const bestScoreNation = stats.bestScoreNation, worstScoreNation = stats.worstScoreNation;
+  const bestScoreNation = stats.bestNation, worstScoreNation = stats.worstNation;
   const bestDiff = state.relations[bestScoreNation.id].myScore - state.relations[bestScoreNation.id].theirScore;
   const worstDiff = state.relations[worstScoreNation.id].myScore - state.relations[worstScoreNation.id].theirScore;
 
@@ -81,18 +81,20 @@ function buildLessonText(state, stats) {
   return lines.join(' ');
 }
 
-// ─── Mini-kurve for én nasjons forholdsutvikling ──────
-export function renderSparkline(scoreHistory, color) {
-  if (!scoreHistory.length) return '<p class="voice-sparkline-empty">Ingen møter ennå.</p>';
+// ─── Mini-kurve for poeng-differansen gjennom møtet ───
+// Auto-skalert symmetrisk rundt 0, ut fra største utslag i serien.
+export function renderSparkline(values, color) {
+  if (!values.length) return '<p class="voice-sparkline-empty">Ingen runder ennå.</p>';
   const W = 160, H = 46, PAD = 5;
-  const n = scoreHistory.length;
+  const n = values.length;
+  const maxAbs = Math.max(1, ...values.map(v => Math.abs(v)));
   const x = i => (n > 1 ? PAD + (i / (n - 1)) * (W - 2 * PAD) : W / 2);
-  const y = v => PAD + (1 - (v + 100) / 200) * (H - 2 * PAD);
-  const pts = scoreHistory.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
-  const last = scoreHistory[scoreHistory.length - 1];
+  const y = v => PAD + (1 - (v + maxAbs) / (2 * maxAbs)) * (H - 2 * PAD);
+  const pts = values.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+  const last = values[values.length - 1];
 
   return `
-    <svg viewBox="0 0 ${W} ${H}" class="voice-sparkline" role="img" aria-label="Utvikling i forhold over ${n} runder">
+    <svg viewBox="0 0 ${W} ${H}" class="voice-sparkline" role="img" aria-label="Poeng-differanse gjennom ${n} runder">
       <line x1="${PAD}" y1="${y(0).toFixed(1)}" x2="${W - PAD}" y2="${y(0).toFixed(1)}" stroke="#28323D" stroke-width="1" stroke-dasharray="2 2"/>
       <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
       <circle cx="${x(n - 1).toFixed(1)}" cy="${y(last).toFixed(1)}" r="3.5" fill="${color}" stroke="#0B0E13" stroke-width="1.5"/>
@@ -105,12 +107,10 @@ export function renderReport(state, reportData) {
   const epithet = getEpithet(state);
   const stats = getStats(state);
 
-  const scoreColor = v => (v >= 25 ? '#3E8E7E' : v <= -25 ? '#C9524B' : '#C9A227');
-
   const voiceCards = NATIONS.map(n => {
     const rel = state.relations[n.id];
     const hl = getHighlights(state, n.id);
-    const tier = getRelationTier(rel.score);
+    const tier = getOutlookTier(rel.history);
     const quote = tier === 'Positive' ? n.quotes.finalPositive : tier === 'Negative' ? n.quotes.finalNegative : n.quotes.finalNeutral;
     const theory = STRATEGY_THEORY[n.strategy];
     const guess = state.reflectionGuesses[n.id];
@@ -118,9 +118,9 @@ export function renderReport(state, reportData) {
 
     const hlRow = (item, kind) => item ? `
       <div class="highlight ${kind}">
-        <span class="highlight-tag">${kind === 'win' ? 'Beste runde (tillit)' : 'Verste runde (tillit)'}</span>
+        <span class="highlight-tag">${kind === 'win' ? 'Beste runde' : 'Verste runde'}</span>
         <span class="highlight-text">Runde ${item.round}: ${item.outcome}</span>
-        <span class="highlight-delta">${item.trustDelta > 0 ? '+' : ''}${item.trustDelta}</span>
+        <span class="highlight-delta">${item.diff > 0 ? '+' : ''}${item.diff}</span>
       </div>` : '';
 
     const diff = rel.myScore - rel.theirScore;
@@ -131,11 +131,6 @@ export function renderReport(state, reportData) {
         <div class="voice-card-header">
           <span class="voice-icon">${n.emblem}</span>
           <span class="voice-name">${esc(n.leader)}<span class="voice-sub">${esc(n.name)}</span></span>
-          <span class="voice-score" style="color:${scoreColor(rel.score)}">
-            Tillit ${rel.score}
-            ${rel.allianceActive ? '<span class="voice-tag gold">Allianse</span>' : ''}
-            ${rel.warActive ? '<span class="voice-tag red">Krig</span>' : ''}
-          </span>
         </div>
         <div class="score-result">
           <span class="score-you">Du <strong>${rel.myScore}</strong></span>
@@ -143,7 +138,7 @@ export function renderReport(state, reportData) {
           <span class="score-them">De <strong>${rel.theirScore}</strong></span>
           <span class="score-result-label">${resultLabel}</span>
         </div>
-        ${renderSparkline(rel.trustHistory, n.color)}
+        ${renderSparkline(getScoreDiffHistory(rel), n.color)}
         <p class="voice-strategy">Strategi: <strong>${esc(theory.name)}</strong> – ${esc(theory.desc)}
           ${guess ? `<span class="guess-tag ${guessCorrect ? 'correct' : 'wrong'}">${guessCorrect ? '✓ Du gjettet riktig' : '✗ Du gjettet feil'}</span>` : ''}
         </p>
