@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fangenes dilemma – LRNify</title>
+<meta name="description" content="Møt fem personer, velg mellom samarbeid og svik, og bygg din egen strategi i dette korte spillet om tillit, svik og Prisoner's Dilemma.">
+<link rel="canonical" href="https://lrnify.no/games/fangenes-dilemma/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Fangenes dilemma – LRNify">
+<meta property="og:description" content="Møt fem personer, velg mellom samarbeid og svik, og bygg din egen strategi i dette korte spillet om tillit, svik og Prisoner's Dilemma.">
+<meta property="og:url" content="https://lrnify.no/games/fangenes-dilemma/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Fangenes dilemma – LRNify">
+<meta name="twitter:description" content="Møt fem personer, velg mellom samarbeid og svik, og bygg din egen strategi.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #241b12;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+    --green-soft:#c9f2d8;
+    --red:   #dc2626;
+    --red-soft:#ffd0d0;
+    --gridline:#e8dfc9;
+    --blue: #2563eb;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  [hidden] { display: none !important; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.4rem,4.5vw,2rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .8rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 6px 12px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SKJERMER ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+  @keyframes popIn { 0%{transform:scale(.5);opacity:0} 70%{transform:scale(1.08);opacity:1} 100%{transform:scale(1)} }
+
+  .stage-wrap {
+    max-width: 620px; margin: 0 auto; padding: 4px 16px 40px;
+    display: flex; flex-direction: column; gap: 14px;
+    animation: fadeIn .22s ease;
+  }
+  .stage-wrap.center { align-items: center; text-align: center; }
+
+  .hero-emoji { font-size: clamp(2rem,7vw,2.6rem); }
+  h1 { font-family: 'Chewy', cursive; font-size: clamp(1.7rem,6vw,2.4rem); line-height:1.15; }
+  h2 { font-family: 'Chewy', cursive; font-size: clamp(1.2rem,4.5vw,1.5rem); line-height:1.2; }
+  p.lead { font-weight: 700; color: var(--muted); font-size: clamp(.9rem,2.4vw,1.02rem); max-width: 460px; }
+
+  .card { background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink); padding: 16px 18px; width: 100%; }
+  .card.tight { padding: 12px 14px; }
+
+  button { font-family: 'Nunito', sans-serif; cursor: pointer; color: var(--ink); }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 14px 24px; font-size: 1.05rem; width: 100%; max-width: 340px;
+    min-height: 50px; transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity:.5; cursor:default; transform:none; box-shadow:0 6px 0 var(--ink); }
+  .btn-secondary {
+    font-weight: 800; background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 9px 16px; font-size: .9rem; transition: transform .1s, box-shadow .1s;
+  }
+  .btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .link-btn { background:none; border:none; box-shadow:none; font-weight:800; color:var(--blue); text-decoration:underline; font-size:.88rem; padding:4px; }
+
+  footer { text-align: center; font-weight: 700; font-size: .75rem; color: var(--muted); padding: 6px 16px 22px; }
+
+  /* ══ AVATAR ══ */
+  .avatar {
+    width: 60px; height: 60px; border-radius: 50%; border: 3px solid var(--ink);
+    display: flex; align-items: center; justify-content: center; font-size: 1.7rem;
+    background: #fff; flex-shrink: 0;
+  }
+  .avatar.big { width: 88px; height: 88px; font-size: 2.6rem; border-width: 4px; }
+  .avatar.you { background: #fff2c6; }
+
+  /* ══ KARAKTER-INTRO ══ */
+  .char-intro-card { display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .char-name { font-family:'Chewy', cursive; font-size:1.6rem; }
+  .char-personality { font-weight:700; color:var(--muted); font-size:.92rem; }
+  .char-hint { font-weight:800; font-size:.85rem; background:var(--cream); border:2px dashed var(--gridline); padding:8px 12px; }
+
+  /* ══ SPILLSKJERM ══ */
+  .hud { display:flex; justify-content:space-between; align-items:baseline; padding:0 2px; }
+  .hud .hud-label { font-weight:900; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); }
+  .hud .hud-value { font-weight:900; font-size:1.15rem; }
+  .hud .hud-value .coin { color:#b8860b; }
+
+  .vs-row { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .vs-side { display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; }
+  .vs-side .side-label { font-weight:900; font-size:.72rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .vs-mid { font-size:1.1rem; font-weight:900; color:var(--muted); }
+
+  .history-strip { display:flex; gap:6px; overflow-x:auto; padding:4px 2px; min-height: 34px; }
+  .hist-pair { display:flex; flex-direction:column; gap:2px; border:2px solid var(--gridline); background:#fff; padding:3px 6px; font-size:.9rem; flex-shrink:0; }
+  .hist-pair span { line-height:1.1; text-align:center; }
+
+  .choice-phase { display:flex; flex-direction:column; gap:10px; }
+  .choice-buttons { display:flex; gap:12px; }
+  .choice-btn {
+    flex:1; display:flex; flex-direction:column; align-items:center; gap:6px;
+    font-weight:900; border:4px solid var(--ink); box-shadow:0 6px 0 var(--ink);
+    padding:18px 8px; font-size:.92rem; background:var(--card); letter-spacing:.02em;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .choice-btn .emoji { font-size:1.9rem; }
+  .choice-btn.coop { background: var(--green-soft); }
+  .choice-btn.def  { background: var(--red-soft); }
+  .choice-btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .choice-btn:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .choice-btn:disabled { opacity:.4; }
+
+  .thinking { text-align:center; font-weight:800; color:var(--muted); padding:20px 0; font-size:1rem; }
+  .thinking .dots span { animation: blink 1s infinite; }
+  .thinking .dots span:nth-child(2){ animation-delay:.2s; }
+  .thinking .dots span:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+  .reveal-phase { display:flex; flex-direction:column; gap:12px; align-items:center; }
+  .reveal-row { display:flex; gap:14px; justify-content:center; width:100%; }
+  .reveal-card { flex:1; max-width:180px; background:#fff; border:4px solid var(--ink); box-shadow:0 6px 0 var(--ink); padding:12px 8px; text-align:center; animation: popIn .35s ease; }
+  .reveal-card .who { font-weight:900; font-size:.72rem; text-transform:uppercase; color:var(--muted); }
+  .reveal-card .emoji { font-size:2.1rem; margin:4px 0; }
+  .reveal-card .pts { font-weight:900; font-size:1.15rem; }
+  .reveal-card .pts.pos { color: var(--green); }
+  .reveal-card .pts.zero { color: var(--muted); }
+  .reveal-note { font-weight:800; font-size:.88rem; color:var(--muted); text-align:center; min-height:1.2em; }
+
+  /* ══ AVATAR-GRID (del 2) ══ */
+  .avatar-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; width:100%; }
+  .avatar-pick {
+    display:flex; flex-direction:column; align-items:center; gap:4px; background:var(--card);
+    border:3px solid var(--ink); box-shadow:0 4px 0 var(--ink); padding:10px 12px; width: 92px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .avatar-pick .avatar { width:46px; height:46px; font-size:1.4rem; }
+  .avatar-pick span.pname { font-weight:800; font-size:.78rem; }
+  .avatar-pick:hover { transform: translateY(-2px); }
+  .avatar-pick.selected { background: var(--yellow); box-shadow:0 4px 0 var(--ink), 0 0 0 3px var(--ink) inset; }
+
+  /* ══ MCQ ══ */
+  .option-list { display:flex; flex-direction:column; gap:8px; width:100%; }
+  .option-btn {
+    text-align:left; background:var(--card); border:3px solid var(--ink); box-shadow:0 4px 0 var(--ink);
+    padding:11px 14px; font-weight:800; font-size:.92rem; width:100%; transition: transform .1s, box-shadow .1s;
+  }
+  .option-btn:hover:not(:disabled) { transform: translateY(-1px); }
+  .option-btn:active:not(:disabled) { transform: translateY(3px); box-shadow:0 1px 0 var(--ink); }
+  .option-btn.correct { background: var(--green-soft); }
+  .option-btn.wrong { background: var(--red-soft); }
+  .option-btn:disabled { opacity: .55; }
+
+  /* ══ STRATEGIBYGGER ══ */
+  .qgroup { display:flex; flex-direction:column; gap:6px; width:100%; }
+  .qgroup .qtext { font-weight:800; font-size:.92rem; }
+  .segmented { display:flex; border:3px solid var(--ink); overflow:hidden; }
+  .segmented button { flex:1; padding:10px 6px; font-weight:900; font-size:.85rem; background:#fff; border:none; border-right:3px solid var(--ink); transition: background .1s; }
+  .segmented button:last-child { border-right:none; }
+  .segmented button.active { background: var(--yellow); }
+
+  /* ══ TURNERING / LAB ══ */
+  .leaderboard { display:flex; flex-direction:column; gap:8px; width:100%; }
+  .lb-row { display:flex; align-items:center; gap:8px; }
+  .lb-name { width: 84px; font-weight:900; font-size:.82rem; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .lb-name.me { color: var(--blue); }
+  .lb-bar-track { flex:1; background: var(--gridline); border:2px solid var(--ink); height:20px; position:relative; }
+  .lb-bar-fill { height:100%; background: var(--yellow); width:0%; transition: width .5s ease; }
+  .lb-bar-fill.me { background: var(--blue); }
+  .lb-score { width: 48px; text-align:right; font-weight:900; font-size:.82rem; flex-shrink:0; }
+
+  .lab-controls { display:flex; flex-direction:column; gap:14px; width:100%; }
+  .control-group { display:flex; flex-direction:column; gap:6px; }
+  .control-label { font-weight:800; font-size:.85rem; }
+  input[type=range] { width:100%; accent-color: var(--yellow); }
+  .lab-insight { font-weight:800; font-size:.88rem; color: var(--ink); background:#fff2c6; border:2px dashed var(--ink); padding:9px 12px; min-height: 1.3em; text-align:center; }
+
+  /* ══ MODAL (misforståelse-demo) ══ */
+  .modal-backdrop { position:fixed; inset:0; background:rgba(36,27,18,.55); display:flex; align-items:center; justify-content:center; padding:16px; z-index:50; }
+  .modal-backdrop[hidden] { display:none; }
+  .modal-card { background:var(--card); border:4px solid var(--ink); box-shadow:0 8px 0 var(--ink); padding:18px; max-width:420px; width:100%; max-height:88vh; overflow-y:auto; display:flex; flex-direction:column; gap:10px; }
+  .spiral-row { display:flex; gap:8px; align-items:center; font-weight:800; font-size:.95rem; }
+  .spiral-round { display:flex; gap:6px; }
+  .noise-tag { color: var(--red); font-weight:900; font-size:.78rem; }
+
+  /* ══ MATRISE ══ */
+  table.matrix { border-collapse: collapse; width:100%; font-weight:800; font-size:.82rem; text-align:center; }
+  table.matrix th, table.matrix td { border:2px solid var(--ink); padding:8px 4px; }
+  table.matrix th { background:#fff2c6; }
+  table.matrix td.best { background: var(--green-soft); }
+  table.matrix td.tempt { background:#ffe6a8; }
+  table.matrix td.worst { background: var(--red-soft); }
+
+  /* ══ REALITY / REFLECTION PAGER ══ */
+  .pager-dots { display:flex; gap:6px; justify-content:center; }
+  .pager-dots span { width:8px; height:8px; border-radius:50%; background: var(--gridline); border:2px solid var(--ink); }
+  .pager-dots span.active { background: var(--yellow); }
+
+  .badge-emoji { font-size: 3rem; }
+  .badge-title { font-family:'Chewy', cursive; font-size:1.6rem; }
+
+  @media (max-width: 420px) {
+    .reveal-card { max-width: 140px; padding:10px 6px; }
+    .avatar-pick { width: 80px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ═══════════════ START ═══════════════ -->
+<section class="screen active" id="screen-start">
+  <div class="stage-wrap center">
+    <div class="hero-emoji">🪙</div>
+    <h1>Fangenes dilemma</h1>
+    <p class="lead">Du skal møte noen mennesker. I hvert møte velger dere samtidig, uten å se hverandres valg først.</p>
+    <div class="card">
+      <p class="lead" style="margin-bottom:8px;"><strong style="color:var(--ink)">Målet ditt:</strong> Tjen så mye du kan.</p>
+      <p class="lead" style="font-size:.85rem;">Du får ikke vite hvem du møter, hva de kommer til å gjøre, eller hvor lenge dere holder på. Det må du finne ut selv.</p>
+    </div>
+    <button class="btn-primary" id="startBtn">Start spillet →</button>
+  </div>
+</section>
+
+<!-- ═══════════════ KARAKTER-INTRO ═══════════════ -->
+<section class="screen" id="screen-char-intro">
+  <div class="stage-wrap center">
+    <div class="card char-intro-card" id="charIntroCard"></div>
+    <button class="btn-primary" id="charIntroBtn">Møt personen</button>
+  </div>
+</section>
+
+<!-- ═══════════════ RUNDE / SPILL ═══════════════ -->
+<section class="screen" id="screen-match">
+  <div class="stage-wrap">
+    <div class="hud">
+      <span class="hud-label">Dine mynter</span>
+      <span class="hud-value"><span class="coin" id="coinCount">0</span> 🪙</span>
+    </div>
+
+    <div class="vs-row">
+      <div class="vs-side">
+        <div class="avatar you">🧑</div>
+        <span class="side-label">Du</span>
+      </div>
+      <div class="vs-mid">⚔️</div>
+      <div class="vs-side">
+        <div class="avatar" id="matchOppAvatar">😊</div>
+        <span class="side-label" id="matchOppName">—</span>
+      </div>
+    </div>
+
+    <div class="history-strip" id="historyStrip"></div>
+
+    <div class="card tight">
+      <div class="choice-phase" id="choicePhase">
+        <button class="choice-btn coop" data-choice="C"><span class="emoji">🤝</span><span>SAMARBEID</span></button>
+        <button class="choice-btn def" data-choice="D"><span class="emoji">⚡</span><span>SVIK</span></button>
+      </div>
+      <div class="thinking" id="thinkingPhase" hidden>Velger <span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+      <div class="reveal-phase" id="revealPhase" hidden>
+        <div class="reveal-row">
+          <div class="reveal-card">
+            <div class="who">Du</div>
+            <div class="emoji" id="revealYouEmoji">🤝</div>
+            <div class="pts" id="revealYouPts">+0</div>
+          </div>
+          <div class="reveal-card">
+            <div class="who" id="revealOppLabel">—</div>
+            <div class="emoji" id="revealOppEmoji">🤝</div>
+            <div class="pts" id="revealOppPts">+0</div>
+          </div>
+        </div>
+        <div class="reveal-note" id="revealNote"></div>
+        <button class="btn-primary" id="matchContinueBtn">Neste runde</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════ DEL 2: GJETT ═══════════════ -->
+<section class="screen" id="screen-guess">
+  <div class="stage-wrap center" id="guessWrap"></div>
+</section>
+
+<!-- ═══════════════ DEL 3: BYGG STRATEGI ═══════════════ -->
+<section class="screen" id="screen-build">
+  <div class="stage-wrap center">
+    <h1>Bygg din egen strategi</h1>
+    <p class="lead">Lag noen enkle regler. Så tester vi hvordan strategien din klarer seg.</p>
+    <div class="card" style="display:flex; flex-direction:column; gap:16px;">
+      <div class="qgroup">
+        <span class="qtext">1. Hva gjør du første gang du møter noen?</span>
+        <div class="segmented" id="q1">
+          <button data-val="C" class="active">🤝 Samarbeid</button>
+          <button data-val="D">⚡ Svik</button>
+        </div>
+      </div>
+      <div class="qgroup">
+        <span class="qtext">2. Hvis motstanderen samarbeidet forrige runde?</span>
+        <div class="segmented" id="q2">
+          <button data-val="C" class="active">🤝 Samarbeid</button>
+          <button data-val="D">⚡ Svik</button>
+        </div>
+      </div>
+      <div class="qgroup">
+        <span class="qtext">3. Hvis motstanderen sviktet forrige runde?</span>
+        <div class="segmented" id="q3">
+          <button data-val="C">🤝 Samarbeid</button>
+          <button data-val="D" class="active">⚡ Svik</button>
+        </div>
+      </div>
+    </div>
+    <button class="btn-primary" id="buildContinueBtn">Se turneringen →</button>
+  </div>
+</section>
+
+<!-- ═══════════════ DEL 3: TURNERING ═══════════════ -->
+<section class="screen" id="screen-tournament">
+  <div class="stage-wrap center">
+    <h1>Turneringen</h1>
+    <p class="lead">Strategien din møter alle de andre, mange runder på rad. La oss se hvordan det går.</p>
+    <div class="card">
+      <div class="leaderboard" id="tourneyBoard"></div>
+    </div>
+    <p class="lead" id="tourneyNote" style="font-size:.85rem;"></p>
+    <button class="btn-primary" id="tourneyContinueBtn">Fant vi verdens beste strategi? →</button>
+  </div>
+</section>
+
+<!-- ═══════════════ DEL 4: LABORATORIET ═══════════════ -->
+<section class="screen" id="screen-lab">
+  <div class="stage-wrap center">
+    <h1>Laboratoriet</h1>
+    <p class="lead">Ikke nødvendigvis. En strategi kan være god i én verden og dårlig i en annen. Endre reglene under, og se hva som skjer.</p>
+    <div class="card">
+      <div class="lab-controls">
+        <div class="control-group">
+          <span class="control-label">Møtelengde</span>
+          <div class="segmented" id="labRoundsToggle">
+            <button data-val="many" class="active">🔁 Gjentatte møter</button>
+            <button data-val="one">👋 Engangsmøte</button>
+          </div>
+        </div>
+        <div class="control-group">
+          <span class="control-label">Sjanse for misforståelse: <strong id="labErrorLabel">0%</strong></span>
+          <input type="range" id="labErrorSlider" min="0" max="30" step="5" value="0">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="leaderboard" id="labBoard"></div>
+    </div>
+    <div class="lab-insight" id="labInsight">Trykk på en innstilling for å kjøre turneringen på nytt.</div>
+    <button class="link-btn" id="spiralDemoBtn">👀 Se en misforståelse utspille seg</button>
+    <button class="btn-primary" id="labContinueBtn">Jeg har eksperimentert nok →</button>
+  </div>
+</section>
+
+<!-- ═══════════════ DEL 5: AVSLØRING ═══════════════ -->
+<section class="screen" id="screen-reveal">
+  <div class="stage-wrap center">
+    <div class="hero-emoji">🎭</div>
+    <h1>Du har spilt Fangenes dilemma</h1>
+    <p class="lead">På engelsk: <strong style="color:var(--ink)">The Prisoner's Dilemma</strong>. Et av de mest kjente tankeeksperimentene innen spillteori.</p>
+    <div class="card" style="text-align:left; display:flex; flex-direction:column; gap:8px;">
+      <p class="lead" style="max-width:none;">To personer står overfor det samme valget: samarbeide, eller handle til egen fordel.</p>
+      <p class="lead" style="max-width:none;">Samarbeider begge, går det ganske bra for begge. Men hver enkelt kan tjene enda mer på å svikte en motpart som stoler på dem.</p>
+      <p class="lead" style="max-width:none;"><strong style="color:var(--ink)">Problemet:</strong> Hvis begge tenker slik, ender begge dårligere enn om de bare hadde samarbeidet.</p>
+    </div>
+    <div class="card">
+      <table class="matrix">
+        <tr><th></th><th>Den andre samarbeider</th><th>Den andre sviker</th></tr>
+        <tr><th>Du samarbeider</th><td class="best">3 / 3</td><td class="worst">0 / 5</td></tr>
+        <tr><th>Du sviker</th><td class="tempt">5 / 0</td><td class="worst">1 / 1</td></tr>
+      </table>
+      <p class="lead" style="font-size:.78rem; margin-top:8px; max-width:none;">🤝+🤝 = best for gruppen (6 poeng totalt) · ⚡ mot 🤝 = mest fristende for den enkelte (5 poeng) · ⚡+⚡ = dårligst for begge (2 poeng totalt)</p>
+    </div>
+    <button class="btn-primary" id="revealContinueBtn">Hvor ser vi dette igjen? →</button>
+  </div>
+</section>
+
+<!-- ═══════════════ DEL 6: VIRKELIGHETEN ═══════════════ -->
+<section class="screen" id="screen-reality">
+  <div class="stage-wrap center" id="realityWrap"></div>
+</section>
+
+<!-- ═══════════════ DEL 7: REFLEKSJON ═══════════════ -->
+<section class="screen" id="screen-reflect">
+  <div class="stage-wrap center" id="reflectWrap"></div>
+</section>
+
+<!-- ═══════════════ DEL 8: SLUTT ═══════════════ -->
+<section class="screen" id="screen-end">
+  <div class="stage-wrap center">
+    <p class="lead" style="font-size:.85rem;">Din spillestil</p>
+    <div class="card" id="badgeCard" style="display:flex; flex-direction:column; align-items:center; gap:8px;"></div>
+    <div class="card" style="font-size:.85rem;">
+      <p class="lead" style="max-width:none; font-size:.85rem;">Du samarbeidet <strong id="statCoopPct">–</strong> av rundene, og tjente totalt <strong id="statTotalCoins">–</strong> mynter.</p>
+    </div>
+    <p class="lead">Kan du lage en strategi som gjør det enda bedre?</p>
+    <button class="btn-primary" id="restartBtn">🔁 Spill igjen</button>
+  </div>
+</section>
+
+<!-- ═══════════════ MODAL: MISFORSTÅELSE-DEMO ═══════════════ -->
+<div class="modal-backdrop" id="spiralModal" hidden>
+  <div class="modal-card">
+    <h2>Én misforståelse</h2>
+    <p class="lead" style="max-width:none; font-size:.85rem;">To personer bruker samme regel: gjør det samme som den andre gjorde sist. Se hva som skjer når én handling blir misforstått.</p>
+    <div id="spiralRounds" style="display:flex; flex-direction:column; gap:6px; min-height:180px;"></div>
+    <div id="spiralQuiz" hidden>
+      <p class="lead" style="max-width:none; font-size:.88rem; font-weight:800; color:var(--ink); margin-bottom:8px;">Hva mangler strategien deres for å komme seg ut av dette?</p>
+      <div class="option-list" id="spiralOptions"></div>
+    </div>
+    <button class="btn-secondary" id="spiralCloseBtn" style="align-self:center;">Lukk</button>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ═══════════════════════════════════════════════════════════
+   SPILLMOTOR — payoff, strategier, simulering
+   ═══════════════════════════════════════════════════════════ */
+
+function payoff(a, b) {
+  if (a === 'C' && b === 'C') return [3, 3];
+  if (a === 'C' && b === 'D') return [0, 5];
+  if (a === 'D' && b === 'C') return [5, 0];
+  return [1, 1];
+}
+function flip(x) { return x === 'C' ? 'D' : 'C'; }
+
+/* Strategier: (ownHistory, oppHistory, roundIndex) => 'C' | 'D' */
+function alwaysCooperate() { return 'C'; }
+function alwaysDefect() { return 'D'; }
+function titForTat(own, opp) { return opp.length === 0 ? 'C' : opp[opp.length - 1]; }
+function generousTitForTat(own, opp) {
+  if (opp.length === 0) return 'C';
+  const last = opp[opp.length - 1];
+  if (last === 'C') return 'C';
+  return Math.random() < 0.3 ? 'C' : 'D';
+}
+function randomStrategy() { return Math.random() < 0.5 ? 'C' : 'D'; }
+function makePlayerStrategy(config) {
+  return function (own, opp) {
+    if (opp.length === 0) return config.first;
+    const last = opp[opp.length - 1];
+    return last === 'C' ? config.afterC : config.afterD;
+  };
+}
+
+/* Spiller ett oppgjør mellom to strategier. Returnerer scoreA, scoreB, history. */
+function playMatch(stratA, stratB, rounds, errorRate) {
+  errorRate = errorRate || 0;
+  let historyA = [], historyB = [];
+  let scoreA = 0, scoreB = 0;
+  const events = [];
+  for (let i = 0; i < rounds; i++) {
+    const intendedA = stratA(historyA, historyB, i);
+    const intendedB = stratB(historyB, historyA, i);
+    let actualA = intendedA, actualB = intendedB;
+    let noiseA = false, noiseB = false;
+    if (errorRate > 0) {
+      if (Math.random() < errorRate) { actualA = flip(intendedA); noiseA = true; }
+      if (Math.random() < errorRate) { actualB = flip(intendedB); noiseB = true; }
+    }
+    const [pa, pb] = payoff(actualA, actualB);
+    scoreA += pa; scoreB += pb;
+    historyA.push(actualA); historyB.push(actualB);
+    events.push({ intendedA, actualA, intendedB, actualB, noiseA, noiseB, pa, pb });
+  }
+  return { scoreA, scoreB, history: events };
+}
+
+/* Alle-mot-alle-turnering. participants: [{id, name, strategy}] */
+function runTournament(participants, rounds, errorRate) {
+  const totals = {};
+  participants.forEach(p => { totals[p.id] = 0; });
+  for (let i = 0; i < participants.length; i++) {
+    for (let j = i + 1; j < participants.length; j++) {
+      const A = participants[i], B = participants[j];
+      const res = playMatch(A.strategy, B.strategy, rounds, errorRate);
+      totals[A.id] += res.scoreA;
+      totals[B.id] += res.scoreB;
+    }
+  }
+  return participants
+    .map(p => ({ id: p.id, name: p.name, score: totals[p.id] }))
+    .sort((a, b) => b.score - a.score);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   KARAKTERER
+   ═══════════════════════════════════════════════════════════ */
+
+const CHARACTERS = [
+  {
+    id: 'nora', name: 'Nora', emoji: '😊',
+    personality: 'Vennlig, optimistisk og tillitsfull.',
+    strategy: alwaysCooperate,
+    guessOptions: [
+      { key: 'always_c', label: 'Samarbeidet alltid' },
+      { key: 'always_d', label: 'Sviktet alltid' },
+      { key: 'tft', label: 'Gjorde det samme som jeg gjorde sist' },
+      { key: 'random', label: 'Valgte tilfeldig' },
+    ],
+    correctKey: 'always_c',
+    strategyName: 'Samarbeider alltid',
+    explain: 'Nora samarbeidet i hver eneste runde – uansett hva du gjorde. Det gjorde henne trygg å samarbeide med, men også lett å utnytte.',
+  },
+  {
+    id: 'sebastian', name: 'Sebastian', emoji: '😏',
+    personality: 'Selvsikker, konkurranseorientert og litt sleip.',
+    strategy: alwaysDefect,
+    guessOptions: [
+      { key: 'always_c', label: 'Samarbeidet alltid' },
+      { key: 'always_d', label: 'Sviktet alltid' },
+      { key: 'tft', label: 'Gjorde det samme som jeg gjorde sist' },
+      { key: 'random', label: 'Valgte tilfeldig' },
+    ],
+    correctKey: 'always_d',
+    strategyName: 'Sviker alltid',
+    explain: 'Sebastian sviktet i hver eneste runde – uansett hva du gjorde. Kanskje du tjente litt på et lykketreff, men neppe i lengden.',
+  },
+  {
+    id: 'henrik', name: 'Henrik', emoji: '🙂',
+    personality: 'Rolig og rettferdig.',
+    strategy: titForTat,
+    guessOptions: [
+      { key: 'always_c', label: 'Samarbeidet alltid' },
+      { key: 'always_d', label: 'Sviktet alltid' },
+      { key: 'tft', label: 'Gjorde det samme som jeg gjorde sist' },
+      { key: 'random', label: 'Valgte tilfeldig' },
+    ],
+    correctKey: 'tft',
+    strategyName: 'Gjør det samme som deg (Tit for Tat)',
+    explain: 'Henrik samarbeidet første gang. Etter det gjorde han nøyaktig det samme som du gjorde runden før. Vennlig først, deretter gjengjeldelse.',
+  },
+  {
+    id: 'thea', name: 'Thea', emoji: '🌻',
+    personality: 'Vennlig, men ikke naiv.',
+    strategy: generousTitForTat,
+    guessOptions: [
+      { key: 'tft', label: 'Gjorde nøyaktig det samme som jeg gjorde sist' },
+      { key: 'generous', label: 'Gjorde stort sett det samme, men tilga av og til svik' },
+      { key: 'always_d', label: 'Sviktet alltid' },
+      { key: 'random', label: 'Valgte tilfeldig' },
+    ],
+    correctKey: 'generous',
+    strategyName: 'Gjengjelder, men tilgir av og til',
+    explain: 'Thea lignet Henrik – men når du sviktet henne, ga hun deg likevel en ny sjanse innimellom, i stedet for å hevne seg hver gang.',
+  },
+  {
+    id: 'kim', name: 'Kim', emoji: '🎲',
+    personality: 'Uforutsigbar.',
+    strategy: randomStrategy,
+    guessOptions: [
+      { key: 'always_c', label: 'Samarbeidet alltid' },
+      { key: 'tft', label: 'Gjorde det samme som jeg gjorde sist' },
+      { key: 'random', label: 'Valgte helt tilfeldig' },
+      { key: 'always_d', label: 'Sviktet alltid' },
+    ],
+    correctKey: 'random',
+    strategyName: 'Velger tilfeldig',
+    explain: 'Kim valgte helt tilfeldig hver runde. Det du gjorde hadde ingen betydning for hva Kim gjorde neste gang.',
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   SPILLTILSTAND
+   ═══════════════════════════════════════════════════════════ */
+
+const state = {
+  totalCoins: 0,
+  charIndex: 0,
+  match: null, // { rounds, playerHistory, charHistory, playerScore, charScore }
+  stats: { cooperations: 0, defections: 0, retaliations: 0, forgiveness: 0, firstMoveCooperations: 0, matchesPlayed: 0 },
+  perCharacterScore: {},
+  guessStep: 0, // driver for del2
+  trustPick: null,
+  earnPick: null,
+  strategyConfig: { first: 'C', afterC: 'C', afterD: 'D' },
+  playerParticipant: null,
+  tourneyResult: null,
+  lab: { rounds: 'many', errorRate: 0, prevBoard: null, runs: 0 },
+  reflectStep: 0,
+  realityStep: 0,
+};
+
+function resetState() {
+  state.totalCoins = 0;
+  state.charIndex = 0;
+  state.match = null;
+  state.stats = { cooperations: 0, defections: 0, retaliations: 0, forgiveness: 0, firstMoveCooperations: 0, matchesPlayed: 0 };
+  state.perCharacterScore = {};
+  state.guessStep = 0;
+  state.trustPick = null;
+  state.earnPick = null;
+  state.strategyConfig = { first: 'C', afterC: 'C', afterD: 'D' };
+  state.playerParticipant = null;
+  state.tourneyResult = null;
+  state.lab = { rounds: 'many', errorRate: 0, prevBoard: null, runs: 0 };
+  state.reflectStep = 0;
+  state.realityStep = 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SKJERMSTYRING
+   ═══════════════════════════════════════════════════════════ */
+
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEL 1 — MØT MENNESKENE
+   ═══════════════════════════════════════════════════════════ */
+
+function startCharacterIntro() {
+  const ch = CHARACTERS[state.charIndex];
+  const rounds = 5 + Math.floor(Math.random() * 5); // 5–9, skjult for spilleren
+  state.match = { rounds, playerHistory: [], charHistory: [], playerScore: 0, charScore: 0 };
+
+  document.getElementById('charIntroCard').innerHTML = `
+    <div class="avatar big">${ch.emoji}</div>
+    <div class="char-name">${ch.name}</div>
+    <div class="char-personality">${ch.personality}</div>
+    <div class="char-hint">Du skal gjøre flere handler med ${ch.name}.<br>Du vet ikke hva ${ch.name} kommer til å gjøre.<br>Tjen så mye du kan.</div>
+  `;
+  goTo('screen-char-intro');
+}
+
+function renderMatchScreen() {
+  const ch = CHARACTERS[state.charIndex];
+  document.getElementById('matchOppAvatar').textContent = ch.emoji;
+  document.getElementById('matchOppName').textContent = ch.name;
+  document.getElementById('coinCount').textContent = state.totalCoins;
+  renderHistoryStrip();
+  document.getElementById('choicePhase').hidden = false;
+  document.getElementById('thinkingPhase').hidden = true;
+  document.getElementById('revealPhase').hidden = true;
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = false);
+  goTo('screen-match');
+}
+
+function renderHistoryStrip() {
+  const strip = document.getElementById('historyStrip');
+  const m = state.match;
+  const emoji = c => c === 'C' ? '🤝' : '⚡';
+  let html = '';
+  const start = Math.max(0, m.playerHistory.length - 8);
+  for (let i = start; i < m.playerHistory.length; i++) {
+    html += `<div class="hist-pair"><span>${emoji(m.playerHistory[i])}</span><span>${emoji(m.charHistory[i])}</span></div>`;
+  }
+  strip.innerHTML = html;
+  strip.scrollLeft = strip.scrollWidth;
+}
+
+function onPlayerChoice(choice) {
+  document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+  document.getElementById('choicePhase').hidden = true;
+  document.getElementById('thinkingPhase').hidden = false;
+
+  setTimeout(() => {
+    const ch = CHARACTERS[state.charIndex];
+    const m = state.match;
+    const prevOppMove = m.charHistory.length > 0 ? m.charHistory[m.charHistory.length - 1] : null;
+    const isFirstOfMatch = m.playerHistory.length === 0;
+    const oppChoice = ch.strategy(m.charHistory, m.playerHistory, m.charHistory.length);
+    const [ps, os] = payoff(choice, oppChoice);
+
+    // statistikk til sluttbadge
+    if (choice === 'C') state.stats.cooperations++; else state.stats.defections++;
+    if (isFirstOfMatch && choice === 'C') state.stats.firstMoveCooperations++;
+    if (prevOppMove === 'D') {
+      if (choice === 'D') state.stats.retaliations++; else state.stats.forgiveness++;
+    }
+
+    m.playerHistory.push(choice);
+    m.charHistory.push(oppChoice);
+    m.playerScore += ps;
+    m.charScore += os;
+    state.totalCoins += ps;
+
+    document.getElementById('coinCount').textContent = state.totalCoins;
+    document.getElementById('revealYouEmoji').textContent = choice === 'C' ? '🤝' : '⚡';
+    document.getElementById('revealOppEmoji').textContent = oppChoice === 'C' ? '🤝' : '⚡';
+    document.getElementById('revealOppLabel').textContent = ch.name;
+    const youPts = document.getElementById('revealYouPts');
+    const oppPts = document.getElementById('revealOppPts');
+    youPts.textContent = '+' + ps;
+    oppPts.textContent = '+' + os;
+    youPts.className = 'pts ' + (ps >= 3 ? 'pos' : ps === 0 ? 'zero' : '');
+    oppPts.className = 'pts ' + (os >= 3 ? 'pos' : os === 0 ? 'zero' : '');
+
+    let note = '';
+    if (choice === 'C' && oppChoice === 'C') note = 'Dere samarbeidet begge. Grei gevinst til begge.';
+    else if (choice === 'D' && oppChoice === 'D') note = 'Dere sviktet begge. Ingen kom særlig langt.';
+    else if (choice === 'D' && oppChoice === 'C') note = `Du sviktet ${ch.name} mens ${ch.name} stolte på deg.`;
+    else note = `${ch.name} sviktet deg mens du samarbeidet.`;
+    document.getElementById('revealNote').textContent = note;
+
+    renderHistoryStrip();
+
+    const isLastRound = m.playerHistory.length >= m.rounds;
+    const contBtn = document.getElementById('matchContinueBtn');
+    contBtn.textContent = isLastRound ? `Ferdig med ${ch.name} →` : `Møt ${ch.name} igjen`;
+    contBtn.onclick = isLastRound ? endMatch : renderMatchScreen;
+
+    document.getElementById('thinkingPhase').hidden = true;
+    document.getElementById('revealPhase').hidden = false;
+  }, 500);
+}
+
+function endMatch() {
+  const ch = CHARACTERS[state.charIndex];
+  state.perCharacterScore[ch.id] = { player: state.match.playerScore, char: state.match.charScore };
+  state.stats.matchesPlayed++;
+  state.charIndex++;
+  if (state.charIndex < CHARACTERS.length) {
+    startCharacterIntro();
+  } else {
+    startGuessPhase();
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEL 2 — HVA TROR DU DE GJORDE?
+   ═══════════════════════════════════════════════════════════ */
+
+function avatarGridHtml(selectable, selectedId) {
+  return `<div class="avatar-grid">${CHARACTERS.map(ch => `
+    <button class="avatar-pick${selectedId === ch.id ? ' selected' : ''}" data-id="${ch.id}">
+      <div class="avatar">${ch.emoji}</div>
+      <span class="pname">${ch.name}</span>
+    </button>`).join('')}</div>`;
+}
+
+function startGuessPhase() {
+  state.guessStep = 0;
+  renderGuessStep();
+}
+
+function renderGuessStep() {
+  const wrap = document.getElementById('guessWrap');
+  const step = state.guessStep;
+
+  if (step === 0) {
+    wrap.innerHTML = `
+      <h1>Hvem stolte du mest på?</h1>
+      <p class="lead">Du har nå møtt alle fem. Tenk deg litt om.</p>
+      ${avatarGridHtml(true, state.trustPick)}
+      <button class="btn-primary" id="guessNextBtn" disabled>Neste →</button>
+    `;
+    document.querySelectorAll('.avatar-pick').forEach(btn => btn.addEventListener('click', () => {
+      state.trustPick = btn.dataset.id;
+      document.querySelectorAll('.avatar-pick').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('guessNextBtn').disabled = false;
+    }));
+    document.getElementById('guessNextBtn').addEventListener('click', () => { state.guessStep = 1; renderGuessStep(); });
+    goTo('screen-guess');
+    return;
+  }
+
+  if (step === 1) {
+    wrap.innerHTML = `
+      <h1>Hvem tror du tjente mest?</h1>
+      <p class="lead">Bare et gjett foreløpig.</p>
+      ${avatarGridHtml(true, state.earnPick)}
+      <button class="btn-primary" id="guessNextBtn" disabled>Neste →</button>
+    `;
+    document.querySelectorAll('.avatar-pick').forEach(btn => btn.addEventListener('click', () => {
+      state.earnPick = btn.dataset.id;
+      document.querySelectorAll('.avatar-pick').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('guessNextBtn').disabled = false;
+    }));
+    document.getElementById('guessNextBtn').addEventListener('click', () => { state.guessStep = 2; renderGuessStep(); });
+    goTo('screen-guess');
+    return;
+  }
+
+  // steg 2..6: én per karakter — gjett strategi, så avslør
+  const charIdx = step - 2;
+  if (charIdx < CHARACTERS.length) {
+    const ch = CHARACTERS[charIdx];
+    const opts = ch.guessOptions;
+    wrap.innerHTML = `
+      <div class="avatar big">${ch.emoji}</div>
+      <h2>Hva tror du ${ch.name} gjorde?</h2>
+      <div class="option-list" id="guessOptions">
+        ${opts.map(o => `<button class="option-btn" data-key="${o.key}">${o.label}</button>`).join('')}
+      </div>
+      <div id="guessReveal" hidden style="width:100%; display:flex; flex-direction:column; gap:10px; align-items:center;">
+        <div class="card tight" style="text-align:left;">
+          <strong>${ch.strategyName}</strong>
+          <p class="lead" style="max-width:none; font-size:.85rem; margin-top:6px;">${ch.explain}</p>
+        </div>
+        <button class="btn-primary" id="guessRevealNextBtn">Neste →</button>
+      </div>
+    `;
+    document.querySelectorAll('#guessOptions .option-btn').forEach(btn => btn.addEventListener('click', () => {
+      document.querySelectorAll('#guessOptions .option-btn').forEach(b => b.disabled = true);
+      if (btn.dataset.key === ch.correctKey) btn.classList.add('correct');
+      else {
+        btn.classList.add('wrong');
+        const correctBtn = document.querySelector(`#guessOptions .option-btn[data-key="${ch.correctKey}"]`);
+        if (correctBtn) correctBtn.classList.add('correct');
+      }
+      document.getElementById('guessReveal').hidden = false;
+    }));
+    document.getElementById('guessRevealNextBtn').addEventListener('click', () => { state.guessStep++; renderGuessStep(); });
+    goTo('screen-guess');
+    return;
+  }
+
+  // ferdig med del 2
+  startBuildPhase();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEL 3 — BYGG STRATEGI + TURNERING
+   ═══════════════════════════════════════════════════════════ */
+
+function startBuildPhase() {
+  document.querySelectorAll('#q1 button, #q2 button, #q3 button').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.querySelector(`#q1 button[data-val="${state.strategyConfig.first}"]`).classList.add('active');
+  document.querySelector(`#q2 button[data-val="${state.strategyConfig.afterC}"]`).classList.add('active');
+  document.querySelector(`#q3 button[data-val="${state.strategyConfig.afterD}"]`).classList.add('active');
+  goTo('screen-build');
+}
+
+function wireSegmented(groupId, onPick) {
+  document.querySelectorAll(`#${groupId} button`).forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll(`#${groupId} button`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      onPick(btn.dataset.val);
+    });
+  });
+}
+
+function buildParticipants(playerStrategyFn) {
+  const list = CHARACTERS.map(ch => ({ id: ch.id, name: ch.name, strategy: ch.strategy }));
+  list.push({ id: 'player', name: 'Din strategi', strategy: playerStrategyFn });
+  return list;
+}
+
+function renderLeaderboard(containerId, board, meId) {
+  const el = document.getElementById(containerId);
+  const max = Math.max(1, ...board.map(r => r.score));
+  el.innerHTML = board.map(r => `
+    <div class="lb-row">
+      <div class="lb-name${r.id === meId ? ' me' : ''}">${r.name}</div>
+      <div class="lb-bar-track"><div class="lb-bar-fill${r.id === meId ? ' me' : ''}" data-target="${(r.score / max) * 100}"></div></div>
+      <div class="lb-score">${r.score}</div>
+    </div>
+  `).join('');
+  requestAnimationFrame(() => {
+    el.querySelectorAll('.lb-bar-fill').forEach(fill => {
+      fill.style.width = fill.dataset.target + '%';
+    });
+  });
+}
+
+function runFirstTournament() {
+  state.strategyConfig.name = 'Din strategi';
+  const playerFn = makePlayerStrategy(state.strategyConfig);
+  const participants = buildParticipants(playerFn);
+  const result = runTournament(participants, 100, 0);
+  state.tourneyResult = result;
+  renderLeaderboard('tourneyBoard', result, 'player');
+  const playerRank = result.findIndex(r => r.id === 'player') + 1;
+  document.getElementById('tourneyNote').textContent =
+    playerRank === 1
+      ? 'Strategien din vant turneringen! Men holder den seg like godt i en annen verden?'
+      : `Strategien din endte på ${playerRank}. plass av ${result.length}. La oss se om resultatet holder seg i andre situasjoner.`;
+  goTo('screen-tournament');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEL 4 — LABORATORIET
+   ═══════════════════════════════════════════════════════════ */
+
+function runLab() {
+  const playerFn = makePlayerStrategy(state.strategyConfig);
+  const participants = buildParticipants(playerFn);
+  const rounds = state.lab.rounds === 'many' ? 100 : 1;
+  const board = runTournament(participants, rounds, state.lab.errorRate);
+  renderLeaderboard('labBoard', board, 'player');
+  document.getElementById('labInsight').textContent = generateLabInsight(board, state.lab.prevBoard, state.lab);
+  state.lab.prevBoard = board;
+  state.lab.runs++;
+}
+
+function generateLabInsight(current, previous, settings) {
+  const rankOf = (board, id) => board.findIndex(r => r.id === id) + 1;
+  const worldDesc = (settings.rounds === 'many' ? 'gjentatte møter' : 'engangsmøter') +
+    (settings.errorRate > 0 ? ` og ${Math.round(settings.errorRate * 100)}% sjanse for misforståelse` : '');
+
+  if (!previous) {
+    const top = current[0];
+    return `Med ${worldDesc} vinner ${top.name === 'Din strategi' ? 'strategien din' : top.name}. Prøv å endre en innstilling og kjør på nytt.`;
+  }
+
+  const sebRankNow = rankOf(current, 'sebastian');
+  const sebRankPrev = rankOf(previous, 'sebastian');
+  const henrikRankNow = rankOf(current, 'henrik');
+  const henrikRankPrev = rankOf(previous, 'henrik');
+
+  if (sebRankNow < sebRankPrev) {
+    return `Interessant: Sebastian (som alltid sviker) klatret fra ${sebRankPrev}. til ${sebRankNow}. plass da verden ble ${worldDesc}.`;
+  }
+  if (sebRankNow > sebRankPrev) {
+    return `Sebastian falt fra ${sebRankPrev}. til ${sebRankNow}. plass. Ren svik lønner seg dårligere med ${worldDesc}.`;
+  }
+  if (henrikRankNow !== henrikRankPrev) {
+    return `Henrik gikk fra ${henrikRankPrev}. til ${henrikRankNow}. plass da verden ble ${worldDesc}.`;
+  }
+  return `Med ${worldDesc} topper ${current[0].name === 'Din strategi' ? 'strategien din' : current[0].name} listen. Prøv en annen kombinasjon.`;
+}
+
+/* ── Misforståelse-demo (fast, scriptet forløp) ───────────── */
+
+function simulateSpiralDemo() {
+  const rounds = 6;
+  let ownA = [], ownB = [];
+  const seq = [];
+  for (let i = 0; i < rounds; i++) {
+    let a = titForTat(ownA, ownB);
+    let b = titForTat(ownB, ownA);
+    let noise = false;
+    if (i === 2) { b = flip(b); noise = true; } // scriptet misforståelse i runde 3
+    seq.push({ a, b, noise });
+    ownA.push(a); ownB.push(b);
+  }
+  return seq;
+}
+
+function openSpiralDemo() {
+  const seq = simulateSpiralDemo();
+  const container = document.getElementById('spiralRounds');
+  container.innerHTML = '';
+  document.getElementById('spiralQuiz').hidden = true;
+  document.getElementById('spiralModal').hidden = false;
+
+  let i = 0;
+  function showNext() {
+    if (i >= seq.length) {
+      document.getElementById('spiralQuiz').hidden = false;
+      return;
+    }
+    const r = seq[i];
+    const row = document.createElement('div');
+    row.className = 'spiral-row';
+    row.innerHTML = `<div class="spiral-round"><span>${r.a === 'C' ? '🤝' : '⚡'}</span><span>${r.b === 'C' ? '🤝' : '⚡'}</span></div>${r.noise ? '<span class="noise-tag">← MISFORSTÅELSE!</span>' : ''}`;
+    container.appendChild(row);
+    i++;
+    setTimeout(showNext, 550);
+  }
+  showNext();
+
+  const optionsEl = document.getElementById('spiralOptions');
+  optionsEl.innerHTML = `
+    <button class="option-btn" data-key="hevn">Mer hevn</button>
+    <button class="option-btn" data-key="tilgivelse">Tilgivelse</button>
+    <button class="option-btn" data-key="svik">Mer svik</button>
+    <button class="option-btn" data-key="gevinst">Høyere gevinst</button>
+  `;
+  optionsEl.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      optionsEl.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+      if (btn.dataset.key === 'tilgivelse') btn.classList.add('correct');
+      else {
+        btn.classList.add('wrong');
+        optionsEl.querySelector('[data-key="tilgivelse"]').classList.add('correct');
+      }
+    });
+  }, { once: false });
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEL 6 — VIRKELIGHETSKOBLINGER
+   ═══════════════════════════════════════════════════════════ */
+
+const REALITY_SCENARIOS = [
+  { icon: '🏪', title: 'Priskrig', text: 'To butikker kan holde normale priser og begge tjene bra. Kutter én prisene, kan den stjele kunder fra den andre. Kutter begge, oppstår en priskrig ingen egentlig ville ha.' },
+  { icon: '🚀', title: 'Våpenkappløp', text: 'To land ønsker egentlig å bruke mindre penger på våpen. Men hvert land frykter hva som skjer hvis det andre ruster opp alene. Resultatet kan bli at begge bruker enorme summer på våpen.' },
+  { icon: '🌍', title: 'Klima', text: 'Alle land tjener på at verdens utslipp går ned. Men hvert enkelt land kan være fristet til å la de andre ta kostnaden – og håpe å slippe unna selv.' },
+  { icon: '👥', title: 'Gruppearbeid', text: 'Alle får et bedre resultat hvis alle bidrar. Men den enkelte kan være fristet til å gjøre mindre, og la resten av gruppa gjøre jobben.' },
+];
+
+function startRealityPhase() {
+  state.realityStep = 0;
+  renderRealityStep();
+}
+
+function renderRealityStep() {
+  const s = REALITY_SCENARIOS[state.realityStep];
+  const wrap = document.getElementById('realityWrap');
+  const isLast = state.realityStep === REALITY_SCENARIOS.length - 1;
+  wrap.innerHTML = `
+    <h1>Dette kjenner du igjen</h1>
+    <div class="card" style="display:flex; flex-direction:column; gap:8px; align-items:center;">
+      <div class="hero-emoji">${s.icon}</div>
+      <h2>${s.title}</h2>
+      <p class="lead">${s.text}</p>
+    </div>
+    <div class="pager-dots">${REALITY_SCENARIOS.map((_, i) => `<span class="${i === state.realityStep ? 'active' : ''}"></span>`).join('')}</div>
+    <button class="btn-primary" id="realityNextBtn">${isLast ? 'Siste spørsmål →' : 'Neste →'}</button>
+  `;
+  document.getElementById('realityNextBtn').addEventListener('click', () => {
+    if (isLast) { startReflectPhase(); }
+    else { state.realityStep++; renderRealityStep(); }
+  });
+  goTo('screen-reality');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEL 7 — REFLEKSJON
+   ═══════════════════════════════════════════════════════════ */
+
+const REFLECT_QUESTIONS = [
+  {
+    q: 'Hvorfor kan det lønne seg å samarbeide med noen du forventer å møte igjen?',
+    opts: [
+      { t: 'Fordi svik alltid straffer seg med det samme', ok: false },
+      { t: 'Fordi et brutt samarbeid kan koste deg i mange runder framover', ok: true },
+      { t: 'Fordi det er en regel man må følge', ok: false },
+    ],
+  },
+  {
+    q: 'Hvorfor kan misforståelser føre til langvarige konflikter?',
+    opts: [
+      { t: 'Fordi folk aldri tilgir noe', ok: false },
+      { t: 'Fordi én feiltolkning kan utløse gjengjeldelse som igjen utløser ny gjengjeldelse', ok: true },
+      { t: 'Fordi spillet krever det', ok: false },
+    ],
+  },
+  {
+    q: 'Hvorfor kan tilgivelse noen ganger være en fordel?',
+    opts: [
+      { t: 'Den kan bryte en konfliktspiral som ellers ville fortsatt', ok: true },
+      { t: 'Den garanterer at du aldri blir utnyttet', ok: false },
+      { t: 'Den er alltid det mest lønnsomme valget', ok: false },
+    ],
+  },
+  {
+    q: 'Hvilket av disse minner mest om Fangenes dilemma?',
+    opts: [
+      { t: 'To land som begge egentlig vil bruke mindre på våpen, men ruster opp fordi de ikke stoler på hverandre', ok: true },
+      { t: 'Å velge hvilken film man skal se alene', ok: false },
+      { t: 'Å kaste terning for å vinne et spill', ok: false },
+    ],
+  },
+];
+
+function startReflectPhase() {
+  state.reflectStep = 0;
+  renderReflectStep();
+}
+
+function renderReflectStep() {
+  const step = state.reflectStep;
+  if (step >= REFLECT_QUESTIONS.length) { startEndScreen(); return; }
+  const q = REFLECT_QUESTIONS[step];
+  const wrap = document.getElementById('reflectWrap');
+  wrap.innerHTML = `
+    <h1>Refleksjon (${step + 1}/${REFLECT_QUESTIONS.length})</h1>
+    <p class="lead" style="font-weight:800; color:var(--ink);">${q.q}</p>
+    <div class="option-list" id="reflectOptions">
+      ${q.opts.map((o, i) => `<button class="option-btn" data-i="${i}">${o.t}</button>`).join('')}
+    </div>
+    <button class="btn-primary" id="reflectNextBtn" hidden>Neste →</button>
+  `;
+  document.querySelectorAll('#reflectOptions .option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#reflectOptions .option-btn').forEach(b => b.disabled = true);
+      const idx = Number(btn.dataset.i);
+      if (q.opts[idx].ok) btn.classList.add('correct');
+      else {
+        btn.classList.add('wrong');
+        const okIdx = q.opts.findIndex(o => o.ok);
+        document.querySelector(`#reflectOptions .option-btn[data-i="${okIdx}"]`).classList.add('correct');
+      }
+      document.getElementById('reflectNextBtn').hidden = false;
+    });
+  });
+  document.getElementById('reflectNextBtn').addEventListener('click', () => { state.reflectStep++; renderReflectStep(); });
+  goTo('screen-reflect');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   DEL 8 — SLUTTSKJERM
+   ═══════════════════════════════════════════════════════════ */
+
+const BADGES = {
+  diplomat: { emoji: '🤝', title: 'DIPLOMATEN', text: 'Du startet ofte med samarbeid og prøvde å bevare gode relasjoner.' },
+  opportunist: { emoji: '⚡', title: 'OPPORTUNISTEN', text: 'Du var flink til å utnytte muligheter når andre stolte på deg.' },
+  hevner: { emoji: '🛡️', title: 'HEVNEREN', text: 'Du samarbeidet gjerne, men slo raskt tilbake etter svik.' },
+  tilgiver: { emoji: '❤️', title: 'TILGIVEREN', text: 'Du ga ofte motstanderne en ny sjanse.' },
+};
+
+function computeBadge() {
+  const s = state.stats;
+  const totalMoves = s.cooperations + s.defections || 1;
+  const coopRate = s.cooperations / totalMoves;
+  const firstMoveRate = s.firstMoveCooperations / (CHARACTERS.length || 1);
+  const retaliationOpportunities = s.retaliations + s.forgiveness;
+  const retaliationRate = retaliationOpportunities ? s.retaliations / retaliationOpportunities : 0;
+  const forgiveRate = retaliationOpportunities ? s.forgiveness / retaliationOpportunities : 0;
+
+  const scores = {
+    diplomat: coopRate * 0.6 + firstMoveRate * 0.4,
+    opportunist: (1 - coopRate) * 0.7 + (s.defections / totalMoves) * 0.3,
+    hevner: retaliationRate,
+    tilgiver: forgiveRate,
+  };
+  let best = 'diplomat', bestScore = -1;
+  Object.keys(scores).forEach(k => { if (scores[k] > bestScore) { bestScore = scores[k]; best = k; } });
+  return BADGES[best];
+}
+
+function startEndScreen() {
+  const badge = computeBadge();
+  document.getElementById('badgeCard').innerHTML = `
+    <div class="badge-emoji">${badge.emoji}</div>
+    <div class="badge-title">${badge.title}</div>
+    <p class="lead">${badge.text}</p>
+  `;
+  const totalMoves = state.stats.cooperations + state.stats.defections || 1;
+  document.getElementById('statCoopPct').textContent = Math.round((state.stats.cooperations / totalMoves) * 100) + '%';
+  document.getElementById('statTotalCoins').textContent = state.totalCoins;
+  goTo('screen-end');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   OPPSTART / EVENT WIRING
+   ═══════════════════════════════════════════════════════════ */
+
+document.getElementById('startBtn').addEventListener('click', () => {
+  resetState();
+  startCharacterIntro();
+});
+
+document.getElementById('charIntroBtn').addEventListener('click', renderMatchScreen);
+
+document.querySelectorAll('#choicePhase .choice-btn').forEach(btn => {
+  btn.addEventListener('click', () => onPlayerChoice(btn.dataset.choice));
+});
+
+wireSegmented('q1', v => state.strategyConfig.first = v);
+wireSegmented('q2', v => state.strategyConfig.afterC = v);
+wireSegmented('q3', v => state.strategyConfig.afterD = v);
+
+document.getElementById('buildContinueBtn').addEventListener('click', runFirstTournament);
+document.getElementById('tourneyContinueBtn').addEventListener('click', () => {
+  state.lab = { rounds: 'many', errorRate: 0, prevBoard: null, runs: 0 };
+  document.querySelectorAll('#labRoundsToggle button').forEach(b => b.classList.toggle('active', b.dataset.val === 'many'));
+  document.getElementById('labErrorSlider').value = 0;
+  document.getElementById('labErrorLabel').textContent = '0%';
+  runLab();
+  goTo('screen-lab');
+});
+
+wireSegmented('labRoundsToggle', v => { state.lab.rounds = v; runLab(); });
+const labErrorSlider = document.getElementById('labErrorSlider');
+let sliderDebounce = null;
+labErrorSlider.addEventListener('input', () => {
+  const pct = Number(labErrorSlider.value);
+  document.getElementById('labErrorLabel').textContent = pct + '%';
+  state.lab.errorRate = pct / 100;
+  clearTimeout(sliderDebounce);
+  sliderDebounce = setTimeout(runLab, 180);
+});
+
+document.getElementById('spiralDemoBtn').addEventListener('click', openSpiralDemo);
+document.getElementById('spiralCloseBtn').addEventListener('click', () => { document.getElementById('spiralModal').hidden = true; });
+
+document.getElementById('labContinueBtn').addEventListener('click', () => goTo('screen-reveal'));
+document.getElementById('revealContinueBtn').addEventListener('click', startRealityPhase);
+document.getElementById('restartBtn').addEventListener('click', () => { resetState(); goTo('screen-start'); });
+
+})();
+</script>
+</body>
+</html>
