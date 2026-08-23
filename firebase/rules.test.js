@@ -354,6 +354,54 @@ check('tom tekst', false, db(sp(), ELEV2).write(sPath + '/ord/nyord6', { tekst: 
 check('kjempelang tekst', false, db(sp(), ELEV2).write(sPath + '/ord/nyord7', { tekst: 'x'.repeat(70), tekstNorm: 'x'.repeat(70), count: 1, sistOppdatert: now }));
 check('skriver rett på /tankesky', false, db({}, LARER).write('/tankesky', { evil: true }));
 
+/* ── dagsformen (aktiviteter/dagsformen/): lærer lager rom og velger tema,
+   elev velger (og bytter) en av 30 følelser ved å skrive sin egen node —
+   akkurat som tankesky sine innsendinger, bare uten runde-begrepet. */
+const DKODE = 'DDDD11';
+const dPath = '/dagsformen/' + DKODE;
+const nyttDRom = { opprettet: now, owner: LARER.uid, tema: 'emoji' };
+const dRomMedElev = Object.assign({}, nyttDRom, { elever: { [ELEV.uid]: { valgt: 3, ts: now } } });
+const dp = (rom) => ({ dagsformen: { [DKODE]: rom || dRomMedElev } });
+const dTomtRom = { dagsformen: { [DKODE]: nyttDRom } };
+
+console.log('--- dagsformen: lærerens flyt');
+check('lærer oppretter rom', true, db({}, LARER).write(dPath, nyttDRom));
+check('lærer bytter tema', true, db(dp(), LARER).write(dPath + '/tema', 'dyr'));
+check('lærer nullstiller alle svar', true, db(dp(), LARER).update(dPath, { elever: null }));
+check('lærer avslutter rommet', true, db(dp(), LARER).write(dPath, null));
+
+console.log('--- dagsformen: elevens flyt');
+check('elev leser rommet', true, db(dTomtRom, ELEV).read(dPath));
+check('elev velger en følelse', true, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: 12, ts: now }));
+check('elev ombestemmer seg', true, db(dp(), ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: 29, ts: now }));
+
+console.log('--- dagsformen: hærverk');
+check('elev bytter tema', false, db(dTomtRom, ELEV).write(dPath + '/tema', 'dyr'));
+check('elev sletter rommet', false, db(dTomtRom, ELEV).write(dPath, null));
+check('elev nullstiller alle svar', false, db(dp(), ELEV).write(dPath + '/elever', null));
+check('elev velger følelse for en annen', false, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV2.uid, { valgt: 1, ts: now }));
+check('elev overtar eierskapet', false, db(dTomtRom, ELEV).write(dPath + '/owner', ELEV.uid));
+check('uinnlogget oppretter rom', false, db({}, null).write(dPath, nyttDRom));
+check('uinnlogget velger følelse', false, db(dTomtRom, null).write(dPath + '/elever/anon', { valgt: 1, ts: now }));
+check('lister opp /dagsformen', false, db(dp(), LARER).read('/dagsformen'));
+
+console.log('--- dagsformen: gjenbruk av romkode');
+const gammeltDRom = Object.assign({}, nyttDRom, { opprettet: now - 20 * 3600 * 1000 });
+check('annen lærer overtar gammel kode (>12t)', true, db(dp(gammeltDRom), ELEV2).write(dPath, Object.assign({}, nyttDRom, { owner: ELEV2.uid })));
+check('annen lærer kaprer ferskt rom', false, db(dp(), ELEV2).write(dPath, Object.assign({}, nyttDRom, { owner: ELEV2.uid })));
+
+console.log('--- dagsformen: ugyldige data');
+check('ugyldig romkode', false, db({}, LARER).write('/dagsformen/aa', nyttDRom));
+check('rom uten tema', false, db({}, LARER).write(dPath, { opprettet: now, owner: LARER.uid }));
+check('rom med annens uid som owner', false, db({}, ELEV).write(dPath, Object.assign({}, nyttDRom, { owner: LARER.uid })));
+check('følelse utenfor gyldig område', false, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: 99, ts: now }));
+check('negativ følelsesindeks', false, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: -1, ts: now }));
+check('følelse som tekst', false, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: '3', ts: now }));
+check('mangler ts', false, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: 3 }));
+check('ukjent felt på rommet', false, db(dp(), LARER).write(dPath + '/ekstrafelt', true));
+check('ukjent felt på en elev', false, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: 3, ts: now, navn: 'juks' }));
+check('skriver rett på /dagsformen', false, db({}, LARER).write('/dagsformen', { evil: true }));
+
 /* ── lrnify-auth.js (auth/lrnify-auth.js): users/, resultater/, og de nye
    eierUid/delteUider/klasseId-feltene på rooms/. LARER2 er en annen innlogget
    lærer, brukt til å bekrefte at data er strengt privat per lærer. */
