@@ -358,6 +358,48 @@
       }
     },
 
+    "dagsformen": {
+      "$kode": {
+        ".read": true,
+        ".write": "$kode.matches(/^[A-Z0-9]{4,8}$/) && auth != null && (!data.exists() || data.child('owner').val() === auth.uid || data.child('opprettet').val() < now - 43200000)",
+        ".validate": "newData.hasChildren(['opprettet', 'owner', 'tema'])",
+
+        "owner": {
+          ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
+        },
+        "opprettet": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+        "tema": {
+          ".write": "auth != null && root.child('dagsformen').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9-]{1,40}$/)"
+        },
+
+        "elever": {
+          ".write": "auth != null && root.child('dagsformen').child($kode).child('owner').val() === auth.uid",
+
+          "$elevId": {
+            ".write": "auth != null && $elevId === auth.uid",
+            ".validate": "newData.hasChildren(['valgt', 'ts'])",
+
+            "valgt": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 29"
+            },
+            "ts": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",

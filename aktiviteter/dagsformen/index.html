@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dagsformen — LRNify</title>
+<meta name="description" content="En visuell følelses-innsjekk for klassen: vis figurhjulet i fullskjerm, eller la elevene trykke anonymt på sin egen skjerm og se klassens dagsform vokse frem live.">
+<link rel="canonical" href="https://lrnify.no/aktiviteter/dagsformen/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Dagsformen – LRNify">
+<meta property="og:description" content="En visuell følelses-innsjekk for klassen: vis figurhjulet i fullskjerm, eller la elevene trykke anonymt på sin egen skjerm og se klassens dagsform vokse frem live.">
+<meta property="og:image" content="https://lrnify.no/media/aktiviteter/dagsformen.png">
+<meta property="og:url" content="https://lrnify.no/aktiviteter/dagsformen/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dagsformen – LRNify">
+<meta name="twitter:description" content="En visuell følelses-innsjekk for klassen: vis figurhjulet i fullskjerm, eller la elevene trykke anonymt på sin egen skjerm og se klassens dagsform vokse frem live.">
+<meta name="twitter:image" content="https://lrnify.no/media/aktiviteter/dagsformen.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #2b2118;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body.uten-luft { padding: 0; }
+  .skjult { display: none !important; }
+
+  /* ── HEADER ── */
+  .site-header {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 6px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive;
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    transform: rotate(-2deg);
+    line-height: 1;
+    user-select: none;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .logo-sub {
+    font-family: 'Chewy', cursive;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    color: var(--muted);
+    transform: rotate(1deg);
+    align-self: flex-end;
+    padding-bottom: 4px;
+  }
+  .undertittel {
+    width: 100%; max-width: 720px;
+    color: var(--muted); font-weight: 800; font-size: .92rem;
+    margin-bottom: 16px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; width: 100%; max-width: 640px; animation: fadeIn .25s ease; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .screen.bred { max-width: 1500px; }
+  .screen.fullskjerm.active { min-height: 100vh; justify-content: center; padding: 22px 16px 110px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+
+  h2.tittel {
+    font-family: 'Chewy', cursive; font-weight: 400;
+    font-size: clamp(1.3rem, 4vw, 1.8rem);
+    text-align: center; transform: rotate(-1deg);
+  }
+  .hjelpetekst { color: var(--muted); font-weight: 800; font-size: .88rem; text-align: center; max-width: 42ch; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card);
+    border: 4px solid var(--ink);
+    box-shadow: 0 7px 0 var(--ink);
+    padding: 22px 24px;
+    width: 100%;
+  }
+
+  /* ── INPUTS ── */
+  input[type="text"] {
+    width: 100%;
+    border: 3px solid var(--ink);
+    background: var(--cream);
+    padding: 12px 14px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink);
+    outline: none;
+    transition: box-shadow .15s;
+  }
+  input[type="text"]:focus { box-shadow: 0 4px 0 var(--ink); }
+  #joinCodeInput {
+    text-align: center;
+    font-family: 'Chewy', cursive;
+    font-size: 2.2rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  /* ── BUTTONS ── */
+  button { font-family: 'Nunito', sans-serif; font-weight: 900; cursor: pointer; border: 4px solid var(--ink); transition: transform .12s ease, box-shadow .12s ease; color: var(--ink); }
+  .btn-primary {
+    background: var(--yellow); width: 100%; padding: 16px; font-size: 1.1rem;
+    box-shadow: 0 6px 0 var(--ink);
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-back { background: none; border: none; box-shadow: none; color: var(--muted); font-size: .9rem; padding: 6px 0; text-align: center; }
+  .btn-back:hover { color: var(--ink); }
+
+  /* ── ROLE PICKER ── */
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; }
+  .role-btn {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 28px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    font-family: 'Chewy', cursive; font-size: 1.3rem;
+  }
+  .role-btn:hover  { transform: translateY(-3px); box-shadow: 0 9px 0 var(--ink); }
+  .role-btn:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .role-btn .emoji { font-size: 2.2rem; }
+
+  /* ── STATUS ── */
+  .status { width: 100%; text-align: center; padding: 12px 16px; font-weight: 800; font-size: .9rem; border: 3px solid var(--ink); }
+  .status.error { background: #fee2e2; color: #991b1b; }
+
+  /* ── TEMA-VELGER ── */
+  .tema-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; width: 100%; }
+  .tema-kort {
+    background: #fff; border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 6px 0 var(--ink);
+    padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 10px;
+    font-family: 'Chewy', cursive; font-size: 1.15rem;
+  }
+  .tema-kort img { width: 100%; aspect-ratio: 5/4; object-fit: cover; border-radius: 12px; border: 3px solid var(--ink); }
+  .tema-kort:hover  { transform: translateY(-3px); box-shadow: 0 9px 0 var(--ink); }
+  .tema-kort:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .tema-notat { color: var(--muted); font-weight: 700; font-size: .82rem; text-align: center; }
+
+  /* ── FØLELSESHJUL / VALG-RUTENETT ── */
+  .mood-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(clamp(118px, 13vw, 190px), 1fr));
+    gap: clamp(10px, 1.4vw, 20px);
+    width: 100%;
+  }
+  .mood-tile {
+    position: relative; background: #fff; border: 3px solid var(--ink); border-radius: 16px;
+    box-shadow: 0 4px 0 var(--ink); overflow: hidden; aspect-ratio: 5/4; padding: 0;
+  }
+  .mood-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  button.mood-tile { cursor: pointer; transition: transform .12s ease, box-shadow .12s ease; }
+  button.mood-tile:hover  { transform: translateY(-3px); box-shadow: 0 7px 0 var(--ink); }
+  button.mood-tile:active { transform: translateY(3px);  box-shadow: 0 1px 0 var(--ink); }
+  .mood-tile.valgt { box-shadow: 0 4px 0 var(--ink), 0 0 0 4px var(--yellow); transform: translateY(-2px); }
+  .mood-tile.valgt::after {
+    content: '✓'; position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--yellow); border: 3px solid var(--ink); display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: .95rem;
+  }
+
+  /* ── KLASSEVEGG (anonym oppsummering) ── */
+  .klasse-wall { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; align-content: flex-start; width: 100%; padding: 10px 0; }
+  .wall-avatar {
+    width: clamp(64px, 9vw, 108px); aspect-ratio: 1/1; border-radius: 50%; border: 3px solid var(--ink);
+    overflow: hidden; box-shadow: 0 4px 0 var(--ink); background: #fff;
+    animation: popIn .35s cubic-bezier(.34,1.56,.64,1) both;
+  }
+  .wall-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  @keyframes popIn { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .klasse-tomt { color: var(--muted); font-weight: 800; text-align: center; padding: 40px 20px; }
+
+  /* ── FLYTENDE VERKTØYLINJE (lærer, live) ── */
+  .floating-bar {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
+    background: rgba(255,249,240,.96); border: 3px solid var(--ink); border-radius: 999px;
+    padding: 8px 10px 8px 18px; box-shadow: 0 5px 0 var(--ink); z-index: 50;
+    max-width: calc(100vw - 20px);
+  }
+  .fb-info { display: flex; align-items: center; gap: 10px; }
+  .fb-kode { font-family: 'Chewy', cursive; letter-spacing: 2px; font-size: 1.05rem; }
+  .fb-antall { font-size: .82rem; font-weight: 800; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .fb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); border: 2px solid var(--ink); animation: puls 2s infinite; }
+  @keyframes puls { 0%,100%{opacity:1} 50%{opacity:.35} }
+  .fb-ikon {
+    width: 40px; height: 40px; border-radius: 50%; border: 3px solid var(--ink); background: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 1.05rem; padding: 0; flex-shrink: 0;
+  }
+  .fb-hoved { border-radius: 999px; padding: 10px 18px; background: var(--yellow); font-size: .92rem; white-space: nowrap; }
+  .fb-fare { background: #fee2e2; }
+
+  /* ── OVERLAY (bytt tema midt i økta) ── */
+  .overlay { position: fixed; inset: 0; background: rgba(43,33,24,.55); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .overlay-kort {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 24px; max-width: 560px; width: 100%; border-radius: 18px; max-height: 85vh; overflow: auto;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+
+  .nullstill-lenke { background: none; border: none; box-shadow: none; color: var(--muted); font-size: .82rem; font-weight: 800; text-decoration: underline; padding: 4px; }
+  .nullstill-lenke:hover { color: var(--ink); }
+
+  @media (max-width: 480px) {
+    .mood-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+    #joinCodeInput { font-size: 1.8rem; letter-spacing: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <a class="logo" href="/index.html">LRN<b>ify</b></a>
+  <div class="logo-sub">Dagsformen</div>
+</header>
+<div class="undertittel" id="undertittel">Hvordan føler du deg i dag? En visuell innsjekk for hele klassen.</div>
+
+<!-- ── ROLLE ── -->
+<div class="screen active" id="screen-role">
+  <div class="role-grid">
+    <button class="role-btn" onclick="velgLarer()"><span class="emoji">🎓</span>Lærer</button>
+    <button class="role-btn" onclick="velgElev()"><span class="emoji">🙋</span>Elev</button>
+  </div>
+</div>
+
+<!-- ── LÆRER: VELG TEMA ── -->
+<div class="screen" id="screen-teacher-theme">
+  <h2 class="tittel">Velg figurer</h2>
+  <div class="tema-grid" id="temaGrid"></div>
+  <div class="tema-notat">Flere temaer kommer senere.</div>
+  <button class="btn-back" onclick="visSkjerm('screen-role')">← Tilbake</button>
+</div>
+
+<!-- ── LÆRER: LIVE (fullskjerm) ── -->
+<div class="screen bred fullskjerm" id="screen-teacher-live">
+  <div class="mood-grid" id="hjulGrid"></div>
+  <div class="klasse-wall skjult" id="klasseWall"></div>
+  <div class="klasse-tomt skjult" id="klasseTomt">Ingen har svart ennå.</div>
+  <button class="nullstill-lenke skjult" id="nullstillLenke" onclick="nullstillSvar()">Nullstill svarene</button>
+</div>
+
+<div class="floating-bar skjult" id="floatingBar">
+  <div class="fb-info" id="fbInfo">
+    <span class="fb-kode" id="fbKode">——</span>
+    <span class="fb-antall"><span class="fb-dot"></span><b id="fbAntall">0</b>&nbsp;svart</span>
+  </div>
+  <button class="fb-ikon" id="btnTema" title="Bytt figurer" aria-label="Bytt figurer" onclick="apneTemaVelger()">🎨</button>
+  <button class="fb-ikon" id="btnFullskjerm" title="Fullskjerm" aria-label="Fullskjerm" onclick="veksleFullskjerm()">⛶</button>
+  <button class="fb-hoved" id="btnVisning" onclick="byttVisning()">Se klassen 👀</button>
+  <button class="fb-ikon fb-fare" id="btnAvslutt" title="Avslutt" aria-label="Avslutt økt" onclick="avsluttOkt()">✕</button>
+</div>
+
+<!-- ── BYTT TEMA-OVERLAY ── -->
+<div class="overlay skjult" id="temaOverlay">
+  <div class="overlay-kort">
+    <h2 class="tittel">Bytt figurer</h2>
+    <div class="tema-grid" id="temaGridOverlay"></div>
+    <button class="btn-back" onclick="lukkTemaVelger()">Lukk</button>
+  </div>
+</div>
+
+<!-- ── ELEV: KODE ── -->
+<div class="screen" id="screen-student-join">
+  <div class="card">
+    <h2 class="tittel" style="margin-bottom:14px;">Romkode</h2>
+    <input type="text" id="joinCodeInput" maxlength="6" placeholder="ABC123"
+      autocomplete="off" autocorrect="off" spellcheck="false"
+      oninput="this.value=this.value.toUpperCase()" />
+  </div>
+  <div id="joinError" class="status error skjult"></div>
+  <button class="btn-primary" onclick="blibMed()">Bli med</button>
+  <button class="btn-back" onclick="visSkjerm('screen-role')">← Tilbake</button>
+</div>
+
+<!-- ── ELEV: ROMMET ER STENGT ── -->
+<div class="screen" id="screen-student-waiting">
+  <div class="card" style="text-align:center;">
+    <p class="hjelpetekst" id="waitingMsg">Rommet er avsluttet av læreren.</p>
+  </div>
+</div>
+
+<!-- ── ELEV: VELG FØLELSE ── -->
+<div class="screen bred fullskjerm" id="screen-student-pick">
+  <h2 class="tittel">Trykk på den som passer best</h2>
+  <div class="mood-grid" id="pickGrid"></div>
+</div>
+
+<script>
+'use strict';
+/* Firebase lastes ALDRI ved sidelast — bare i det øyeblikket noen faktisk
+   trenger et rom (lærer velger tema, elev blir med). Slik virker den
+   enkleste bruken (figurhjulet i fullskjerm) uansett, selv om CDN-en for
+   Firebase er blokkert eller nettet er nede — akkurat som tavlemodus i
+   Temaspinner/Tankesky. Se firebase/README.md. */
+const firebaseConfig = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+const KILDE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+let db = null, FB = null, laster = null;
+
+function lastFirebase() {
+  if (FB) return Promise.resolve(FB);
+  if (!laster) {
+    laster = Promise.all([
+      import(KILDE + 'firebase-app.js'),
+      import(KILDE + 'firebase-database.js'),
+      import(KILDE + 'firebase-auth.js'),
+    ]).then(([a, d, g]) => {
+      const app = a.initializeApp(firebaseConfig);
+      db = d.getDatabase(app);
+      const auth = g.getAuth(app);
+      FB = {
+        ref: d.ref, set: d.set, get: d.get, update: d.update, onValue: d.onValue, off: d.off,
+        auth, paalogg: g.signInAnonymously
+      };
+      return FB;
+    }).catch(e => { laster = null; throw e; });
+  }
+  return laster;
+}
+const R = sti => FB.ref(db, sti);
+
+/* Anonym pålogging i bakgrunnen — ingen elev ser noe til dette. Feiler den
+   (ikke skrudd på i Firebase, CDN-en blokkert, eller ingen nett), degraderer
+   appen gracefully: figurhjulet i fullskjerm virker uansett, det er bare
+   rom-funksjonene (kode, QR, klassevegg) som ikke blir tilgjengelige. */
+let uid = null, paalogging = null;
+function sikreAuth() {
+  if (uid) return Promise.resolve(uid);
+  if (!paalogging) {
+    paalogging = lastFirebase()
+      .then(() => FB.paalogg(FB.auth))
+      .then(c => (uid = c.user.uid))
+      .catch(() => { paalogging = null; return null; });
+  }
+  return paalogging;
+}
+
+const ALFABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // uten forvekslingsbare O/0 og I/1
+function lagRomkode() {
+  let k = '';
+  const t = new Uint32Array(6);
+  (window.crypto || window.msCrypto).getRandomValues(t);
+  for (let i = 0; i < 6; i++) k += ALFABET[t[i] % ALFABET.length];
+  return k;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   TEMAER — legg til et nytt tema ved å legge en ny rad her og droppe 30
+   bilder (00.jpg–29.jpg, samme rekkefølge/følelser som de andre temaene)
+   i media/aktiviteter/dagsformen/{mappe}/. Ingen andre kodeendringer trengs.
+   ══════════════════════════════════════════════════════════════════════ */
+const THEMES = {
+  emoji: { navn: 'Emoji', mappe: 'emoji' },
+  dyr:   { navn: 'Dyr',   mappe: 'dyr' },
+};
+
+/* 30 følelser, i samme rekkefølge som figurene ligger i hvert temabilde
+   (rad for rad, venstre mot høyre). Brukes bare som alt-tekst/tittel — den
+   anonyme klasseveggen viser aldri disse ordene. */
+const MOODS = [
+  'Superglad','Jubler','Tullete','Selvsikker','Flau','Usikker',
+  'Rolig','Trygg','Energisk','Avslappet','Kul','Sjenert',
+  'Litt flau','Forvirret','Bekymret','Redd','Nervøs','Stresset',
+  'Irritert','Sint','Rasende','Skøyeraktig','Såret','Kjeder meg',
+  'Litt lei meg','Lei meg','Ensom','Livredd','Overveldet','Nedfor'
+];
+
+function bildeSti(temaId, i) {
+  const tema = THEMES[temaId] || THEMES.emoji;
+  return `/media/aktiviteter/dagsformen/${tema.mappe}/${String(i).padStart(2, '0')}.jpg`;
+}
+
+window.visSkjerm = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const fullbleed = (id === 'screen-teacher-live' || id === 'screen-student-pick');
+  document.getElementById('siteHeader').classList.toggle('skjult', fullbleed);
+  document.getElementById('undertittel').classList.toggle('skjult', fullbleed);
+  document.body.classList.toggle('uten-luft', fullbleed);
+  document.getElementById('floatingBar').classList.toggle('skjult', id !== 'screen-teacher-live');
+};
+window.velgLarer = () => { tegnTemaGrid(document.getElementById('temaGrid'), startMedTema); visSkjerm('screen-teacher-theme'); };
+window.velgElev  = () => visSkjerm('screen-student-join');
+
+function tegnTemaGrid(container, onPick) {
+  container.innerHTML = '';
+  Object.entries(THEMES).forEach(([id, t]) => {
+    const kort = document.createElement('button');
+    kort.type = 'button';
+    kort.className = 'tema-kort';
+    kort.innerHTML = `<img src="${bildeSti(id, 0)}" alt=""><span>${t.navn}</span>`;
+    kort.onclick = () => onPick(id);
+    container.appendChild(kort);
+  });
+}
+
+function tegnMoodGrid(container, temaId, { selectable, selected, onSelect }) {
+  container.innerHTML = '';
+  MOODS.forEach((navn, i) => {
+    const el = document.createElement(selectable ? 'button' : 'div');
+    el.className = 'mood-tile' + (selected === i ? ' valgt' : '');
+    if (selectable) el.type = 'button';
+    el.innerHTML = `<img src="${bildeSti(temaId, i)}" alt="${navn}" loading="lazy">`;
+    if (selectable) el.onclick = () => onSelect(i);
+    container.appendChild(el);
+  });
+}
+
+/* Delelenken fra "Del"-knappen har romkoden med seg (?kode=ABC123), så en
+   elev slipper å skrive den av tavla. */
+(function prefillKodeFraUrl() {
+  const fraUrl = (new URLSearchParams(location.search).get('kode') || '').trim().toUpperCase();
+  if (!fraUrl) return;
+  velgElev();
+  document.getElementById('joinCodeInput').value = fraUrl;
+})();
+
+/* ══ LÆRER ══ */
+let gjeldendeKode = null;
+let gjeldendeTema = 'emoji';
+let romAktiv      = false;
+let visning       = 'hjul'; // 'hjul' | 'klasse'
+let romLytter     = null;
+let romLytterSti  = null; // stien lytteren faktisk henger på, for korrekt off()
+
+window.startMedTema = async (temaId) => {
+  gjeldendeTema = temaId;
+  gjeldendeKode = null;
+  romAktiv      = false;
+  visning       = 'hjul';
+  tegnMoodGrid(document.getElementById('hjulGrid'), gjeldendeTema, { selectable: false });
+  document.getElementById('hjulGrid').classList.remove('skjult');
+  document.getElementById('klasseWall').classList.add('skjult');
+  document.getElementById('klasseTomt').classList.add('skjult');
+  document.getElementById('nullstillLenke').classList.add('skjult');
+  document.getElementById('btnVisning').textContent = 'Se klassen 👀';
+  visSkjerm('screen-teacher-live');
+
+  // Rommet opprettes i bakgrunnen — figurhjulet står ferdig uansett utfall.
+  try {
+    const eier = await sikreAuth();
+    if (!eier) throw new Error('ingen pålogging');
+    const kode = lagRomkode();
+    await FB.set(R('dagsformen/' + kode), { opprettet: Date.now(), owner: eier, tema: temaId });
+    gjeldendeKode = kode;
+    romAktiv = true;
+    if (typeof LRNifyDeling !== 'undefined') LRNifyDeling.setRomkode(kode);
+    startLarerLytter(kode);
+  } catch (e) {
+    romAktiv = false;
+  }
+  // ⛶/🎨/✕ trenger ikke noe rom — bare kode/antall/"Se klassen" er avhengig.
+  document.getElementById('fbInfo').classList.toggle('skjult', !romAktiv);
+  document.getElementById('btnVisning').classList.toggle('skjult', !romAktiv);
+  document.getElementById('fbKode').textContent = gjeldendeKode || '——';
+};
+
+function startLarerLytter(kode) {
+  if (romLytter) FB.off(R(romLytterSti), 'value', romLytter);
+  romLytterSti = 'dagsformen/' + kode;
+  romLytter = FB.onValue(R(romLytterSti), snap => {
+    if (!snap.exists()) return;
+    const d = snap.val();
+    if (d.tema && d.tema !== gjeldendeTema) {
+      gjeldendeTema = d.tema;
+      tegnMoodGrid(document.getElementById('hjulGrid'), gjeldendeTema, { selectable: false });
+    }
+    const elever = d.elever || {};
+    tegnKlasseVegg(elever);
+    document.getElementById('fbAntall').textContent = Object.keys(elever).length;
+  });
+}
+
+function tegnKlasseVegg(elever) {
+  const wrap = document.getElementById('klasseWall');
+  const liste = Object.values(elever || {}).filter(e => typeof e.valgt === 'number' && e.valgt >= 0 && e.valgt < MOODS.length);
+  wrap.innerHTML = '';
+  liste.forEach(e => {
+    const div = document.createElement('div');
+    div.className = 'wall-avatar';
+    div.innerHTML = `<img src="${bildeSti(gjeldendeTema, e.valgt)}" alt="${MOODS[e.valgt]}">`;
+    wrap.appendChild(div);
+  });
+  document.getElementById('klasseTomt').classList.toggle('skjult', liste.length > 0 || visning !== 'klasse');
+  document.getElementById('nullstillLenke').classList.toggle('skjult', liste.length === 0 || visning !== 'klasse');
+}
+
+window.byttVisning = () => {
+  visning = visning === 'hjul' ? 'klasse' : 'hjul';
+  document.getElementById('hjulGrid').classList.toggle('skjult', visning !== 'hjul');
+  document.getElementById('klasseWall').classList.toggle('skjult', visning !== 'klasse');
+  const harSvar = document.getElementById('klasseWall').children.length > 0;
+  document.getElementById('klasseTomt').classList.toggle('skjult', visning !== 'klasse' || harSvar);
+  document.getElementById('nullstillLenke').classList.toggle('skjult', visning !== 'klasse' || !harSvar);
+  document.getElementById('btnVisning').textContent = visning === 'hjul' ? 'Se klassen 👀' : '↺ Vis figurene';
+};
+
+window.apneTemaVelger = () => {
+  tegnTemaGrid(document.getElementById('temaGridOverlay'), setTema);
+  document.getElementById('temaOverlay').classList.remove('skjult');
+};
+window.lukkTemaVelger = () => document.getElementById('temaOverlay').classList.add('skjult');
+
+async function setTema(id) {
+  gjeldendeTema = id;
+  tegnMoodGrid(document.getElementById('hjulGrid'), gjeldendeTema, { selectable: false });
+  lukkTemaVelger();
+  if (romAktiv && gjeldendeKode) {
+    try { await FB.update(R('dagsformen/' + gjeldendeKode), { tema: id }); } catch (e) {}
+  }
+}
+
+window.nullstillSvar = async () => {
+  if (!romAktiv || !gjeldendeKode) return;
+  if (!confirm('Nullstille alle svarene til nå?')) return;
+  try { await FB.update(R('dagsformen/' + gjeldendeKode), { elever: null }); } catch (e) {}
+};
+
+window.veksleFullskjerm = () => {
+  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
+  else document.exitFullscreen?.();
+};
+
+window.avsluttOkt = async () => {
+  if (!confirm('Avslutte økta?')) return;
+  if (romLytter) { FB.off(R(romLytterSti), 'value', romLytter); romLytter = null; romLytterSti = null; }
+  if (romAktiv && gjeldendeKode) { try { await FB.set(R('dagsformen/' + gjeldendeKode), null); } catch (e) {} }
+  gjeldendeKode = null; romAktiv = false; visning = 'hjul';
+  velgLarer();
+};
+
+/* ══ ELEV ══ */
+let mineValgtIndeks = null;
+
+window.blibMed = async () => {
+  const kode  = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  const feilEl = document.getElementById('joinError');
+  feilEl.classList.add('skjult');
+  if (kode.length < 4) { visFeil('Skriv inn koden du fikk av læreren.'); return; }
+
+  let snap;
+  try {
+    await lastFirebase();
+    snap = await FB.get(R('dagsformen/' + kode));
+  } catch (e) {
+    visFeil('Fikk ikke kontakt. Sjekk internett og prøv igjen.');
+    return;
+  }
+  if (!snap.exists()) { visFeil('Fant ikke et rom med den koden.'); return; }
+
+  const data = snap.val();
+  gjeldendeKode = kode;
+  gjeldendeTema = data.tema || 'emoji';
+  mineValgtIndeks = null;
+
+  const meg = await sikreAuth();
+  if (meg && data.elever && data.elever[meg] && typeof data.elever[meg].valgt === 'number') {
+    mineValgtIndeks = data.elever[meg].valgt;
+  }
+
+  tegnValggrid();
+  visSkjerm('screen-student-pick');
+  startElevLytter(kode);
+
+  function visFeil(msg) { feilEl.textContent = msg; feilEl.classList.remove('skjult'); }
+};
+
+function tegnValggrid() {
+  tegnMoodGrid(document.getElementById('pickGrid'), gjeldendeTema, {
+    selectable: true, selected: mineValgtIndeks, onSelect: velgFolelse
+  });
+}
+
+function startElevLytter(kode) {
+  if (romLytter) FB.off(R(romLytterSti), 'value', romLytter);
+  romLytterSti = 'dagsformen/' + kode;
+  romLytter = FB.onValue(R(romLytterSti), snap => {
+    if (!snap.exists()) {
+      document.getElementById('waitingMsg').textContent = 'Rommet er avsluttet av læreren.';
+      visSkjerm('screen-student-waiting');
+      return;
+    }
+    const d = snap.val();
+    if (d.tema && d.tema !== gjeldendeTema) { gjeldendeTema = d.tema; tegnValggrid(); }
+  });
+}
+
+window.velgFolelse = async (i) => {
+  mineValgtIndeks = i;
+  tegnValggrid();
+  const meg = await sikreAuth();
+  if (!meg || !gjeldendeKode) return;
+  try { await FB.set(R('dagsformen/' + gjeldendeKode + '/elever/' + meg), { valgt: i, ts: Date.now() }); } catch (e) {}
+};
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
