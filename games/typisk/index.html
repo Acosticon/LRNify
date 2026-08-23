@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Typisk! — LRNify</title>
+<meta name="description" content="Finn hvilket sentralmål — gjennomsnitt, median eller typetall — som best beskriver et datasett, og avslør når gjennomsnittet gir et misvisende bilde.">
+<link rel="canonical" href="https://lrnify.no/games/typisk/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Typisk! – LRNify">
+<meta property="og:description" content="Finn hvilket sentralmål — gjennomsnitt, median eller typetall — som best beskriver et datasett, og avslør når gjennomsnittet gir et misvisende bilde.">
+<meta property="og:image" content="https://lrnify.no/media/cards/typisk.png">
+<meta property="og:url" content="https://lrnify.no/games/typisk/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Typisk! – LRNify">
+<meta name="twitter:description" content="Finn hvilket sentralmål — gjennomsnitt, median eller typetall — som best beskriver et datasett, og avslør når gjennomsnittet gir et misvisende bilde.">
+<meta name="twitter:image" content="https://lrnify.no/media/cards/typisk.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f6f8fb;
+    --ink:   #1c2530;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #5b6472;
+    --green: #16a34a;
+    --gridline:#e3e8f0;
+
+    --blue: #2563eb;
+    --blue-dark: #1d4ed8;
+    --red: #dc2626;
+    --red-dark:#991b1b;
+    --purple:#7c3aed;
+    --purple-dark:#5b21b6;
+    --amber:#d97706;
+    --amber-dark:#92400e;
+    --teal:#0d9488;
+    --teal-dark:#0f766e;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SCREENS ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 640px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center;
+    animation: fadeIn .25s ease;
+  }
+
+  .screen-hero { padding: 4px 0 4px; }
+  .hero-emoji { font-size: clamp(2.2rem,8vw,3rem); margin-bottom: 6px; }
+  .screen-hero h1 { font-family: 'Chewy', cursive; font-size: clamp(1.9rem,7vw,3rem); }
+  .screen-hero p  {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.9rem,2.4vw,1.05rem); margin-top: 8px; max-width: 480px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 18px 22px; width: 100%;
+    text-align: left;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 12px; text-align: center; }
+
+  button { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover:not(:disabled)  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active:not(:disabled) { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; box-shadow: 0 6px 0 var(--ink); }
+  .btn-primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+  .btn-secondary {
+    font-weight: 900; background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 11px 20px; font-size: .95rem; width: 100%; max-width: 320px;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .btn-secondary:hover:not(:disabled)  { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); }
+  .btn-secondary:active:not(:disabled) { transform: translateY(3px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-secondary:disabled { opacity: .45; cursor: not-allowed; }
+  .btn-secondary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .btn-secondary.small { width: auto; max-width: none; padding: 7px 14px; font-size: .82rem; box-shadow: 0 4px 0 var(--ink); }
+  .btn-secondary.small:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-secondary[aria-pressed="true"] { background: var(--yellow); }
+
+  .btn-back {
+    font-weight: 800; color: var(--ink); text-decoration: none;
+    border-bottom: 2px solid var(--ink); padding-bottom: 1px; font-size: .9rem;
+  }
+
+  /* ══ EXAMPLE ON START SCREEN ══ */
+  .example-row { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom: 14px; }
+  .example-chip {
+    background: var(--cream); border: 3px solid var(--ink); font-weight: 900;
+    font-size: 1.1rem; padding: 8px 12px; min-width: 44px; text-align:center;
+  }
+  .example-measures { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; }
+  .example-measures div {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 8px 12px; font-weight: 800; font-size: .85rem; flex: 1 1 120px;
+  }
+  .example-measures strong { display:block; font-family:'Chewy',cursive; font-size:1.3rem; margin-top:2px; }
+
+  /* ══ GAME HUD ══ */
+  .hud { display:flex; justify-content:space-between; align-items:center; width:100%; gap:10px; font-weight:900; }
+  .hud-case { font-size: .85rem; color: var(--muted); }
+  .hud-score {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 5px 12px; font-size: .85rem; white-space: nowrap;
+  }
+  .progress-track { width:100%; height:10px; background:var(--gridline); border:2px solid var(--ink); }
+  .progress-fill { height:100%; background:var(--blue); transition: width .3s ease; }
+
+  /* ══ SITUATION / DATASET ══ */
+  .situation-card h2 { text-align:left; }
+  .situation-text { font-weight:700; margin-bottom: 12px; }
+  .unit-note { font-weight:700; color:var(--muted); font-size:.85rem; margin-bottom:10px; }
+
+  .dataset-row {
+    display:flex; flex-wrap:wrap; gap:10px; justify-content:center;
+    padding: 14px 6px; min-height: 66px;
+  }
+  .num-card {
+    background: var(--cream); border: 3px solid var(--ink);
+    font-family:'Chewy',cursive; font-size: 1.3rem;
+    padding: 10px 14px; min-width: 52px; text-align:center;
+    transition: transform .4s ease;
+  }
+  .num-card.new-point { background: var(--yellow); border-color: var(--red-dark); }
+  .num-card.new-point.pop { animation: popIn .5s ease; }
+  @keyframes popIn { from{ transform:scale(0) rotate(-8deg); opacity:0 } to{ transform:scale(1) rotate(0); opacity:1 } }
+
+  .tool-row { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top: 6px; }
+  .sum-line { text-align:center; font-weight:800; margin-top:8px; font-size:.95rem; }
+  .sr-dataset-text { }
+
+  /* ══ MEASURES ══ */
+  .measures-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap:12px; width:100%; }
+  .measure-card {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 12px 14px; text-align:center;
+  }
+  .measure-card h3 { font-size: .8rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin-bottom:8px; }
+  .measure-card input {
+    width: 100%; text-align:center; font-family:'Chewy',cursive; font-size:1.4rem;
+    border: 3px solid var(--ink); padding: 8px; background:var(--cream); color:var(--ink);
+  }
+  .measure-card input:focus-visible { outline: 3px solid var(--blue); outline-offset:2px; }
+  .measure-card .measure-value { font-family:'Chewy',cursive; font-size:1.5rem; }
+  .measure-card .measure-status { font-size:1.1rem; margin-top:6px; min-height:1.4em; font-weight:900; }
+  .measure-card.ok { border-color: var(--green); }
+  .measure-card.err { border-color: var(--red); }
+  .measure-card .reveal-btn { margin-top: 8px; }
+  .measure-card .old-value { text-decoration: line-through; color: var(--muted); font-size:1rem; }
+  .measure-card .arrow-change { font-size:1.4rem; margin: 2px 0; }
+
+  /* ══ CHOICE BUTTONS (MC) ══ */
+  .choice-grid { display:flex; flex-direction:column; gap:10px; width:100%; }
+  .choice-btn {
+    text-align:left; font-weight:800; font-size: .95rem;
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 12px 16px; width:100%; display:flex; align-items:center; gap:10px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .choice-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); }
+  .choice-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 var(--ink); }
+  .choice-btn:focus-visible { outline: 3px solid var(--blue); outline-offset:2px; }
+  .choice-btn:disabled { cursor:default; }
+  .choice-btn .mark { font-weight:900; font-size:1.1rem; min-width:1.2em; }
+  .choice-btn.correct { background:#dcfce7; border-color:var(--green); }
+  .choice-btn.incorrect { background:#fee2e2; border-color:var(--red); }
+  .choice-btn.correct .mark::before { content:"✓"; color:var(--green); }
+  .choice-btn.incorrect .mark::before { content:"✗"; color:var(--red); }
+  .choice-btn.correct-but-unchosen { border-style:dashed; }
+  .choice-btn.correct-but-unchosen .mark::before { content:"✓"; color:var(--green); }
+
+  .explain-box {
+    background: var(--cream); border: 3px dashed var(--ink); padding: 12px 14px;
+    font-weight:700; font-size:.92rem; width:100%; margin-top:4px;
+  }
+
+  .shock-banner {
+    background: var(--red); color:#fff; font-family:'Chewy',cursive; font-size:1.2rem;
+    padding: 10px 16px; border:3px solid var(--ink); box-shadow:0 5px 0 var(--ink);
+    width:100%; text-align:center;
+  }
+
+  footer { text-align:center; padding: 24px 16px 40px; color: var(--muted); font-weight:700; font-size:.85rem; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <a class="logo" href="#">Typi<b>sk</b>!</a>
+  <a class="back-btn" href="../../index.html#grid">← LRNify</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🔎</div>
+      <h1>Typisk!</h1>
+      <p>Tall kan fortelle forskjellige historier. Finn tallet som beskriver gruppen best.</p>
+    </div>
+
+    <div class="card">
+      <h2>Se på disse fem tallene</h2>
+      <div class="example-row" aria-hidden="true">
+        <div class="example-chip">2</div><div class="example-chip">3</div><div class="example-chip">3</div><div class="example-chip">4</div><div class="example-chip">8</div>
+      </div>
+      <p class="sr-only">Datasettet er 2, 3, 3, 4 og 8.</p>
+      <div class="example-measures">
+        <div>Gjennomsnitt<strong>4</strong></div>
+        <div>Median<strong>3</strong></div>
+        <div>Typetall<strong>3</strong></div>
+      </div>
+      <p class="unit-note" style="text-align:center;margin-top:10px;">Tre svar. Alle er «riktig regnet» — men hvilket forteller best hva som er typisk her?</p>
+    </div>
+
+    <div class="card">
+      <h2>Slik virker det</h2>
+      <ul style="padding-left:1.2em; font-weight:700; font-size:.92rem; display:flex; flex-direction:column; gap:6px;">
+        <li>8 saker fra hverdagen. Du regner ut, velger og tolker.</li>
+        <li>Noen ganger dukker det opp et nytt tall som endrer alt.</li>
+        <li>Sortering, sum og hint koster aldri poeng.</li>
+      </ul>
+    </div>
+
+    <button class="btn-primary" id="btnStart">Start</button>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="center-wrap">
+    <div class="hud">
+      <span class="hud-case" id="hudCase">Sak 1 av 8</span>
+      <span class="hud-score" id="hudScore">0 poeng</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+    <div class="card situation-card">
+      <h2 id="caseEmoji">📊 Situasjon</h2>
+      <p class="situation-text" id="situationText"></p>
+      <p class="unit-note" id="unitNote"></p>
+      <div class="dataset-row" id="datasetRow" aria-hidden="true"></div>
+      <p class="sr-only" id="srDatasetText"></p>
+      <div class="tool-row">
+        <button class="btn-secondary small" id="btnSort" aria-pressed="false">🔀 Sorter tall</button>
+        <button class="btn-secondary small" id="btnSum">Σ Vis sum</button>
+      </div>
+      <p class="sum-line" id="sumLine" hidden></p>
+    </div>
+
+    <div class="card" id="computeCard">
+      <h2 id="computeTitle">Finn sentralmålene</h2>
+      <div class="measures-grid" id="measuresGrid"></div>
+      <div style="display:flex; justify-content:center; margin-top:14px;">
+        <button class="btn-primary" id="btnCheckCompute">Sjekk svar</button>
+      </div>
+      <p class="explain-box" id="computeFeedback" hidden></p>
+    </div>
+
+    <div class="card" id="shockCard" hidden>
+      <h2>😲 Noe skjer</h2>
+      <p class="situation-text" id="shockIntro"></p>
+      <div class="choice-grid" id="shockChoices"></div>
+      <p class="explain-box" id="shockFeedback" hidden></p>
+    </div>
+
+    <div class="card" id="chooseCard" hidden>
+      <h2>Hva passer best?</h2>
+      <p class="situation-text" id="chooseQuestion"></p>
+      <div class="choice-grid" id="chooseChoices"></div>
+      <p class="explain-box" id="chooseFeedback" hidden></p>
+    </div>
+
+    <div class="card" id="interpretCard" hidden>
+      <h2>Siste spørsmål</h2>
+      <p class="situation-text" id="interpretQuestion"></p>
+      <div class="choice-grid" id="interpretChoices"></div>
+      <p class="explain-box" id="interpretFeedback" hidden></p>
+    </div>
+
+    <button class="btn-primary" id="btnNextCase" hidden>Neste</button>
+
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ RESULTAT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">📈</div>
+      <h1>Statistikkrapport</h1>
+      <p>Her er resultatet ditt etter 8 saker.</p>
+    </div>
+    <div class="card result-card">
+      <div class="hud" style="margin-bottom:10px;"><span>Poeng</span><strong id="endScore">0 av 24</strong></div>
+      <div class="hud" style="margin-bottom:10px;"><span>Datasett tolket riktig</span><strong id="endInterpret">0 av 8</strong></div>
+      <div class="hud"><span>Gjennomsnitt</span><strong id="endMean">–</strong></div>
+      <div class="hud" style="margin:6px 0;"><span>Median</span><strong id="endMedian">–</strong></div>
+      <div class="hud"><span>Typetall</span><strong id="endMode">–</strong></div>
+    </div>
+
+    <div class="card">
+      <h2>Én siste sak</h2>
+      <p class="situation-text">Poeng i en runde av et TV-spill hos fem venner:</p>
+      <div class="example-row" aria-hidden="true">
+        <div class="example-chip">20</div><div class="example-chip">21</div><div class="example-chip">21</div><div class="example-chip">22</div><div class="example-chip">116</div>
+      </div>
+      <p class="sr-only">Datasettet er 20, 21, 21, 22 og 116.</p>
+      <div class="example-measures">
+        <div>Gjennomsnitt<strong>40</strong></div>
+        <div>Median<strong>21</strong></div>
+      </div>
+      <p class="unit-note" style="text-align:center;margin-top:10px;">Hvilket tall forteller best hva som er typisk her?</p>
+    </div>
+
+    <button class="btn-primary" id="btn-again">Ny runde</button>
+    <a class="btn-back" href="../../index.html#grid">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const showScreen = id => {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+};
+function announce(text) {
+  const el = $('srAnnounce');
+  el.textContent = '';
+  requestAnimationFrame(() => { el.textContent = text; });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   STATISTIKKMOTOR — regner alltid dynamisk fra datasettet, aldri
+   hardkodet i saksdataene.
+   ══════════════════════════════════════════════════════════════════ */
+function mean(arr) { return arr.reduce((s, v) => s + v, 0) / arr.length; }
+
+function median(arr) {
+  const s = [...arr].sort((a, b) => a - b);
+  const n = s.length, mid = Math.floor(n / 2);
+  return n % 2 === 0 ? (s[mid - 1] + s[mid]) / 2 : s[mid];
+}
+
+/* Typetall: tom liste = ingen typetall (alle verdier er unike). */
+function modesOf(arr) {
+  const freq = new Map();
+  arr.forEach(v => freq.set(v, (freq.get(v) || 0) + 1));
+  const max = Math.max(...freq.values());
+  if (max === 1) return [];
+  return [...freq.entries()].filter(([, c]) => c === max).map(([v]) => v).sort((a, b) => a - b);
+}
+
+function round1(n) { return Math.round(n * 10) / 10; }
+function fmtNum(n) {
+  const r = round1(n);
+  const s = Number.isInteger(r) ? String(r) : r.toFixed(1).replace('.', ',');
+  return s;
+}
+function fmtModes(modes) {
+  if (modes.length === 0) return 'Ingen typetall';
+  return modes.map(fmtNum).join(' og ');
+}
+/* Godtar komma og punktum som desimaltegn, med litt toleranse for avrunding. */
+function parseUserNumber(str) {
+  if (str == null) return NaN;
+  const cleaned = String(str).trim().replace(',', '.');
+  if (cleaned === '') return NaN;
+  return parseFloat(cleaned);
+}
+function numbersMatch(user, correct) {
+  return Number.isFinite(user) && Math.abs(user - correct) < 0.06;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   SAKSDATA
+   Felter: id, emoji, situasjon, enhet, datasett, compute (hvilke
+   sentralmål spilleren selv skal regne ut), computeIntro, choose
+   (spørsmål om hensiktsmessig sentralmål), interpret (tolknings-
+   spørsmål), evt shock (nytt datapunkt + prediksjonsspørsmål),
+   vanskelighetsgrad, oppgavetype (dokumentasjon, ikke brukt i UI).
+   ══════════════════════════════════════════════════════════════════ */
+const CASES = [
+  { // Sak 1 — oppgavetype A: gjennomsnitt passer godt
+    id: 1, emoji: '⚽', difficulty: 1, oppgavetype: 'A',
+    situation: 'Et fotballag har scoret disse målene i de fem siste kampene:',
+    unit: 'mål', data: [2, 3, 1, 2, 2],
+    compute: ['mean'], computeIntro: 'Regn ut gjennomsnittlig antall mål per kamp.',
+    choose: {
+      question: 'Gir gjennomsnittet et godt bilde av hvor mange mål laget «vanligvis» scorer?',
+      options: [
+        { key: 'yes', label: 'Ja, tallene ligger tett sammen' },
+        { key: 'no', label: 'Nei, ett tall stikker seg voldsomt ut' }
+      ],
+      correct: ['yes'],
+      explain: 'Riktig! Målene ligger tett (1–3), så gjennomsnittet gir et godt bilde av en typisk kamp.'
+    },
+    interpret: {
+      question: 'Hva er et fornuftig anslag for neste kamp?',
+      options: [
+        { key: 'a', label: 'Rundt 2 mål' },
+        { key: 'b', label: 'Nøyaktig 2 mål, hver eneste gang' },
+        { key: 'c', label: 'Rundt 47 mål' }
+      ],
+      correct: ['a'],
+      explain: 'Gjennomsnittet er et anslag, ikke en garanti — laget scorer «rundt» 2 mål, ikke nøyaktig 2 hver kamp.'
+    }
+  },
+  { // Sak 2 — median-intro
+    id: 2, emoji: '🎮', difficulty: 1, oppgavetype: 'median-intro',
+    situation: 'Fem spillere fullførte samme brett i et dataspill. Tiden de brukte, i sekunder:',
+    unit: 'sek', data: [34, 29, 31, 33, 30],
+    compute: ['median'], computeIntro: 'Sorter tallene og finn medianen.',
+    choose: {
+      question: 'Speedrunnere vil vite hva som er en «typisk» tid på brettet. Hvilket sentralmål passer best her?',
+      options: [
+        { key: 'mean', label: 'Bare gjennomsnittet gir mening' },
+        { key: 'median', label: 'Bare medianen gir mening' },
+        { key: 'both', label: 'Begge gir omtrent samme svar her' }
+      ],
+      correct: ['both'],
+      explain: 'Riktig! Tidene ligger så tett at gjennomsnitt og median forteller nesten samme historie.'
+    },
+    interpret: {
+      question: 'Hva er en rimelig «typisk» fullføringstid?',
+      options: [
+        { key: 'a', label: 'Rundt 31 sekunder' },
+        { key: 'b', label: '29 sekunder — den raskeste' },
+        { key: 'c', label: '34 sekunder — den treigste' }
+      ],
+      correct: ['a'],
+      explain: 'Midt i datasettet, etter sortering, ligger 31 — det er den typiske tiden.'
+    }
+  },
+  { // Sak 3 — oppgavetype C: typetall passer best
+    id: 3, emoji: '👟', difficulty: 1, oppgavetype: 'C',
+    situation: 'Klassen skal bestille sko til en klassefest-aktivitet. Dette er skostørrelsene i klassen:',
+    unit: '', data: [36, 37, 37, 37, 38, 38, 39],
+    compute: ['mode'], computeIntro: 'Finn typetallet — den skostørrelsen som går igjen flest ganger.',
+    choose: {
+      question: 'Boden som leverer skoene spør: «Hvilken størrelse bør vi ha flest av?» Hvilket sentralmål svarer best?',
+      options: [
+        { key: 'mean', label: 'Gjennomsnitt' },
+        { key: 'median', label: 'Median' },
+        { key: 'mode', label: 'Typetall' }
+      ],
+      correct: ['mode'],
+      explain: 'Riktig! Typetall viser den mest vanlige verdien — akkurat det boden trenger å vite.'
+    },
+    interpret: {
+      question: 'Hvorfor gir ikke gjennomsnittet like god mening her?',
+      options: [
+        { key: 'a', label: 'Fordi det kan bli et tall ingen faktisk har, som 37,4' },
+        { key: 'b', label: 'Fordi gjennomsnitt alltid er feil å bruke' },
+        { key: 'c', label: 'Fordi vi ikke kan regne ut gjennomsnitt av skostørrelser' }
+      ],
+      correct: ['a'],
+      explain: 'Nettopp — «37,4 i sko» finnes ikke. Typetall gir et svar boden faktisk kan bruke.'
+    }
+  },
+  { // Sak 4 — oppgavetype D: sentralmålene er (nesten) like
+    id: 4, emoji: '📝', difficulty: 2, oppgavetype: 'D',
+    situation: 'Fem elever tok en liten quiz. Poengsummene deres var:',
+    unit: 'poeng', data: [7, 8, 8, 9, 8],
+    compute: ['mean', 'median', 'mode'], computeIntro: 'Regn ut alle tre sentralmålene og sammenlign dem.',
+    choose: {
+      question: 'Hvilket sentralmål beskriver gruppen best her?',
+      options: [
+        { key: 'mean', label: 'Bare gjennomsnitt' },
+        { key: 'median', label: 'Bare median' },
+        { key: 'mode', label: 'Bare typetall' },
+        { key: 'all', label: 'Alle tre — de gir samme svar' }
+      ],
+      correct: ['all'],
+      explain: 'Riktig! Her er svarene så like at det ikke finnes ett «magisk riktig» sentralmål — de forteller samme historie.'
+    },
+    interpret: {
+      question: 'Hva er en typisk poengsum blant disse fem elevene?',
+      options: [
+        { key: 'a', label: '8 poeng' },
+        { key: 'b', label: '7 poeng — den laveste' },
+        { key: 'c', label: '9 poeng — den høyeste' }
+      ],
+      correct: ['a'],
+      explain: '8 poeng — det er svaret uansett hvilket av de tre sentralmålene du spør.'
+    }
+  },
+  { // Sak 5 — datasjokket (flaggskipet)
+    id: 5, emoji: '🚌', difficulty: 2, oppgavetype: 'shock',
+    situation: 'Hvor lenge bruker elevene på skoleveien? Fem elever har svart, i minutter:',
+    unit: 'min', data: [8, 9, 9, 9, 10],
+    compute: ['mean', 'median'], computeIntro: 'Regn ut gjennomsnitt og median for reisetiden.',
+    shock: {
+      newPoint: 47,
+      intro: 'En sjette elev svarer også. Hun sykler via nabobyen for å hente søsteren sin: 47 minutter.',
+      predictQuestion: 'Hva tror du endrer seg mest når vi legger til 47 minutter?',
+      predictOptions: [
+        { key: 'mean', label: 'Gjennomsnittet' },
+        { key: 'median', label: 'Medianen' },
+        { key: 'sameamount', label: 'Begge endrer seg like mye' }
+      ],
+      predictCorrect: ['mean'],
+      predictExplain: '47 er en ekstremverdi. Den trekker gjennomsnittet kraftig opp — medianen rikker seg nesten ikke.'
+    },
+    interpret: {
+      question: 'En journalist skal skrive: «En typisk elev bruker ___ minutter til skolen.» Hvilket tall bør journalisten bruke?',
+      options: [
+        { key: 'mean', label: '15,3 minutter — gjennomsnittet' },
+        { key: 'median', label: '9 minutter — medianen' }
+      ],
+      correct: ['median'],
+      explain: 'Gjennomsnittet er riktig regnet, men ekstremverdien gjør at det gir et dårlig bilde av de fleste i gruppen. 9 minutter er mer typisk.'
+    }
+  },
+  { // Sak 6 — oppgavetype B: median passer best, hensiktsmessig sentralmål
+    id: 6, emoji: '💰', difficulty: 2, oppgavetype: 'B',
+    situation: 'Fem venner sammenligner hvor mye lommepenger de får i uka:',
+    unit: 'kr', data: [50, 55, 50, 60, 300],
+    compute: ['mean', 'median'], computeIntro: 'Regn ut gjennomsnitt og median for lommepengene.',
+    choose: {
+      question: 'Vennegjengen lurer: «Hvor mye lommepenger får en vanlig venn i uka?» Hvilket sentralmål svarer best på det?',
+      options: [
+        { key: 'mean', label: 'Gjennomsnittet' },
+        { key: 'median', label: 'Medianen' }
+      ],
+      correct: ['median'],
+      explain: 'Riktig! Én venn med mye mer enn de andre drar gjennomsnittet kraftig opp. Medianen beskriver gruppa bedre.'
+    },
+    interpret: {
+      question: 'Er 103 kr et rimelig anslag på hva en «typisk» venn i gruppa får i uka?',
+      options: [
+        { key: 'no', label: 'Nei, det er høyere enn det de fleste faktisk får' },
+        { key: 'yes', label: 'Ja, det stemmer godt med de fleste' }
+      ],
+      correct: ['no'],
+      explain: 'Fire av fem venner får 50–60 kr. 103 kr er matematisk riktig, men treffer ikke «typisk» godt.'
+    }
+  },
+  { // Sak 7 — statistikkfelle: matematisk korrekt, men misvisende gjennomsnitt
+    id: 7, emoji: '📹', difficulty: 3, oppgavetype: 'trap',
+    situation: 'En YouTuber skryter: «Videoene mine har i snitt 50 000 visninger!» Her er visningstallene for de fem siste videoene:',
+    unit: 'visninger', data: [3000, 4000, 2000, 5000, 236000],
+    compute: ['mean', 'median'], computeIntro: 'Sjekk om påstanden stemmer — regn ut gjennomsnitt og median.',
+    choose: {
+      question: 'Hvilket sentralmål gir best bilde av hvor mange visninger en «vanlig» video fra denne kanalen får?',
+      options: [
+        { key: 'mean', label: 'Gjennomsnittet' },
+        { key: 'median', label: 'Medianen' }
+      ],
+      correct: ['median'],
+      explain: 'Riktig! Fire av fem videoer har 2 000–5 000 visninger. Medianen (4 000) beskriver en vanlig video best.'
+    },
+    interpret: {
+      question: 'Er påstanden «i snitt 50 000 visninger» en løgn?',
+      options: [
+        { key: 'no', label: 'Nei — regnestykket er faktisk riktig, men misvisende' },
+        { key: 'yes', label: 'Ja — tallet er feil regnet' }
+      ],
+      correct: ['no'],
+      explain: 'Gjennomsnittet er korrekt regnet. Problemet er at én viral video drar det langt opp — det gir et dårlig bilde av en vanlig video.'
+    }
+  },
+  { // Sak 8 — åpen: spilleren velger selv beregning og sentralmål
+    id: 8, emoji: '📚', difficulty: 3, oppgavetype: 'open',
+    situation: 'Seks elever ble spurt: «Hvor mange minutter brukte du på lekser i går?»',
+    unit: 'min', data: [20, 25, 20, 30, 20, 95],
+    compute: ['mean', 'median', 'mode'],
+    computeIntro: 'Ingen kort er valgt for deg denne gangen. Regn ut alle tre selv, og velg hva som svarer best på: «Hva er en typisk lekse-tid blant disse elevene?»',
+    choose: {
+      question: 'Hvilket sentralmål gir best svar på «hva er en typisk lekse-tid»?',
+      options: [
+        { key: 'mean', label: 'Gjennomsnittet' },
+        { key: 'median', label: 'Medianen' },
+        { key: 'mode', label: 'Typetallet' }
+      ],
+      correct: ['median', 'mode'],
+      explain: 'Median og typetall er begge gode svar her (22,5 og 20 minutter) — gjennomsnittet (35 min) er dratt urealistisk høyt opp av én elev.'
+    },
+    interpret: {
+      question: 'En elev sier: «Vi bruker i snitt 35 minutter på lekser.» Er det en god beskrivelse av en typisk kveld?',
+      options: [
+        { key: 'no', label: 'Nei, de fleste brukte mye mindre tid' },
+        { key: 'yes', label: 'Ja, det stemmer godt' }
+      ],
+      correct: ['no'],
+      explain: 'De fleste elevene brukte 20–30 minutter. Én elev som brukte 95 minutter dro gjennomsnittet langt over det som er typisk.'
+    }
+  }
+];
+
+const MEASURE_LABEL = { mean: 'Gjennomsnitt', median: 'Median', mode: 'Typetall' };
+
+/* ══════════════════════════════════════════════════════════════════
+   TILSTAND
+   ══════════════════════════════════════════════════════════════════ */
+let caseIndex = 0;
+let totalScore = 0;
+let sorted = false;
+let shockRevealed = false;
+let computeApproved = false;
+let choiceLocked = false;
+let predictLocked = false;
+let interpretLocked = false;
+let caseResults = []; // { computeOk, chooseOk, interpretOk, measuresTested: [...] }
+
+function currentCase() { return CASES[caseIndex]; }
+function activeData() {
+  const c = currentCase();
+  return (c.shock && shockRevealed) ? [...c.data, c.shock.newPoint] : c.data;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDERING — DATASETT
+   ══════════════════════════════════════════════════════════════════ */
+function renderDataset(animateNew) {
+  const c = currentCase();
+  const row = $('datasetRow');
+  const data = activeData();
+  const chips = data.map((v, i) => ({ v, id: i })); // id = stabil posisjon i originaldatasettet, overlever sortering
+  const display = sorted ? [...chips].sort((a, b) => a.v - b.v) : chips;
+  const newId = data.length - 1; // det nye datapunktet er alltid lagt til sist
+
+  const oldRects = new Map();
+  if (!REDUCED_MOTION) {
+    [...row.children].forEach(ch => oldRects.set(ch.dataset.key, ch.getBoundingClientRect()));
+  }
+
+  row.innerHTML = '';
+  display.forEach(({ v, id }) => {
+    const isNew = c.shock && shockRevealed && id === newId;
+    const chip = document.createElement('div');
+    chip.className = 'num-card' + (isNew ? ' new-point' : '');
+    chip.textContent = v;
+    chip.dataset.key = String(id);
+    row.appendChild(chip);
+  });
+
+  if (animateNew) {
+    const last = row.querySelector('.new-point');
+    if (last) { if (!REDUCED_MOTION) last.classList.add('pop'); }
+  } else if (!REDUCED_MOTION) {
+    [...row.children].forEach(ch => {
+      const before = oldRects.get(ch.dataset.key);
+      if (!before) return;
+      const after = ch.getBoundingClientRect();
+      const dx = before.left - after.left, dy = before.top - after.top;
+      if (dx || dy) {
+        ch.style.transform = `translate(${dx}px, ${dy}px)`;
+        requestAnimationFrame(() => { ch.style.transform = ''; });
+      }
+    });
+  }
+
+  const unit = c.unit ? ` ${c.unit}` : '';
+  const listText = display.map(d => d.v).join(', ');
+  $('srDatasetText').textContent = `Datasettet er ${listText}${unit}.`;
+  $('unitNote').textContent = c.unit ? `Verdiene er i ${c.unit}.` : '';
+  $('sumLine').hidden = true;
+  $('btnSum').textContent = 'Σ Vis sum';
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   RENDERING — SENTRALMÅL-KORT
+   ══════════════════════════════════════════════════════════════════ */
+function trueValue(key) {
+  const data = activeData();
+  if (key === 'mean') return mean(data);
+  if (key === 'median') return median(data);
+  if (key === 'mode') return modesOf(data);
+}
+function trueValueText(key) {
+  if (key === 'mode') return fmtModes(trueValue('mode'));
+  return fmtNum(trueValue(key));
+}
+
+function renderMeasures() {
+  const c = currentCase();
+  const grid = $('measuresGrid');
+  grid.innerHTML = '';
+  $('computeTitle').textContent = c.computeIntro;
+
+  ['mean', 'median', 'mode'].forEach(key => {
+    const required = c.compute.includes(key);
+    const card = document.createElement('div');
+    card.className = 'measure-card';
+    card.id = 'measure-' + key;
+    const title = document.createElement('h3');
+    title.textContent = MEASURE_LABEL[key];
+    card.appendChild(title);
+
+    if (required) {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.inputMode = 'decimal';
+      input.setAttribute('aria-label', MEASURE_LABEL[key] + ', skriv inn svaret ditt');
+      input.id = 'input-' + key;
+      card.appendChild(input);
+      const status = document.createElement('div');
+      status.className = 'measure-status';
+      status.id = 'status-' + key;
+      card.appendChild(status);
+    } else {
+      const value = document.createElement('div');
+      value.className = 'measure-value';
+      value.id = 'value-' + key;
+      value.textContent = '?';
+      card.appendChild(value);
+      const btn = document.createElement('button');
+      btn.className = 'btn-secondary small reveal-btn';
+      btn.textContent = 'Vis';
+      btn.addEventListener('click', () => {
+        value.textContent = trueValueText(key);
+        btn.hidden = true;
+        announce(MEASURE_LABEL[key] + ' er ' + trueValueText(key) + '.');
+      });
+      card.appendChild(btn);
+    }
+    grid.appendChild(card);
+  });
+
+  $('btnCheckCompute').hidden = false;
+  $('computeFeedback').hidden = true;
+  computeApproved = false;
+  updateNextVisibility();
+}
+
+function checkCompute() {
+  const c = currentCase();
+  let allOk = true;
+  c.compute.forEach(key => {
+    const input = $('input-' + key);
+    const status = $('status-' + key);
+    const card = $('measure-' + key);
+    const userVal = parseUserNumber(input.value);
+    let ok;
+    if (key === 'mode') {
+      const modes = trueValue('mode');
+      ok = modes.length === 1 && numbersMatch(userVal, modes[0]);
+    } else {
+      ok = numbersMatch(userVal, trueValue(key));
+    }
+    card.classList.remove('ok', 'err');
+    card.classList.add(ok ? 'ok' : 'err');
+    status.textContent = ok ? '✓ Riktig' : '✗ Prøv igjen';
+    if (!ok) allOk = false;
+  });
+
+  const fb = $('computeFeedback');
+  fb.hidden = false;
+  if (allOk) {
+    fb.textContent = 'Alle sentralmål er riktig regnet ut. Gå videre.';
+    computeApproved = true;
+    caseResult().computeOk = true;
+    c.compute.forEach(k => caseResult().measuresTested.add(k));
+    announce('Beregningene er riktige.');
+  } else {
+    fb.textContent = 'Ett eller flere svar stemmer ikke ennå. Bruk «Sorter tall» og «Vis sum» om du trenger hjelp, og prøv igjen.';
+    announce('Ett eller flere svar er ikke riktig ennå.');
+  }
+  updateStepVisibility();
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   CHOICE-RENDERING (gjenbrukt for shock-prediksjon, velg-steg og
+   tolkningssteg)
+   ══════════════════════════════════════════════════════════════════ */
+function renderChoices(container, options, onPick) {
+  container.innerHTML = '';
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = '<span class="mark"></span><span>' + opt.label + '</span>';
+    btn.addEventListener('click', () => onPick(opt.key, btn, container));
+    container.appendChild(btn);
+  });
+}
+function markChoice(container, options, correctKeys, chosenKey) {
+  [...container.children].forEach((btn, i) => {
+    const key = options[i].key;
+    btn.disabled = true;
+    if (key === chosenKey) {
+      btn.classList.add(correctKeys.includes(key) ? 'correct' : 'incorrect');
+    } else if (correctKeys.includes(key)) {
+      btn.classList.add('correct-but-unchosen');
+    }
+  });
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   STEG-FLYT: compute → (shock) → choose → interpret → neste
+   ══════════════════════════════════════════════════════════════════ */
+function updateStepVisibility() {
+  const c = currentCase();
+  const hasShock = !!c.shock;
+
+  $('shockCard').hidden = !(hasShock && computeApproved);
+  $('chooseCard').hidden = !(!!c.choose && computeApproved && (!hasShock || shockRevealed));
+  $('interpretCard').hidden = !(computeApproved && (!hasShock || (shockRevealed && predictLocked)) && (!c.choose || choiceLocked));
+
+  if (hasShock && computeApproved && !shockRevealed) {
+    renderShockPredict();
+  }
+  if (!$('chooseCard').hidden && !choiceLocked) {
+    renderChoose();
+  }
+  if (!$('interpretCard').hidden && !interpretLocked) {
+    renderInterpret();
+  }
+  updateNextVisibility();
+}
+
+function renderShockPredict() {
+  const c = currentCase();
+  $('shockIntro').textContent = c.shock.intro;
+  $('shockFeedback').hidden = true;
+  renderChoices($('shockChoices'), c.shock.predictOptions, (key, btn, container) => {
+    if (predictLocked) return;
+    predictLocked = true;
+    markChoice(container, c.shock.predictOptions, c.shock.predictCorrect, key);
+    const ok = c.shock.predictCorrect.includes(key);
+    if (ok) caseResult().chooseOk = true;
+    const fb = $('shockFeedback');
+    fb.hidden = false;
+    fb.textContent = c.shock.predictExplain;
+    announce(ok ? 'Riktig gjettet.' : 'Ikke helt — se forklaringen.');
+    revealShock();
+  });
+}
+
+function revealShock() {
+  const c = currentCase();
+  shockRevealed = true;
+  renderDataset(true);
+  renderMeasures();
+  computeApproved = true; // renderMeasures() nullstiller denne, men beregningssteget er allerede godkjent
+
+  // Vis før/etter for kortene som var påkrevd før sjokket.
+  c.compute.forEach(key => {
+    const card = $('measure-' + key);
+    card.classList.remove('ok', 'err');
+    const before = document.createElement('div');
+    before.className = 'old-value';
+    before.textContent = key === 'mode' ? fmtModes(modesOf(c.data)) : fmtNum(key === 'mean' ? mean(c.data) : median(c.data));
+    const arrow = document.createElement('div');
+    arrow.className = 'arrow-change';
+    arrow.textContent = '↓';
+    const after = document.createElement('div');
+    after.className = 'measure-value';
+    after.textContent = trueValueText(key);
+    card.querySelectorAll('input, .measure-status, .measure-value').forEach(n => n.remove());
+    card.appendChild(before);
+    card.appendChild(arrow);
+    card.appendChild(after);
+  });
+  $('btnCheckCompute').hidden = true;
+  announce('Nytt datapunkt lagt til: ' + c.shock.newPoint + '. Gjennomsnittet endret seg fra ' +
+    fmtNum(mean(c.data)) + ' til ' + fmtNum(mean(activeData())) + '. Medianen endret seg fra ' +
+    fmtNum(median(c.data)) + ' til ' + fmtNum(median(activeData())) + '.');
+  updateStepVisibility();
+}
+
+function renderChoose() {
+  const c = currentCase();
+  $('chooseQuestion').textContent = c.choose.question;
+  $('chooseFeedback').hidden = true;
+  renderChoices($('chooseChoices'), c.choose.options, (key, btn, container) => {
+    if (choiceLocked) return;
+    choiceLocked = true;
+    markChoice(container, c.choose.options, c.choose.correct, key);
+    const ok = c.choose.correct.includes(key);
+    if (ok) caseResult().chooseOk = true;
+    const fb = $('chooseFeedback');
+    fb.hidden = false;
+    fb.textContent = c.choose.explain;
+    announce(ok ? 'Riktig valg.' : 'Ikke helt — se forklaringen.');
+    updateStepVisibility();
+  });
+}
+
+function renderInterpret() {
+  const c = currentCase();
+  $('interpretQuestion').textContent = c.interpret.question;
+  $('interpretFeedback').hidden = true;
+  renderChoices($('interpretChoices'), c.interpret.options, (key, btn, container) => {
+    if (interpretLocked) return;
+    interpretLocked = true;
+    markChoice(container, c.interpret.options, c.interpret.correct, key);
+    const ok = c.interpret.correct.includes(key);
+    if (ok) caseResult().interpretOk = true;
+    const fb = $('interpretFeedback');
+    fb.hidden = false;
+    fb.textContent = c.interpret.explain;
+    announce(ok ? 'Riktig tolket.' : 'Ikke helt — se forklaringen.');
+    updateNextVisibility();
+  });
+}
+
+function updateNextVisibility() {
+  const c = currentCase();
+  const done = computeApproved && (!c.shock || shockRevealed) && (!c.shock || predictLocked) &&
+               (!c.choose || choiceLocked) && interpretLocked;
+  $('btnNextCase').hidden = !done;
+}
+
+function caseResult() { return caseResults[caseIndex]; }
+
+/* ══════════════════════════════════════════════════════════════════
+   SAKSSTYRING
+   ══════════════════════════════════════════════════════════════════ */
+function loadCase(idx) {
+  caseIndex = idx;
+  sorted = false;
+  shockRevealed = false;
+  computeApproved = false;
+  choiceLocked = false;
+  predictLocked = false;
+  interpretLocked = false;
+  caseResults[idx] = caseResults[idx] || { computeOk: false, chooseOk: false, interpretOk: false, measuresTested: new Set() };
+
+  const c = currentCase();
+  $('caseEmoji').textContent = c.emoji + ' Situasjon';
+  $('situationText').textContent = c.situation;
+  $('btnSort').setAttribute('aria-pressed', 'false');
+  renderDataset(false);
+  renderMeasures();
+
+  $('shockCard').hidden = true;
+  $('chooseCard').hidden = true;
+  $('interpretCard').hidden = true;
+  $('btnNextCase').hidden = true;
+
+  $('hudCase').textContent = `Sak ${idx + 1} av ${CASES.length}`;
+  $('hudScore').textContent = totalScore + ' poeng';
+  $('progressFill').style.width = Math.round((idx / CASES.length) * 100) + '%';
+  announce(`Sak ${idx + 1} av ${CASES.length}. ${c.situation}`);
+}
+
+function scoreOfCase(r) {
+  return (r.computeOk ? 1 : 0) + (r.chooseOk ? 1 : 0) + (r.interpretOk ? 1 : 0);
+}
+
+function goNext() {
+  totalScore = caseResults.reduce((s, r) => s + (r ? scoreOfCase(r) : 0), 0);
+  if (caseIndex + 1 < CASES.length) {
+    loadCase(caseIndex + 1);
+  } else {
+    showResults();
+  }
+}
+
+function showResults() {
+  totalScore = caseResults.reduce((s, r) => s + (r ? scoreOfCase(r) : 0), 0);
+  const interpretCount = caseResults.filter(r => r && r.interpretOk).length;
+  $('endScore').textContent = totalScore + ' av ' + (CASES.length * 3);
+  $('endInterpret').textContent = interpretCount + ' av ' + CASES.length;
+
+  ['mean', 'median', 'mode'].forEach(key => {
+    const tested = caseResults.some(r => r && r.measuresTested.has(key));
+    const label = key === 'mean' ? 'endMean' : key === 'median' ? 'endMedian' : 'endMode';
+    $(label).textContent = tested ? '✓' : '–';
+  });
+
+  showScreen('screen-end');
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   VERKTØY: sorter / vis sum
+   ══════════════════════════════════════════════════════════════════ */
+$('btnSort').addEventListener('click', () => {
+  sorted = !sorted;
+  $('btnSort').setAttribute('aria-pressed', String(sorted));
+  renderDataset(false);
+  announce(sorted ? 'Tallene er nå sortert stigende: ' + $('srDatasetText').textContent : 'Sorteringen er fjernet.');
+});
+$('btnSum').addEventListener('click', () => {
+  const data = activeData();
+  const line = $('sumLine');
+  if (line.hidden) {
+    const sum = data.reduce((s, v) => s + v, 0);
+    line.textContent = data.join(' + ') + ' = ' + fmtNum(sum);
+    line.hidden = false;
+    $('btnSum').textContent = 'Σ Skjul sum';
+    announce('Summen er ' + fmtNum(sum) + '.');
+  } else {
+    line.hidden = true;
+    $('btnSum').textContent = 'Σ Vis sum';
+  }
+});
+$('btnCheckCompute').addEventListener('click', checkCompute);
+$('btnNextCase').addEventListener('click', goNext);
+$('btnStart').addEventListener('click', () => {
+  caseResults = [];
+  totalScore = 0;
+  showScreen('screen-game');
+  loadCase(0);
+});
+$('btn-again').addEventListener('click', () => {
+  caseResults = [];
+  totalScore = 0;
+  showScreen('screen-start');
+});
+</script>
+</body>
+</html>
