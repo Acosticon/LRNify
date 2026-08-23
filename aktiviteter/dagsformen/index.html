@@ -82,7 +82,14 @@
   .screen { display: none; width: 100%; max-width: 640px; animation: fadeIn .25s ease; }
   .screen.active { display: flex; flex-direction: column; align-items: center; gap: 18px; }
   .screen.bred { max-width: 1500px; }
-  .screen.fullskjerm.active { min-height: 100vh; justify-content: center; padding: 22px 16px 110px; }
+  /* flex-shrink:0 er avgjørende: body har height:100% (fast, ikke min-),
+     og uten dette får denne skjermen lov til å krympes NED til 100vh selv
+     når 30 følelsesfigurer i 3 kolonner på en smal mobil trenger mer plass
+     enn det — figurene ble klemt sammen og delvis usynlige/utenfor
+     skjermen. Med flex-shrink:0 vokser skjermen i stedet og siden scroller
+     normalt; min-height:100vh + justify-content:center gir fremdeles fin
+     midtstilling når innholdet faktisk er kortere enn skjermen. */
+  .screen.fullskjerm.active { min-height: 100vh; flex-shrink: 0; justify-content: center; padding: 22px 16px 110px; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
 
   h2.tittel {
@@ -381,8 +388,13 @@ function lagRomkode() {
    i media/aktiviteter/dagsformen/{mappe}/. Ingen andre kodeendringer trengs.
    ══════════════════════════════════════════════════════════════════════ */
 const THEMES = {
-  emoji: { navn: 'Emoji', mappe: 'emoji' },
-  dyr:   { navn: 'Dyr',   mappe: 'dyr' },
+  emoji:       { navn: 'Emoji',       mappe: 'emoji' },
+  dyr:         { navn: 'Dyr',         mappe: 'dyr' },
+  anime:       { navn: 'Anime',       mappe: 'anime' },
+  superhelter: { navn: 'Superhelter', mappe: 'superhelter' },
+  klosser:     { navn: 'Klosser',     mappe: 'klosser' },
+  piksel:      { navn: 'Piksel',      mappe: 'piksel' },
+  dyrevenner:  { navn: 'Dyrevenner',  mappe: 'dyrevenner' },
 };
 
 /* 30 følelser, i samme rekkefølge som figurene ligger i hvert temabilde
@@ -547,10 +559,24 @@ window.nullstillSvar = async () => {
   try { await FB.update(R('dagsformen/' + gjeldendeKode), { elever: null }); } catch (e) {}
 };
 
+/* iOS Safari (iPhone) har aldri støttet Fullscreen-API-et for vanlige
+   elementer — bare for <video>. Der er requestFullscreen rett og slett
+   fraværende, så knappen ville stått og ikke gjort noe uansett hva vi
+   prøver. I stedet for en knapp som ser ut som den virker, men ikke gjør
+   det, skjuler vi den helt på slike nettlesere — se skjulFullskjermKnappHvisUstottet(). */
+function fullskjermElement() { return document.documentElement.requestFullscreen ? document.documentElement : null; }
+function fullskjermAktivElement() { return document.fullscreenElement || null; }
+
 window.veksleFullskjerm = () => {
-  if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {});
-  else document.exitFullscreen?.();
+  const el = fullskjermElement();
+  if (!el) return;
+  if (!fullskjermAktivElement()) el.requestFullscreen().catch(() => {});
+  else document.exitFullscreen?.().catch?.(() => {});
 };
+
+(function skjulFullskjermKnappHvisUstottet() {
+  if (!fullskjermElement()) document.getElementById('btnFullskjerm').classList.add('skjult');
+})();
 
 window.avsluttOkt = async () => {
   if (!confirm('Avslutte økta?')) return;
