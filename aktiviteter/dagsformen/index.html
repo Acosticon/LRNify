@@ -90,6 +90,25 @@
      normalt; min-height:100vh + justify-content:center gir fremdeles fin
      midtstilling når innholdet faktisk er kortere enn skjermen. */
   .screen.fullskjerm.active { min-height: 100vh; flex-shrink: 0; justify-content: center; padding: 22px 16px 110px; }
+
+  /* ── LÆRER-LIVE: fast skjermhøyde med EGEN plass til verktøylinjen ──
+     Denne skjermen har en flytende verktøylinje (romkode/"Se klassen"), og
+     den skal aldri ligge oppå figurene — heller ikke midt i en rulling.
+     Løsningen er en fast 100dvh-skjerm (ikke krympbar, se .fullskjerm over)
+     der bare figurområdet ruller (.hjul-scrollomrade); verktøylinjen er en
+     vanlig, ikke-krympende rad UNDER det rulleområdet, ikke et overlegg
+     oppå det — den kan derfor aldri dekke et bilde, uansett skrollposisjon
+     eller hvor høy den blir når den bryter om på en smal mobil. */
+  .screen.skjerm-med-verktoylinje.active {
+    height: 100vh; height: 100dvh;
+    flex-shrink: 0; gap: 0; padding: 0; overflow: hidden;
+  }
+  .hjul-scrollomrade {
+    flex: 1 1 auto; min-height: 0; width: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding: 22px 16px 16px;
+  }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
 
   h2.tittel {
@@ -201,13 +220,18 @@
   @keyframes popIn { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
   .klasse-tomt { color: var(--muted); font-weight: 800; text-align: center; padding: 40px 20px; }
 
-  /* ── FLYTENDE VERKTØYLINJE (lærer, live) ── */
+  /* ── VERKTØYLINJE (lærer, live) ──
+     Docket i normal flyt nederst i .skjerm-med-verktoylinje — IKKE
+     position:fixed. Et fastplassert lag ville uansett hvor mye bunn-plass
+     vi reserverer alltid dekket noe av figurområdet mens man rullet
+     gjennom midten av det (bekreftet: opptil 6 av 30 figurer skjult
+     samtidig) — løsningen er at den tar sin egen faste plass i layouten
+     under rulleområdet, se .hjul-scrollomrade. */
   .floating-bar {
-    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+    flex-shrink: 0; margin: 10px auto 14px; max-width: calc(100% - 32px);
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center;
     background: rgba(255,249,240,.96); border: 3px solid var(--ink); border-radius: 999px;
-    padding: 8px 10px 8px 18px; box-shadow: 0 5px 0 var(--ink); z-index: 50;
-    max-width: calc(100vw - 20px);
+    padding: 8px 10px 8px 18px; box-shadow: 0 5px 0 var(--ink);
   }
   .fb-info { display: flex; align-items: center; gap: 10px; }
   .fb-kode { font-family: 'Chewy', cursive; letter-spacing: 2px; font-size: 1.05rem; }
@@ -262,23 +286,28 @@
   <button class="btn-back" onclick="visSkjerm('screen-role')">← Tilbake</button>
 </div>
 
-<!-- ── LÆRER: LIVE (fullskjerm) ── -->
-<div class="screen bred fullskjerm" id="screen-teacher-live">
-  <div class="mood-grid" id="hjulGrid"></div>
-  <div class="klasse-wall skjult" id="klasseWall"></div>
-  <div class="klasse-tomt skjult" id="klasseTomt">Ingen har svart ennå.</div>
-  <button class="nullstill-lenke skjult" id="nullstillLenke" onclick="nullstillSvar()">Nullstill svarene</button>
-</div>
-
-<div class="floating-bar skjult" id="floatingBar">
-  <div class="fb-info" id="fbInfo">
-    <span class="fb-kode" id="fbKode">——</span>
-    <span class="fb-antall"><span class="fb-dot"></span><b id="fbAntall">0</b>&nbsp;svart</span>
+<!-- ── LÆRER: LIVE (fullskjerm) ──
+     Verktøylinjen ligger IKKE oppå figurene som et flytende lag lenger —
+     den er en egen, ikke-krympende rad nederst i en fast (100dvh) skjerm,
+     og bare figurområdet over den ruller. Se .skjerm-med-verktoylinje. -->
+<div class="screen bred skjerm-med-verktoylinje" id="screen-teacher-live">
+  <div class="hjul-scrollomrade" id="hjulScrollomrade">
+    <div class="mood-grid" id="hjulGrid"></div>
+    <div class="klasse-wall skjult" id="klasseWall"></div>
+    <div class="klasse-tomt skjult" id="klasseTomt">Ingen har svart ennå.</div>
+    <button class="nullstill-lenke skjult" id="nullstillLenke" onclick="nullstillSvar()">Nullstill svarene</button>
   </div>
-  <button class="fb-ikon" id="btnTema" title="Bytt figurer" aria-label="Bytt figurer" onclick="apneTemaVelger()">🎨</button>
-  <button class="fb-ikon" id="btnFullskjerm" title="Fullskjerm" aria-label="Fullskjerm" onclick="veksleFullskjerm()">⛶</button>
-  <button class="fb-hoved" id="btnVisning" onclick="byttVisning()">Se klassen 👀</button>
-  <button class="fb-ikon fb-fare" id="btnAvslutt" title="Avslutt" aria-label="Avslutt økt" onclick="avsluttOkt()">✕</button>
+
+  <div class="floating-bar skjult" id="floatingBar">
+    <div class="fb-info" id="fbInfo">
+      <span class="fb-kode" id="fbKode">——</span>
+      <span class="fb-antall"><span class="fb-dot"></span><b id="fbAntall">0</b>&nbsp;svart</span>
+    </div>
+    <button class="fb-ikon" id="btnTema" title="Bytt figurer" aria-label="Bytt figurer" onclick="apneTemaVelger()">🎨</button>
+    <button class="fb-ikon" id="btnFullskjerm" title="Fullskjerm" aria-label="Fullskjerm" onclick="veksleFullskjerm()">⛶</button>
+    <button class="fb-hoved" id="btnVisning" onclick="byttVisning()">Se klassen 👀</button>
+    <button class="fb-ikon fb-fare" id="btnAvslutt" title="Avslutt" aria-label="Avslutt økt" onclick="avsluttOkt()">✕</button>
+  </div>
 </div>
 
 <!-- ── BYTT TEMA-OVERLAY ── -->
