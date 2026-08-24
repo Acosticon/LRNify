@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3S1F beta – Tre stemmer, én framtid</title>
+<link rel="canonical" href="https://lrnify.no/games/3s1f-beta/index.html">
+<meta name="robots" content="noindex">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="3 Stemmer, 1 Framtid (beta) – LRNify">
+<meta property="og:description" content="Du er leder for en øy i 10 år. Valgene dine påvirker næringslivet, innbyggerne og naturen – og du rekker aldri alt.">
+<meta property="og:image" content="https://lrnify.no/media/cards/3s1f.png">
+<meta property="og:url" content="https://lrnify.no/games/3s1f-beta/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="3 Stemmer, 1 Framtid (beta) – LRNify">
+<meta name="twitter:description" content="Du er leder for en øy i 10 år. Valgene dine påvirker næringslivet, innbyggerne og naturen – og du rekker aldri alt.">
+<meta name="twitter:image" content="https://lrnify.no/media/cards/3s1f.png">
+  <meta name="description" content="Du er leder for en øy i 10 år. Valgene dine påvirker næringslivet, innbyggerne og naturen – og du rekker aldri alt.">
+  <meta name="theme-color" content="#0A1622">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Filtre og teksturer, satt inn av art.js -->
+  <div id="art-defs-slot"></div>
+
+  <!-- ─── TITTELSKJERM ─────────────────────────────────── -->
+  <main id="screen-title" class="screen active" role="main">
+    <div class="title-hero" aria-hidden="true"></div>
+
+    <p class="title-eyebrow">Et spill om bærekraft</p>
+    <h1 class="title-main">Tre<em> stemmer</em><br>én&nbsp;framtid</h1>
+    <p class="title-sub">Du er leder for en øy i ti år.<br>
+      Hvert år møter du flere saker enn du har tid til.<br>
+      Det du lar ligge, blir ikke borte.</p>
+
+    <div class="title-voices"></div>
+
+    <div id="resume-banner" class="resume-banner" hidden>
+      <p class="resume-text"></p>
+      <div class="resume-actions">
+        <button id="btn-resume" class="btn-primary btn-small">Fortsett spillet</button>
+        <button id="btn-discard" class="btn-secondary btn-small">Start på nytt</button>
+      </div>
+    </div>
+
+    <div class="name-input-wrap">
+      <label class="name-label" for="player-name-input">Hva heter lederen?</label>
+      <input id="player-name-input" class="name-input" type="text"
+             placeholder="Skriv navn her" maxlength="30" autocomplete="off"/>
+    </div>
+    <button id="btn-start" class="btn-primary">Start</button>
+  </main>
+
+
+  <!-- ─── SPILLSKJERM ──────────────────────────────────── -->
+  <div id="screen-game" class="screen" role="main">
+
+    <!-- Venstre: pulsmålere -->
+    <aside class="sidebar-meters" aria-label="Tilstandsmålere">
+      <div class="meter-wrap" data-meter="business" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Næringsliv">
+        <div class="meter-track"><div class="meter-fill"></div></div>
+        <div class="meter-icon" aria-hidden="true"></div>
+        <div class="meter-value" aria-live="polite">50</div>
+        <div class="meter-name">Næring</div>
+      </div>
+      <div class="meter-wrap" data-meter="people" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Innbyggere">
+        <div class="meter-track"><div class="meter-fill"></div></div>
+        <div class="meter-icon" aria-hidden="true"></div>
+        <div class="meter-value" aria-live="polite">50</div>
+        <div class="meter-name">Folk</div>
+      </div>
+      <div class="meter-wrap" data-meter="nature" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" aria-label="Natur">
+        <div class="meter-track"><div class="meter-fill"></div></div>
+        <div class="meter-icon" aria-hidden="true"></div>
+        <div class="meter-value" aria-live="polite">50</div>
+        <div class="meter-name">Natur</div>
+      </div>
+    </aside>
+
+    <!-- Midten -->
+    <div class="main-content">
+      <header class="game-header">
+        <div class="header-left">
+          <span class="game-title">Tre stemmer, én framtid</span>
+          <div class="year-display">
+            <span class="year-label">År</span>
+            <span class="year-number">1</span>
+            <span class="years-left">av 10</span>
+          </div>
+        </div>
+        <div class="time-meter" aria-label="Tidsbudsjett"></div>
+        <span class="player-name-display"></span>
+      </header>
+
+      <div class="game-grid">
+        <div class="grid-col grid-col-map">
+          <section class="map-area" aria-label="Øyakart">
+            <div class="map-container">
+              <p class="map-title">Klikk et merke for å åpne saken</p>
+              <div id="map-svg-wrap"></div>
+            </div>
+          </section>
+
+          <section class="log-area" aria-label="Historikk">
+            <p class="log-title">Historikk</p>
+            <div class="log-entries" aria-live="polite"></div>
+          </section>
+        </div>
+
+        <div class="grid-col grid-col-events">
+          <section class="events-area">
+            <div class="event-panel"></div>
+          </section>
+
+          <div class="end-year-wrap">
+            <span class="end-year-hint"></span>
+            <button id="btn-end-year" class="btn-primary">Avslutt året →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Høyre sidebar -->
+    <aside class="sidebar-right" aria-label="Oversikt"></aside>
+
+  </div><!-- /#screen-game -->
+
+
+  <!-- ─── SLUTTRAPPORT ─────────────────────────────────── -->
+  <div id="screen-report" class="screen" role="main"></div>
+
+
+  <!-- ─── OVERLAYS ────────────────────────────────────── -->
+  <div id="news-overlay" class="paper-overlay" role="dialog" aria-modal="true" aria-label="Nyhetsoppslag"></div>
+  <div id="year-summary-overlay" class="paper-overlay" role="dialog" aria-modal="true" aria-label="Årsoppsummering"></div>
+
+  <div id="year-transition" role="status" aria-live="polite">
+    <div class="transition-art" aria-hidden="true"></div>
+    <span class="transition-year"></span>
+    <span class="transition-sub"></span>
+  </div>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <script type="module" src="main.js"></script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
