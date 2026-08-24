@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Typisk! – finn tallet som beskriver gruppen</title>
+<meta name="description" content="Statistikkspill for ungdomstrinnet. Gjennomsnitt, median og typetall på en levende tallinje: se vektstanga velte når uteliggeren kommer, bygg datasett selv og avslør statistikk som er riktig regnet, men misvisende. Kampanje, arkade og dagens sak.">
+<link rel="canonical" href="https://lrnify.no/games/typisk-beta/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Typisk! – LRNify">
+<meta property="og:description" content="Statistikkspill for ungdomstrinnet. Se gjennomsnittet velte når uteliggeren kommer, og medianen stå igjen.">
+<meta property="og:image" content="https://lrnify.no/media/cards/typisk.png">
+<meta property="og:url" content="https://lrnify.no/games/typisk-beta/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Typisk! – LRNify">
+<meta name="twitter:description" content="Statistikkspill for ungdomstrinnet. Gjennomsnitt, median og typetall på en levende tallinje.">
+<meta name="twitter:image" content="https://lrnify.no/media/cards/typisk.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topp">
+  <a class="logo" href="../../index.html#grid">Typi<b>sk</b>!</a>
+  <a class="tilbake" href="../../index.html#grid">← LRNify</a>
+</header>
+
+<!-- ═══════════════ STARTSKJERM ═══════════════ -->
+<main class="skjerm aktiv" id="skjerm-start">
+  <div class="midt">
+    <div class="helt" id="helt"></div>
+    <h1 class="start-tittel">Typi<em>sk</em>!</h1>
+    <p class="start-under">
+      Tre tall kan beskrive den samme gruppa — og fortelle tre forskjellige historier.
+      Finn det som faktisk stemmer.
+    </p>
+
+    <div class="maskotrad" id="maskotrad"></div>
+
+    <p class="startstatus" id="startstatus"></p>
+    <div class="startmerker" id="startmerker"></div>
+
+    <div class="modusrad">
+      <button class="modusknapp uthevet" id="btnKampanje">
+        <span class="ikon" aria-hidden="true">🗺️</span>
+        <span><strong>Sesongen</strong><span>Fem kapitler, ca. 25 minutter. Lagres underveis.</span></span>
+      </button>
+      <button class="modusknapp" id="btnArkade">
+        <span class="ikon" aria-hidden="true">⚡</span>
+        <span><strong>Arkade</strong><span>Saker på tid, tre liv, stigende vanskegrad.</span></span>
+      </button>
+      <button class="modusknapp" id="btnDaglig">
+        <span class="ikon" aria-hidden="true">📅</span>
+        <span><strong id="dagligTittel">Dagens sak</strong><span id="dagligUnder">Fem oppgaver, lik for alle i dag.</span></span>
+      </button>
+    </div>
+
+    <div class="kort">
+      <h2>Slik virker det</h2>
+      <ul class="infoliste">
+        <li>Hver sak er tall fra hverdagen, tegnet opp på en tallinje.</li>
+        <li>Du regner, velger, gjetter, bygger og avslører — ni ulike oppgavetyper.</li>
+        <li>Gjennomsnittet er et balansepunkt. Legg til én ekstremverdi, og se planken velte.</li>
+        <li>Sortering og sum er alltid gratis. Feil svar koster aldri mer enn litt poeng.</li>
+      </ul>
+      <p class="gratisnote" style="margin-top:12px">
+        <button class="knapp-tekst" id="btnNullstill">Slett lagret framgang</button>
+      </p>
+    </div>
+  </div>
+</main>
+
+<!-- ═══════════════ KAPITTELVALG ═══════════════ -->
+<main class="skjerm" id="skjerm-kapitler">
+  <div class="midt">
+    <h1 class="start-tittel" style="font-size:clamp(2rem,8vw,3rem)">Sesongen</h1>
+    <p class="start-under">Fem kapitler. Hvert introduserer én ny idé og én ny oppgavetype.</p>
+    <div class="kapittelliste" id="kapittelliste"></div>
+    <button class="knapp-sekundar" id="btnTilbakeStart">← Tilbake</button>
+  </div>
+</main>
+
+<!-- ═══════════════ SPILLSKJERM ═══════════════ -->
+<main class="skjerm" id="skjerm-spill">
+  <div class="bred">
+    <div class="hudlinje" id="hud"></div>
+    <div class="framdriftsspor"><div class="framdriftsfyll" id="framdrift" style="width:0%"></div></div>
+    <div class="tidsspor" id="tidsfelt" hidden><div class="tidsfyll" id="tidsfyll" style="width:100%"></div></div>
+
+    <div class="spillflate">
+      <div class="venstre">
+        <div class="kort brettkort">
+          <div id="brett"></div>
+          <input type="range" class="glider" id="glider" hidden>
+          <p class="sr-only" id="brettTekst"></p>
+        </div>
+        <div class="kort" id="sak"></div>
+      </div>
+
+      <div class="hoyre">
+        <div class="kort" id="panel"></div>
+        <div class="fasit" id="fasit" hidden></div>
+        <button class="knapp-primar" id="nesteknapp" hidden>Neste</button>
+        <button class="knapp-tekst" id="btnAvbryt">Avslutt runden</button>
+      </div>
+    </div>
+  </div>
+  <p class="sr-only" id="srMelding" aria-live="polite"></p>
+</main>
+
+<!-- ═══════════════ SLUTTSKJERM ═══════════════ -->
+<main class="skjerm" id="skjerm-slutt">
+  <div class="midt">
+    <h1 class="start-tittel" id="slutt-tittel" style="font-size:clamp(1.9rem,7vw,2.8rem)">Ferdig</h1>
+    <div class="sluttinnhold" id="sluttinnhold"></div>
+    <div class="sluttknapper">
+      <button class="knapp-primar" id="btnNeste-kapittel">Neste kapittel</button>
+      <button class="knapp-sekundar" id="btnIgjen">Spill igjen</button>
+      <button class="knapp-sekundar" id="btnDel">Del resultatet</button>
+      <button class="knapp-tekst" id="btnMeny">Til hovedmenyen</button>
+    </div>
+  </div>
+</main>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script type="module" src="main.js"></script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
