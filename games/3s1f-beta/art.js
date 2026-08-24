@@ -216,95 +216,80 @@ function medallion(id, bg, scene, figure, ring) {
   <circle cx="100" cy="100" r="91" fill="none" stroke="${bg[0]}" stroke-width="1.5" opacity=".45"/>`;
 }
 
+// Figurene er bygget i tre tonenivåer: hodet i blekk, plagget en tone
+// lysere, og et kantlys på siden. Ett flatt svart omriss forsvant på 78 px –
+// det er skillet mellom tonene som gjør at formen leser.
 const PORTRAITS = {
-  // Næringslivet: dress, korslagte armer, skyline og kran bak
+  // Næringslivet: dress, skyline og kran bak
   business: () => medallion('biz',
     ['#F4DE8C', '#E8C547', '#A8811D'],
-    `<g fill="${PALETTE.slate}" opacity=".34">
-       <rect x="6" y="86" width="20" height="72"/>
-       <rect x="30" y="64" width="24" height="94"/>
-       <rect x="150" y="72" width="22" height="86"/>
-       <rect x="176" y="94" width="20" height="64"/>
-       <rect x="58" y="100" width="16" height="58"/>
-       <rect x="128" y="106" width="16" height="52"/>
+    `<circle cx="100" cy="80" r="66" fill="#FFF3C4" opacity=".5"/>
+     <g fill="${PALETTE.deep}" opacity=".45">
+       <rect x="2" y="92" width="27" height="70"/><rect x="34" y="64" width="31" height="98"/>
+       <rect x="139" y="76" width="29" height="86"/><rect x="173" y="100" width="27" height="62"/>
      </g>
-     <g stroke="${PALETTE.slate}" stroke-width="3" opacity=".42" stroke-linecap="round">
-       <path d="M44 60V22M44 22h44M44 30l16-8M78 22v14"/>
+     <g stroke="${PALETTE.deep}" stroke-width="4" opacity=".5" stroke-linecap="round" fill="none">
+       <path d="M46 66V24M46 24h46M46 33l18-9M84 24v15"/>
      </g>
-     <rect y="156" width="200" height="44" fill="${PALETTE.ink}" opacity=".2"/>`,
-    `<g fill="${PALETTE.ink}">
-       <path d="M18 200c3-40 34-64 82-64s79 24 82 64z"/>
-       <path d="M100 34c17 0 28 12 28 30v14c0 17-12 29-28 29s-28-12-28-29V64c0-18 11-30 28-30z"/>
-       <path d="M70 62c0-20 12-32 30-32s30 12 30 32c-6-12-16-16-30-16s-24 4-30 16z"/>
-     </g>
-     <path d="M100 136 78 144l22 44 22-44z" fill="${PALETTE.bone}"/>
-     <path d="M100 148 92 155l8 33 8-33z" fill="${PALETTE.gold}"/>
-     <path d="M76 62c-8 12-8 34 2 47" stroke="${PALETTE.goldLite}" stroke-width="4"
-           stroke-linecap="round" fill="none" opacity=".55"/>
-     <path d="M42 200c4-28 20-46 44-54" stroke="${PALETTE.goldLite}" stroke-width="4"
-           stroke-linecap="round" fill="none" opacity=".35"/>`,
+     <rect y="158" width="200" height="42" fill="${PALETTE.ink}" opacity=".22"/>`,
+    `<path d="M86 110h28v30H86z" fill="${PALETTE.ink}"/>
+     <path d="M16 200c3-40 34-64 84-64s81 24 84 64z" fill="#16324A"/>
+     <path d="M100 136 82 143l18 47 18-47z" fill="${PALETTE.bone}"/>
+     <path d="M100 149 92 156l8 34 8-34z" fill="${PALETTE.gold}"/>
+     <path d="M100 34c17 0 29 12 29 31v15c0 17-13 29-29 29s-29-12-29-29V65c0-19 12-31 29-31z"
+           fill="${PALETTE.ink}"/>
+     <path d="M70 63c0-20 12-33 30-33s30 13 30 33c-6-13-16-17-30-17s-24 4-30 17z" fill="${PALETTE.ink}"/>
+     <path d="M75 60c-8 13-8 36 2 49" stroke="${PALETTE.goldLite}" stroke-width="5"
+           stroke-linecap="round" fill="none" opacity=".72"/>
+     <path d="M40 200c5-27 21-44 44-52" stroke="${PALETTE.goldLite}" stroke-width="5"
+           stroke-linecap="round" fill="none" opacity=".4"/>`,
     PALETTE.ink),
 
-  // Innbyggerne: draperi over hodet, folkemengde bak
+  // Innbyggerne: draperi over hodet, folk og hus bak
   people: () => medallion('ppl',
     ['#F6AE93', '#E87D5B', '#A64B2E'],
-    `<g fill="${PALETTE.slate}" opacity=".3">
-       <path d="M0 158V112h26v46zM30 158v-60h30v60zM140 158v-54h28v54zM172 158v-40h28v40z"/>
-       <path d="M64 158V96l16-14 16 14v62z"/>
-       <path d="M104 158v-52l14-12 14 12v52z"/>
+    `<circle cx="100" cy="80" r="64" fill="#FFDFCB" opacity=".46"/>
+     <g fill="${PALETTE.deep}" opacity=".42">
+       <path d="M0 162v-54h31v54zM37 162V96l20-17 20 17v66zM123 162v-58h31v58zM160 162v-46h40v46z"/>
      </g>
-     <g fill="${PALETTE.tealDark}" opacity=".3">
-       <circle cx="24" cy="120" r="16"/><circle cx="178" cy="128" r="14"/>
+     <g fill="${PALETTE.ink}" opacity=".45">
+       <circle cx="34" cy="124" r="14"/><path d="M10 200c0-17 11-30 24-30s24 13 24 30z"/>
+       <circle cx="168" cy="128" r="13"/><path d="M146 200c0-16 10-28 22-28s22 12 22 28z"/>
      </g>
-     <g fill="${PALETTE.ink}" opacity=".42">
-       <circle cx="40" cy="126" r="13"/><path d="M18 200c0-16 10-28 22-28s22 12 22 28z"/>
-       <circle cx="162" cy="130" r="12"/><path d="M142 200c0-15 9-26 20-26s20 11 20 26z"/>
-       <circle cx="66" cy="140" r="10"/><path d="M50 200c0-12 7-21 16-21s16 9 16 21z"/>
-     </g>
-     <rect y="160" width="200" height="40" fill="${PALETTE.ink}" opacity=".18"/>`,
-    `<g fill="${PALETTE.ink}">
-       <path d="M100 28c-24 0-40 18-40 44 0 14-3 24-8 32-12 18-20 48-24 96h144c-4-48-12-78-24-96
-                -5-8-8-18-8-32 0-26-16-44-40-44z"/>
-     </g>
-     <path d="M100 46c-15 0-25 12-25 28 0 9 2 16 5 21 5 8 12 12 20 12s15-4 20-12c3-5 5-12 5-21
-              0-16-10-28-25-28z" fill="${PALETTE.coralDark}" opacity=".38"/>
-     <path d="M74 66c-6 14-4 34 4 48" stroke="${PALETTE.coralLite}" stroke-width="4"
-           stroke-linecap="round" fill="none" opacity=".6"/>
-     <path d="M126 118c8 14 14 44 16 82" stroke="${PALETTE.coralLite}" stroke-width="4"
-           stroke-linecap="round" fill="none" opacity=".35"/>
-     <path d="M100 130c-14 6-22 22-24 70h48c-2-48-10-64-24-70z" fill="${PALETTE.coralDark}"
-           opacity=".32"/>`,
+     <rect y="162" width="200" height="38" fill="${PALETTE.ink}" opacity=".2"/>`,
+    `<path d="M100 26c-25 0-42 19-42 46 0 15-3 25-8 33-12 19-20 50-24 95h148c-4-45-12-76-24-95
+              -5-8-8-18-8-33 0-27-17-46-42-46z" fill="#7A2A18"/>
+     <path d="M100 44c-16 0-27 13-27 30 0 10 2 18 6 24 5 8 12 13 21 13s16-5 21-13c4-6 6-14 6-24
+              0-17-11-30-27-30z" fill="${PALETTE.ink}"/>
+     <path d="M100 128c-15 6-24 24-26 72h52c-2-48-11-66-26-72z" fill="#5C1E10"/>
+     <path d="M72 64c-6 15-4 36 4 51" stroke="${PALETTE.coralLite}" stroke-width="5"
+           stroke-linecap="round" fill="none" opacity=".78"/>
+     <path d="M128 122c8 15 14 46 16 78" stroke="${PALETTE.coralLite}" stroke-width="5"
+           stroke-linecap="round" fill="none" opacity=".42"/>`,
     PALETTE.ink),
 
   // Naturen: bustete hår, skjegg, frøplante i hendene
   nature: () => medallion('nat',
     ['#9BDCCF', '#5BBFAD', '#2E7C6E'],
-    `<g fill="${PALETTE.slate}" opacity=".3">
-       <path d="M0 200V128l34-30 30 26 26-22 34 30 32-28 44 38v58z"/>
-     </g>
-     <g fill="${PALETTE.ink}" opacity=".26">
-       <path d="M14 158 26 118l12 40zM44 162 58 112l14 50zM136 160 150 114l14 46zM166 164 178 124l12 40z"/>
-     </g>
-     <path d="M0 176c30-10 46 6 70 0s34-14 60-8 40 14 70 6v26H0z" fill="${PALETTE.tealDark}"
-           opacity=".35"/>`,
-    `<g fill="${PALETTE.ink}">
-       <path d="M18 200c3-38 32-62 82-62s79 24 82 62z"/>
-       <path d="M100 36c18 0 29 12 29 31v13c0 12-3 21-8 27-6 7-13 11-21 11s-15-4-21-11c-5-6-8-15-8-27
-                V67c0-19 11-31 29-31z"/>
-       <path d="M69 70c-2-24 12-38 31-38s33 14 31 38c-4-11-9-13-14-18-6 7-15 4-21 9-5-6-13-3-17 2
-                -4 2-7 4-10 7z"/>
-     </g>
-     <path d="M100 132c-16 0-26 8-26 8l6 8h40l6-8s-10-8-26-8z" fill="${PALETTE.tealDark}"
-           opacity=".45"/>
-     <path d="M74 68c-7 13-6 34 3 46" stroke="${PALETTE.tealLite}" stroke-width="4"
-           stroke-linecap="round" fill="none" opacity=".6"/>
-     <g>
-       <path d="M62 168c0 18 17 26 38 26s38-8 38-26c0-6-4-8-8-5-8 6-18 9-30 9s-22-3-30-9c-4-3-8-1-8 5z"
-             fill="${PALETTE.ink}" opacity=".9"/>
-       <path d="M100 172v-24" stroke="${PALETTE.tealLite}" stroke-width="3.4" stroke-linecap="round"/>
-       <path d="M99 158c-9 1-15-4-16-14 9-1 15 4 16 14z" fill="${PALETTE.tealLite}"/>
-       <path d="M101 152c8-3 12-10 10-18-8 3-12 10-10 18z" fill="${PALETTE.tealLite}"/>
+    `<circle cx="100" cy="78" r="62" fill="#E2F7F0" opacity=".42"/>
+     <path d="M0 200v-70l36-32 32 28 28-24 36 32 34-30 34 34v62z" fill="${PALETTE.deep}" opacity=".45"/>
+     <g fill="${PALETTE.ink}" opacity=".35">
+       <path d="M12 160 26 112l14 48zM44 164 60 106l16 58zM134 162 150 108l16 54zM168 166 182 120l14 46z"/>
      </g>`,
+    `<path d="M86 112h28v30H86z" fill="${PALETTE.ink}"/>
+     <path d="M16 200c3-38 33-62 84-62s81 24 84 62z" fill="#1F4038"/>
+     <path d="M100 138 84 145l16 33 16-33z" fill="#2E6455"/>
+     <path d="M100 34c19 0 30 13 30 32v14c0 13-3 22-9 29-6 8-13 12-21 12s-15-4-21-12c-6-7-9-16-9-29V66
+              c0-19 11-32 30-32z" fill="${PALETTE.ink}"/>
+     <path d="M68 68c-2-25 13-38 32-38s34 13 32 38c-4-11-9-13-15-18-6 7-15 4-22 9-5-6-13-3-17 2
+              -4 2-7 4-10 7z" fill="${PALETTE.ink}"/>
+     <path d="M60 170c0 19 18 28 40 28s40-9 40-28c0-6-4-9-9-5-8 6-19 10-31 10s-23-4-31-10c-5-4-9-1-9 5z"
+           fill="${PALETTE.ink}"/>
+     <path d="M100 174v-26" stroke="${PALETTE.tealLite}" stroke-width="4" stroke-linecap="round"/>
+     <path d="M99 160c-10 1-16-5-17-15 10-1 16 5 17 15z" fill="${PALETTE.tealLite}"/>
+     <path d="M101 153c9-3 13-11 11-19-9 3-13 11-11 19z" fill="${PALETTE.tealLite}"/>
+     <path d="M73 66c-7 14-6 36 3 48" stroke="${PALETTE.tealLite}" stroke-width="5"
+           stroke-linecap="round" fill="none" opacity=".72"/>`,
     PALETTE.ink),
 };
 
@@ -435,12 +420,218 @@ export function scarMark(cls = '') {
           opacity=".5" stroke-dasharray="3 5"/>`, `art-scar ${cls}`);
 }
 
-// ─── 6. Emoji-medaljong ───────────────────────────────
-// Spillet har rundt femti hendelsesikoner som fortsatt er emoji.
-// De rammes inn i en støpt skive med regionens farge, slik at de leser
-// som del av systemet i stedet for som løs tekst.
+// ─── 6. Hendelsespiktogrammer ─────────────────────────
+// Hendelsesdatabasen merker hvert valg med en emoji. Emoji tegnes ulikt på
+// hvert operativsystem og bryter med resten av strekføringen, så hver av dem
+// har fått et piktogram her. Alle er tegnet i samme rutenett på 32×32 med lik
+// strektykkelse, slik at de leser som ett sett.
+//
+// Nøklene står uten variantvelger (U+FE0F); oppslaget stripper den bort,
+// så både '☀' og '☀️' treffer.
+
+const PICTO = {
+  // Vær, vann og landskap
+  '☀':  `<circle cx="16" cy="16" r="6"/><path d="M16 3.5v3.5M16 25v3.5M3.5 16H7M25 16h3.5
+          M7 7l2.4 2.4M22.6 22.6L25 25M25 7l-2.4 2.4M9.4 22.6L7 25"/>`,
+  '🔆': `<circle cx="16" cy="16" r="5.4" fill="currentColor"/><path d="M16 3.5v4M16 24.5v4
+          M3.5 16h4M24.5 16h4M6.8 6.8l2.8 2.8M22.4 22.4l2.8 2.8M25.2 6.8l-2.8 2.8M9.6 22.4l-2.8 2.8"/>`,
+  '🌊': `<path d="M3.5 13c3 0 3-3.2 6-3.2S12.5 13 15.5 13s3-3.2 6-3.2S24.5 13 28.5 13"/>
+         <path d="M3.5 20c3 0 3-3.2 6-3.2S12.5 20 15.5 20s3-3.2 6-3.2S24.5 20 28.5 20"/>
+         <path d="M3.5 27c3 0 3-3.2 6-3.2S12.5 27 15.5 27s3-3.2 6-3.2S24.5 27 28.5 27"/>`,
+  '🌫': `<path d="M5 9h22M9 15h14M5 21h22M11 27h10"/>`,
+  '💧': `<path d="M16 3.5c5.2 6.4 8 10.6 8 14.4a8 8 0 0 1-16 0c0-3.8 2.8-8 8-14.4z"/>`,
+  '💨': `<path d="M3.5 11h14a4 4 0 1 0-4-4.2M3.5 18h20a4 4 0 1 1-4 4.2M3.5 25h11"/>`,
+  '🏔': `<path d="M2.5 26l9.5-16.5 6 10.5 4-5.5L29.5 26z"/><path d="M9 20l3-2.4 2.2 3"/>`,
+
+  // Vekster
+  '🌱': `<path d="M16 28.5V17"/><path d="M16 20.5c-5.2 0-8.2-3.2-8.2-8.4 5.2 0 8.2 3.2 8.2 8.4z"/>
+         <path d="M16 17c4.2-1.2 6-4.4 4.8-8.6-4.2 1.2-6 4.4-4.8 8.6z"/>`,
+  '🌳': `<path d="M16 28.5v-8.6"/><path d="M11.8 28.5h8.4"/>
+         <path d="M16 3.5c3 0 5.4 1.8 6.4 4.4 2.8.6 4.6 3 4.6 5.8 0 3.5-2.8 6.2-6.6 6.2H11.6
+                  C7.8 19.9 5 17.2 5 13.7c0-2.8 1.8-5.2 4.6-5.8C10.6 5.3 13 3.5 16 3.5z"/>`,
+  '🌿': `<path d="M8.5 28.5C8.5 17 14.5 8.5 25.5 6"/>
+         <path d="M25.5 6c-8.4 0-12.6 4-12.6 11.4 8.4 0 12.6-4 12.6-11.4z"/>`,
+  '🌾': `<path d="M16 28.5V12"/><path d="M16 12c-4.2 0-6.2-2.2-6.2-6.4C14 5.6 16 7.8 16 12z
+          M16 12c4.2 0 6.2-2.2 6.2-6.4C18 5.6 16 7.8 16 12zM16 20.5c-4.2 0-6.2-2.2-6.2-6.4
+          4.2 0 6.2 2.2 6.2 6.4zM16 20.5c4.2 0 6.2-2.2 6.2-6.4-4.2 0-6.2 2.2-6.2 6.4z"/>`,
+  // Riflene på tvers er det som gjør at roten leser som gulrot og ikke blad
+  '🥕': `<path d="M4.5 28.5c9.2-2.4 16.2-9.6 18.6-18.6C13.9 12.3 6.9 19.3 4.5 28.5z"/>
+         <path d="M9.6 22.6l3.6 1.6M13.4 17.8l3.6 1.6M17.2 13.2l3.4 1.4"/>
+         <path d="M23.1 9.9l3.9-4.2M24.8 12.2l4.7-2.4M20.6 7.9l1.2-5.4"/>`,
+
+  // Dyr
+  '🐋': `<path d="M3.5 19c0-5.2 5.4-9.4 11.6-9.4S28.5 13.8 28.5 19c0 3.2-4.4 5.4-12.6 5.4S3.5 22.2 3.5 19z"/>
+         <path d="M28.5 19l3.2-5v10z"/><path d="M9.5 17h.01"/>`,
+  '🐝': `<ellipse cx="16" cy="19.5" rx="6" ry="7.2"/><path d="M10.2 17.2h11.6M10.2 21.6h11.6"/>
+         <path d="M12 12.5c-3.2-4-7.4-4-8.4-1 3.2 3 6.4 3 8.4 1zM20 12.5c3.2-4 7.4-4 8.4-1-3.2 3-6.4 3-8.4 1z"/>`,
+  '🐟': `<path d="M27.5 16c-4.2-6-10.4-8-16.4-6-4.2 1.4-7.2 3.6-8.2 6 1 2.4 4 4.6 8.2 6 6 2 12.2 0 16.4-6z"/>
+         <path d="M27.5 16l3.2-4.6M27.5 16l3.2 4.6"/><path d="M9.5 14h.01"/>`,
+  '🐠': `<path d="M26.5 16c-4-5.2-9.2-7.2-14.4-5.2C8 12 5 13.8 4 16c1 2.2 4 4 8.1 5.2 5.2 2 10.4 0 14.4-5.2z"/>
+         <path d="M26.5 16l4.4-4.4v8.8z"/><path d="M13.5 11.6v8.8"/><path d="M8.5 14.6h.01"/>`,
+  '🐦': `<circle cx="19" cy="10" r="4.6"/><path d="M23.6 10l4.6 1.7-4.6 2.1z"/>
+         <path d="M20 8.6h.01"/>
+         <path d="M15.6 13.6C10 15.2 6 18.6 4.6 23.8c5.8 1.5 10.9.3 14.3-3.2 2.2-2.3 3-4.9 2.5-7.2z"/>
+         <path d="M4.6 23.8l-2.4 4.6 5.2-1.2"/>`,
+  // Labbeavtrykk. Et ulvehode i vektor endte uansett med å lese som en katt;
+  // avtrykket sier «vilt dyr» uten å måtte tegne arten.
+  '🐺': `<ellipse cx="16" cy="21.4" rx="7" ry="6"/>
+         <ellipse cx="7.4" cy="13.2" rx="3.2" ry="4"/><ellipse cx="12.8" cy="8.4" rx="3.2" ry="4.3"/>
+         <ellipse cx="19.2" cy="8.4" rx="3.2" ry="4.3"/><ellipse cx="24.6" cy="13.2" rx="3.2" ry="4"/>`,
+  '🦉': `<path d="M16 4.5c6.2 0 10.4 5 10.4 11.4S22.2 27.5 16 27.5 5.6 22.3 5.6 15.9 9.8 4.5 16 4.5z"/>
+         <circle cx="11.8" cy="14" r="3"/><circle cx="20.2" cy="14" r="3"/>
+         <path d="M16 18.5l-2 2.2h4z"/><path d="M8 7.5l3 3M24 7.5l-3 3"/>`,
+
+  // Energi og industri
+  '⚡': `<path d="M18.5 2.5L8 18h6.2l-1.8 11.5L24 14h-6.2z"/>`,
+  '🏭': `<path d="M3.5 28.5V15.5l6.4 4.2v-4.2l6.4 4.2v-4.2l6.4 4.2V7.5h5.8v21z"/>
+         <path d="M9 24.5v-2.6M16 24.5v-2.6M23 24.5v-2.6"/>`,
+  '⚙': `<circle cx="16" cy="16" r="4.6"/><path d="M16 2.5v5M16 24.5v5M2.5 16h5M24.5 16h5
+          M6.4 6.4l3.5 3.5M22.1 22.1l3.5 3.5M25.6 6.4l-3.5 3.5M9.9 22.1l-3.5 3.5" stroke-width="3.2"/>`,
+  '🔋': `<rect x="2.5" y="10" width="22" height="12" rx="3.5"/><path d="M28 14.2v3.6"/>
+         <path d="M8 14.2v3.6M13 14.2v3.6M18 14.2v3.6"/>`,
+  '🕯': `<path d="M16 1.8c2.7 3 3.8 4.9 3.8 6.5a3.8 3.8 0 0 1-7.6 0c0-1.6 1.1-3.5 3.8-6.5z"/>
+         <path d="M16 12.4v3.8"/>
+         <path d="M11.2 28.5V20.9a4.8 4.8 0 0 1 9.6 0v7.6z"/>`,
+  '🧪': `<path d="M11.5 3.5v16.4a4.7 4.7 0 0 0 9.4 0V3.5"/><path d="M9.5 3.5h13.4"/>
+         <path d="M11.5 15.5h9.4"/>`,
+  '⛏': `<path d="M6.5 27L21 11.5"/><path d="M12.5 5.5c6.4 0 11.6 5.4 13.6 12.6"/>
+         <path d="M12.5 5.5l4.4 4.4M26.1 18.1l-4.4-4.4"/>`,
+  '🪨': `<path d="M4.5 24.5l4.2-11.4 8.4-5.2 10.4 6.2 2 10.4z"/>
+         <path d="M8.7 13.1l8.4 6.2 10.4-3.2M17.1 19.3l-1.6 5.2"/>`,
+  '🪵': `<rect x="3.5" y="9.5" width="25" height="13" rx="6.5"/>
+         <ellipse cx="10" cy="16" rx="4" ry="6.5"/><ellipse cx="10" cy="16" rx="1.7" ry="2.9"/>
+         <path d="M18 10.6v10.8M23 11.4v9.2"/>`,
+  '♻': `<path d="M26 12.4A11 11 0 1 0 27 20.6"/><path d="M27 20.6l.6-5.4M27 20.6l-5.4-.6"/>
+         <path d="M16 20.5c-3.6 0-5.6-2.2-5.6-6 3.6 0 5.6 2.2 5.6 6z"/>`,
+  '💻': `<rect x="5.5" y="6.5" width="21" height="13.4" rx="2.2"/>
+         <path d="M2.5 23.5h27l-2.2 4H4.7z"/>`,
+
+  // Bygg
+  '🏗': `<path d="M7.5 28.5V5.5"/><path d="M7.5 5.5h18.4"/><path d="M7.5 11L16 5.5"/>
+         <path d="M22 5.5v7.4"/><rect x="18.8" y="12.9" width="6.4" height="5.2"/>
+         <path d="M3.5 28.5h10"/>`,
+  '🏘': `<path d="M3.5 28.5V16.4l6.2-5.2 6.2 5.2v12.1z"/><path d="M16 28.5V13.2l6-5 6.2 5v15.3z"/>
+         <path d="M8.4 28.5v-6h3.2v6M20.6 28.5v-6h3.2v6"/>`,
+  '🏡': `<path d="M3.5 28.5V15l9-7.2 9 7.2v13.5z"/><path d="M10 28.5v-7.2h5v7.2"/>
+         <path d="M27 28.5v-5.4"/><circle cx="27" cy="19.4" r="3.6"/>`,
+  '🏥': `<path d="M4.5 28.5V10L16 3.5 27.5 10v18.5z"/><path d="M16 11.5v9.4M11.3 16.2h9.4"/>`,
+  '🏫': `<path d="M3.5 28.5V14.4L16 7l12.5 7.4v14.1z"/><path d="M11.6 28.5v-7.6h8.8v7.6"/>
+         <path d="M16 7V2.2"/><path d="M16 2.6h6.6l-1.7 2.1 1.7 2.1H16z"/>
+         <path d="M7.6 18.4h3.2M21.2 18.4h3.2"/>`,
+
+  // Hav og havn
+  '⚓': `<circle cx="16" cy="5.6" r="3.1"/><path d="M16 8.7v18.8"/><path d="M9.4 13.6h13.2"/>
+         <path d="M4.5 17.4c0 6.2 5.2 10.1 11.5 10.1s11.5-3.9 11.5-10.1"/>
+         <path d="M4.5 17.4l-2.4 4.2M4.5 17.4l4.2 2.2M27.5 17.4l2.4 4.2M27.5 17.4l-4.2 2.2"/>`,
+  '🚢': `<path d="M3.5 20h25l-4.2 6.4H7.7z"/><path d="M9.6 20v-8h10.6v8"/><path d="M13 12V7.6h4.4V12"/>
+         <path d="M2.5 28.5c3.2 0 3.2-1.8 6.4-1.8s3.2 1.8 6.4 1.8 3.2-1.8 6.4-1.8 3.2 1.8 6.4 1.8"/>`,
+  '🎣': `<path d="M3.5 28.5C9.5 21.6 16.5 13 24.5 3.5"/><circle cx="11" cy="19" r="2.4"/>
+         <path d="M24.5 3.5v14.2"/>
+         <path d="M24.5 17.7c-3.3 0-4.9 2.1-4.9 4s1.7 3.5 3.5 3.5"/>`,
+  '🗺': `<path d="M3.5 8.4l8.4-3.2 8.2 3.2 8.4-3.2v19l-8.4 3.2-8.2-3.2-8.4 3.2z"/>
+         <path d="M11.9 5.2v19M20.1 8.4v19"/>`,
+
+  // Folk og styre
+  '🤝': `<circle cx="9" cy="8.8" r="4.2"/><circle cx="23" cy="8.8" r="4.2"/>
+         <path d="M1.8 26.5c0-4 3.2-7.2 7.2-7.2s7.2 3.2 7.2 7.2M15.8 26.5c0-4 3.2-7.2 7.2-7.2s7.2 3.2 7.2 7.2"/>`,
+  '🤲': `<path d="M3.5 14.5c0 8 5.6 13.4 12.5 13.4S28.5 22.5 28.5 14.5"/>
+         <path d="M3.5 14.5c0-3.2 2-4.4 3.2-2.2M28.5 14.5c0-3.2-2-4.4-3.2-2.2"/>
+         <path d="M16 4v6.4M12 7.2l1.2 4M20 7.2l-1.2 4"/>`,
+  '🗣': `<circle cx="11.5" cy="9" r="4.6"/><path d="M3.5 27.5c0-4.8 3.6-8.4 8-8.4s8 3.6 8 8.4"/>
+         <path d="M23 9c1.6 2.2 1.6 5.4 0 7.6M27 5.8c3.2 4.4 3.2 9.8 0 14"/>`,
+  '✊': `<path d="M6.8 28.5v-9.2a5.6 5.6 0 0 1 5.6-5.6h8.4a4.2 4.2 0 0 1 4.2 4.2v10.6z"/>
+         <path d="M11.6 13.7v-3.5a2.3 2.3 0 1 1 4.6 0v3.5M16.2 13.7V8.6a2.3 2.3 0 1 1 4.6 0v5.1
+                  M20.8 13.7v-2.8a2.3 2.3 0 1 1 4.6 0v3.4"/>
+         <path d="M6.8 21.8c0-2.6 1.8-4.4 4.4-4.4"/>`,
+  '🗳': `<rect x="3.5" y="15" width="25" height="13.5" rx="2.2"/><path d="M9 15V9.4h14V15"/>
+         <path d="M11.5 12.2h9"/>
+         <rect x="12.6" y="1.5" width="6.8" height="4.6" rx="1.2"/><path d="M16 6.1v2.4"/>`,
+  '⚖': `<path d="M16 4.5v23M9 27.5h14"/><path d="M16 6.2l-10 3.6M16 6.2l10 3.6M6 9.8h20"/>
+         <path d="M1.8 19.6a4.2 4.2 0 0 0 8.4 0L6 9.8zM21.8 19.6a4.2 4.2 0 0 0 8.4 0L26 9.8z"/>`,
+  '📢': `<path d="M3.5 12.6v6.8a2.2 2.2 0 0 0 2.2 2.2h4.4l10.4 6.4V4L10.1 10.4H5.7a2.2 2.2 0 0 0-2.2 2.2z"/>
+         <path d="M24.5 11.2c2.2 3 2.2 6.6 0 9.6"/>`,
+  '😤': `<circle cx="16" cy="13" r="9.4"/><path d="M10.8 10.8l4.2 2.2M21.2 10.8L17 13"/>
+         <path d="M12.4 18h7.2"/><path d="M8.4 24c-1.2 2-1.2 3.2 0 4.4M23.6 24c1.2 2 1.2 3.2 0 4.4"/>`,
+
+  // Helse, skole, forvaltning
+  '💊': `<g transform="rotate(-35 16 16)"><rect x="2.5" y="11" width="27" height="10" rx="5"/>
+         <path d="M16 11v10"/></g>`,
+  '💙': `<path d="M16 27.5S3.5 20.2 3.5 12.6A6.6 6.6 0 0 1 16 8.8a6.6 6.6 0 0 1 12.5 3.8c0 7.6-12.5 14.9-12.5 14.9z"/>`,
+  '📚': `<rect x="3.5" y="20" width="25" height="6.4" rx="1.4"/><rect x="5.6" y="13.6" width="20.8" height="6.4" rx="1.4"/>
+         <rect x="7.8" y="7.2" width="16.4" height="6.4" rx="1.4"/>`,
+  '✏': `<path d="M5.5 26.5l2.2-6.4L21.8 6l4.2 4.2L12.2 24.3z"/><path d="M18.8 9l4.2 4.2"/>
+         <path d="M5.5 26.5l6.4-2.2"/>`,
+  '📐': `<path d="M4.5 27.5V5.5l22 22z"/><path d="M4.5 18.5h4.2M4.5 12.5h4.2"/>`,
+  '🔬': `<path d="M5.5 28.5h21"/><path d="M10.5 28.5v-2.8h11v2.8"/>
+         <path d="M10.5 22h11"/><path d="M16 25.7V22"/>
+         <g transform="rotate(18 17.5 12)"><rect x="14.4" y="3.5" width="6.2" height="14.6" rx="3.1"/>
+           <path d="M14.4 8h6.2"/></g>
+         <path d="M21.5 22c3.8 0 6.4-2.8 6.4-6.8"/>`,
+  '🔭': `<g transform="rotate(-30 16 16)"><rect x="4.2" y="11.6" width="16.4" height="8.4" rx="2.6"/>
+           <path d="M20.6 9.6h5.2v12.4h-5.2z"/></g>
+         <path d="M13.6 21.8v6.7M9.4 28.5h8.4"/>`,
+  '📋': `<rect x="6" y="6" width="20" height="22.5" rx="2.2"/><rect x="11" y="3" width="10" height="5.2" rx="1.6"/>
+         <path d="M11 15.4h10M11 20.4h7"/>`,
+  '📉': `<path d="M3.5 4.5v24h25"/><path d="M8 11l6 6.4 4.2-4.2 9 9"/><path d="M27.2 22.2v-5.4M27.2 22.2h-5.4"/>`,
+  '🎯': `<circle cx="16" cy="16" r="11.4"/><circle cx="16" cy="16" r="6.6"/>
+         <circle cx="16" cy="16" r="2.1" fill="currentColor"/>`,
+  '🧭': `<circle cx="16" cy="16" r="12"/><path d="M21.4 10.6l-3.2 8.2-8.2 3.2 3.2-8.2z"/>`,
+
+  // Fare
+  '⚠': `<path d="M16 3.5L2 28.5h28z"/><path d="M16 13v6.6M16 24h.01"/>`,
+  '💀': `<path d="M16 3c6.9 0 11 5 11 11 0 4-2 6-2 8v2.4a2.2 2.2 0 0 1-2.2 2.2H9.2A2.2 2.2 0 0 1 7 24.4V22c0-2-2-4-2-8C5 8 9.1 3 16 3z"/>
+         <circle cx="11.6" cy="14" r="2.7"/><circle cx="20.4" cy="14" r="2.7"/><path d="M16 18.4v3"/>`,
+  '☠': `<path d="M16 2c6.4 0 10.4 4.6 10.4 10.4 0 3.8-1.8 5.6-1.8 7.6h-17c0-2-1.8-3.8-1.8-7.6C5.8 6.6 9.6 2 16 2z"/>
+         <circle cx="11.8" cy="12.6" r="2.6"/><circle cx="20.2" cy="12.6" r="2.6"/>
+         <path d="M6 28.5l20-5M26 28.5l-20-5"/>`,
+  // Trekløveret er tre 60°-vinger mellom r=4 og r=11,5, ikke tre overlappende
+  // kiler – slik de var, klumpet de seg til én flate.
+  '☢': `<circle cx="16" cy="16" r="13"/><circle cx="16" cy="16" r="3" fill="currentColor"/>
+         <path d="M10.25 6.04A11.5 11.5 0 0 1 21.75 6.04L18 12.54A4 4 0 0 0 14 12.54Z"/>
+         <path d="M27.5 16A11.5 11.5 0 0 1 21.75 25.96L18 19.46A4 4 0 0 0 20 16Z"/>
+         <path d="M10.25 25.96A11.5 11.5 0 0 1 4.5 16L12 16A4 4 0 0 0 14 19.46Z"/>`,
+  '🚨': `<path d="M6.5 27.5h19"/><path d="M9 27.5v-7.4a7 7 0 0 1 14 0v7.4"/>
+         <path d="M16 6.4V2.5M26.4 11.6l3.2-2.2M5.6 11.6L2.4 9.4"/>`,
+  '🚫': `<circle cx="16" cy="16" r="12"/><path d="M7.5 24.5l17-17"/>`,
+};
+
+// Oppslag som tåler både '☀' og '☀️'
+const pictoKey = e => String(e ?? '').replace(/️/g, '');
+
+export function hasPictogram(emoji) {
+  return Boolean(PICTO[pictoKey(emoji)]);
+}
+
+const PICTO_ATTRS =
+  'fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"';
+
+export function pictogram(emoji, color = '#92B0C2', cls = 'ico') {
+  const art = PICTO[pictoKey(emoji)];
+  if (!art) return null;
+  return svg('0 0 32 32',
+    `<g color="${color}" stroke="${color}" ${PICTO_ATTRS}>${art}</g>`, `art-ico ${cls}`);
+}
+
+// Samme tegning, men som en gruppe klar til å limes inn i et større SVG –
+// kartet trenger piktogrammene inne i sitt eget koordinatsystem.
+export function pictogramNode(emoji, color, cx, cy, size = 14) {
+  const art = PICTO[pictoKey(emoji)];
+  if (!art) return '';
+  const s = size / 32;
+  // Streken skaleres ned sammen med resten. På 14 enheter blir den designede
+  // tykkelsen for tynn til å bære, så den settes en tredel kraftigere.
+  return `<g transform="translate(${(cx - size / 2).toFixed(2)} ${(cy - size / 2).toFixed(2)}) scale(${s.toFixed(4)})"
+             color="${color}" stroke="${color}" ${PICTO_ATTRS}
+             stroke-width="2.8">${art}</g>`;
+}
+
+// ─── Medaljong ────────────────────────────────────────
+// Rammen rundt et hendelsesikon. Bruker piktogrammet når det finnes, og
+// faller tilbake til emojien for et motiv som ennå ikke er tegnet.
 export function iconChip(emoji, color = '#92B0C2', cls = '') {
-  return `<span class="art-chip ${cls}" style="--chip:${color}" aria-hidden="true">${emoji}</span>`;
+  const picto = pictogram(emoji, color, 'in-chip');
+  return `<span class="art-chip ${picto ? 'has-picto' : ''} ${cls}"
+                style="--chip:${color}" aria-hidden="true">${picto || emoji}</span>`;
 }
 
 // ─── 7. Tittelbilde ───────────────────────────────────

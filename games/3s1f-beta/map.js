@@ -10,7 +10,7 @@
 
 import { REGIONS } from './events.js';
 import { neglectLevel, escapeHtml as esc } from './game.js';
-import { REGION_COLORS } from './art.js';
+import { REGION_COLORS, pictogramNode, hasPictogram } from './art.js';
 
 const VB = { w: 520, h: 380 };
 
@@ -19,13 +19,18 @@ const VB = { w: 520, h: 380 };
 const C1 = '152 128', C2 = '352 84', C3 = '438 178',
       C4 = '396 286', C5 = '258 328', C6 = '150 246';
 
-// Kystbiter: [startpunkt, kontroller, sluttpunkt]
-const S1 = 'C 178 96 232 72 282 70 C 312 69 336 74 352 84';       // NV → NØ
-const S2 = 'C 388 100 424 132 438 178';                            // NØ → Ø
-const S3 = 'C 442 218 428 258 396 286';                            // Ø → SØ
-const S4 = 'C 360 316 310 332 258 328';                            // SØ → S
-const S5 = 'C 208 324 166 300 150 246';                            // S → V
-const S6 = 'C 140 208 138 158 152 128';                            // V → NV
+// Kystbiter. En jevn bue leste som en klatt; viker og nes er det som gjør
+// at formen leser som en øy noen har kartlagt.
+const S1 = 'C 156 106 164 92 178 86 C 194 79 208 85 218 88 ' +
+           'C 230 72 242 51 264 50 C 288 49 300 65 312 73 ' +
+           'C 328 81 340 82 352 84';                               // NV → NØ, med nordkapp
+const S2 = 'C 374 88 392 98 404 114 C 418 132 428 152 438 178';    // NØ → Ø
+const S3 = 'C 443 200 440 224 428 244 C 416 264 406 276 396 286';  // Ø → SØ
+const S4 = 'C 378 300 356 310 336 310 C 314 310 300 322 284 326 ' +
+           'C 274 329 266 329 258 328';                            // SØ → S, med vik
+const S5 = 'C 240 330 220 326 206 318 C 192 310 180 298 168 284 ' +
+           'C 158 272 152 260 150 246';                            // S → V
+const S6 = 'C 145 228 138 208 141 186 C 143 164 145 142 152 128';  // V → NV
 
 // Indre grenser, og de samme baklengs (kontrollpunktene byttes om).
 const A = '250 158', B = '340 176', Cc = '318 258', D = '232 262';
@@ -120,9 +125,9 @@ const TERRAIN = {
 
   fjordbygdene: `
     <g stroke="${DARK}" stroke-width="1.4" fill="none" opacity=".38">
-      <path d="M176 296c24 10 50 14 74 12"/>
-      <path d="M182 308c22 10 46 14 68 12"/>
-      <path d="M192 318c20 8 40 11 58 10"/>
+      <path d="M176 293c24 10 50 14 74 12"/>
+      <path d="M182 304c22 10 46 14 68 12"/>
+      <path d="M192 314c20 8 40 11 58 10"/>
     </g>
     ${house(212, 296, 17, 12, true)}
     <path d="M212 284 L220.5 277 L229 284 Z" fill="${DARK}"/>
@@ -279,13 +284,18 @@ export function createMapSVG(state) {
     const list = byRegion[id];
     if (!list?.length) return '';
     const d = REGION_DEFS[id];
+    const color = REGION_COLORS[id] || REGIONS[id].color;
     const shown = list.slice(-4);
-    const x0 = d.mx - ((shown.length - 1) * 15) / 2;
-    return `<g class="zone-traces">${shown.map((e, i) => `
-      <circle cx="${x0 + i * 15}" cy="${d.my + 40}" r="7.5" fill="#08131E" opacity=".78"
-              stroke="rgba(240,237,228,.18)" stroke-width=".8"/>
-      <text x="${x0 + i * 15}" y="${d.my + 40.5}" text-anchor="middle"
-            dominant-baseline="middle" font-size="9">${e}</text>`).join('')}</g>`;
+    const x0 = d.mx - ((shown.length - 1) * 16) / 2;
+    return `<g class="zone-traces">${shown.map((e, i) => {
+      const cx = x0 + i * 16, cy = d.my + 40;
+      const glyph = hasPictogram(e)
+        ? pictogramNode(e, color, cx, cy, 11)
+        : `<text x="${cx}" y="${cy + .5}" text-anchor="middle"
+                 dominant-baseline="middle" font-size="9">${e}</text>`;
+      return `<circle cx="${cx}" cy="${cy}" r="8" fill="#08131E" opacity=".82"
+                      stroke="${color}" stroke-opacity=".35" stroke-width=".9"/>${glyph}`;
+    }).join('')}</g>`;
   }).join('');
 
   const clips = ORDER.map(id =>

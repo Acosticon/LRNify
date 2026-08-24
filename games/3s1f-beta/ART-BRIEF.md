@@ -23,8 +23,15 @@ byttes inn ett sted om gangen, uten å røre render-laget.
 | `scarMark()` | tapte saker | SVG 64×64 |
 | `heroArt()` | tittelskjermens bakgrunn | SVG 1200×640 |
 | `transitionArt()` | bakgrunn bak årstallet mellom år | SVG 1200×640 |
-| `iconChip(emoji, color)` | de ~50 hendelsesikonene som fortsatt er emoji | ramme rundt emoji |
+| `pictogram(emoji)` | hendelsesikoner i sidefelt og medaljonger | SVG 32×32, 64 motiver |
+| `pictogramNode(emoji, …)` | sporene som samler seg på kartet | SVG-gruppe, skalerbar |
+| `iconChip(emoji, color)` | rammen rundt et hendelsesikon | medaljong + piktogram |
 | `textureDefs()` | kornfiltre, satt inn én gang | SVG-filtre |
+
+Hendelsesdatabasen merker hvert valg med en emoji. `PICTO` i `art.js` dekker
+alle 64 som er i bruk, og `iconChip` faller tilbake til selve emojien hvis
+noen legger til et motiv som ennå ikke er tegnet – da vises den i medaljongen
+som før, uten at noe knekker.
 
 `map.js` tegner øykartet selv. Det er den ene delen som ikke kan byttes ut
 med et flatt bilde uten videre, siden hvert område må være klikkbart og
@@ -137,21 +144,24 @@ ASSET LIST — generate one at a time
    changing light. A giant year number is drawn on top and must stay legible.
    → replaces transitionArt()
 
-9. EVENT ICON SET — the last emoji in the game
-   About 50 small event markers still use emoji inside a coloured medallion
-   (irrigation, mining, protests, flooding, smog …). A matching set of simple
-   monochrome pictograms, 64×64 transparent, in the same style as #1 and #3,
-   would remove the last inconsistency. Lowest priority — the medallion frame
-   already makes them read as part of the system.
-   → replaces iconChip()
+9. EVENT PICTOGRAMS — 64 files, 64×64, transparent, monochrome
+   OPTIONAL. These already exist as vector line icons covering every event in
+   the database (irrigation, mining, protests, flooding, smog …). Only worth
+   redrawing if you want them painterly rather than linear; the line style is
+   arguably the right call at 18 px.
+   → replaces pictogram()
 ````
 
 ---
 
 ## Kjente begrensninger i dagens vektorversjon
 
-- Portrettene er silhuetter, ikke malte ansikter. Det er et bevisst valg i
-  vektor, men det er også den største gevinsten ved å bytte til rasterkunst.
-- Kartets kystlinje er ganske rund. En mer oppbrutt silhuett med viker og
-  nes ville gitt øya mer karakter.
-- De ~50 hendelsesikonene er fortsatt emoji, innrammet i en medaljong.
+- Portrettene er bygget i tre tonenivåer – blekk for hodet, en lysere tone
+  for plagget, og et kantlys – men de er fortsatt silhuetter, ikke malte
+  ansikter. Dette er den største gjenstående gevinsten ved rasterkunst.
+- Kartet er ett bilde som tegnes på nytt for hver tilstandsendring. Skal det
+  byttes mot malt kunst, må de seks områdene leveres som separate lag; ellers
+  mister spilleren tilbakemeldingen på hvilket område som er åpent.
+- `🐦`, `🐺` og `🐋` er tolket ganske fritt: fugl i profil, labbeavtrykk og
+  en hval som mest leser som en fisk. Det er de tre motivene der et malt
+  ikon ville sagt mest.
