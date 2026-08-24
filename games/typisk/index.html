@@ -314,6 +314,7 @@
     <div class="card" id="shockCard" hidden>
       <h2>😲 Noe skjer</h2>
       <p class="situation-text" id="shockIntro"></p>
+      <p class="situation-text" id="shockQuestion" style="font-weight:900;"></p>
       <div class="choice-grid" id="shockChoices"></div>
       <p class="explain-box" id="shockFeedback" hidden></p>
     </div>
@@ -872,6 +873,7 @@ function updateStepVisibility() {
 function renderShockPredict() {
   const c = currentCase();
   $('shockIntro').textContent = c.shock.intro;
+  $('shockQuestion').textContent = c.shock.predictQuestion;
   $('shockFeedback').hidden = true;
   renderChoices($('shockChoices'), c.shock.predictOptions, (key, btn, container) => {
     if (predictLocked) return;
