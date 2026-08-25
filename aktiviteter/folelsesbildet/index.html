@@ -101,6 +101,11 @@
   .tema-pille:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); }
   .tema-pille:active { transform: translateY(3px);  box-shadow: 0 1px 0 var(--ink); }
   .tema-pille.valgt { background: var(--yellow); }
+  .tema-pille:disabled {
+    background: #ece7de; color: var(--muted); border-color: #b7ada0;
+    box-shadow: 0 4px 0 #b7ada0; cursor: not-allowed; opacity: .75;
+  }
+  .tema-pille:disabled:hover { transform: none; box-shadow: 0 4px 0 #b7ada0; }
 
   /* ── BILDEVALG-RUTENETT (gjenbruker Dagsformens mønster) ── */
   .mood-grid {
@@ -339,14 +344,29 @@
    de 30 bildene om gangen, valgt av læreren, i stedet for hele rutenettet. */
 const THEMES = {
   emoji:       { navn: 'Emoji',       mappe: 'emoji' },
-  dyr:         { navn: 'Dyr',         mappe: 'dyr' },
-  anime:       { navn: 'Anime',       mappe: 'anime' },
-  superhelter: { navn: 'Superhelter', mappe: 'superhelter' },
-  klosser:     { navn: 'Klosser',     mappe: 'klosser' },
-  piksel:      { navn: 'Piksel',      mappe: 'piksel' },
-  dyrevenner:  { navn: 'Dyrevenner',  mappe: 'dyrevenner' },
+  dyr:         { navn: 'Dyr',         mappe: 'dyr',         laast: true },
+  anime:       { navn: 'Anime',       mappe: 'anime',       laast: true },
+  superhelter: { navn: 'Superhelter', mappe: 'superhelter', laast: true },
+  klosser:     { navn: 'Klosser',     mappe: 'klosser',     laast: true },
+  piksel:      { navn: 'Piksel',      mappe: 'piksel',      laast: true },
+  dyrevenner:  { navn: 'Dyrevenner',  mappe: 'dyrevenner',  laast: true },
 };
 const ANTALL_BILDER = 30;
+
+/* Egne bilder for Emoji-temaet, lastet opp av læreren — se
+   media/aktiviteter/feelings/. Navngitt emoji-01-glad.png … -30-utslitt.png;
+   filnavnet holder samme rekkefølge som listen under. De andre temaene
+   mangler foreløpig tilsvarende bilder og er låst i lærermenyen. */
+const FEELINGS_BILDER = [
+  'emoji-01-glad.png', 'emoji-02-begeistret.png', 'emoji-03-leken.png', 'emoji-04-stolt.png',
+  'emoji-05-takknemlig.png', 'emoji-06-nysgjerrig.png', 'emoji-07-rolig.png', 'emoji-08-trygg.png',
+  'emoji-09-håpefull.png', 'emoji-10-lettet.png', 'emoji-11-modig.png', 'emoji-12-forelsket.png',
+  'emoji-13-sjenert.png', 'emoji-14-usikker.png', 'emoji-15-forvirret.png', 'emoji-16-nervos.png',
+  'emoji-17-bekymret.png', 'emoji-18-stresset.png', 'emoji-19-irritert.png', 'emoji-20-sint.png',
+  'emoji-21-frustrert.png', 'emoji-22-sjalu.png', 'emoji-23-skamfull.png', 'emoji-24-rastlos.png',
+  'emoji-25-trist.png', 'emoji-26-skuffet.png', 'emoji-27-ensom.png', 'emoji-28-redd.png',
+  'emoji-29-overveldet.png', 'emoji-30-utslitt.png',
+];
 
 const SPORSMAL = [
   { id: 'q1', emoji: '🔍', tekst: 'Hva legger du merke til?' },
@@ -357,6 +377,7 @@ const SPORSMAL = [
 ];
 
 function bildeSti(temaId, i) {
+  if (temaId === 'emoji') return `/media/aktiviteter/feelings/${encodeURIComponent(FEELINGS_BILDER[i])}`;
   const tema = THEMES[temaId] || THEMES.emoji;
   return `/media/aktiviteter/dagsformen/${tema.mappe}/${String(i).padStart(2, '0')}.jpg`;
 }
@@ -373,8 +394,13 @@ function tegnTemaPiller(container, activeId, onPick) {
     b.type = 'button';
     b.className = 'tema-pille' + (id === activeId ? ' valgt' : '');
     b.textContent = t.navn;
-    b.setAttribute('aria-pressed', String(id === activeId));
-    b.onclick = () => onPick(id);
+    if (t.laast) {
+      b.disabled = true;
+      b.title = 'Bilder kommer snart';
+    } else {
+      b.setAttribute('aria-pressed', String(id === activeId));
+      b.onclick = () => onPick(id);
+    }
     container.appendChild(b);
   });
 }
