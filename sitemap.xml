@@ -33,6 +33,8 @@
   <url><loc>https://lrnify.no/games/jakten/index.html</loc></url>
   <url><loc>https://lrnify.no/games/atombyggeren/index.html</loc></url>
   <url><loc>https://lrnify.no/games/sannsynlighetslabben/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/typisk/index.html</loc></url>
+  <url><loc>https://lrnify.no/games/typisk-beta/index.html</loc></url>
 
   <!-- Klasseromsressurser -->
   <url><loc>https://lrnify.no/tools/klassekart/index.html</loc></url>
@@ -58,6 +60,7 @@
   <!-- Lærermateriell -->
   <url><loc>https://lrnify.no/games/lopeilden/laerer.html</loc></url>
   <url><loc>https://lrnify.no/games/lopeilden/kortspill.html</loc></url>
+  <url><loc>https://lrnify.no/games/typisk-beta/laerer.html</loc></url>
 
   <!-- Om tjenesten -->
   <url><loc>https://lrnify.no/personvern/</loc><priority>0.3</priority></url>
