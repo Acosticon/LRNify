@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Formskift — LRNify</title>
+<meta name="description" content="Flytt, roter og speil en figur på et rutenett til den passer nøyaktig i målfiguren, og oppdag at kongruensavbildninger endrer plassering og retning, men aldri form og størrelse.">
+<link rel="canonical" href="https://lrnify.no/games/formskift/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Formskift – LRNify">
+<meta property="og:description" content="Flytt, roter og speil en figur på et rutenett til den passer nøyaktig i målfiguren, og oppdag at kongruensavbildninger endrer plassering og retning, men aldri form og størrelse.">
+<meta property="og:image" content="https://lrnify.no/media/og/formskift.png">
+<meta property="og:url" content="https://lrnify.no/games/formskift/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Formskift – LRNify">
+<meta name="twitter:description" content="Flytt, roter og speil en figur på et rutenett til den passer nøyaktig i målfiguren, og oppdag at kongruensavbildninger endrer plassering og retning, men aldri form og størrelse.">
+<meta name="twitter:image" content="https://lrnify.no/media/og/formskift.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:   #fff9f0;
+    --ink:     #241b12;
+    --yellow:  #facc15;
+    --card:    #ffffff;
+    --muted:   #7a6f63;
+    --green:   #16a34a;
+    --gridline:#d8ccb0;
+    --blue:    #3b82f6;
+    --blue-dk: #1d4ed8;
+    --teal:    #0d9488;
+    --red:     #dc2626;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    touch-action: manipulation;
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.5rem,5vw,2.2rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SKJERMER ══ */
+  .screen { display: none; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .center-wrap {
+    max-width: 560px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 16px; align-items: center;
+    text-align: center; animation: fadeIn .25s ease;
+  }
+  .screen-hero h1 {
+    font-family: 'Chewy', cursive; font-size: clamp(2rem,8vw,3.1rem);
+    letter-spacing: .01em;
+  }
+  .screen-hero p {
+    font-weight: 700; color: var(--muted);
+    font-size: clamp(.92rem,2.4vw,1.06rem); margin-top: 6px; max-width: 420px;
+  }
+
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 16px 18px; width: 100%;
+  }
+  .card h2 { font-family: 'Chewy', cursive; font-size: 1.15rem; margin-bottom: 10px; }
+
+  button { font-family: 'Nunito', sans-serif; cursor: pointer; }
+  .btn-primary {
+    font-weight: 900; background: var(--yellow); color: var(--ink);
+    border: 4px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 15px 26px; font-size: 1.1rem; width: 100%; max-width: 320px;
+    min-height: 52px; transition: transform .12s, box-shadow .12s;
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-primary:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .btn-secondary {
+    font-weight: 900; background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 12px 18px; font-size: .95rem; min-height: 48px;
+    transition: transform .1s, box-shadow .1s, background .1s;
+  }
+  .btn-secondary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); background: #fef3c7; }
+  .btn-secondary:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .btn-secondary:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+  /* ══ STARTSKJERM ══ */
+  .demo-card { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px; }
+  #demoSvg { width: 100%; max-width: 380px; height: auto; display: block; }
+  .demo-label {
+    font-family: 'Chewy', cursive; font-size: 1.25rem; letter-spacing: .06em;
+    background: var(--yellow); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 3px 16px; min-width: 120px;
+  }
+  details.teacher {
+    width: 100%; text-align: left; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink); padding: 10px 14px;
+  }
+  details.teacher summary {
+    font-weight: 900; cursor: pointer; font-size: .92rem; list-style: none;
+    display: flex; align-items: center; gap: 8px; min-height: 32px;
+  }
+  details.teacher summary::-webkit-details-marker { display: none; }
+  details.teacher summary::before { content: '▸'; font-size: .9rem; }
+  details.teacher[open] summary::before { content: '▾'; }
+  details.teacher p { font-weight: 700; font-size: .84rem; color: var(--muted); margin-top: 8px; line-height: 1.45; }
+  details.teacher p + p { margin-top: 6px; }
+
+  /* ══ SPILLSKJERM ══ */
+  #screen-game { padding: 0 12px; }
+  .game-wrap {
+    max-width: 560px; margin: 0 auto; display: flex; flex-direction: column;
+    gap: 8px; align-items: center; animation: fadeIn .25s ease;
+    padding-bottom: 168px; min-height: calc(100dvh - 84px); justify-content: center;
+  }
+  .hud { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .hud-label { font-weight: 900; font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .hud-right { display: flex; align-items: center; gap: 8px; }
+  .hud-stars {
+    font-weight: 900; font-size: .82rem; background: var(--yellow);
+    border: 3px solid var(--ink); box-shadow: 0 3px 0 var(--ink); padding: 4px 11px;
+    white-space: nowrap; display: inline-flex; align-items: center; gap: 5px; line-height: 1.2;
+  }
+  .icon-btn {
+    width: 44px; height: 44px; background: var(--card); border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink); font-size: 1.15rem; font-weight: 900; line-height: 1;
+    display: flex; align-items: center; justify-content: center; color: var(--ink);
+  }
+  .icon-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .icon-btn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+  .task-text {
+    width: 100%; text-align: center; font-weight: 800;
+    font-size: clamp(.9rem,2.6vw,1.02rem); line-height: 1.3;
+  }
+  .history {
+    width: 100%; min-height: 30px; display: flex; flex-wrap: wrap; gap: 5px;
+    justify-content: center; align-items: center;
+  }
+  .chip {
+    font-weight: 900; font-size: .78rem; background: var(--card);
+    border: 2px solid var(--ink); padding: 3px 8px; white-space: nowrap;
+    animation: chipIn .14s ease;
+  }
+  .chip.rot  { background: #ede9fe; }
+  .chip.mir  { background: #ccfbf1; }
+  @keyframes chipIn { from { opacity:0; transform: scale(.7);} to {opacity:1; transform:none;} }
+  .coordline {
+    min-height: 24px; font-weight: 900; font-size: .88rem; color: var(--blue-dk);
+    text-align: center; width: 100%;
+  }
+
+  /* ══ BRETT ══ */
+  .board-wrap {
+    width: 100%; max-width: min(480px, calc(100dvh - 330px)); min-width: 240px;
+    margin: 0 auto;
+  }
+  #board { width: 100%; height: auto; display: block; overflow: visible; }
+  .gridline { stroke: var(--gridline); stroke-width: .03; }
+  .boardframe { fill: none; stroke: var(--ink); stroke-width: .07; }
+  .axis { stroke: var(--ink); stroke-width: .07; }
+  .axislabel { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .42px; fill: var(--muted); }
+  .axisname { font-family: 'Chewy', cursive; font-size: .55px; fill: var(--ink); }
+  .mirrorline { stroke: var(--teal); stroke-width: .09; stroke-dasharray: .34 .24; stroke-linecap: round; }
+  .mirrorcap  { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .4px; fill: var(--teal); }
+  .targetfill { fill: url(#hatch); }
+  .targetline { fill: none; stroke: var(--ink); stroke-width: .11; stroke-dasharray: .3 .2;
+                stroke-linecap: round; stroke-linejoin: round; opacity: .75; }
+  .playerfill { fill: var(--blue); }
+  .playerline { fill: none; stroke: var(--ink); stroke-width: .13; stroke-linecap: round; stroke-linejoin: round; }
+  .pivotdot   { fill: var(--cream); stroke: var(--ink); stroke-width: .07; }
+  .pivotcore  { fill: var(--ink); }
+  .anchordot  { fill: var(--yellow); stroke: var(--ink); stroke-width: .06; }
+  .anchortext { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .42px; fill: var(--ink); }
+  .edgeflash  { fill: var(--red); opacity: 0; }
+  .edgeflash.on { animation: edgeBlink .42s ease; }
+  @keyframes edgeBlink { 0%,100% { opacity: 0; } 35% { opacity: .55; } }
+  #board.solved .playerfill { fill: var(--green); }
+  #board.solved .targetline { opacity: 0; }
+
+  /* ══ VERKTØYLINJE ══ */
+  .toolbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    background: var(--cream); border-top: 4px solid var(--ink);
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 8px; align-items: center;
+  }
+  .subrow {
+    width: 100%; max-width: 460px; min-height: 52px;
+    display: flex; gap: 8px; justify-content: center; align-items: center;
+  }
+  .subrow .sub-hint { font-weight: 800; font-size: .82rem; color: var(--muted); text-align: center; }
+  .toolrow { width: 100%; max-width: 460px; display: flex; gap: 8px; }
+  .tool-btn, .sub-btn {
+    flex: 1; min-width: 44px; min-height: 48px;
+    font-weight: 900; font-size: .86rem; background: var(--card); color: var(--ink);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    transition: transform .1s, box-shadow .1s, background .1s;
+  }
+  .sub-btn { font-size: 1.15rem; }
+  .tool-btn:active:not(:disabled), .sub-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .tool-btn[aria-pressed="true"] { background: var(--yellow); }
+  .tool-btn:disabled, .sub-btn:disabled { opacity: .32; cursor: not-allowed; box-shadow: 0 4px 0 var(--ink); }
+  .tool-btn:focus-visible, .sub-btn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+  #btnUndo { background: #fee2e2; }
+  #btnUndo:disabled { background: var(--card); }
+  .sub-btn.mirror-btn { font-size: .9rem; flex: 0 1 220px; }
+
+  /* ══ TREFF-ARK ══ */
+  .win-sheet {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+    background: var(--card); border-top: 4px solid var(--ink);
+    padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    text-align: center; animation: sheetUp .22s ease;
+  }
+  .win-sheet[hidden] { display: none; }
+  @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+  .win-title { font-family: 'Chewy', cursive; font-size: 1.5rem; color: var(--green); }
+  .win-seq {
+    font-weight: 900; font-size: .9rem; line-height: 1.4; max-width: 460px;
+    background: var(--cream); border: 3px solid var(--ink); padding: 7px 12px;
+  }
+  .win-note { font-weight: 700; font-size: .84rem; color: var(--muted); max-width: 440px; }
+  .win-lesson {
+    font-weight: 800; font-size: .86rem; line-height: 1.4; max-width: 460px;
+    background: #eff6ff; border: 3px solid var(--blue-dk); padding: 8px 12px; text-align: left;
+  }
+  .win-lesson b { font-family: 'Chewy', cursive; font-size: 1.05rem; display: block; margin-bottom: 2px; }
+  .win-star { font-weight: 900; font-size: .95rem; color: var(--ink); }
+  .win-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 100%; max-width: 460px; }
+  .win-btns button { flex: 1; min-width: 140px; }
+
+  /* ══ BESKRIV-OPPGAVE ══ */
+  #describeWrap { width: 100%; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+  #describeWrap[hidden] { display: none; }
+  .ba-row { display: flex; gap: 12px; justify-content: center; width: 100%; }
+  .ba-item { flex: 1; max-width: 210px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .ba-cap { font-family: 'Chewy', cursive; font-size: 1rem; }
+  .ba-item svg { width: 100%; height: auto; border: 3px solid var(--ink); background: var(--card); }
+  .opt-list { width: 100%; max-width: 460px; display: flex; flex-direction: column; gap: 8px; }
+  .opt-btn {
+    width: 100%; min-height: 48px; font-weight: 900; font-size: .92rem;
+    background: var(--card); color: var(--ink); border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink); padding: 11px 14px; text-align: left;
+  }
+  .opt-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .opt-btn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+  .opt-btn.right { background: #dcfce7; border-color: var(--green); }
+  .opt-btn.wrong { background: #fee2e2; border-color: var(--red); opacity: .8; }
+  .opt-btn:disabled { cursor: default; }
+
+  /* ══ RESULTAT ══ */
+  .result-card { display: flex; flex-direction: column; gap: 12px; text-align: center; }
+  .result-big { font-family: 'Chewy', cursive; font-size: 2rem; }
+  .result-stars { font-size: 1.5rem; letter-spacing: .1em; }
+  .result-sub { font-weight: 700; font-size: .9rem; color: var(--muted); }
+
+  footer {
+    text-align: center; padding: 22px; color: var(--muted);
+    font-weight: 700; font-size: .85rem; border-top: 3px solid rgba(43,33,24,.12);
+  }
+  body.playing footer { display: none; }
+  /* Den flytende «Del»-knappen fra /deling/deling.js ligger nederst til høyre og
+     ville dekket ANGRE-knappen i verktøylinja. Den skjules mens man spiller, og
+     er fortsatt tilgjengelig på start- og resultatskjermen. */
+  body.playing .lrnify-del-knapp, body.playing .lrnify-del-panel { display: none !important; }
+
+  @media (min-width: 700px) {
+    .board-wrap { max-width: min(540px, calc(100dvh - 300px)); }
+  }
+  @media (max-width: 380px) {
+    .tool-btn { font-size: .76rem; }
+    .game-wrap { padding-bottom: 158px; }
+    .board-wrap { max-width: min(480px, calc(100dvh - 320px)); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, .chip, .win-sheet, .btn-primary, .btn-secondary, .tool-btn, .sub-btn {
+      animation-duration: .01ms !important; transition-duration: .01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="center-wrap">
+    <div class="screen-hero">
+      <h1>Formskift</h1>
+      <p>Samme figur. Ny plassering.</p>
+    </div>
+
+    <div class="card demo-card">
+      <svg id="demoSvg" viewBox="-0.2 -0.2 12.4 6.4" aria-hidden="true">
+        <defs>
+          <pattern id="demoHatch" width="0.5" height="0.5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <rect width="0.5" height="0.5" fill="#fff"/>
+            <line x1="0" y1="0" x2="0" y2="0.5" stroke="#241b12" stroke-width="0.13" opacity="0.28"/>
+          </pattern>
+        </defs>
+        <g id="demoGrid"></g>
+        <g id="demoTarget"></g>
+        <g id="demoShape"></g>
+      </svg>
+      <div class="demo-label" id="demoLabel">FLYTT</div>
+    </div>
+
+    <button class="btn-primary" id="btnStart">Start</button>
+
+    <details class="teacher">
+      <summary>Til læreren</summary>
+      <p><b>Kompetansemål (etter 6. trinn):</b> «lage kongruensavbildninger med og uten koordinatsystemer».</p>
+      <p>Elevene trenger ikke kunne begrepene på forhånd. De utfører først handlingene — forskyvning, rotasjon og speiling — og setter matematisk språk på dem etterpå. Spillet tar ca. 8–12 minutter og har 12 oppgaver.</p>
+      <p>Etterpå: tegn én asymmetrisk figur på tavla og spør «Hva kan jeg gjøre med denne uten at den slutter å være kongruent med originalen?» og deretter «Hva er det som aldri forandrer seg?» Målet er at elevene selv peker på at form, sidelengder, vinkler og størrelse bevares, mens plassering og retning kan endres.</p>
+    </details>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="game-wrap">
+    <div class="hud">
+      <span class="hud-label" id="hudProgress">Oppgave 1 / 12</span>
+      <div class="hud-right">
+        <span class="hud-stars" id="hudStars">⭐ 0/4</span>
+        <button class="icon-btn" id="btnRestart" aria-label="Start oppgaven på nytt" title="Start på nytt">↺</button>
+      </div>
+    </div>
+
+    <p class="task-text" id="taskText"></p>
+    <div class="history" id="history"></div>
+
+    <div class="board-wrap" id="boardWrap">
+      <svg id="board" role="img" aria-labelledby="boardDesc"></svg>
+    </div>
+    <p class="coordline" id="coordLine"></p>
+
+    <div id="describeWrap" hidden>
+      <div class="ba-row">
+        <div class="ba-item"><span class="ba-cap">FØR</span><svg id="baBefore" role="img" aria-label="Figuren før"></svg></div>
+        <div class="ba-item"><span class="ba-cap">ETTER</span><svg id="baAfter" role="img" aria-label="Figuren etter"></svg></div>
+      </div>
+      <div class="opt-list" id="optList"></div>
+      <p class="win-note" id="describeFeedback" aria-live="polite"></p>
+    </div>
+
+    <p class="sr-only" id="boardDesc" aria-live="polite"></p>
+    <p class="sr-only" id="liveStatus" aria-live="assertive"></p>
+  </div>
+
+  <div class="toolbar" id="toolbar">
+    <div class="subrow" id="subrow"></div>
+    <div class="toolrow">
+      <button class="tool-btn" id="toolMove"   data-tool="move"   aria-pressed="false">FLYTT</button>
+      <button class="tool-btn" id="toolRotate" data-tool="rotate" aria-pressed="false">ROTER</button>
+      <button class="tool-btn" id="toolMirror" data-tool="mirror" aria-pressed="false">SPEIL</button>
+      <button class="tool-btn" id="btnUndo" aria-label="Angre siste handling">↶ ANGRE</button>
+    </div>
+  </div>
+
+  <div class="win-sheet" id="winSheet" hidden>
+    <div class="win-title" id="winTitle">TREFF!</div>
+    <div class="win-seq" id="winSeq"></div>
+    <p class="win-note" id="winNote">Form og størrelse er uendret.</p>
+    <div class="win-lesson" id="winLesson" hidden></div>
+    <p class="win-star" id="winStar" hidden></p>
+    <div class="win-btns">
+      <button class="btn-secondary" id="btnShorter" hidden>Prøv kortere</button>
+      <button class="btn-primary" id="btnNext" style="max-width:none">Neste</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ RESULTAT ════════ -->
+<div class="screen" id="screen-result">
+  <div class="center-wrap">
+    <div class="screen-hero"><h1>Ferdig!</h1></div>
+    <div class="card result-card">
+      <div>
+        <div class="result-big" id="resFigures">12 / 12</div>
+        <div class="result-sub">figurer løst</div>
+      </div>
+      <div>
+        <div class="result-stars" id="resStars">⭐⭐⭐</div>
+        <div class="result-sub" id="resStarsSub">av 4 effektivitetsstjerner</div>
+      </div>
+      <p class="result-sub" id="resNote"></p>
+    </div>
+    <button class="btn-primary" id="btnAgain">Spill igjen</button>
+    <a class="back-btn" href="../../index.html#grid" style="box-shadow:0 4px 0 var(--ink)">← Tilbake til LRNify</a>
+  </div>
+</div>
+
+<footer>LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   FORMSKIFT — kongruensavbildninger på rutenett
+   Figuren er ren matematikk: et sett gridceller pluss to gitterpunkter
+   (pivot for rotasjon, ankerpunkt for koordinatvisning). Alt som tegnes
+   er generert fra disse dataene, og all validering skjer på griddata.
+   ══════════════════════════════════════════════════════════════════════ */
+'use strict';
+
+/* ─────────── Oppgavedata (håndlaget, maskinverifisert – se selftest) ─────────── */
+const PUZZLES = [
+  {id:'f1a', slot:1, kap:1, board:8, shape:'L', cells:[[1,1],[1,2],[1,3],[1,4],[2,1]], pivot:[2,3], target:[[5,1],[5,2],[5,3],[5,4],[6,1]], tools:['move'], min:1, text:'Flytt figuren bort til målet.', focus:'forskyvning'},
+  {id:'f1b', slot:1, kap:1, board:8, shape:'trapp', cells:[[5,1],[5,2],[6,2],[6,3],[6,4]], pivot:[6,3], target:[[1,1],[1,2],[2,2],[2,3],[2,4]], tools:['move'], min:1, text:'Flytt figuren bort til målet.', focus:'forskyvning'},
+  {id:'f2a', slot:2, kap:1, board:8, shape:'romskip', cells:[[0,0],[1,0],[1,1],[1,2],[1,3],[2,2]], pivot:[1,2], target:[[4,3],[5,3],[5,4],[5,5],[5,6],[6,5]], tools:['move'], min:2, text:'Målet ligger både bortover og oppover.', focus:'forskyvning'},
+  {id:'f2b', slot:2, kap:1, board:8, shape:'blob', cells:[[0,4],[0,5],[1,4],[1,5],[2,5],[2,6]], pivot:[1,5], target:[[4,1],[4,2],[5,1],[5,2],[6,2],[6,3]], tools:['move'], min:2, text:'Målet ligger både bortover og nedover.', focus:'forskyvning'},
+  {id:'r1a', slot:3, kap:2, board:8, shape:'L', cells:[[2,2],[2,3],[2,4],[2,5],[3,2]], pivot:[3,4], target:[[1,3],[1,4],[2,4],[3,4],[4,4]], tools:['move','rotate'], min:1, text:'Figuren er på rett sted, men peker feil vei.', focus:'rotasjon'},
+  {id:'r1b', slot:3, kap:2, board:8, shape:'F', cells:[[2,3],[3,2],[3,3],[3,4],[4,4]], pivot:[3,3], target:[[1,3],[1,4],[2,2],[2,3],[3,3]], tools:['move','rotate'], min:1, text:'Figuren er på rett sted, men peker feil vei.', focus:'rotasjon'},
+  {id:'r2a', slot:4, kap:2, board:8, shape:'Y', cells:[[1,1],[1,2],[1,3],[1,4],[2,2]], pivot:[2,3], target:[[2,5],[3,4],[3,5],[4,5],[5,5]], tools:['move','rotate'], min:3, text:'Snu figuren og flytt den på plass.', focus:'rotasjon'},
+  {id:'r2b', slot:4, kap:2, board:8, shape:'trapp', cells:[[1,1],[1,2],[2,2],[2,3],[2,4]], pivot:[2,3], target:[[4,1],[4,2],[4,3],[5,3],[5,4]], tools:['move','rotate'], min:3, text:'Snu figuren og flytt den på plass.', focus:'rotasjon'},
+  {id:'s1a', slot:5, kap:3, board:8, shape:'L', cells:[[1,2],[1,3],[1,4],[1,5],[2,2]], pivot:[2,4], target:[[5,2],[6,2],[6,3],[6,4],[6,5]], tools:['move','mirror'], mirrors:[{axis:'v',m:4}], min:1, text:'Speil figuren over den stiplede linja.', focus:'speiling'},
+  {id:'s1b', slot:5, kap:3, board:8, shape:'pil2', cells:[[1,2],[2,2],[3,1],[3,2],[3,3],[4,3]], pivot:[3,2], target:[[1,5],[2,5],[3,4],[3,5],[3,6],[4,4]], tools:['move','mirror'], mirrors:[{axis:'h',m:4}], min:1, text:'Speil figuren over den stiplede linja.', focus:'speiling'},
+  {id:'s2a', slot:6, kap:3, board:8, shape:'romskip', cells:[[1,1],[2,1],[2,2],[2,3],[2,4],[3,3]], pivot:[2,3], target:[[3,6],[4,4],[4,5],[4,6],[4,7],[5,4]], tools:['move','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:3, text:'Speil figuren, og flytt den på plass.', focus:'speiling'},
+  {id:'s2b', slot:6, kap:3, board:8, shape:'Y', cells:[[1,1],[1,2],[1,3],[1,4],[2,2]], pivot:[2,3], target:[[3,4],[4,3],[4,4],[4,5],[4,6]], tools:['move','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:3, text:'Speil figuren, og flytt den på plass.', focus:'speiling'},
+  {id:'k1a', slot:7, kap:4, board:8, shape:'blob', cells:[[1,1],[1,2],[2,1],[2,2],[3,2],[3,3]], pivot:[2,2], target:[[3,0],[3,1],[4,1],[4,2],[5,1],[5,2]], tools:['move','rotate','mirror'], mirrors:[{axis:'v',m:4}], min:3, text:'Hva trengs her? Prøv deg fram.', focus:'valg'},
+  {id:'k1b', slot:7, kap:4, board:8, shape:'T', cells:[[1,4],[2,2],[2,3],[2,4],[3,2],[3,4]], pivot:[2,3], target:[[4,4],[4,6],[5,4],[5,5],[5,6],[6,6]], tools:['move','rotate','mirror'], mirrors:[{axis:'v',m:4}], min:2, text:'Hva trengs her? Prøv deg fram.', focus:'valg'},
+  {id:'k2a', slot:8, kap:5, board:8, shape:'F', cells:[[1,2],[2,1],[2,2],[2,3],[3,3]], pivot:[2,2], target:[[4,4],[5,4],[5,5],[6,3],[6,4]], tools:['move','rotate','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:3, text:'Her trengs mer enn én type handling.', focus:'kjede'},
+  {id:'k2b', slot:8, kap:5, board:8, shape:'pil2', cells:[[1,2],[2,2],[3,1],[3,2],[3,3],[4,3]], pivot:[3,2], target:[[4,4],[5,4],[6,3],[6,4],[6,5],[7,3]], tools:['move','rotate','mirror'], mirrors:[{axis:'h',m:4}], star:true, min:3, text:'Her trengs mer enn én type handling.', focus:'kjede'},
+  {id:'k3a', slot:9, kap:5, board:8, shape:'romskip', cells:[[1,1],[2,1],[2,2],[2,3],[2,4],[3,3]], pivot:[2,3], target:[[3,4],[4,3],[4,4],[5,4],[6,4],[6,5]], tools:['move','rotate','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:4, text:'Denne krever alle tre verktøyene.', focus:'kjede'},
+  {id:'k3b', slot:9, kap:5, board:8, shape:'L', cells:[[1,1],[1,2],[1,3],[1,4],[2,1]], pivot:[2,3], target:[[2,5],[2,6],[3,5],[4,5],[5,5]], tools:['move','rotate','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:4, text:'Denne krever alle tre verktøyene.', focus:'kjede'},
+  {id:'c1a', slot:10, kap:7, board:8, coord:true, shape:'L', cells:[[1,1],[1,2],[1,3],[1,4],[2,1]], pivot:[2,3], target:[[5,3],[5,4],[5,5],[5,6],[6,3]], tools:['move'], min:2, text:'Forskyv figuren 4 mot høyre og 2 opp.', focus:'koordinater'},
+  {id:'c1b', slot:10, kap:7, board:8, coord:true, shape:'trapp', cells:[[1,4],[1,5],[2,5],[2,6],[2,7]], pivot:[2,6], target:[[5,1],[5,2],[6,2],[6,3],[6,4]], tools:['move'], min:2, text:'Forskyv figuren 4 mot høyre og 3 ned.', focus:'koordinater'},
+  {id:'c2a', slot:11, kap:7, board:8, coord:true, shape:'Y', cells:[[1,1],[1,2],[1,3],[1,4],[2,2]], pivot:[2,3], target:[[3,4],[4,4],[5,4],[5,5],[6,4]], tools:['move','rotate'], star:true, min:3, text:'Roter figuren, og forskyv den på plass.', focus:'koordinater'},
+  {id:'c2b', slot:11, kap:7, board:8, coord:true, shape:'blob', cells:[[1,1],[1,2],[2,1],[2,2],[3,2],[3,3]], pivot:[2,2], target:[[3,5],[3,6],[4,4],[4,5],[5,4],[5,5]], tools:['move','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:3, text:'Speil figuren, og forskyv den på plass.', focus:'koordinater'},
+];
+
+const DESCRIBE = [
+  {id:'b1a', slot:12, kap:8, board:7, before:[[1,1],[2,1],[2,2],[2,3],[2,4],[3,3]], after:[[4,1],[5,1],[5,2],[5,3],[5,4],[6,3]],
+   options:['forskjøvet 3 mot høyre','rotert 90°','speilet','gjort større'], correct:0,
+   explain:'Alle punktene er flyttet like langt samme vei. Det er en forskyvning — form og størrelse er uendret.'},
+  {id:'b1b', slot:12, kap:8, board:7, before:[[1,1],[1,2],[1,3],[1,4],[2,1]], after:[[1,1],[2,1],[2,2],[2,3],[2,4]],
+   options:['speilet','rotert 90°','forskjøvet 3 mot høyre','gjort større'], correct:0,
+   explain:'Figuren er speilet: den er vendt om, men alle sidelengder og vinkler er like store som før.'},
+  {id:'b1c', slot:12, kap:8, board:7, before:[[2,3],[3,2],[3,3],[3,4],[4,4]], after:[[1,3],[1,4],[2,2],[2,3],[3,3]],
+   options:['rotert 90°','speilet','forskjøvet 2 opp','gjort større'], correct:0,
+   explain:'Figuren er dreid en kvart omdreining rundt et punkt. Den dekker like mange ruter som før.'},
+];
+
+const LESSONS = {
+  1: {t:'Forskyvning', b:'Alle punktene i figuren flyttes like langt i samme retning.'},
+  2: {t:'Rotasjon',    b:'Rotasjon snur figuren rundt et punkt. Form og størrelse er fortsatt den samme.'},
+  3: {t:'Speiling',    b:'Speiling vender figuren om på andre siden av linja. Den er like stor som før — bare siden er byttet.'},
+  7: {t:'Koordinater', b:'Det er det samme brettet som før. Nå har rutene fått adresser: én rute mot høyre gir x + 1, én rute opp gir y + 1.'},
+};
+
+/* ─────────── Kjernematematikk ─────────── */
+const K = cells => cells.map(c => c[0]+','+c[1]).sort().join(' ');
+
+function fTranslate(f, dx, dy){
+  return { cells: f.cells.map(c => [c[0]+dx, c[1]+dy]),
+           pivot: [f.pivot[0]+dx, f.pivot[1]+dy],
+           anchor:[f.anchor[0]+dx, f.anchor[1]+dy] };
+}
+function pRotate(p, piv, dir){
+  const vx = p[0]-piv[0], vy = p[1]-piv[1];
+  return dir > 0 ? [piv[0]-vy, piv[1]+vx] : [piv[0]+vy, piv[1]-vx];
+}
+function fRotate(f, dir){
+  const piv = f.pivot;
+  const cells = f.cells.map(c => {
+    const vx = c[0]+0.5-piv[0], vy = c[1]+0.5-piv[1];
+    const nx = dir > 0 ? piv[0]-vy : piv[0]+vy;
+    const ny = dir > 0 ? piv[1]+vx : piv[1]-vx;
+    return [nx-0.5, ny-0.5];
+  });
+  return { cells, pivot:[piv[0],piv[1]], anchor:pRotate(f.anchor, piv, dir) };
+}
+function fMirror(f, axis, m){
+  if(axis === 'v'){
+    return { cells: f.cells.map(c => [2*m-c[0]-1, c[1]]),
+             pivot: [2*m-f.pivot[0], f.pivot[1]],
+             anchor:[2*m-f.anchor[0], f.anchor[1]] };
+  }
+  return { cells: f.cells.map(c => [c[0], 2*m-c[1]-1]),
+           pivot: [f.pivot[0], 2*m-f.pivot[1]],
+           anchor:[f.anchor[0], 2*m-f.anchor[1]] };
+}
+function fInside(f, W, H){
+  return f.cells.every(c => c[0] >= 0 && c[1] >= 0 && c[0] < W && c[1] < H);
+}
+function anchorOf(cells){
+  let best = cells[0];
+  for(const c of cells) if(c[1] < best[1] || (c[1] === best[1] && c[0] < best[0])) best = c;
+  return [best[0], best[1]];
+}
+
+/* ─────────── SVG-hjelpere ─────────── */
+const SVGNS = 'http://www.w3.org/2000/svg';
+// Celle (x,y) tegnes med øvre venstre hjørne i (x, H-y-1). Punkt (a,b) → (a, H-b).
+const py = (b, H) => H - b;
+
+function cellsPath(cells, H){
+  let d = '';
+  for(const c of cells) d += 'M' + c[0] + ' ' + (H-c[1]-1) + 'h1v1h-1z';
+  return d;
+}
+function outlinePath(cells, H){
+  const s = new Set(cells.map(c => c[0]+','+c[1]));
+  let d = '';
+  for(const c of cells){
+    const x = c[0], y = c[1], X = x, Y = H-y-1;
+    if(!s.has(x+','+(y+1))) d += 'M'+X+' '+Y+'h1';
+    if(!s.has(x+','+(y-1))) d += 'M'+X+' '+(Y+1)+'h1';
+    if(!s.has((x-1)+','+y)) d += 'M'+X+' '+Y+'v1';
+    if(!s.has((x+1)+','+y)) d += 'M'+(X+1)+' '+Y+'v1';
+  }
+  return d;
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+/* ─────────── Tilstand ─────────── */
+const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const el = id => document.getElementById(id);
+
+const G = {
+  session: [], idx: 0, solved: 0, stars: 0, starTotal: 0,
+  cur: null, animating: false, demoOn: false
+};
+
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+function buildSession(){
+  const s = [];
+  for(let slot = 1; slot <= 11; slot++){
+    const variants = PUZZLES.filter(p => p.slot === slot);
+    s.push(pick(variants));
+  }
+  s.push(pick(DESCRIBE));
+  G.session = s;
+  G.starTotal = s.filter(p => p.star).length;
+}
+
+/* ─────────── Oppgaveoppsett ─────────── */
+function loadTask(){
+  const p = G.session[G.idx];
+  el('hudProgress').textContent = 'Oppgave ' + (G.idx+1) + ' / ' + G.session.length;
+  el('hudStars').textContent = '⭐ ' + G.stars + '/' + G.starTotal;
+  el('winSheet').hidden = true;
+  el('board').classList.remove('solved');
+  el('taskText').textContent = p.text || 'Hva har skjedd med figuren?';
+
+  el('btnRestart').hidden = !!p.options;
+  if(p.options){ setupDescribe(p); return; }
+  setupTransform(p);
+}
+
+function setupTransform(p){
+  el('describeWrap').hidden = true;
+  el('boardWrap').hidden = false;
+  el('board').hidden = false;
+  el('toolbar').hidden = false;
+  el('history').hidden = false;
+
+  const start = { cells: p.cells.map(c => [c[0], c[1]]), pivot: [p.pivot[0], p.pivot[1]], anchor: anchorOf(p.cells) };
+  G.cur = {
+    p, W: p.board, H: p.board,
+    fig: start, start,
+    stack: [],            // {fig, act}
+    acts: [],             // {type:'move',dx,dy} | {type:'rot',dir} | {type:'mir',axis,m}
+    tool: null, counted: false, won: false, retry: false
+  };
+  chooseDefaultTool();
+  syncToolButtons();
+  renderBoard();
+  renderHistory();
+  updateCoordLine();
+  updateUndo();
+}
+
+function chooseDefaultTool(){
+  const t = G.cur.p.tools;
+  setTool(t.includes('move') ? 'move' : t[0]);
+}
+
+/* ─────────── Tegning av brettet ─────────── */
+function renderBoard(){
+  const c = G.cur, p = c.p, W = c.W, H = c.H, coord = !!p.coord;
+  const padL = coord ? 0.95 : 0.18, padT = 0.18, padR = coord ? 0.55 : 0.18, padB = coord ? 0.95 : 0.18;
+  const svg = el('board');
+  svg.setAttribute('viewBox', (-padL)+' '+(-padT)+' '+(W+padL+padR)+' '+(H+padT+padB));
+
+  let s = '<defs><pattern id="hatch" width="0.5" height="0.5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
+        + '<rect width="0.5" height="0.5" fill="#fff9f0"/>'
+        + '<line x1="0" y1="0" x2="0" y2="0.5" stroke="#241b12" stroke-width="0.14" opacity="0.3"/></pattern></defs>';
+
+  s += '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#fffdf8"/>';
+  let g = '';
+  for(let i = 1; i < W; i++) g += 'M'+i+' 0V'+H;
+  for(let j = 1; j < H; j++) g += 'M0 '+j+'H'+W;
+  s += '<path class="gridline" d="'+g+'"/>';
+
+  // målfigur: skravert flate + stiplet kontur (skilles fra figuren uten farge)
+  s += '<g class="target"><path class="targetfill" d="'+cellsPath(p.target, H)+'"/>'
+     + '<path class="targetline" d="'+outlinePath(p.target, H)+'"/></g>';
+
+  // speillinjer tegnes over målfiguren, så de aldri blir liggende under skraveringen
+  for(const m of (p.mirrors || [])){
+    if(m.axis === 'v') s += '<line class="mirrorline" x1="'+m.m+'" y1="0" x2="'+m.m+'" y2="'+H+'"/>';
+    else s += '<line class="mirrorline" x1="0" y1="'+py(m.m,H)+'" x2="'+W+'" y2="'+py(m.m,H)+'"/>';
+  }
+
+  // spillerfigur
+  s += '<g id="playerG">' + playerInner() + '</g>';
+
+  s += '<rect class="boardframe" x="0" y="0" width="'+W+'" height="'+H+'"/>';
+
+  // koordinatakser
+  if(coord){
+    s += '<g class="axes"><line class="axis" x1="0" y1="'+H+'" x2="'+(W+0.35)+'" y2="'+H+'"/>'
+       + '<line class="axis" x1="0" y1="'+H+'" x2="0" y2="'+(-0.35)+'"/>'
+       + '<text class="axisname" x="'+(W+0.5)+'" y="'+(H+0.18)+'">x</text>'
+       + '<text class="axisname" x="-0.5" y="-0.3">y</text>'
+       + '<text class="axislabel" x="-0.3" y="'+(H+0.55)+'" text-anchor="middle">0</text>';
+    for(let i = 1; i <= W; i++) s += '<text class="axislabel" x="'+i+'" y="'+(H+0.6)+'" text-anchor="middle">'+i+'</text>';
+    for(let j = 1; j <= H; j++) s += '<text class="axislabel" x="-0.32" y="'+(py(j,H)+0.16)+'" text-anchor="middle">'+j+'</text>';
+    s += '</g>';
+  }
+
+  // kantmarkering ved ulovlig handling
+  const t = 0.16;
+  s += '<rect class="edgeflash" id="flashUp"    x="0" y="0"          width="'+W+'" height="'+t+'"/>'
+     + '<rect class="edgeflash" id="flashDown"  x="0" y="'+(H-t)+'"  width="'+W+'" height="'+t+'"/>'
+     + '<rect class="edgeflash" id="flashLeft"  x="0" y="0"          width="'+t+'" height="'+H+'"/>'
+     + '<rect class="edgeflash" id="flashRight" x="'+(W-t)+'" y="0"  width="'+t+'" height="'+H+'"/>';
+
+  svg.innerHTML = s;
+  describeBoard();
+}
+
+function playerInner(){
+  const c = G.cur, H = c.H, f = c.fig, p = c.p;
+  let s = '<path class="playerfill" d="'+cellsPath(f.cells, H)+'"/>'
+        + '<path class="playerline" d="'+outlinePath(f.cells, H)+'"/>';
+  if(p.tools.includes('rotate')){
+    s += '<circle class="pivotdot" cx="'+f.pivot[0]+'" cy="'+py(f.pivot[1],H)+'" r="0.24"/>'
+       + '<circle class="pivotcore" cx="'+f.pivot[0]+'" cy="'+py(f.pivot[1],H)+'" r="0.09"/>';
+  }
+  if(p.coord){
+    s += '<circle class="anchordot" cx="'+f.anchor[0]+'" cy="'+py(f.anchor[1],H)+'" r="0.17"/>';
+  }
+  return s;
+}
+function redrawPlayer(){
+  const g = el('board').querySelector('#playerG');
+  if(g) g.innerHTML = playerInner();
+  describeBoard();
+}
+
+const COL = 'ABCDEFGHIJ';
+function cellNames(cells){
+  return cells.slice().sort((a,b) => a[1]-b[1] || a[0]-b[0])
+              .map(c => COL[c[0]] + (c[1]+1)).join(', ');
+}
+function coordNames(cells){
+  return cells.slice().sort((a,b) => a[1]-b[1] || a[0]-b[0])
+              .map(c => '('+c[0]+','+c[1]+')').join(' ');
+}
+function describeBoard(){
+  const c = G.cur; if(!c) return;
+  const t = c.p.coord
+    ? 'Figuren dekker rutene med nedre venstre hjørne i ' + coordNames(c.fig.cells) + '. Målet dekker rutene ' + coordNames(c.p.target) + '.'
+    : 'Figuren dekker rutene ' + cellNames(c.fig.cells) + '. Målfiguren dekker rutene ' + cellNames(c.p.target) + '.';
+  el('boardDesc').textContent = t;
+}
+
+/* ─────────── Animasjon ─────────── */
+function animateShape(kind, prm, done){
+  const g = el('board').querySelector('#playerG');
+  const H = G.cur.H;
+  const dur = reducedMotion() ? 0 : (kind === 'move' ? 160 : kind === 'rot' ? 260 : 300);
+  if(!g || dur === 0){ if(g) g.removeAttribute('transform'); done && done(); return; }
+  G.animating = true;
+  const t0 = performance.now();
+  function build(e){
+    if(kind === 'move'){
+      const k = 1-e;
+      return 'translate('+(-prm.dx*k)+' '+(prm.dy*k)+')';
+    }
+    if(kind === 'rot'){
+      const ang = 90*prm.dir*(1-e);
+      return 'rotate('+ang+' '+prm.px+' '+py(prm.pyy,H)+')';
+    }
+    const sc = -1 + 2*e;
+    if(prm.axis === 'v') return 'translate('+(prm.m*(1-sc))+' 0) scale('+sc+' 1)';
+    const yl = py(prm.m, H);
+    return 'translate(0 '+(yl*(1-sc))+') scale(1 '+sc+')';
+  }
+  function frame(now){
+    let t = Math.min(1, (now-t0)/dur);
+    const e = kind === 'move' ? t*(2-t) : 0.5-0.5*Math.cos(Math.PI*t);
+    g.setAttribute('transform', build(e));
+    if(t < 1) requestAnimationFrame(frame);
+    else { g.removeAttribute('transform'); G.animating = false; done && done(); }
+  }
+  requestAnimationFrame(frame);
+}
+
+function flashEdges(ids){
+  for(const id of ids){
+    const r = el(id); if(!r) continue;
+    r.classList.remove('on'); r.getBoundingClientRect(); r.classList.add('on');
+  }
+}
+
+/* ─────────── Handlinger ─────────── */
+function doAction(act){
+  const c = G.cur;
+  if(!c || c.won || G.animating) return;
+  let next, kind, prm;
+  if(act.type === 'move'){
+    next = fTranslate(c.fig, act.dx, act.dy);
+    kind = 'move'; prm = {dx:act.dx, dy:act.dy};
+  } else if(act.type === 'rot'){
+    next = fRotate(c.fig, act.dir);
+    kind = 'rot'; prm = {dir:act.dir, px:c.fig.pivot[0], pyy:c.fig.pivot[1]};
+  } else {
+    next = fMirror(c.fig, act.axis, act.m);
+    kind = 'mir'; prm = {axis:act.axis, m:act.m};
+  }
+  if(!fInside(next, c.W, c.H)){
+    if(act.type === 'move'){
+      flashEdges([act.dx > 0 ? 'flashRight' : act.dx < 0 ? 'flashLeft' : act.dy > 0 ? 'flashUp' : 'flashDown']);
+    } else {
+      flashEdges(['flashUp','flashDown','flashLeft','flashRight']);
+    }
+    say('Figuren kan ikke gå utenfor brettet.');
+    return;
+  }
+  const before = c.fig;
+  c.stack.push({fig: before, act});
+  c.acts.push(act);
+  c.fig = next;
+  redrawPlayer();
+  renderHistory();
+  updateUndo();
+  updateCoordLine();
+  say(actionSpeech(act));
+  animateShape(kind, prm, checkWin);
+}
+
+function undo(){
+  const c = G.cur;
+  if(!c || c.won || G.animating || !c.stack.length) return;
+  const last = c.stack.pop();
+  c.acts.pop();
+  c.fig = last.fig;
+  redrawPlayer();
+  renderHistory();
+  updateUndo();
+  updateCoordLine();
+  say('Angret. ' + describeShort());
+}
+
+function restartTask(){
+  const c = G.cur;
+  if(!c || G.animating) return;
+  c.fig = c.start; c.stack = []; c.acts = []; c.won = false;
+  el('board').classList.remove('solved');
+  el('winSheet').hidden = true;
+  redrawPlayer();
+  renderHistory();
+  updateUndo();
+  updateCoordLine();
+  setTool(c.tool || (c.p.tools.includes('move') ? 'move' : c.p.tools[0]));
+  say('Oppgaven er satt tilbake til start.');
+}
+
+function updateUndo(){
+  el('btnUndo').disabled = !G.cur || !G.cur.stack.length || G.cur.won;
+}
+function say(t){ el('liveStatus').textContent = t; }
+function describeShort(){
+  const c = G.cur;
+  return c.p.coord ? 'Figuren dekker ' + coordNames(c.fig.cells) + '.' : 'Figuren dekker ' + cellNames(c.fig.cells) + '.';
+}
+function actionSpeech(a){
+  if(a.type === 'move') return 'Flyttet én rute ' + (a.dx > 0 ? 'mot høyre' : a.dx < 0 ? 'mot venstre' : a.dy > 0 ? 'opp' : 'ned') + '. ' + describeShort();
+  if(a.type === 'rot')  return 'Rotert 90 grader ' + (a.dir > 0 ? 'mot klokka' : 'med klokka') + '. ' + describeShort();
+  return 'Speilet over ' + (a.axis === 'v' ? 'den loddrette' : 'den vannrette') + ' linja. ' + describeShort();
+}
+
+/* ─────────── Gruppering av handlinger ─────────── */
+// Sammenhengende trykk i samme retning teller som én forskyvning,
+// slik at «flytt 4 mot høyre» er én handling — som i minimumsløsningen.
+function groupActs(acts){
+  const out = [];
+  for(const a of acts){
+    const last = out[out.length-1];
+    if(a.type === 'move' && last && last.type === 'move' &&
+       Math.sign(last.dx) === Math.sign(a.dx) && Math.sign(last.dy) === Math.sign(a.dy)){
+      last.n++; last.dx += a.dx; last.dy += a.dy;
+    } else if(a.type === 'move'){
+      out.push({type:'move', dx:a.dx, dy:a.dy, n:1});
+    } else if(a.type === 'rot'){
+      out.push({type:'rot', dir:a.dir, n:1});
+    } else {
+      out.push({type:'mir', axis:a.axis, m:a.m, n:1});
+    }
+  }
+  return out;
+}
+function actionCount(acts){
+  // Samme mål som minimumsløsningen: én forskyvning, én rotasjon (90°), én speiling = én handling.
+  return groupActs(acts).reduce((s,g) => s + (g.type === 'rot' ? g.n : 1), 0);
+}
+function arrowOf(g){
+  if(g.dx > 0) return '→'; if(g.dx < 0) return '←'; if(g.dy > 0) return '↑'; return '↓';
+}
+function renderHistory(){
+  const c = G.cur;
+  const groups = groupActs(c.acts);
+  el('history').innerHTML = groups.map(g => {
+    if(g.type === 'move') return '<span class="chip">'+arrowOf(g)+Math.abs(g.dx || g.dy)+'</span>';
+    if(g.type === 'rot')  return '<span class="chip rot">'+(g.dir > 0 ? '↶' : '↷')+'90°</span>';
+    return '<span class="chip mir">⇄ speil</span>';
+  }).join('');
+}
+function phraseOf(g){
+  if(g.type === 'move'){
+    const n = Math.abs(g.dx || g.dy);
+    const dir = g.dx > 0 ? 'mot høyre' : g.dx < 0 ? 'mot venstre' : g.dy > 0 ? 'opp' : 'ned';
+    return 'flytt ' + n + ' ' + dir;
+  }
+  if(g.type === 'rot'){
+    const turns = ((g.n % 4) + 4) % 4;
+    if(turns === 2) return 'roter 180°';
+    const deg = turns === 1 ? '90°' : turns === 3 ? '270°' : '360°';
+    return 'roter ' + deg + ' ' + (g.dir > 0 ? 'mot klokka' : 'med klokka');
+  }
+  return 'speil over ' + (g.axis === 'v' ? 'den loddrette' : 'den vannrette') + ' linja';
+}
+function sequenceText(acts){
+  // slå sammen rotasjoner i samme retning til én setning (180°/270°)
+  const merged = [];
+  for(const g of groupActs(acts)){
+    const last = merged[merged.length-1];
+    if(g.type === 'rot' && last && last.type === 'rot' && last.dir === g.dir) last.n += g.n;
+    else merged.push(Object.assign({}, g));
+  }
+  const parts = merged.map(phraseOf);
+  if(!parts.length) return 'Figuren lå allerede i målet.';
+  parts[0] = parts[0].charAt(0).toUpperCase() + parts[0].slice(1);
+  return parts.join(' → ');
+}
+
+/* ─────────── Koordinatlinje ─────────── */
+function pt(p){ return '(' + p[0] + ',' + p[1] + ')'; }
+function updateCoordLine(){
+  const c = G.cur;
+  if(!c.p.coord){ el('coordLine').textContent = ''; return; }
+  const from = c.start.anchor, to = c.fig.anchor;
+  el('coordLine').textContent = (from[0] === to[0] && from[1] === to[1])
+    ? 'Merket hjørne: ' + pt(to)
+    : pt(from) + ' → ' + pt(to);
+}
+
+/* ─────────── Verktøy ─────────── */
+function setTool(t){
+  const c = G.cur; if(!c) return;
+  if(!c.p.tools.includes(t)) return;
+  c.tool = t;
+  for(const id of ['toolMove','toolRotate','toolMirror']){
+    const b = el(id);
+    b.setAttribute('aria-pressed', String(b.dataset.tool === t));
+  }
+  renderSubrow();
+}
+function renderSubrow(){
+  const c = G.cur, t = c.tool;
+  const sub = el('subrow');
+  if(c.won){ sub.innerHTML = '<span class="sub-hint">Oppgaven er løst.</span>'; return; }
+  if(t === 'move'){
+    sub.innerHTML =
+      '<button class="sub-btn" data-mv="-1,0" aria-label="Flytt én rute mot venstre">←</button>' +
+      '<button class="sub-btn" data-mv="0,-1" aria-label="Flytt én rute ned">↓</button>' +
+      '<button class="sub-btn" data-mv="0,1"  aria-label="Flytt én rute opp">↑</button>' +
+      '<button class="sub-btn" data-mv="1,0"  aria-label="Flytt én rute mot høyre">→</button>';
+  } else if(t === 'rotate'){
+    sub.innerHTML =
+      '<button class="sub-btn mirror-btn" data-rot="1"  aria-label="Roter 90 grader mot klokka">↶ 90°</button>' +
+      '<button class="sub-btn mirror-btn" data-rot="-1" aria-label="Roter 90 grader med klokka">↷ 90°</button>';
+  } else if(t === 'mirror'){
+    sub.innerHTML = (c.p.mirrors || []).map((m,i) =>
+      '<button class="sub-btn mirror-btn" data-mir="'+i+'">⇄ Speil over ' + (m.axis === 'v' ? 'loddrett' : 'vannrett') + ' linje</button>').join('');
+  } else {
+    sub.innerHTML = '<span class="sub-hint">Velg et verktøy.</span>';
+  }
+}
+function syncToolButtons(){
+  const c = G.cur;
+  const tools = c && c.p.tools ? c.p.tools : [];
+  el('toolMove').disabled   = !tools.includes('move')   || c.won;
+  el('toolRotate').disabled = !tools.includes('rotate') || c.won;
+  el('toolMirror').disabled = !tools.includes('mirror') || c.won;
+}
+
+/* ─────────── Treff ─────────── */
+function checkWin(){
+  const c = G.cur;
+  if(c.won) return;
+  if(K(c.fig.cells) !== K(c.p.target)) return;
+  c.won = true;
+  el('board').classList.add('solved');
+  syncToolButtons(); renderSubrow(); updateUndo();
+  const used = actionCount(c.acts);
+  if(!c.counted){ G.solved++; c.counted = true; }
+  let gotStar = false;
+  if(c.p.star && used <= c.p.min && !c.starGiven){ G.stars++; c.starGiven = true; gotStar = true; }
+  el('hudStars').textContent = '⭐ ' + G.stars + '/' + G.starTotal;
+
+  el('winTitle').textContent = 'TREFF!';
+  el('winSeq').textContent = sequenceText(c.acts);
+  el('winNote').textContent = (c.p.coord ? 'Det merkede hjørnet gikk fra ' + pt(c.start.anchor) + ' til ' + pt(c.fig.anchor) + '. ' : '')
+    + 'Form og størrelse er uendret. Figuren dekker fortsatt ' + c.fig.cells.length + ' ruter.';
+
+  const lesson = LESSONS[c.p.kap];
+  const showLesson = lesson && !G.seenLesson[c.p.kap];
+  if(showLesson){
+    G.seenLesson[c.p.kap] = true;
+    el('winLesson').innerHTML = '<b>' + esc(lesson.t) + '</b>' + esc(lesson.b);
+  }
+  el('winLesson').hidden = !showLesson;
+
+  const starEl = el('winStar');
+  if(c.p.star){
+    if(gotStar){ starEl.textContent = '⭐ Effektivitetsstjerne! Du brukte ' + used + ' ' + (used === 1 ? 'handling' : 'handlinger') + '.'; starEl.hidden = false; }
+    else if(c.starGiven){ starEl.textContent = '⭐ Stjerna er alt sikret.'; starEl.hidden = false; }
+    else { starEl.textContent = 'Du brukte ' + used + ' handlinger. Denne kan løses med ' + c.p.min + '. Vil du prøve?'; starEl.hidden = false; }
+  } else { starEl.hidden = true; }
+
+  el('btnShorter').hidden = !(c.p.star && !c.starGiven);
+  say('Treff! ' + sequenceText(c.acts) + '. Form og størrelse er uendret.');
+  setTimeout(() => { el('winSheet').hidden = false; el('btnNext').focus(); }, reducedMotion() ? 60 : 340);
+}
+
+function nextTask(){
+  G.idx++;
+  if(G.idx >= G.session.length){ showResult(); return; }
+  loadTask();
+}
+
+/* ─────────── Beskriv transformasjonen ─────────── */
+function setupDescribe(p){
+  G.cur = {p, W:p.board, H:p.board, won:false, counted:false, acts:[], stack:[], tools:[]};
+  el('boardWrap').hidden = true;
+  el('toolbar').hidden = true;
+  el('history').hidden = true;
+  el('coordLine').textContent = '';
+  el('describeWrap').hidden = false;
+  el('describeFeedback').textContent = '';
+
+  miniBoard(el('baBefore'), p.before, p.board);
+  miniBoard(el('baAfter'),  p.after,  p.board);
+
+  const opts = p.options.map((t,i) => ({t, ok: i === p.correct}));
+  for(let i = opts.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [opts[i],opts[j]] = [opts[j],opts[i]]; }
+  el('optList').innerHTML = opts.map((o,i) =>
+    '<button class="opt-btn" data-ok="' + (o.ok ? '1' : '0') + '">' + esc(o.t.charAt(0).toUpperCase()+o.t.slice(1)) + '</button>').join('');
+  el('boardDesc').textContent = 'Før: figuren dekker rutene ' + cellNames(p.before) + '. Etter: figuren dekker rutene ' + cellNames(p.after) + '.';
+}
+function miniBoard(svg, cells, N){
+  svg.setAttribute('viewBox', '0 0 ' + N + ' ' + N);
+  let g = '';
+  for(let i = 1; i < N; i++) g += 'M'+i+' 0V'+N+'M0 '+i+'H'+N;
+  svg.innerHTML = '<path class="gridline" d="'+g+'"/>'
+    + '<path class="playerfill" d="'+cellsPath(cells, N)+'"/>'
+    + '<path class="playerline" d="'+outlinePath(cells, N)+'"/>';
+}
+function answerDescribe(btn){
+  const c = G.cur;
+  if(c.won) return;
+  if(btn.dataset.ok === '1'){
+    c.won = true;
+    btn.classList.add('right');
+    for(const b of el('optList').querySelectorAll('.opt-btn')) b.disabled = true;
+    if(!c.counted){ G.solved++; c.counted = true; }
+    el('describeFeedback').textContent = c.p.explain;
+    el('winTitle').textContent = 'RIKTIG!';
+    el('winSeq').textContent = c.p.explain;
+    el('winNote').textContent = 'Kongruensavbildninger endrer aldri størrelsen — bare plassering og retning.';
+    el('winLesson').hidden = true;
+    el('winStar').hidden = true;
+    el('btnShorter').hidden = true;
+    say('Riktig. ' + c.p.explain);
+    setTimeout(() => { el('winSheet').hidden = false; el('btnNext').focus(); }, 260);
+  } else {
+    btn.classList.add('wrong'); btn.disabled = true;
+    el('describeFeedback').textContent = 'Ikke helt. Se på hvordan figuren vender — og på hvor mange ruter den dekker.';
+    say('Ikke riktig. Prøv et annet svar.');
+  }
+}
+
+/* ─────────── Resultat ─────────── */
+function showResult(){
+  document.body.classList.remove('playing');
+  showScreen('screen-result');
+  el('resFigures').textContent = G.solved + ' / ' + G.session.length;
+  el('resStars').textContent = G.stars ? '⭐'.repeat(G.stars) : '—';
+  el('resStarsSub').textContent = 'av ' + G.starTotal + ' effektivitetsstjerner';
+  el('resNote').textContent = G.stars === G.starTotal
+    ? 'Du fant de korteste veiene også. Figuren endret plassering og retning — aldri form eller størrelse.'
+    : 'Alle figurene du løste er kongruente med utgangspunktet: samme form, samme størrelse, ny plassering.';
+}
+function showScreen(id){
+  for(const s of document.querySelectorAll('.screen')) s.classList.toggle('active', s.id === id);
+  window.scrollTo(0,0);
+}
+
+/* ─────────── Hendelser ─────────── */
+el('subrow').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  if(b.dataset.mv){ const [dx,dy] = b.dataset.mv.split(',').map(Number); doAction({type:'move', dx, dy}); }
+  else if(b.dataset.rot){ doAction({type:'rot', dir: Number(b.dataset.rot)}); }
+  else if(b.dataset.mir){ const m = G.cur.p.mirrors[Number(b.dataset.mir)]; doAction({type:'mir', axis:m.axis, m:m.m}); }
+});
+for(const id of ['toolMove','toolRotate','toolMirror']){
+  el(id).addEventListener('click', () => setTool(el(id).dataset.tool));
+}
+el('btnUndo').addEventListener('click', undo);
+el('btnRestart').addEventListener('click', () => { if(G.cur && !G.cur.p.options) restartTask(); });
+el('btnNext').addEventListener('click', nextTask);
+el('btnShorter').addEventListener('click', () => { el('winSheet').hidden = true; restartTask(); });
+el('optList').addEventListener('click', e => { const b = e.target.closest('.opt-btn'); if(b) answerDescribe(b); });
+el('btnStart').addEventListener('click', startGame);
+el('btnAgain').addEventListener('click', startGame);
+
+document.addEventListener('keydown', e => {
+  if(!document.getElementById('screen-game').classList.contains('active')) return;
+  const c = G.cur; if(!c) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if(tag === 'input' || tag === 'textarea') return;
+
+  if((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)){ e.preventDefault(); undo(); return; }
+  if(c.p.options) return;               // «beskriv»-oppgaven bruker knapper
+  if(c.won) return;
+  const moves = {ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,1], ArrowDown:[0,-1]};
+  if(moves[e.key]){
+    e.preventDefault();
+    if(!c.p.tools.includes('move')) { say('Flytting er ikke tilgjengelig i denne oppgaven.'); return; }
+    if(c.tool !== 'move') setTool('move');
+    doAction({type:'move', dx:moves[e.key][0], dy:moves[e.key][1]});
+    return;
+  }
+  if(e.key === 'r' || e.key === 'R'){
+    if(!c.p.tools.includes('rotate')){ say('Rotasjon er ikke tilgjengelig i denne oppgaven.'); return; }
+    if(c.tool !== 'rotate') setTool('rotate');
+    doAction({type:'rot', dir: e.shiftKey ? 1 : -1});
+    return;
+  }
+  if(e.key === 's' || e.key === 'S'){
+    if(!c.p.tools.includes('mirror')){ say('Speiling er ikke tilgjengelig i denne oppgaven.'); return; }
+    if(c.tool !== 'mirror') setTool('mirror');
+    const m = c.p.mirrors[0]; doAction({type:'mir', axis:m.axis, m:m.m});
+    return;
+  }
+  if(e.key === 'u' || e.key === 'U'){ undo(); }
+});
+
+/* ─────────── Startskjerm: demo ─────────── */
+const DEMO = {
+  W: 12, H: 6,
+  base: {cells:[[1,1],[1,2],[1,3],[2,1]], pivot:[2,2], anchor:[1,1]},
+  steps: [
+    {label:'FLYTT', kind:'move', apply: f => fTranslate(f, 4, 1), prm:{dx:4, dy:1}},
+    {label:'ROTER', kind:'rot',  apply: f => fRotate(f, -1)},
+    {label:'SPEIL', kind:'mir',  apply: f => fMirror(f, 'v', 10), prm:{axis:'v', m:10}}
+  ],
+  i: 0, fig: null, ghosts: []
+};
+function demoRender(){
+  const H = DEMO.H;
+  let g = '';
+  for(let i = 1; i < DEMO.W; i++) g += 'M'+i+' 0V'+H;
+  for(let j = 1; j < H; j++) g += 'M0 '+j+'H'+DEMO.W;
+  el('demoGrid').innerHTML = '<rect x="0" y="0" width="'+DEMO.W+'" height="'+H+'" fill="#fffdf8"/>'
+    + '<path class="gridline" d="'+g+'"/>'
+    + '<rect class="boardframe" x="0" y="0" width="'+DEMO.W+'" height="'+H+'"/>';
+  el('demoTarget').innerHTML = DEMO.ghosts.map(cs =>
+    '<path d="'+cellsPath(cs, H)+'" fill="url(#demoHatch)"/><path class="targetline" d="'+outlinePath(cs, H)+'"/>').join('');
+  el('demoShape').innerHTML = '<path class="playerfill" d="'+cellsPath(DEMO.fig.cells, H)+'"/>'
+    + '<path class="playerline" d="'+outlinePath(DEMO.fig.cells, H)+'"/>';
+}
+function demoAnimate(kind, prm, done){
+  const g = el('demoShape'), H = DEMO.H;
+  const dur = reducedMotion() ? 0 : (kind === 'move' ? 420 : kind === 'rot' ? 420 : 440);
+  if(dur === 0){ g.removeAttribute('transform'); done(); return; }
+  const t0 = performance.now();
+  function build(e){
+    if(kind === 'move'){ const k = 1-e; return 'translate('+(-prm.dx*k)+' '+(prm.dy*k)+')'; }
+    if(kind === 'rot'){ return 'rotate('+(90*prm.dir*(1-e))+' '+prm.px+' '+py(prm.pyy,H)+')'; }
+    const sc = -1 + 2*e;
+    return 'translate('+(prm.m*(1-sc))+' 0) scale('+sc+' 1)';
+  }
+  function frame(now){
+    const t = Math.min(1, (now-t0)/dur);
+    const e = kind === 'move' ? t*(2-t) : 0.5-0.5*Math.cos(Math.PI*t);
+    g.setAttribute('transform', build(e));
+    if(t < 1) requestAnimationFrame(frame); else { g.removeAttribute('transform'); done(); }
+  }
+  requestAnimationFrame(frame);
+}
+function demoTick(){
+  if(!DEMO.on) return;
+  if(DEMO.i >= DEMO.steps.length){
+    setTimeout(() => {
+      if(!DEMO.on) return;
+      DEMO.i = 0; DEMO.ghosts = [];
+      DEMO.fig = {cells: DEMO.base.cells.map(c => c.slice()), pivot: DEMO.base.pivot.slice(), anchor: DEMO.base.anchor.slice()};
+      demoRender(); el('demoLabel').textContent = DEMO.steps[0].label;
+      setTimeout(demoTick, 700);
+    }, 1500);
+    return;
+  }
+  const st = DEMO.steps[DEMO.i];
+  el('demoLabel').textContent = st.label;
+  const before = DEMO.fig;
+  DEMO.ghosts = DEMO.ghosts.concat([before.cells.map(c => c.slice())]);
+  DEMO.fig = st.apply(before);
+  const prm = st.kind === 'rot' ? {dir:-1, px:before.pivot[0], pyy:before.pivot[1]} : st.prm;
+  demoRender();
+  demoAnimate(st.kind, prm, () => { DEMO.i++; setTimeout(demoTick, 900); });
+}
+function startDemo(){
+  DEMO.on = true; DEMO.i = 0; DEMO.ghosts = [];
+  DEMO.fig = {cells: DEMO.base.cells.map(c => c.slice()), pivot: DEMO.base.pivot.slice(), anchor: DEMO.base.anchor.slice()};
+  demoRender();
+  setTimeout(demoTick, 600);
+}
+function stopDemo(){ DEMO.on = false; }
+
+/* ─────────── Oppstart ─────────── */
+function startGame(){
+  buildSession();
+  G.idx = 0; G.solved = 0; G.stars = 0; G.seenLesson = {};
+  stopDemo();
+  document.body.classList.add('playing');
+  showScreen('screen-game');
+  loadTask();
+}
+
+G.seenLesson = {};
+startDemo();
+
+/* ─────────── Selvtest (?selftest=1) ─────────── */
+/* Kontrollerer invariantene i QA-lista og at hele oppgavebanken er
+   løsbar, at oppgitt minimumsløsning stemmer, og at oppgaven faktisk
+   krever den transformasjonen den skal lære bort. */
+function bfsMin(startCells, pivot, target, W, H, tools, mirrors){
+  const goal = K(target);
+  const start = {cells:startCells.map(c => c.slice()), pivot:pivot.slice(), anchor:anchorOf(startCells)};
+  let frontier = [start], d = 0;
+  const seen = new Set([K(start.cells)]);
+  while(frontier.length && d <= 10){
+    for(const f of frontier) if(K(f.cells) === goal) return d;
+    const next = [];
+    for(const f of frontier){
+      const cand = [];
+      if(tools.includes('move')){
+        for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+          for(let k = 1; k <= Math.max(W,H); k++){
+            const g = fTranslate(f, dx*k, dy*k);
+            if(!fInside(g, W, H)) break;
+            cand.push(g);
+          }
+        }
+      }
+      if(tools.includes('rotate')) for(const dir of [1,-1]){ const g = fRotate(f, dir); if(fInside(g,W,H)) cand.push(g); }
+      if(tools.includes('mirror')) for(const m of (mirrors||[])){ const g = fMirror(f, m.axis, m.m); if(fInside(g,W,H)) cand.push(g); }
+      for(const g of cand){ const k2 = K(g.cells); if(!seen.has(k2)){ seen.add(k2); next.push(g); } }
+    }
+    frontier = next; d++;
+  }
+  return null;
+}
+function selftest(){
+  const fails = [], ok = [];
+  const chk = (cond, msg) => { (cond ? ok : fails).push(msg); };
+  const mkFig = p => ({cells:p.cells.map(c => c.slice()), pivot:p.pivot.slice(), anchor:anchorOf(p.cells)});
+
+  for(const p of PUZZLES){
+    const W = p.board, H = p.board, f0 = mkFig(p);
+    chk(fInside(f0, W, H), p.id+': startfiguren er innenfor brettet');
+    chk(isConnected(p.cells), p.id+': figuren henger sammen (ingen celler som bare møtes i et hjørne)');
+    chk(isConnected(p.target), p.id+': målfiguren henger sammen');
+    chk(orientationCount(p.cells) === 8, p.id+': figuren er asymmetrisk — rotasjon og speiling gir åtte ulike stillinger');
+    chk(f0.cells.length === p.target.length, p.id+': like mange celler i figur og mål');
+    chk(K(f0.cells) !== K(p.target), p.id+': målet er ikke likt starten');
+    // kongruens-invarianter
+    chk(K(fRotate(fRotate(fRotate(fRotate(f0,1),1),1),1).cells) === K(f0.cells), p.id+': fire 90°-rotasjoner gir utgangspunktet');
+    chk(K(fRotate(f0,1).cells) === K(fRotate(fRotate(fRotate(f0,-1),-1),-1).cells), p.id+': ↶90° = tre × ↷90°');
+    chk(K(fRotate(fRotate(f0,1),1).cells) === K(fRotate(fRotate(f0,-1),-1).cells), p.id+': to 90°-rotasjoner er 180° begge veier');
+    chk(fRotate(f0,1).cells.length === f0.cells.length, p.id+': rotasjon bevarer antall celler');
+    chk(K(fTranslate(fTranslate(f0,3,2),-3,-2).cells) === K(f0.cells), p.id+': forskyvning fram og tilbake gir utgangspunktet');
+    for(const m of (p.mirrors||[])){
+      const m1 = fMirror(f0, m.axis, m.m), m2 = fMirror(m1, m.axis, m.m);
+      chk(K(m2.cells) === K(f0.cells), p.id+': dobbel speiling i samme linje gir utgangspunktet');
+      chk(m1.cells.length === f0.cells.length, p.id+': speiling bevarer antall celler');
+      chk(distSet(m1.cells) === distSet(f0.cells), p.id+': speiling bevarer alle innbyrdes avstander');
+    }
+    chk(distSet(fRotate(f0,1).cells) === distSet(f0.cells), p.id+': rotasjon bevarer alle innbyrdes avstander');
+    // løsbarhet og minimum
+    const min = bfsMin(p.cells, p.pivot, p.target, W, H, p.tools, p.mirrors);
+    chk(min !== null, p.id+': oppgaven er løsbar med tilgjengelige verktøy');
+    chk(min === p.min, p.id+': oppgitt minimumsløsning ('+p.min+') stemmer med beregnet ('+min+')');
+    // nødvendighet: en oppgave som skal lære rotasjon/speiling må kreve den
+    if(p.tools.length > 1){
+      const onlyMove = bfsMin(p.cells, p.pivot, p.target, W, H, ['move'], p.mirrors);
+      chk(onlyMove === null, p.id+': målet kan ikke nås med bare forskyvning');
+    }
+    if(p.focus === 'rotasjon' || p.id.startsWith('k3')){
+      const noRot = bfsMin(p.cells, p.pivot, p.target, W, H, p.tools.filter(t => t !== 'rotate'), p.mirrors);
+      chk(noRot === null, p.id+': rotasjon er nødvendig');
+    }
+    if(p.focus === 'speiling' || p.id.startsWith('k3')){
+      const noMir = bfsMin(p.cells, p.pivot, p.target, W, H, p.tools.filter(t => t !== 'mirror'), p.mirrors);
+      chk(noMir === null, p.id+': speiling er nødvendig');
+    }
+    // riktig orientering på feil sted / feil orientering på riktig sted skal ikke godkjennes
+    const shifted = fTranslate(mkFig({cells:p.target, pivot:p.pivot}), 1, 0);
+    chk(K(shifted.cells) !== K(p.target), p.id+': riktig orientering på feil sted godkjennes ikke');
+    const tf = {cells:p.target.map(c => c.slice()), pivot:p.pivot.slice(), anchor:anchorOf(p.target)};
+    chk(K(fRotate(tf,1).cells) !== K(p.target), p.id+': feil orientering på riktig sted godkjennes ikke');
+  }
+  // banken dekker det økta trenger
+  for(let slot = 1; slot <= 11; slot++) chk(PUZZLES.filter(p => p.slot === slot).length >= 2, 'slot '+slot+': minst to varianter');
+  chk(DESCRIBE.length >= 2, 'beskriv: minst to varianter');
+  chk(PUZZLES.filter(p => p.star).length === 8, 'åtte stjerneoppgaver i banken (fire per økt)');
+  chk(PUZZLES.some(p => p.tools.length === 2 && p.min >= 3), 'minst én oppgave krever to transformasjonstyper');
+  chk(PUZZLES.some(p => p.tools.length === 3 && p.id.startsWith('k3')), 'minst én oppgave krever alle tre');
+  for(const d of DESCRIBE){
+    chk(d.before.length === d.after.length, d.id+': like mange celler før og etter');
+    chk(d.options.includes('gjort større'), d.id+': «gjort større» finnes som alternativ');
+  }
+  // gruppering av handlinger
+  chk(actionCount([{type:'move',dx:1,dy:0},{type:'move',dx:1,dy:0},{type:'move',dx:1,dy:0},{type:'move',dx:1,dy:0}]) === 1,
+      'fire trykk mot høyre teller som én forskyvning');
+  chk(actionCount([{type:'move',dx:1,dy:0},{type:'move',dx:0,dy:1},{type:'rot',dir:1}]) === 3,
+      'flytt høyre + flytt opp + rotasjon er tre handlinger');
+  chk(sequenceText([{type:'rot',dir:1},{type:'rot',dir:1}]) === 'Roter 180°', 'to rotasjoner samme vei beskrives som 180°');
+
+  console.log('%cFormskift selvtest: ' + ok.length + ' OK, ' + fails.length + ' feil', 'font-weight:bold');
+  if(fails.length) console.error(fails.join('\n')); else console.log('Alle kontroller passerte.');
+  return {ok: ok.length, fails};
+}
+function isConnected(cells){
+  const s = new Set(cells.map(c => c[0]+','+c[1]));
+  const seen = new Set([cells[0][0]+','+cells[0][1]]);
+  const q = [cells[0]];
+  while(q.length){
+    const c = q.pop();
+    for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
+      const k = (c[0]+dx)+','+(c[1]+dy);
+      if(s.has(k) && !seen.has(k)){ seen.add(k); q.push([c[0]+dx, c[1]+dy]); }
+    }
+  }
+  return seen.size === cells.length;
+}
+function normKey(cells){
+  const mx = Math.min(...cells.map(c => c[0])), my = Math.min(...cells.map(c => c[1]));
+  return K(cells.map(c => [c[0]-mx, c[1]-my]));
+}
+function orientationCount(cells){
+  const set = new Set();
+  let f = {cells: cells.map(c => c.slice()), pivot:[0,0], anchor:[0,0]};
+  for(let i = 0; i < 4; i++){ set.add(normKey(f.cells)); f = fRotate(f, 1); }
+  let g = fMirror({cells: cells.map(c => c.slice()), pivot:[0,0], anchor:[0,0]}, 'v', 0);
+  for(let i = 0; i < 4; i++){ set.add(normKey(g.cells)); g = fRotate(g, 1); }
+  return set.size;
+}
+function distSet(cells){
+  const d = [];
+  for(let i = 0; i < cells.length; i++) for(let j = i+1; j < cells.length; j++){
+    const dx = cells[i][0]-cells[j][0], dy = cells[i][1]-cells[j][1];
+    d.push(dx*dx + dy*dy);
+  }
+  return d.sort((a,b) => a-b).join(',');
+}
+window.formskiftSelftest = selftest;
+if(new URLSearchParams(location.search).has('selftest')) selftest();
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>
