@@ -402,6 +402,54 @@ check('ukjent felt på rommet', false, db(dp(), LARER).write(dPath + '/ekstrafel
 check('ukjent felt på en elev', false, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: 3, ts: now, navn: 'juks' }));
 check('skriver rett på /dagsformen', false, db({}, LARER).write('/dagsformen', { evil: true }));
 
+/* ── verdikompasset (aktiviteter/verdikompasset/): lærer lager rom, elev
+   rangerer 12 verdier og velger i 8 dilemmaer, og skriver sitt eget
+   resultat (poeng/handling per verdi-id) under sin egen uid — samme
+   eier/elev-mønster som dagsformen, bare med et fastere skjema per elev. */
+const VKODE = 'VVVV11';
+const vPath = '/verdikompasset/' + VKODE;
+const nulltVerdier = { aer:0, ret:0, ven:0, mot:0, oms:0, res:0, ans:0, fri:0, try:0, fel:0, tol:0, mes:0 };
+const nyttVRom = { opprettet: now, owner: LARER.uid };
+const vElev = { navn: 'Kari', status: 'ferdig', poeng: Object.assign({}, nulltVerdier, { aer: 6 }), handling: Object.assign({}, nulltVerdier, { aer: 3 }), samsvar: 67, tid: now };
+const vRomMedElev = Object.assign({}, nyttVRom, { elever: { [ELEV.uid]: vElev } });
+const vp = (rom) => ({ verdikompasset: { [VKODE]: rom || vRomMedElev } });
+const vTomtRom = { verdikompasset: { [VKODE]: nyttVRom } };
+
+console.log('--- verdikompasset: lærerens flyt');
+check('lærer oppretter rom', true, db({}, LARER).write(vPath, nyttVRom));
+check('lærer nullstiller alle svar', true, db(vp(), LARER).update(vPath, { elever: null }));
+check('lærer avslutter rommet', true, db(vp(), LARER).write(vPath, null));
+
+console.log('--- verdikompasset: elevens flyt');
+check('elev leser rommet', true, db(vTomtRom, ELEV).read(vPath));
+check('elev lagrer startstatus', true, db(vTomtRom, ELEV).write(vPath + '/elever/' + ELEV.uid, { navn: 'Kari', status: 'startet', poeng: nulltVerdier, handling: nulltVerdier, tid: now }));
+check('elev lagrer ferdig resultat', true, db(vp(), ELEV).write(vPath + '/elever/' + ELEV.uid, vElev));
+
+console.log('--- verdikompasset: hærverk');
+check('elev sletter rommet', false, db(vTomtRom, ELEV).write(vPath, null));
+check('elev nullstiller alle svar', false, db(vp(), ELEV).write(vPath + '/elever', null));
+check('elev skriver resultat for en annen', false, db(vTomtRom, ELEV).write(vPath + '/elever/' + ELEV2.uid, vElev));
+check('elev overtar eierskapet', false, db(vTomtRom, ELEV).write(vPath + '/owner', ELEV.uid));
+check('uinnlogget oppretter rom', false, db({}, null).write(vPath, nyttVRom));
+check('uinnlogget skriver resultat', false, db(vTomtRom, null).write(vPath + '/elever/anon', vElev));
+check('lister opp /verdikompasset', false, db(vp(), LARER).read('/verdikompasset'));
+
+console.log('--- verdikompasset: gjenbruk av romkode');
+const gammeltVRom = Object.assign({}, nyttVRom, { opprettet: now - 20 * 3600 * 1000 });
+check('annen lærer overtar gammel kode (>12t)', true, db(vp(gammeltVRom), ELEV2).write(vPath, Object.assign({}, nyttVRom, { owner: ELEV2.uid })));
+check('annen lærer kaprer ferskt rom', false, db(vp(), ELEV2).write(vPath, Object.assign({}, nyttVRom, { owner: ELEV2.uid })));
+
+console.log('--- verdikompasset: ugyldige data');
+check('ugyldig romkode', false, db({}, LARER).write('/verdikompasset/aa', nyttVRom));
+check('rom med annens uid som owner', false, db({}, ELEV).write(vPath, Object.assign({}, nyttVRom, { owner: LARER.uid })));
+check('ukjent status', false, db(vTomtRom, ELEV).write(vPath + '/elever/' + ELEV.uid, Object.assign({}, vElev, { status: 'juks' })));
+check('poeng utenfor gyldig område', false, db(vTomtRom, ELEV).write(vPath + '/elever/' + ELEV.uid, Object.assign({}, vElev, { poeng: Object.assign({}, nulltVerdier, { aer: 99 }) })));
+check('poeng mangler en verdi', false, db(vTomtRom, ELEV).write(vPath + '/elever/' + ELEV.uid, Object.assign({}, vElev, { poeng: { aer: 3 } })));
+check('mangler handling', false, db(vTomtRom, ELEV).write(vPath + '/elever/' + ELEV.uid, { navn: 'Kari', status: 'ferdig', poeng: nulltVerdier, tid: now }));
+check('ukjent felt på en elev', false, db(vTomtRom, ELEV).write(vPath + '/elever/' + ELEV.uid, Object.assign({}, vElev, { epost: 'juks@example.com' })));
+check('for langt navn', false, db(vTomtRom, ELEV).write(vPath + '/elever/' + ELEV.uid, Object.assign({}, vElev, { navn: 'x'.repeat(30) })));
+check('skriver rett på /verdikompasset', false, db({}, LARER).write('/verdikompasset', { evil: true }));
+
 /* ── lrnify-auth.js (auth/lrnify-auth.js): users/, resultater/, og de nye
    eierUid/delteUider/klasseId-feltene på rooms/. LARER2 er en annen innlogget
    lærer, brukt til å bekrefte at data er strengt privat per lærer. */

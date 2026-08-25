@@ -14,6 +14,7 @@ gang uten å la hvem som helst skrive hva som helst.
 | `aktiviteter/temaspinner/` | Realtime Database | `temaspinner/{ROMKODE}` | Lærer lager rom, deler ut temaer og styrer klokka; elev melder seg på og ber om bytte |
 | `aktiviteter/tankesky/` | Realtime Database | `tankesky/{ROMKODE}` | Lærer lager rom og styrer runde/fri flyt/tavle; elev sender inn ord som teller opp eller oppretter bobler |
 | `aktiviteter/dagsformen/` | Realtime Database | `dagsformen/{ROMKODE}` | Lærer lager rom og velger tema; elev velger (og bytter) én av 30 følelsesfigurer anonymt |
+| `aktiviteter/verdikompasset/` | Realtime Database | `verdikompasset/{ROMKODE}` | Lærer lager rom; elev rangerer verdier og svarer på dilemmaer, og skriver sitt eget resultat (poeng/handling per verdi, samsvar) under sin egen anonyme id |
 | `loype/drobak-akvarium/` | Firestore | `fjordvoktere` | Legger til ett lag på veggen (`{ lag, tid }`) |
 | `index.html` (forsidens CTA-skjema) | Firestore | `feedback` | Besøkende sender inn forslag/tilbakemelding/bestilling |
 | `bruk/lrnify-bruk.js` (alle sider) | Realtime Database | `bruk/{dato}/{side}/{hendelse}` | Teller opp én sidevisning — anonymt, se `bruk/README.md` |
@@ -30,8 +31,13 @@ hovedsak ikke kreve
 `auth != null`. Sikkerheten ligger i at romkoden må være kjent, og i at reglene
 låser *formen* på det som kan skrives.
 
-**Unntaket er Temaspinner, Tankesky og Dagsformen**, som er bygget etter at
-anonym pålogging kom på plass og derfor krever den overalt. I Dagsformen *er*
+**Unntaket er Temaspinner, Tankesky, Dagsformen og Verdikompasset**, som er
+bygget etter at anonym pålogging kom på plass og derfor krever den overalt
+der de bruker rom. I Verdikompasset er det den anonyme id-en som gjør at en
+elev kan skrive (og oppdatere) sitt eget resultat i `elever/` uten å kunne
+røre andre elevers rader — akkurat som i Dagsformen. Uten anonym pålogging
+virker ikke rom-modus (lærer/elev) i Verdikompasset, men «Gjør øvelsen
+alene» krever ikke noe rom og er upåvirket. I Dagsformen *er*
 elevens anonyme id nøkkelen under `elever/`, akkurat som i Tankesky — det er
 den som gjør at eleven kan skrive (og bytte) sin egen følelse uten å kunne
 røre andres. Uten anonym pålogging virker ikke rom-modus i Dagsformen — men
