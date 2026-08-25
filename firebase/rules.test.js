@@ -402,7 +402,7 @@ check('ukjent felt på rommet', false, db(dp(), LARER).write(dPath + '/ekstrafel
 check('ukjent felt på en elev', false, db(dTomtRom, ELEV).write(dPath + '/elever/' + ELEV.uid, { valgt: 3, ts: now, navn: 'juks' }));
 check('skriver rett på /dagsformen', false, db({}, LARER).write('/dagsformen', { evil: true }));
 
-/* ── verdikompasset (games/verdikompasset/): lærer lager rom, elev
+/* ── verdikompasset (aktiviteter/verdikompasset/): lærer lager rom, elev
    rangerer 12 verdier og velger i 8 dilemmaer, og skriver sitt eget
    resultat (poeng/handling per verdi-id) under sin egen uid — samme
    eier/elev-mønster som dagsformen, bare med et fastere skjema per elev. */

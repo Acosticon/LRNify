@@ -14,7 +14,7 @@ gang uten å la hvem som helst skrive hva som helst.
 | `aktiviteter/temaspinner/` | Realtime Database | `temaspinner/{ROMKODE}` | Lærer lager rom, deler ut temaer og styrer klokka; elev melder seg på og ber om bytte |
 | `aktiviteter/tankesky/` | Realtime Database | `tankesky/{ROMKODE}` | Lærer lager rom og styrer runde/fri flyt/tavle; elev sender inn ord som teller opp eller oppretter bobler |
 | `aktiviteter/dagsformen/` | Realtime Database | `dagsformen/{ROMKODE}` | Lærer lager rom og velger tema; elev velger (og bytter) én av 30 følelsesfigurer anonymt |
-| `games/verdikompasset/` | Realtime Database | `verdikompasset/{ROMKODE}` | Lærer lager rom; elev rangerer verdier og svarer på dilemmaer, og skriver sitt eget resultat (poeng/handling per verdi, samsvar) under sin egen anonyme id |
+| `aktiviteter/verdikompasset/` | Realtime Database | `verdikompasset/{ROMKODE}` | Lærer lager rom; elev rangerer verdier og svarer på dilemmaer, og skriver sitt eget resultat (poeng/handling per verdi, samsvar) under sin egen anonyme id |
 | `loype/drobak-akvarium/` | Firestore | `fjordvoktere` | Legger til ett lag på veggen (`{ lag, tid }`) |
 | `index.html` (forsidens CTA-skjema) | Firestore | `feedback` | Besøkende sender inn forslag/tilbakemelding/bestilling |
 | `bruk/lrnify-bruk.js` (alle sider) | Realtime Database | `bruk/{dato}/{side}/{hendelse}` | Teller opp én sidevisning — anonymt, se `bruk/README.md` |
