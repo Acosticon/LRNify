@@ -282,6 +282,27 @@
   .opt-btn.wrong { background: #fee2e2; border-color: var(--red); opacity: .8; }
   .opt-btn:disabled { cursor: default; }
 
+  /* ══ TENKEPUTEN (nivå 2) ══ */
+  #reasonWrap { width: 100%; display: flex; flex-direction: column; gap: 12px; align-items: center; }
+  #reasonWrap[hidden] { display: none; }
+  .ref-row { display: flex; justify-content: center; width: 100%; }
+  .ref-row .ba-item { max-width: 160px; }
+  .panel-grid { width: 100%; max-width: 480px; display: grid; gap: 10px; }
+  .panel-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .panel-grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+  .panel-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    background: var(--card); color: var(--ink); border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink); padding: 8px; min-height: 0;
+  }
+  .panel-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .panel-btn:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+  .panel-btn svg { width: 100%; height: auto; border: 2px solid var(--ink); background: var(--card); }
+  .panel-label { font-family: 'Chewy', cursive; font-size: .95rem; }
+  .panel-btn.right { background: #dcfce7; border-color: var(--green); }
+  .panel-btn.wrong { background: #fee2e2; border-color: var(--red); opacity: .8; }
+  .panel-btn:disabled { cursor: default; }
+
   /* ══ RESULTAT ══ */
   .result-card { display: flex; flex-direction: column; gap: 12px; text-align: center; }
   .result-big { font-family: 'Chewy', cursive; font-size: 2rem; }
@@ -488,6 +509,15 @@
   .opt-btn.right{border-color:#45a36b;background:#eaf9ef}
   .opt-btn.wrong{border-color:#dc6870;background:#fff0f0}
 
+  .panel-btn{border-color:var(--brown);box-shadow:0 4px 0 var(--brown);border-radius:15px;background:#fffaf4}
+  .panel-btn svg{border-color:var(--brown);border-radius:12px;background:#fff9ef}
+  .panel-btn.right{border-color:#45a36b;background:#eaf9ef}
+  .panel-btn.wrong{border-color:#dc6870;background:#fff0f0}
+
+  .cat-lvl2-btn{max-width:360px;font-size:1.02rem;border-radius:18px;background:linear-gradient(#f4dcff,#e3b9ff);border-color:var(--brown);box-shadow:0 6px 0 var(--brown)}
+  .lvl2-hint{font-weight:700;font-size:.85rem;color:var(--muted);max-width:340px}
+  .lvl2-badge{display:inline-flex;align-items:center;gap:5px;font-weight:900;font-size:.8rem;background:#f4dcff;border:2px solid var(--brown);border-radius:999px;padding:3px 10px;color:#6d3b8a}
+
   details.teacher{background:rgba(255,255,255,.78)}
   footer{border-top-color:rgba(109,59,37,.12)}
 
@@ -538,6 +568,9 @@
 
     <button class="btn-primary cat-start-btn" id="btnStart"><span>🐾</span> Start kattejakten</button>
 
+    <button class="btn-primary cat-start-btn cat-lvl2-btn" id="btnStart2" hidden><span>🧠</span> Nivå 2: Tenkeputen</button>
+    <p class="lvl2-hint" id="lvl2Hint" hidden>🔒 Fullfør nivå 1 for å låse opp Tenkeputen — spørsmål uten flytting, roting eller speiling for hånd.</p>
+
     <details class="teacher">
       <summary>Til læreren</summary>
       <p><b>Kompetansemål (etter 6. trinn):</b> «lage kongruensavbildninger med og uten koordinatsystemer».</p>
@@ -575,6 +608,14 @@
       <p class="win-note" id="describeFeedback" aria-live="polite"></p>
     </div>
 
+    <div id="reasonWrap" hidden>
+      <div class="ref-row" id="refRow" hidden>
+        <div class="ba-item"><span class="ba-cap">ORIGINAL</span><svg id="refBoard" role="img" aria-label="Original figur"></svg></div>
+      </div>
+      <div class="panel-grid" id="panelGrid"></div>
+      <p class="win-note" id="reasonFeedback" aria-live="polite"></p>
+    </div>
+
     <p class="sr-only" id="boardDesc" aria-live="polite"></p>
     <p class="sr-only" id="liveStatus" aria-live="assertive"></p>
   </div>
@@ -606,20 +647,21 @@
 <!-- ════════ RESULTAT ════════ -->
 <div class="screen" id="screen-result">
   <div class="center-wrap result-wrap">
-    <div class="screen-hero"><h1>Kattefest!</h1><p>Alle pusene fant plassen sin.</p></div>
+    <div class="screen-hero"><h1 id="resTitle">Kattefest!</h1><p id="resSub">Alle pusene fant plassen sin.</p></div>
     <img class="result-cats-img" src="result-cats.png" alt="" aria-hidden="true">
     <div class="card result-card">
       <div>
         <div class="result-big" id="resFigures">12 / 12</div>
-        <div class="result-sub">katter på plass</div>
+        <div class="result-sub" id="resFiguresLabel">katter på plass</div>
       </div>
-      <div>
+      <div id="resStarsRow">
         <div class="result-stars" id="resStars">⭐⭐⭐</div>
         <div class="result-sub" id="resStarsSub">av 4 effektivitetsstjerner</div>
       </div>
       <p class="result-sub" id="resNote"></p>
     </div>
     <button class="btn-primary" id="btnAgain">🐾 Spill igjen</button>
+    <button class="btn-primary cat-lvl2-btn" id="btnLevel2" hidden><span>🧠</span> Nivå 2: Tenkeputen</button>
     <a class="back-btn" href="../../index.html#grid" style="box-shadow:0 4px 0 var(--ink)">← Tilbake til LRNify</a>
   </div>
 </div>
@@ -804,19 +846,22 @@ function buildSession(){
 /* ─────────── Oppgaveoppsett ─────────── */
 function loadTask(){
   const p = G.session[G.idx];
-  el('hudProgress').textContent = 'Oppgave ' + (G.idx+1) + ' / ' + G.session.length;
+  el('hudProgress').textContent = (G.level === 2 ? 'Tankenøtt ' : 'Oppgave ') + (G.idx+1) + ' / ' + G.session.length;
+  el('hudStars').hidden = G.level === 2;
   el('hudStars').textContent = G.stars + '/' + G.starTotal;
   el('winSheet').hidden = true;
   el('board').classList.remove('solved');
   el('taskText').textContent = p.text || 'Hva har skjedd med figuren?';
 
-  el('btnRestart').hidden = !!p.options;
+  el('btnRestart').hidden = !!p.options || !!p.panels;
+  if(p.panels){ setupPanels(p); return; }
   if(p.options){ setupDescribe(p); return; }
   setupTransform(p);
 }
 
 function setupTransform(p){
   el('describeWrap').hidden = true;
+  el('reasonWrap').hidden = true;
   el('boardWrap').hidden = false;
   el('board').hidden = false;
   el('toolbar').hidden = false;
@@ -1253,6 +1298,7 @@ function setupDescribe(p){
   el('toolbar').hidden = true;
   el('history').hidden = true;
   el('coordLine').textContent = '';
+  el('reasonWrap').hidden = true;
   el('describeWrap').hidden = false;
   el('describeFeedback').textContent = '';
 
@@ -1302,11 +1348,31 @@ function showResult(){
   document.body.classList.remove('playing');
   showScreen('screen-result');
   el('resFigures').textContent = G.solved + ' / ' + G.session.length;
-  el('resStars').textContent = G.stars ? '⭐'.repeat(G.stars) : '—';
-  el('resStarsSub').textContent = 'av ' + G.starTotal + ' effektivitetsstjerner';
-  el('resNote').textContent = G.stars === G.starTotal
-    ? 'Du fant de korteste veiene også. Katten endret plassering og retning — aldri form eller størrelse.'
-    : 'Alle kattene du løste er kongruente med utgangspunktet: samme form, samme størrelse, ny plassering.';
+  if(G.level === 2){
+    el('resTitle').textContent = 'Tenkeputen full!';
+    el('resSub').textContent = 'Du klarte ' + G.solved + ' av ' + G.session.length + ' tankenøtter.';
+    el('resFiguresLabel').textContent = 'riktige svar';
+    el('resStarsRow').hidden = true;
+    el('resNote').textContent = 'Du har trent på å kjenne igjen kongruens, speilbilder og formene som bare ligner hverandre.';
+    el('btnAgain').textContent = '🧠 Spill nivå 2 igjen';
+    el('btnAgain').onclick = () => startGame(2);
+    el('btnLevel2').hidden = true;
+  } else {
+    unlockLevel2();
+    refreshLevel2Ui();
+    el('resTitle').textContent = 'Kattefest!';
+    el('resSub').textContent = 'Alle pusene fant plassen sin.';
+    el('resFiguresLabel').textContent = 'katter på plass';
+    el('resStarsRow').hidden = false;
+    el('resStars').textContent = G.stars ? '⭐'.repeat(G.stars) : '—';
+    el('resStarsSub').textContent = 'av ' + G.starTotal + ' effektivitetsstjerner';
+    el('resNote').textContent = G.stars === G.starTotal
+      ? 'Du fant de korteste veiene også. Katten endret plassering og retning — aldri form eller størrelse.'
+      : 'Alle kattene du løste er kongruente med utgangspunktet: samme form, samme størrelse, ny plassering.';
+    el('btnAgain').textContent = '🐾 Spill igjen';
+    el('btnAgain').onclick = () => startGame(1);
+    el('btnLevel2').hidden = false;
+  }
 }
 function showScreen(id){
   for(const s of document.querySelectorAll('.screen')) s.classList.toggle('active', s.id === id);
@@ -1324,12 +1390,13 @@ for(const id of ['toolMove','toolRotate','toolMirror']){
   el(id).addEventListener('click', () => setTool(el(id).dataset.tool));
 }
 el('btnUndo').addEventListener('click', undo);
-el('btnRestart').addEventListener('click', () => { if(G.cur && !G.cur.p.options) restartTask(); });
+el('btnRestart').addEventListener('click', () => { if(G.cur && !G.cur.p.options && !G.cur.p.panels) restartTask(); });
 el('btnNext').addEventListener('click', nextTask);
 el('btnShorter').addEventListener('click', () => { el('winSheet').hidden = true; restartTask(); });
 el('optList').addEventListener('click', e => { const b = e.target.closest('.opt-btn'); if(b) answerDescribe(b); });
-el('btnStart').addEventListener('click', startGame);
-el('btnAgain').addEventListener('click', startGame);
+el('btnStart').addEventListener('click', () => startGame(1));
+el('btnStart2').addEventListener('click', () => { if(isLevel2Unlocked()) startGame(2); });
+el('btnLevel2').addEventListener('click', () => startGame(2));
 
 document.addEventListener('keydown', e => {
   if(!document.getElementById('screen-game').classList.contains('active')) return;
@@ -1338,7 +1405,7 @@ document.addEventListener('keydown', e => {
   if(tag === 'input' || tag === 'textarea') return;
 
   if((e.key === 'z' || e.key === 'Z') && (e.ctrlKey || e.metaKey)){ e.preventDefault(); undo(); return; }
-  if(c.p.options) return;               // «beskriv»-oppgaven bruker knapper
+  if(c.p.options || c.p.panels) return; // «beskriv»- og «tenkeputen»-oppgaver bruker knapper
   if(c.won) return;
   const moves = {ArrowLeft:[-1,0], ArrowRight:[1,0], ArrowUp:[0,1], ArrowDown:[0,-1]};
   if(moves[e.key]){
@@ -1436,8 +1503,9 @@ function startDemo(){
 function stopDemo(){ DEMO.on = false; }
 
 /* ─────────── Oppstart ─────────── */
-function startGame(){
-  buildSession();
+function startGame(level){
+  G.level = level === 2 ? 2 : 1;
+  if(G.level === 2) buildSession2(); else buildSession();
   G.idx = 0; G.solved = 0; G.stars = 0; G.seenLesson = {};
   stopDemo();
   document.body.classList.add('playing');
@@ -1446,7 +1514,7 @@ function startGame(){
 }
 
 G.seenLesson = {};
-startDemo();
+G.level = 1;
 
 
 /* ══════════════════════════════════════════════════════════════════════
@@ -1465,7 +1533,11 @@ const CAT_ASSETS = {
   'F':'cat-F.png',
   'Y':'cat-Y.png',
   'pil2':'cat-pil2.png',
-  'T':'cat-T.png'
+  'T':'cat-T.png',
+  'krok':'cat-krok.png',
+  'sprett':'cat-sprett.png',
+  'vinge':'cat-vinge.png',
+  'snik':'cat-snik.png'
 };
 
 const CAT_SHAPES = {
@@ -1476,8 +1548,16 @@ const CAT_SHAPES = {
   'F':[[0,1],[1,0],[1,1],[1,2],[2,2]],
   'Y':[[0,0],[0,1],[0,2],[0,3],[1,1]],
   'pil2':[[0,1],[1,1],[2,0],[2,1],[2,2],[3,2]],
-  'T':[[0,2],[1,0],[1,1],[1,2],[2,0],[2,2]]
+  'T':[[0,2],[1,0],[1,1],[1,2],[2,0],[2,2]],
+  'krok':[[0,0],[0,1],[1,0],[1,1],[1,2]],
+  'sprett':[[0,0],[1,0],[1,1],[1,2],[2,2]],
+  'vinge':[[0,0],[0,1],[0,2],[1,2],[1,3],[2,3]],
+  'snik':[[0,0],[1,0],[1,1],[2,1],[2,2],[3,2]]
 };
+// 'krok' og 'sprett' er 5-cellers katteformer (samme familie som L/trapp/F/Y),
+// 'vinge' og 'snik' er 6-cellers (samme familie som romskip/blob/pil2/T).
+// Maskinverifisert i selvtesten: forbundet, asymmetrisk (kiral) og ikke
+// kongruent med noen av de andre formene — se LEVEL2-testene under.
 
 // [a,b,c,d,e,f] betyr x'=a*x+c*y+e, y'=b*x+d*y+f i matematisk koordinatsystem.
 const CAT_ORIENT = [
@@ -1633,6 +1713,208 @@ function miniBoard(svg,cells,N){
     +'<path class="targetline" d="'+outlinePath(cells,N)+'" opacity=".28"/>';
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   NIVÅ 2 — TENKEPUTEN
+   Ingen flytting/roting/speiling for hånd her: eleven ser ferdige
+   katteformer og må resonnere seg fram til svaret. Hvert alternativ
+   genereres fra et {shape, orient} par ved å bruke NØYAKTIG samme
+   CAT_ORIENT-transformasjon som katte-gjenkjenningen i nivå 1
+   (orientShape), slik at det som vises alltid stemmer med matematikken.
+   orient 0–3 er rene rotasjoner av grunnformen, orient 4–7 krever en
+   speiling — det skillet brukes til å lage «finn speilbildet»-oppgaver
+   uten noen egen geometri-kode.
+   ══════════════════════════════════════════════════════════════════════ */
+function orientShape(base, idx){
+  const A0 = CAT_ORIENT[idx];
+  const raw = base.map(c => {
+    const q = catApplyPoint(A0, [c[0]+.5, c[1]+.5]);
+    return [Math.floor(q[0]+1e-7), Math.floor(q[1]+1e-7)];
+  });
+  const mx = Math.min(...raw.map(c => c[0])), my = Math.min(...raw.map(c => c[1]));
+  return raw.map(c => [c[0]-mx, c[1]-my]);
+}
+function centerCells(cells, N){
+  const xs = cells.map(c => c[0]), ys = cells.map(c => c[1]);
+  const minx = Math.min(...xs), miny = Math.min(...ys);
+  const w = Math.max(...xs)-minx+1, h = Math.max(...ys)-miny+1;
+  const ox = Math.floor((N-w)/2) - minx, oy = Math.floor((N-h)/2) - miny;
+  return cells.map(c => [c[0]+ox, c[1]+oy]);
+}
+function panelCells(a, N){ return centerCells(orientShape(CAT_SHAPES[a.shape], a.orient), N); }
+
+const LEVEL2 = [
+  /* qtype 'transform': samme mekanikk som «beskriv»-oppgaven i nivå 1 —
+     FØR/ETTER på hvert sitt brett, og eleven velger hva som ble gjort. */
+  {id:'q1a', slot:1, qtype:'transform', board:7,
+   text:'Hva har blitt gjort for å gå fra figur 1 til figur 2?',
+   before:[[1,1],[1,2],[1,3],[1,4],[2,1]], after:[[4,1],[4,2],[4,3],[4,4],[5,1]],
+   options:['forskjøvet 3 mot høyre','rotert 90°','speilet','gjort større'], correct:0,
+   explain:'Alle punktene er flyttet like langt samme vei — det er en forskyvning. Formen og størrelsen er uendret.'},
+  {id:'q1b', slot:1, qtype:'transform', board:7,
+   text:'Hva har blitt gjort for å gå fra figur 1 til figur 2?',
+   before:[[2,1],[2,2],[3,2],[3,3],[3,4]], after:[[3,1],[2,1],[2,2],[1,2],[0,2]],
+   options:['rotert 90°','forskjøvet 3 opp','speilet','gjort mindre'], correct:0,
+   explain:'Figuren er dreid en kvart omdreining rundt et punkt. Den dekker like mange ruter som før.'},
+  {id:'q5a', slot:5, qtype:'transform', board:7,
+   text:'Hva har blitt gjort for å gå fra figur 1 til figur 2?',
+   before:[[1,1],[1,2],[1,3],[1,4],[2,2]], after:[[6,1],[6,2],[6,3],[6,4],[5,2]],
+   options:['speilet','rotert 90°','forskjøvet 4 mot høyre','gjort større'], correct:0,
+   explain:'Figuren er vendt om på andre siden av linja — et speilbilde. Sidelengder og vinkler er like store som før.'},
+  {id:'q5b', slot:5, qtype:'transform', board:7,
+   text:'Hva har blitt gjort for å gå fra figur 1 til figur 2?',
+   before:[[1,2],[2,1],[2,2],[2,3],[3,3]], after:[[3,4],[4,3],[4,4],[4,5],[5,5]],
+   options:['forskjøvet 2 til høyre og 2 opp','rotert 180°','speilet','gjort mindre'], correct:0,
+   explain:'Figuren er flyttet like langt bortover som oppover — fortsatt en ren forskyvning.'},
+
+  /* qtype 'notcong': én original + tre alternativer. To av dem er den
+     SAMME katteformen (bare dreid/speilet), det tredje er en ANNEN
+     katteform med like mange ruter — den kan ikke lages av originalen. */
+  {id:'n2a', slot:2, qtype:'notcong', board:5,
+   text:'Én av disse kan du IKKE lage av katten til venstre — bare ved å flytte, rotere og speile. Hvilken?',
+   ref:{shape:'L', orient:0},
+   panels:[{shape:'L', orient:2, ok:false}, {shape:'L', orient:5, ok:false}, {shape:'trapp', orient:0, ok:true}],
+   explain:'Trappekatten er en annen figur enn L-katten, og kan derfor ikke lages av den — uansett hvor mye du flytter, roterer eller speiler. De to andre er bare L-katten sett fra en annen kant.'},
+  {id:'n2b', slot:2, qtype:'notcong', board:5,
+   text:'Én av disse kan du IKKE lage av katten til venstre — bare ved å flytte, rotere og speile. Hvilken?',
+   ref:{shape:'romskip', orient:0},
+   panels:[{shape:'romskip', orient:1, ok:false}, {shape:'romskip', orient:6, ok:false}, {shape:'blob', orient:0, ok:true}],
+   explain:'Blob-katten har en annen form enn romskip-katten. De to andre er samme romskip-katt, bare dreid eller speilet.'},
+  {id:'n6a', slot:6, qtype:'notcong', board:5,
+   text:'Én av disse kan du IKKE lage av katten til venstre — bare ved å flytte, rotere og speile. Hvilken?',
+   ref:{shape:'Y', orient:0},
+   panels:[{shape:'Y', orient:3, ok:false}, {shape:'Y', orient:4, ok:false}, {shape:'krok', orient:0, ok:true}],
+   explain:'Krok-katten er ikke samme figur som Y-katten, selv om begge har fem ruter.'},
+  {id:'n6b', slot:6, qtype:'notcong', board:5,
+   text:'Én av disse kan du IKKE lage av katten til venstre — bare ved å flytte, rotere og speile. Hvilken?',
+   ref:{shape:'pil2', orient:0},
+   panels:[{shape:'pil2', orient:2, ok:false}, {shape:'pil2', orient:7, ok:false}, {shape:'T', orient:0, ok:true}],
+   explain:'T-katten har en annen form enn pil-katten — den kan ikke lages ved å flytte, rotere eller speile pil-katten.'},
+
+  /* qtype 'mirror': én original + tre alternativer av SAMME katteform.
+     Ett alternativ krever en speiling (orient 4–7), de to andre er bare
+     rotasjoner (orient 1–3) av originalen (orient 0). */
+  {id:'m3a', slot:3, qtype:'mirror', board:5,
+   text:'Hvilket av alternativene er et speilbilde av katten til venstre?',
+   ref:{shape:'F', orient:0},
+   panels:[{shape:'F', orient:5, ok:true}, {shape:'F', orient:1, ok:false}, {shape:'F', orient:3, ok:false}],
+   explain:'Dette alternativet er speilvendt — det kan ikke lages ved å bare rotere originalen. De to andre er originalen dreid til en ny retning.'},
+  {id:'m3b', slot:3, qtype:'mirror', board:5,
+   text:'Hvilket av alternativene er et speilbilde av katten til venstre?',
+   ref:{shape:'trapp', orient:0},
+   panels:[{shape:'trapp', orient:6, ok:true}, {shape:'trapp', orient:1, ok:false}, {shape:'trapp', orient:2, ok:false}],
+   explain:'Dette alternativet er speilvendt — uansett hvor mye du roterer originalen, lander du aldri på et speilbilde.'},
+  {id:'m7a', slot:7, qtype:'mirror', board:5,
+   text:'Hvilket av alternativene er et speilbilde av katten til venstre?',
+   ref:{shape:'blob', orient:0},
+   panels:[{shape:'blob', orient:4, ok:true}, {shape:'blob', orient:1, ok:false}, {shape:'blob', orient:2, ok:false}],
+   explain:'Dette alternativet er speilvendt. De to andre er originalen sett fra en annen kant, uten speiling.'},
+  {id:'m7b', slot:7, qtype:'mirror', board:5,
+   text:'Hvilket av alternativene er et speilbilde av katten til venstre?',
+   ref:{shape:'krok', orient:0},
+   panels:[{shape:'krok', orient:7, ok:true}, {shape:'krok', orient:1, ok:false}, {shape:'krok', orient:3, ok:false}],
+   explain:'Dette alternativet krever en speiling for å bli likt originalen — rotasjon alene rekker ikke.'},
+
+  /* qtype 'odd': fire figurer, ingen «original». Tre er samme katteform
+     (ulike retninger), én er en annen katteform — like mange ruter, men
+     ikke kongruent. */
+  {id:'o4a', slot:4, qtype:'odd', board:5,
+   text:'Tre av kattene er kongruente — samme form og størrelse. Hvilken av dem er annerledes?',
+   panels:[{shape:'blob', orient:0, ok:false}, {shape:'blob', orient:2, ok:false}, {shape:'blob', orient:5, ok:false}, {shape:'T', orient:0, ok:true}],
+   explain:'T-katten er ikke kongruent med de tre blob-kattene — den har en annen form, selv om den dekker like mange ruter.'},
+  {id:'o4b', slot:4, qtype:'odd', board:5,
+   text:'Tre av kattene er kongruente — samme form og størrelse. Hvilken av dem er annerledes?',
+   panels:[{shape:'krok', orient:0, ok:false}, {shape:'krok', orient:1, ok:false}, {shape:'krok', orient:4, ok:false}, {shape:'sprett', orient:0, ok:true}],
+   explain:'Sprett-katten skiller seg fra de tre krok-kattene — ulik form, ikke bare ulik retning.'},
+  {id:'o8a', slot:8, qtype:'odd', board:5,
+   text:'Tre av kattene er kongruente — samme form og størrelse. Hvilken av dem er annerledes?',
+   panels:[{shape:'vinge', orient:0, ok:false}, {shape:'vinge', orient:3, ok:false}, {shape:'vinge', orient:6, ok:false}, {shape:'snik', orient:0, ok:true}],
+   explain:'Snik-katten er ikke kongruent med de tre vinge-kattene, selv om begge former har seks ruter.'},
+  {id:'o8b', slot:8, qtype:'odd', board:5,
+   text:'Tre av kattene er kongruente — samme form og størrelse. Hvilken av dem er annerledes?',
+   panels:[{shape:'F', orient:0, ok:false}, {shape:'F', orient:2, ok:false}, {shape:'F', orient:7, ok:false}, {shape:'Y', orient:0, ok:true}],
+   explain:'Y-katten er ikke kongruent med de tre F-kattene, selv om begge har fem ruter.'}
+];
+
+/* ─────────── Nivå 2: opplåsing (huskes i denne nettleseren) ─────────── */
+const LEVEL2_KEY = 'katteform_level2_unlocked';
+function isLevel2Unlocked(){ try{ return localStorage.getItem(LEVEL2_KEY) === '1'; }catch(e){ return false; } }
+function unlockLevel2(){ try{ localStorage.setItem(LEVEL2_KEY, '1'); }catch(e){} }
+function refreshLevel2Ui(){
+  const unlocked = isLevel2Unlocked();
+  el('btnStart2').hidden = !unlocked;
+  el('lvl2Hint').hidden = unlocked;
+}
+
+function buildSession2(){
+  const s = [];
+  const lastSlot = Math.max(...LEVEL2.map(p => p.slot));
+  for(let slot = 1; slot <= lastSlot; slot++){
+    const variants = LEVEL2.filter(p => p.slot === slot);
+    s.push(pick(variants));
+  }
+  G.session = s;
+  G.starTotal = 0;
+}
+
+function setupPanels(p){
+  G.cur = {p, won:false, counted:false, acts:[], stack:[]};
+  el('boardWrap').hidden = true;
+  el('toolbar').hidden = true;
+  el('history').hidden = true;
+  el('coordLine').textContent = '';
+  el('describeWrap').hidden = true;
+  el('reasonWrap').hidden = false;
+  el('reasonFeedback').textContent = '';
+
+  const N = p.board || 5;
+  if(p.ref){
+    el('refRow').hidden = false;
+    miniBoard(el('refBoard'), panelCells(p.ref, N), N);
+  } else {
+    el('refRow').hidden = true;
+  }
+
+  const items = p.panels.map(a => ({a, cells: panelCells(a, N)}));
+  for(let i = items.length-1; i > 0; i--){ const j = Math.floor(Math.random()*(i+1)); [items[i],items[j]] = [items[j],items[i]]; }
+
+  const grid = el('panelGrid');
+  grid.className = 'panel-grid ' + (items.length === 4 ? 'cols-4' : 'cols-3');
+  grid.innerHTML = items.map((it,i) =>
+    '<button class="panel-btn" data-ok="' + (it.a.ok ? '1' : '0') + '"><span class="panel-label">' + String.fromCharCode(65+i) + '</span><svg role="img" aria-label="Alternativ ' + String.fromCharCode(65+i) + '"></svg></button>'
+  ).join('');
+  const svgs = grid.querySelectorAll('svg');
+  items.forEach((it,i) => miniBoard(svgs[i], it.cells, N));
+
+  el('boardDesc').textContent = p.text || '';
+}
+function answerPanel(btn){
+  const c = G.cur;
+  if(!c || c.won) return;
+  if(btn.dataset.ok === '1'){
+    c.won = true;
+    btn.classList.add('right');
+    for(const b of el('panelGrid').querySelectorAll('.panel-btn')) b.disabled = true;
+    if(!c.counted){ G.solved++; c.counted = true; }
+    el('reasonFeedback').textContent = c.p.explain;
+    el('winTitle').textContent = 'RIKTIG!';
+    el('winSeq').textContent = c.p.explain;
+    el('winNote').textContent = 'Kongruensavbildninger endrer aldri størrelsen — bare plassering og retning.';
+    el('winLesson').hidden = true;
+    el('winStar').hidden = true;
+    el('btnShorter').hidden = true;
+    say('Riktig. ' + c.p.explain);
+    setTimeout(() => { el('winSheet').hidden = false; el('btnNext').focus(); }, 260);
+  } else {
+    btn.classList.add('wrong'); btn.disabled = true;
+    el('reasonFeedback').textContent = 'Ikke helt. Se nøye på formen og retningen.';
+    say('Ikke riktig. Prøv et annet alternativ.');
+  }
+}
+el('panelGrid').addEventListener('click', e => {
+  const b = e.target.closest('.panel-btn'); if(!b || b.disabled) return;
+  answerPanel(b);
+});
+
 
 /* ─────────── Selvtest (?selftest=1) ─────────── */
 /* Kontrollerer invariantene i QA-lista og at hele oppgavebanken er
@@ -1765,6 +2047,59 @@ function selftest(){
       'flytt høyre + flytt opp + rotasjon er tre handlinger');
   chk(sequenceText([{type:'rot',dir:1},{type:'rot',dir:1}]) === 'Roter 180°', 'to rotasjoner samme vei beskrives som 180°');
 
+  // ── nivå 2: Tenkeputen ──
+  const ids2 = LEVEL2.map(p => p.id);
+  chk(new Set(ids2).size === ids2.length, 'nivå 2: ingen duplikate id-er');
+  const bySlot2 = {};
+  for(const p of LEVEL2) (bySlot2[p.slot] = bySlot2[p.slot] || []).push(p);
+  const lastSlot2 = Math.max(...LEVEL2.map(p => p.slot));
+  for(let s = 1; s <= lastSlot2; s++){
+    const arr = bySlot2[s];
+    chk(arr && arr.length >= 2, 'nivå 2 slot ' + s + ': minst to varianter');
+    chk(!arr || arr.every(p => p.qtype === arr[0].qtype), 'nivå 2 slot ' + s + ': alle variantene har samme spørsmålstype');
+  }
+  for(const p of LEVEL2){
+    if(p.qtype === 'transform'){
+      chk(p.before.length === p.after.length, p.id + ': like mange celler før/etter');
+      chk(isConnected(p.before) && isConnected(p.after), p.id + ': figurene henger sammen');
+      chk(K(p.before) !== K(p.after), p.id + ': before er ulik after');
+      chk(p.before.every(c => c[0]>=0 && c[1]>=0 && c[0]<p.board && c[1]<p.board), p.id + ': before innenfor brettet');
+      chk(p.after.every(c => c[0]>=0 && c[1]>=0 && c[0]<p.board && c[1]<p.board), p.id + ': after innenfor brettet');
+      continue;
+    }
+    const panels2 = p.panels;
+    chk(panels2.filter(a => a.ok).length === 1, p.id + ': nøyaktig ett riktig alternativ');
+    for(const a of panels2){
+      chk(!!CAT_SHAPES[a.shape], p.id + ': «' + a.shape + '» er en gyldig kattform');
+      const b2 = orientShape(CAT_SHAPES[a.shape], a.orient);
+      const bw = Math.max(...b2.map(c=>c[0]))-Math.min(...b2.map(c=>c[0]))+1;
+      const bh = Math.max(...b2.map(c=>c[1]))-Math.min(...b2.map(c=>c[1]))+1;
+      chk(bw <= p.board && bh <= p.board, p.id + ': panel ' + a.shape + '/' + a.orient + ' passer i brettet');
+    }
+    if(p.qtype === 'notcong'){
+      for(const a of panels2) chk((a.shape === p.ref.shape) === !a.ok, p.id + ': kongruens stemmer med ok-flagget for ' + a.shape);
+    }
+    if(p.qtype === 'mirror'){
+      chk(p.ref.orient === 0 && panels2.every(a => a.shape === p.ref.shape), p.id + ': speil-oppgave bruker samme form gjennomgående');
+      for(const a of panels2) chk((a.orient >= 4) === a.ok, p.id + ': orient ' + a.orient + ' klassifisert riktig som speiling eller rotasjon');
+    }
+    if(p.qtype === 'odd'){
+      const nonOk2 = panels2.filter(a => !a.ok);
+      chk(nonOk2.every(a => a.shape === nonOk2[0].shape), p.id + ': de tre kongruente bruker samme form');
+      chk(panels2.filter(a=>a.ok).every(a => a.shape !== nonOk2[0].shape), p.id + ': den avvikende figuren bruker en annen form');
+    }
+  }
+  // alle 12 katteformene skal være parvis ikke-kongruente (ellers blir «finn den avvikende»-oppgaver tvetydige)
+  const shapeNames = Object.keys(CAT_SHAPES);
+  let allShapesDistinct = true;
+  for(let i = 0; i < shapeNames.length; i++) for(let j = i+1; j < shapeNames.length; j++){
+    if(CAT_SHAPES[shapeNames[i]].length !== CAT_SHAPES[shapeNames[j]].length) continue;
+    const orbit = new Set();
+    for(let k = 0; k < 8; k++) orbit.add(normKey(orientShape(CAT_SHAPES[shapeNames[i]], k)));
+    if(orbit.has(normKey(CAT_SHAPES[shapeNames[j]]))) allShapesDistinct = false;
+  }
+  chk(allShapesDistinct, 'alle katteformene er parvis ikke-kongruente');
+
   console.log('%cFormskift selvtest: ' + ok.length + ' OK, ' + fails.length + ' feil', 'font-weight:bold');
   if(fails.length) console.error(fails.join('\n')); else console.log('Alle kontroller passerte.');
   return {ok: ok.length, fails};
@@ -1804,6 +2139,12 @@ function distSet(cells){
 }
 window.formskiftSelftest = selftest;
 if(new URLSearchParams(location.search).has('selftest')) selftest();
+
+/* Kjøres til slutt, etter at LEVEL2_KEY og resten av nivå 2-dataene er
+   definert lenger opp — ellers svelger try/catch-en i isLevel2Unlocked()
+   en «temporal dead zone»-feil og låsen ser alltid stengt ut. */
+refreshLevel2Ui();
+startDemo();
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
