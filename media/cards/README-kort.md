@@ -43,5 +43,26 @@ størrelsesorden (1000–1254 px, kvadratisk). Ingen kodeendring trengs;
 **Filene det gjelder:** beinjakten, ordkjedeverkstedet, ordtoget,
 setningskirurgen, tidslinjen, vinkeljakten, vinkelforsvarer,
 vinkelspillet, likningsbalansen, lopeilden, klimakoden, grafkjoreren,
-jakten, atombyggeren, sannsynlighetslabben (i `media/cards/`), og
-tankesky, villeduheller (i `media/aktiviteter/`).
+jakten, atombyggeren, sannsynlighetslabben, formskift (i
+`media/cards/`), og tankesky, villeduheller (i `media/aktiviteter/`).
+
+## Målene i emblem-malen
+
+`formskift.png` ble laget i august 2026 ved å måle opp de eksisterende
+emblem-kortene piksel for piksel, siden generatoren ikke finnes her.
+Målene under er de som gjelder, slik neste kort kan lages likt uten å
+utlede dem på nytt (alt i et 1000 × 1000-lerret):
+
+| Element | Mål |
+| --- | --- |
+| Bakgrunn | `#fff9f0`, med prikkegitter `#f0eae1`, r = 2,75, rutemål 45,8 |
+| Bleik sirkel | sentrum (499, 469), r = 459, farge = kremfargen blandet 10 % mot aksentfargen |
+| Aksentprikker | (108, 98) r 12 · (158, 880) r 8 · (862, 128) r 6 · (890, 900) r 12, blandet 50 % |
+| Skive | sentrum (499, 437), r = 247 i aksentfargen, på en ink-sirkel `#2b2118` med r = 259 |
+| Skiveskygge | samme ink-sirkel forskjøvet (+24, +24) |
+| Ikon | ikonets omriss normalisert så største mål blir 233 px, sentrert i skiva |
+| Etikett | plate h = 72 med topp i y = 747, sentrert i x; ink-ramme 6 px utenfor, skygge (+10, +10) |
+| Etikettekst | Nunito 900, versaler, høyde 27 px; «MATEMATIKK» er 236 px bred, plata 311 px |
+
+Kontrastregelen står over: relativ luminans over ca. 0,35 gir ink-farget
+ikon og tekst, ellers kremfarget.
