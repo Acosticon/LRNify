@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verdikompasset — LRNify</title>
+<meta name="description" content="Rangér dine egne verdier, møt åtte hverdagsdilemmaer, og se hvor godt det du sier stemmer med det du faktisk velger å gjøre.">
+<link rel="canonical" href="https://lrnify.no/games/verdikompasset/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Verdikompasset – LRNify">
+<meta property="og:description" content="Rangér dine egne verdier, møt åtte hverdagsdilemmaer, og se hvor godt det du sier stemmer med det du faktisk velger å gjøre.">
+<meta property="og:image" content="https://lrnify.no/media/og/verdikompasset.png">
+<meta property="og:url" content="https://lrnify.no/games/verdikompasset/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Verdikompasset – LRNify">
+<meta name="twitter:description" content="Rangér dine egne verdier, møt åtte hverdagsdilemmaer, og se hvor godt det du sier stemmer med det du faktisk velger å gjøre.">
+<meta name="twitter:image" content="https://lrnify.no/media/og/verdikompasset.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --skifer:#1E3A3A;
+  --fjord:#2F6D62;
+  --fjord-lys:#DDEAE5;
+  --sol:#F4B942;
+  --sol-lys:#FCEFD2;
+  --baer:#C4574E;
+  --baer-lys:#F5DEDC;
+  --papir:#F2F5F1;
+  --kort:#FFFFFF;
+  --strek:#D8E0DA;
+  --grå:#5C6B66;
+  --radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Public Sans',system-ui,sans-serif;
+  background:var(--papir);
+  color:var(--skifer);
+  line-height:1.5;
+  min-height:100vh;
+}
+.site-header{
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:660px;margin:0 auto;padding:18px 16px 0;
+}
+.site-logo{
+  font-family:'Fraunces',serif;font-weight:700;font-size:1.25rem;
+  color:var(--skifer);text-decoration:none;letter-spacing:-.01em;
+}
+.site-logo b{color:var(--fjord);font-weight:700}
+.site-back{
+  font-family:'Public Sans',system-ui,sans-serif;font-weight:600;font-size:.85rem;
+  color:var(--fjord);text-decoration:none;border-bottom:2px solid var(--fjord);padding-bottom:1px;
+}
+.site-back:hover{color:#265a51;border-color:#265a51}
+.site-footer{text-align:center;padding:24px 16px 40px;color:var(--grå);font-weight:600;font-size:.85rem}
+.wrap{max-width:660px;margin:0 auto;padding:20px 16px 60px}
+h1,h2,h3{font-family:'Fraunces',serif;line-height:1.2}
+h1{font-size:2rem}
+h2{font-size:1.4rem}
+h3{font-size:1.1rem}
+.eyebrow{font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--fjord);margin-bottom:6px}
+.kort{background:var(--kort);border:1px solid var(--strek);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.btn{
+  display:inline-block;width:100%;padding:14px 20px;border:none;border-radius:12px;
+  background:var(--fjord);color:#fff;font-family:inherit;font-size:1rem;font-weight:600;
+  cursor:pointer;text-align:center;transition:transform .08s,background .15s;
+}
+.btn:hover{background:#265a51}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible{outline:3px solid var(--sol);outline-offset:2px}
+.btn.sekundær{background:var(--kort);color:var(--fjord);border:2px solid var(--fjord)}
+.btn.sekundær:hover{background:var(--fjord-lys)}
+.btn.liten{width:auto;padding:8px 16px;font-size:.9rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+input[type=text]{
+  width:100%;padding:13px 16px;border:2px solid var(--strek);border-radius:12px;
+  font-family:inherit;font-size:1.05rem;background:#fff;
+}
+input[type=text]:focus{outline:none;border-color:var(--fjord)}
+.senter{text-align:center}
+.grå{color:var(--grå)}
+.liten-tekst{font-size:.85rem}
+.mt8{margin-top:8px}.mt16{margin-top:16px}.mt24{margin-top:24px}.mb8{margin-bottom:8px}.mb16{margin-bottom:16px}
+
+/* Illustrasjonsplass */
+.illu{
+  width:100%;aspect-ratio:5/3;border-radius:var(--radius);overflow:hidden;
+  margin-bottom:16px;background:var(--fjord-lys);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;
+  border:2px dashed var(--fjord);color:var(--fjord);font-size:.85rem;font-weight:600;
+}
+.illu img{width:100%;height:100%;object-fit:cover;display:block}
+.illu.har-bilde{border:none;background:none}
+
+/* Fremdrift */
+.fremdrift{display:flex;gap:5px;margin-bottom:20px}
+.fremdrift span{flex:1;height:6px;border-radius:3px;background:var(--strek)}
+.fremdrift span.aktiv{background:var(--sol)}
+.fremdrift span.ferdig{background:var(--fjord)}
+
+/* Verdibrikker */
+.brikke{
+  display:flex;align-items:center;gap:12px;width:100%;
+  padding:14px 16px;margin-bottom:10px;border:2px solid var(--strek);border-radius:14px;
+  background:#fff;font-family:inherit;font-size:1.02rem;font-weight:600;color:var(--skifer);
+  cursor:pointer;text-align:left;transition:border-color .15s,background .15s;
+}
+.brikke:hover{border-color:var(--fjord)}
+.brikke:focus-visible{outline:3px solid var(--sol);outline-offset:2px}
+.brikke .plass{
+  min-width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--papir);color:var(--grå);font-size:.9rem;font-weight:700;
+}
+.brikke.valgt{border-color:var(--fjord);background:var(--fjord-lys)}
+.brikke.valgt .plass{background:var(--fjord);color:#fff}
+.brikke.plass1 .plass{background:var(--sol);color:var(--skifer)}
+.brikke .navn{flex:1}
+.info-knapp{
+  background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--grå);
+  padding:4px 8px;border-radius:8px;
+}
+.info-knapp:hover{color:var(--fjord);background:var(--papir)}
+
+/* Dilemmavalg */
+.valg{
+  display:block;width:100%;padding:15px 18px;margin-bottom:10px;
+  border:2px solid var(--strek);border-radius:14px;background:#fff;
+  font-family:inherit;font-size:.98rem;color:var(--skifer);cursor:pointer;text-align:left;
+  transition:border-color .15s,background .15s;
+}
+.valg:hover{border-color:var(--fjord);background:var(--fjord-lys)}
+.valg:focus-visible{outline:3px solid var(--sol);outline-offset:2px}
+
+/* Speildiagram (signaturelement) */
+.speil-rad{display:grid;grid-template-columns:1fr 110px 1fr;align-items:center;gap:8px;margin-bottom:10px}
+.speil-navn{text-align:center;font-size:.82rem;font-weight:700}
+.speil-spor{height:14px;border-radius:7px;background:var(--papir);position:relative;overflow:hidden}
+.speil-fyll{position:absolute;top:0;height:100%;border-radius:7px;transition:width .6s ease}
+.speil-spor.venstre .speil-fyll{right:0;background:var(--sol)}
+.speil-spor.høyre .speil-fyll{left:0;background:var(--fjord)}
+.speil-topp{display:grid;grid-template-columns:1fr 110px 1fr;gap:8px;margin-bottom:8px;font-size:.75rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase}
+.speil-topp .v{text-align:left;color:#b28419}
+.speil-topp .h{text-align:right;color:var(--fjord)}
+
+/* Samsvar-merke */
+.samsvar{
+  width:130px;height:130px;border-radius:50%;margin:0 auto 12px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:conic-gradient(var(--fjord) calc(var(--p)*1%), var(--strek) 0);
+  position:relative;
+}
+.samsvar::before{content:'';position:absolute;inset:11px;border-radius:50%;background:var(--kort)}
+.samsvar b{position:relative;font-family:'Fraunces',serif;font-size:1.9rem}
+.samsvar span{position:relative;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--grå)}
+
+/* Podium */
+.podium{display:flex;align-items:flex-end;gap:8px;margin:14px 0}
+.podium div{flex:1;border-radius:10px 10px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:8px 4px;font-weight:700;font-size:.85rem;text-align:center;color:var(--skifer)}
+.podium .p1{background:var(--sol);height:96px}
+.podium .p2{background:var(--fjord-lys);height:74px}
+.podium .p3{background:var(--baer-lys);height:56px}
+.podium small{font-weight:600;color:var(--grå)}
+
+/* Modal */
+.modal-bak{position:fixed;inset:0;background:rgba(30,58,58,.5);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal{background:#fff;border-radius:var(--radius);padding:24px;max-width:440px;width:100%;max-height:80vh;overflow-y:auto}
+.modal ul{margin:10px 0 0 20px}
+.modal li{margin-bottom:6px;font-size:.95rem}
+
+/* Lærerdashboard */
+.stat-rad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--kort);border:1px solid var(--strek);border-radius:14px;padding:14px 10px;text-align:center}
+.stat b{font-family:'Fraunces',serif;font-size:1.7rem;display:block}
+.stat span{font-size:.75rem;font-weight:600;color:var(--grå)}
+.elev-liste{display:flex;flex-wrap:wrap;gap:8px}
+.elev-tag{padding:6px 12px;border-radius:999px;font-size:.85rem;font-weight:600;background:var(--papir);border:1px solid var(--strek)}
+.elev-tag.ferdig{background:var(--fjord-lys);border-color:var(--fjord)}
+.rangering-rad{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.rangering-rad .nr{min-width:26px;font-weight:700;color:var(--grå)}
+.rangering-rad .bar-spor{flex:1;height:20px;border-radius:10px;background:var(--papir);overflow:hidden}
+.rangering-rad .bar{height:100%;border-radius:10px;background:var(--fjord);display:flex;align-items:center;padding-left:10px;color:#fff;font-size:.78rem;font-weight:700;min-width:fit-content;white-space:nowrap;transition:width .5s}
+.romkode{
+  font-family:'Fraunces',serif;font-size:3rem;letter-spacing:.15em;
+  background:var(--sol-lys);border:2px dashed var(--sol);border-radius:var(--radius);
+  padding:14px;text-align:center;margin:12px 0;
+}
+.refleksjon{background:var(--sol-lys);border:none;border-left:4px solid var(--sol);border-radius:8px;padding:14px 16px;margin-bottom:10px;font-size:.95rem}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media(max-width:480px){h1{font-size:1.6rem}.romkode{font-size:2.2rem}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="site-logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="site-back" href="../../index.html#grid">← Tilbake</a>
+</header>
+<div class="wrap" id="app"></div>
+<footer class="site-footer">LRNify · lær gjennom lek · © 2026</footer>
+
+<script>
+/* ================================================================
+   ILLUSTRASJONER
+   Lim inn URL eller data-URL for hvert bilde. Tomt felt = plassholder.
+   Format: liggende 5:3 (f.eks. 1500x900 px).
+   ================================================================ */
+const ILLU = {
+  start: "",       // Forside: ungdommer + kompass
+  ranking: "",     // Verdirangering
+  d1: "",          // Prøven
+  d2: "",          // Gruppechatten
+  d3: "",          // Laget
+  d4: "",          // Gruppearbeidet
+  d5: "",          // Bursdagen
+  d6: "",          // Den nye eleven
+  d7: "",          // Hemmeligheten
+  d8: "",          // Valget
+  profil: ""       // Resultat/profil
+};
+
+/* ============================= VERDIER ============================= */
+const VERDIER = [
+  {id:"aer", navn:"Ærlighet", def:"Å snakke sant og være til å stole på, også når det koster noe.",
+   eks:["Du innrømmer at det var du som ødela noe, selv om ingen så det.","Du sier ærlig hva du mener når en venn spør om råd."]},
+  {id:"ret", navn:"Rettferdighet", def:"Å behandle alle likt og reagere når noen behandles urettferdig.",
+   eks:["Du sier fra når noen alltid slipper unna med regelbrudd.","Du deler oppgavene likt i et gruppearbeid."]},
+  {id:"ven", navn:"Vennskap", def:"Å stille opp for vennene dine og være lojal mot dem.",
+   eks:["Du forsvarer en venn som blir snakket stygt om.","Du holder det du lover en venn."]},
+  {id:"mot", navn:"Mot", def:"Å tørre å gjøre det du mener er riktig, selv om det er skummelt eller upopulært.",
+   eks:["Du sier imot flertallet når du er uenig.","Du rekker opp hånda selv om du er redd for å svare feil."]},
+  {id:"oms", navn:"Omsorg", def:"Å bry deg om hvordan andre har det, og hjelpe når noen sliter.",
+   eks:["Du setter deg ved noen som sitter alene.","Du spør en klassekamerat som virker lei seg om alt er greit."]},
+  {id:"res", navn:"Respekt", def:"Å behandle andre ordentlig, også de du er uenig med eller ikke kjenner.",
+   eks:["Du lytter ferdig før du svarer, selv i en krangel.","Du snakker ikke nedsettende om andres tro eller bakgrunn."]},
+  {id:"ans", navn:"Ansvar", def:"Å gjøre det som må gjøres, og stå for det du gjør.",
+   eks:["Du gjør din del av gruppearbeidet uten at noen må mase.","Du rydder opp etter deg selv om ingen sjekker."]},
+  {id:"fri", navn:"Frihet", def:"Å kunne velge selv og være den du er, uten at andre bestemmer over deg.",
+   eks:["Du velger valgfag ut fra hva DU liker, ikke hva vennene velger.","Du kler deg slik du selv vil."]},
+  {id:"try", navn:"Trygghet", def:"Å føle deg sikker, og bidra til at andre kan føle seg trygge.",
+   eks:["Du unngår situasjoner som kan bli farlige eller ubehagelige.","Du sier fra til en voksen når noe føles utrygt."]},
+  {id:"fel", navn:"Fellesskap", def:"Å inkludere alle og bidra til at gruppa fungerer godt sammen.",
+   eks:["Du inviterer med noen som ofte står utenfor.","Du heier på laget selv når du sitter på benken."]},
+  {id:"tol", navn:"Toleranse", def:"Å akseptere at folk er forskjellige og har rett til å mene og leve ulikt.",
+   eks:["Du godtar at en venn har en helt annen mening enn deg.","Du blir kjent med folk som er annerledes enn deg selv."]},
+  {id:"mes", navn:"Mestring", def:"Å ville bli bedre, jobbe for målene dine og ikke gi opp.",
+   eks:["Du øver ekstra på det du synes er vanskelig.","Du setter deg mål og jobber for å nå dem."]}
+];
+const V = Object.fromEntries(VERDIER.map(v=>[v.id,v]));
+
+/* Rangeringsrunder: hver verdi dukker opp to ganger */
+const RUNDER = [
+  ["aer","ven","mot"],["ret","oms","fri"],["res","ans","try"],["fel","tol","mes"],
+  ["aer","oms","fel"],["ven","res","mes"],["mot","try","tol"],["ret","ans","fri"]
+];
+
+/* ============================= DILEMMAER ============================= */
+const DILEMMAER = [
+  {id:"d1", tittel:"Prøven", tekst:"Under en viktig prøve ser du at bestevennen din jukser med lapp under pulten. Læreren har sagt at juks får store konsekvenser for hele klassen, fordi prøven må tas på nytt hvis noen blir tatt.",
+   valg:[
+     {tekst:"Jeg sier fra til læreren etter prøven.", verdier:["aer","ret"]},
+     {tekst:"Jeg tar det opp med vennen min etterpå og sier at dette ikke er greit.", verdier:["oms","aer"]},
+     {tekst:"Jeg lar det ligge. Det er ikke min sak, og jeg vil ikke ødelegge vennskapet.", verdier:["ven","try"]}
+   ]},
+  {id:"d2", tittel:"Gruppechatten", tekst:"I klassechatten deler noen et flaut bilde av en elev i klassen. Flere ler og kommenterer. Du kjenner at dette er feil.",
+   valg:[
+     {tekst:"Jeg skriver i chatten at dette ikke er greit, og ber dem slette bildet.", verdier:["mot","res"]},
+     {tekst:"Jeg varsler en voksen, uten å si noe i chatten.", verdier:["ans","oms"]},
+     {tekst:"Jeg sender en melding til den på bildet og spør hvordan det går.", verdier:["oms","ven"]}
+   ]},
+  {id:"d3", tittel:"Laget", tekst:"Du er kaptein og skal ta ut startoppstillingen til en viktig kamp. En god venn av deg har møtt på hver eneste trening, men er blant de svakeste på laget. Den beste spilleren har skulket flere treninger.",
+   valg:[
+     {tekst:"Jeg tar ut de beste. Vi spiller for å vinne.", verdier:["mes","aer"]},
+     {tekst:"Jeg lar vennen min starte. Innsats over tid skal lønne seg.", verdier:["ven","ret"]},
+     {tekst:"Jeg roterer så alle får spille omtrent like mye.", verdier:["fel","ret"]}
+   ]},
+  {id:"d4", tittel:"Gruppearbeidet", tekst:"Dere skal levere et stort gruppearbeid i morgen. Én på gruppa har ikke gjort noe som helst, og det som mangler er den delen hen skulle gjøre.",
+   valg:[
+     {tekst:"Jeg gjør ferdig delen selv i kveld, så leveransen blir bra.", verdier:["ans","mes"]},
+     {tekst:"Jeg konfronterer personen direkte og krever at hen leverer.", verdier:["mot","ret"]},
+     {tekst:"Jeg sier fra til læreren om hvem som faktisk har gjort hva.", verdier:["aer","ret"]}
+   ]},
+  {id:"d5", tittel:"Bursdagen", tekst:"En i vennegjengen din har bursdagsfest og har invitert nesten hele klassen, men bevisst utelatt én elev. Nå snakker alle om festen rett foran den som ikke er invitert.",
+   valg:[
+     {tekst:"Jeg sier til bursdagsbarnet at det er dårlig gjort å utelate én.", verdier:["mot","ret"]},
+     {tekst:"Jeg finner på noe hyggelig med den som ikke er invitert.", verdier:["oms","fel"]},
+     {tekst:"Jeg holder meg utenfor. Det er ikke jeg som bestemmer gjestelista.", verdier:["fri","try"]}
+   ]},
+  {id:"d6", tittel:"Den nye eleven", tekst:"En ny elev med en annen bakgrunn enn de fleste i klassen blir baksnakket i friminuttene. Noen i din egen vennegjeng er blant dem som snakker.",
+   valg:[
+     {tekst:"Jeg sier imot vennene mine når de baksnakker.", verdier:["mot","tol"]},
+     {tekst:"Jeg blir kjent med den nye eleven og inkluderer hen i friminuttene.", verdier:["fel","oms"]},
+     {tekst:"Jeg lar være å delta i baksnakkingen, men sier ikke noe.", verdier:["res","try"]}
+   ]},
+  {id:"d7", tittel:"Hemmeligheten", tekst:"En venn forteller deg i fortrolighet at hen har det veldig vanskelig hjemme, men får deg til å love å ikke si det til noen.",
+   valg:[
+     {tekst:"Jeg forteller det til en voksen jeg stoler på, selv om jeg lovte å tie.", verdier:["oms","ans"]},
+     {tekst:"Jeg holder løftet, men er tett på vennen min og følger med.", verdier:["ven","oms"]},
+     {tekst:"Jeg prøver å overtale vennen min til å si fra selv.", verdier:["res","mot"]}
+   ]},
+  {id:"d8", tittel:"Valget", tekst:"Du skal velge aktivitet for hele neste halvår. Du brenner for én ting, men ingen av vennene dine velger den. Samtidig trenger klassens lag deg på en tredje aktivitet for å ha nok deltakere.",
+   valg:[
+     {tekst:"Jeg velger det jeg selv brenner for, selv om jeg blir alene.", verdier:["fri","mes"]},
+     {tekst:"Jeg velger det samme som vennene mine.", verdier:["ven","try"]},
+     {tekst:"Jeg velger laget som trenger meg.", verdier:["fel","ans"]}
+   ]}
+];
+
+/* ============================= FIREBASE ============================= */
+/* Lastes ALDRI ved sidelast — bare i det øyeblikket noen faktisk trenger
+   et rom (lærer oppretter, elev blir med). «Gjør øvelsen alene» krever
+   ingen nettforbindelse i det hele tatt. Se firebase/README.md. */
+const firebaseConfig = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+const KILDE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+let db = null, FB = null, laster = null;
+
+function lastFirebase() {
+  if (FB) return Promise.resolve(FB);
+  if (!laster) {
+    laster = Promise.all([
+      import(KILDE + 'firebase-app.js'),
+      import(KILDE + 'firebase-database.js'),
+      import(KILDE + 'firebase-auth.js'),
+    ]).then(([a, d, g]) => {
+      const app = a.initializeApp(firebaseConfig);
+      db = d.getDatabase(app);
+      const auth = g.getAuth(app);
+      FB = {
+        ref: d.ref, set: d.set, get: d.get, update: d.update, onValue: d.onValue, off: d.off,
+        auth, paalogg: g.signInAnonymously
+      };
+      return FB;
+    }).catch(e => { laster = null; throw e; });
+  }
+  return laster;
+}
+const R = sti => FB.ref(db, sti);
+
+let uid = null, paalogging = null;
+function sikreAuth() {
+  if (uid) return Promise.resolve(uid);
+  if (!paalogging) {
+    paalogging = lastFirebase()
+      .then(() => FB.paalogg(FB.auth))
+      .then(c => (uid = c.user.uid))
+      .catch(() => { paalogging = null; return null; });
+  }
+  return paalogging;
+}
+
+/* ============================= TILSTAND ============================= */
+let S = {
+  modus:null,          // "laerer" | "elev" | "alene"
+  rom:null, navn:"", elevId:null,
+  rundeIdx:0, rangering:{},     // runde: [id,id,id] i valgt rekkefølge
+  poeng:{},                     // verdiId -> poeng fra rangering
+  dilemmaIdx:0, handling:{},    // verdiId -> antall fra dilemmavalg
+  valgLogg:[],                  // {dilemma, valgtekst, verdier} — lokalt, deles ikke med rommet
+  midlValg:[]                   // valgte i pågående runde
+};
+VERDIER.forEach(v=>{S.poeng[v.id]=0;S.handling[v.id]=0});
+
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function illu(nøkkel, tekst){
+  const url = ILLU[nøkkel];
+  if(url) return `<div class="illu har-bilde"><img src="${esc(url)}" alt=""></div>`;
+  return `<div class="illu" role="img" aria-label="Illustrasjon: ${esc(tekst)}">🎨<span>Illustrasjon: ${esc(tekst)}</span><span class="grå" style="font-weight:400">(nøkkel: ${nøkkel}, 5:3)</span></div>`;
+}
+
+function visModal(html){
+  const bak = document.createElement("div");
+  bak.className="modal-bak";
+  bak.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}<button class="btn mt16" onclick="this.closest('.modal-bak').remove()">Lukk</button></div>`;
+  bak.addEventListener("click",e=>{if(e.target===bak)bak.remove()});
+  document.body.appendChild(bak);
+}
+function visVerdi(id){
+  const v=V[id];
+  visModal(`<p class="eyebrow">Verdi</p><h2>${v.navn}</h2><p class="mt8">${v.def}</p>
+    <h3 class="mt16">Eksempler</h3><ul>${v.eks.map(e=>`<li>${e}</li>`).join("")}</ul>`);
+}
+
+/* ============================= LAGRING (rom) ============================= */
+/* Rommet ligger i Firebase Realtime Database under verdikompasset/{KODE}.
+   Hver elev skriver bare til sin egen node (elever/{uid}), nøkkelen er den
+   anonyme id-en fra sikreAuth() — se firebase/database.rules.json. */
+async function lagreElev(status){
+  if(S.modus!=="elev" || !S.rom || !S.elevId) return;
+  const data = { navn:S.navn, status, poeng:S.poeng, handling:S.handling, tid:Date.now() };
+  if(status==="ferdig") data.samsvar = beregnSamsvar().prosent;
+  try{
+    await lastFirebase();
+    await FB.set(R('verdikompasset/'+S.rom+'/elever/'+S.elevId), data);
+  }catch(e){/* nettverksglipp skal ikke stoppe eleven */}
+}
+
+/* ============================= BEREGNING ============================= */
+function topp(obj,n=3){
+  return Object.entries(obj).filter(([,p])=>p>0).sort((a,b)=>b[1]-a[1]).slice(0,n).map(([id])=>id);
+}
+function beregnSamsvar(){
+  const sier = topp(S.poeng,3), gjør = topp(S.handling,3);
+  const felles = sier.filter(id=>gjør.includes(id));
+  return {sier, gjør, felles, prosent: Math.round(felles.length/3*100)};
+}
+
+/* ============================= SKJERMER ============================= */
+function skjermStart(){
+  app.innerHTML = `
+    ${illu("start","ungdommer med kompass")}
+    <p class="eyebrow senter">Livsmestring</p>
+    <h1 class="senter mb16">Verdikompasset</h1>
+    <p class="senter grå mb16">Hva er viktigst for deg – og handler du etter det?</p>
+    <div class="kort">
+      <button class="btn mb8" onclick="startElev()">Bli med i et rom (elev)</button>
+      <button class="btn sekundær mb8" onclick="startAlene()">Gjør øvelsen alene</button>
+      <button class="btn sekundær" onclick="startLaerer()">Opprett rom (lærer)</button>
+    </div>
+    <p class="senter liten-tekst grå">Svar i et rom deles med læreren og klassen din.</p>`;
+}
+
+/* ---------- Elev / alene ---------- */
+function startAlene(){ S.modus="alene"; skjermIntro(); }
+function startElev(){
+  app.innerHTML = `
+    <h2 class="mb16">Bli med i rommet</h2>
+    <div class="kort">
+      <label class="mb8" style="display:block;font-weight:600">Romkode fra læreren</label>
+      <input type="text" id="inpKode" maxlength="4" placeholder="F.eks. RÅDY" style="text-transform:uppercase;letter-spacing:.2em;font-size:1.4rem;text-align:center">
+      <label class="mt16 mb8" style="display:block;font-weight:600">Fornavnet ditt</label>
+      <input type="text" id="inpNavn" maxlength="20" placeholder="Fornavn">
+      <button class="btn mt16" onclick="bliMed()">Bli med</button>
+      <p id="feilElev" class="liten-tekst mt8" style="color:var(--baer)"></p>
+    </div>
+    <button class="btn sekundær" onclick="skjermStart()">Tilbake</button>`;
+}
+async function bliMed(){
+  const kode = document.getElementById("inpKode").value.trim().toUpperCase();
+  const navn = document.getElementById("inpNavn").value.trim();
+  const feil = document.getElementById("feilElev");
+  if(kode.length!==4 || !navn){ feil.textContent="Skriv inn både romkode (4 tegn) og fornavn."; return; }
+  feil.textContent="Sjekker rommet …";
+  let snap;
+  try{
+    await lastFirebase();
+    snap = await FB.get(R('verdikompasset/'+kode));
+  }catch(e){ feil.textContent="Fikk ikke kontakt. Sjekk internett og prøv igjen."; return; }
+  if(!snap.exists()){ feil.textContent="Fant ikke rommet. Sjekk koden med læreren."; return; }
+  const meg = await sikreAuth();
+  if(!meg){ feil.textContent="Fikk ikke koblet til rommet akkurat nå. Prøv igjen, eller gjør øvelsen alene."; return; }
+  S.modus="elev"; S.rom=kode; S.navn=navn; S.elevId=meg;
+  await lagreElev("startet");
+  skjermIntro();
+}
+
+function skjermIntro(){
+  app.innerHTML = `
+    ${illu("ranking","verdier som veies mot hverandre")}
+    <h2 class="mb8">Del 1: Hva er viktigst for deg?</h2>
+    <p class="grå mb16">Du får se tre verdier om gangen. Trykk på dem i rekkefølge: først den viktigste, så nummer to, så nummer tre. Trykk på ⓘ hvis du lurer på hva en verdi betyr.</p>
+    <div class="kort liten-tekst">
+      <b>Poeng:</b> 1. plass gir 3 poeng, 2. plass gir 2 poeng, 3. plass gir 1 poeng. Til slutt ser du din egen verdirangering.
+    </div>
+    <button class="btn" onclick="skjermRunde()">Start</button>`;
+}
+
+function skjermRunde(){
+  const runde = RUNDER[S.rundeIdx];
+  S.midlValg = [];
+  app.innerHTML = `
+    <div class="fremdrift">${RUNDER.map((_,i)=>`<span class="${i<S.rundeIdx?'ferdig':i===S.rundeIdx?'aktiv':''}"></span>`).join("")}</div>
+    <p class="eyebrow">Runde ${S.rundeIdx+1} av ${RUNDER.length}</p>
+    <h2 class="mb16">Hva setter du høyest?</h2>
+    <div id="brikker">${runde.map(id=>`
+      <button class="brikke" data-id="${id}" onclick="velgBrikke('${id}')">
+        <span class="plass">–</span><span class="navn">${V[id].navn}</span>
+        <span class="info-knapp" role="button" tabindex="0" aria-label="Om ${V[id].navn}"
+          onclick="event.stopPropagation();visVerdi('${id}')"
+          onkeydown="if(event.key==='Enter'){event.stopPropagation();visVerdi('${id}')}">ⓘ</span>
+      </button>`).join("")}
+    </div>
+    <button class="btn sekundær liten" onclick="skjermRunde()">Start runden på nytt</button>
+    <button class="btn mt16" id="btnNeste" disabled onclick="nesteRunde()">Neste</button>`;
+}
+function velgBrikke(id){
+  if(S.midlValg.includes(id)) return;
+  S.midlValg.push(id);
+  const plass = S.midlValg.length;
+  const el = document.querySelector(`.brikke[data-id="${id}"]`);
+  el.classList.add("valgt"); if(plass===1) el.classList.add("plass1");
+  el.querySelector(".plass").textContent = plass + ".";
+  if(S.midlValg.length===3) document.getElementById("btnNeste").disabled=false;
+}
+function nesteRunde(){
+  S.midlValg.forEach((id,i)=>{ S.poeng[id] += 3-i; });
+  S.rangering[S.rundeIdx]=S.midlValg;
+  S.rundeIdx++;
+  if(S.rundeIdx < RUNDER.length) skjermRunde();
+  else skjermMinRangering();
+}
+
+function skjermMinRangering(){
+  const t = topp(S.poeng,3);
+  lagreElev("rangert");
+  app.innerHTML = `
+    <p class="eyebrow">Del 1 ferdig</p>
+    <h2 class="mb8">Dine viktigste verdier</h2>
+    <div class="podium" aria-label="Pallplassering">
+      <div class="p2">${V[t[1]]?.navn||""}<small>2. plass</small></div>
+      <div class="p1">${V[t[0]]?.navn||""}<small>1. plass</small></div>
+      <div class="p3">${V[t[2]]?.navn||""}<small>3. plass</small></div>
+    </div>
+    <div class="kort">
+      ${Object.entries(S.poeng).sort((a,b)=>b[1]-a[1]).map(([id,p],i)=>`
+        <div class="rangering-rad">
+          <span class="nr">${i+1}.</span>
+          <div class="bar-spor"><div class="bar" style="width:${Math.max(p/6*100,18)}%">${V[id].navn} · ${p}p</div></div>
+        </div>`).join("")}
+    </div>
+    <h3 class="mb8">Del 2: Situasjonene</h3>
+    <p class="grå mb16">Nå får du åtte situasjoner der verdier står mot hverandre. Det finnes ikke ett riktig svar – velg det du mest sannsynlig ville gjort.</p>
+    <button class="btn" onclick="skjermDilemma()">Til situasjonene</button>`;
+}
+
+function skjermDilemma(){
+  const d = DILEMMAER[S.dilemmaIdx];
+  app.innerHTML = `
+    <div class="fremdrift">${DILEMMAER.map((_,i)=>`<span class="${i<S.dilemmaIdx?'ferdig':i===S.dilemmaIdx?'aktiv':''}"></span>`).join("")}</div>
+    ${illu(d.id, d.tittel)}
+    <p class="eyebrow">Situasjon ${S.dilemmaIdx+1} av ${DILEMMAER.length}</p>
+    <h2 class="mb8">${d.tittel}</h2>
+    <p class="mb16">${d.tekst}</p>
+    <p class="liten-tekst grå mb8"><b>Hva gjør du?</b></p>
+    ${d.valg.map((v,i)=>`<button class="valg" onclick="velgDilemma(${i})">${v.tekst}</button>`).join("")}`;
+}
+function velgDilemma(i){
+  const d = DILEMMAER[S.dilemmaIdx];
+  const valg = d.valg[i];
+  valg.verdier.forEach(id=>S.handling[id]++);
+  S.valgLogg.push({dilemma:d.tittel, valg:valg.tekst, verdier:valg.verdier});
+  S.dilemmaIdx++;
+  if(S.dilemmaIdx < DILEMMAER.length) skjermDilemma();
+  else skjermProfil();
+}
+
+function skjermProfil(){
+  const r = beregnSamsvar();
+  lagreElev("ferdig");
+  const maksP = Math.max(...Object.values(S.poeng),1);
+  const maksH = Math.max(...Object.values(S.handling),1);
+  const relevante = VERDIER.filter(v=>S.poeng[v.id]>0||S.handling[v.id]>0)
+    .sort((a,b)=>(S.poeng[b.id]+S.handling[b.id]*2)-(S.poeng[a.id]+S.handling[a.id]*2));
+  app.innerHTML = `
+    ${illu("profil","verdiprofil")}
+    <p class="eyebrow">Din verdiprofil</p>
+    <h1 class="mb16">${esc(S.navn)||"Din profil"}</h1>
+    <div class="kort senter">
+      <div class="samsvar" style="--p:${r.prosent}"><b>${r.prosent}%</b><span>samsvar</span></div>
+      <p class="liten-tekst grå">Hvor godt valgene dine i situasjonene stemmer med verdiene du rangerte høyest.</p>
+    </div>
+    <div class="kort">
+      <h3 class="mb16">Det du sier vs. det du gjør</h3>
+      <div class="speil-topp"><span class="v">Sier (rangering)</span><span></span><span class="h">Gjør (valg)</span></div>
+      ${relevante.map(v=>`
+        <div class="speil-rad">
+          <div class="speil-spor venstre"><div class="speil-fyll" style="width:${S.poeng[v.id]/maksP*100}%"></div></div>
+          <div class="speil-navn">${v.navn}</div>
+          <div class="speil-spor høyre"><div class="speil-fyll" style="width:${S.handling[v.id]/maksH*100}%"></div></div>
+        </div>`).join("")}
+    </div>
+    <div class="kort">
+      <h3 class="mb8">Til ettertanke</h3>
+      ${lagRefleksjon(r).map(t=>`<div class="refleksjon">${t}</div>`).join("")}
+    </div>
+    ${S.modus==="elev" ? `<p class="senter liten-tekst grå">Profilen din er sendt til rommet <b>${S.rom}</b>. ✅</p>` : ""}
+    <button class="btn sekundær mt16" onclick="location.reload()">Start på nytt</button>`;
+}
+function lagRefleksjon(r){
+  const ut=[];
+  if(r.felles.length===3) ut.push("Alle de tre viktigste verdiene dine dukket opp i valgene du tok. Hva tror du gjør at det er lett for deg å handle etter verdiene dine?");
+  else if(r.felles.length>=1) ut.push(`Verdien <b>${r.felles.map(id=>V[id].navn).join(" og ")}</b> går igjen både i det du sier og det du gjør. Hva gjør denne verdien viktig for deg?`);
+  const mangler = r.sier.filter(id=>!r.gjør.includes(id));
+  if(mangler.length) ut.push(`Du rangerte <b>${mangler.map(id=>V[id].navn).join(" og ")}</b> høyt, men de kom lite til syne i valgene dine. Hva kan gjøre det vanskelig å handle etter disse verdiene i praksis?`);
+  const overrasket = r.gjør.filter(id=>!r.sier.includes(id));
+  if(overrasket.length) ut.push(`I situasjonene valgte du ofte ut fra <b>${overrasket.map(id=>V[id].navn).join(" og ")}</b> – uten at du rangerte dem øverst. Kan det hende disse verdiene betyr mer for deg enn du trodde?`);
+  ut.push("Er det en situasjon fra ditt eget liv der to av verdiene dine sto mot hverandre? Hva valgte du – og hva ville du gjort i dag?");
+  return ut;
+}
+
+/* ---------- Lærer ---------- */
+async function startLaerer(){
+  app.innerHTML = `<div class="kort senter"><p class="grå">Oppretter rom …</p></div>`;
+  try{
+    await lastFirebase();
+    const eier = await sikreAuth();
+    if(!eier) throw new Error('ingen pålogging');
+    const kode = lagKode();
+    await FB.set(R('verdikompasset/'+kode), { opprettet: Date.now(), owner: eier });
+    S.modus="laerer"; S.rom=kode;
+    skjermDashboard();
+    startLarerLytter(kode);
+  }catch(e){
+    app.innerHTML = `<div class="kort"><h2>Fikk ikke opprettet rommet</h2><p class="grå mt8">Sjekk nettverket og prøv igjen.</p><button class="btn mt16" onclick="startLaerer()">Prøv igjen</button><button class="btn sekundær mt8" onclick="skjermStart()">Tilbake</button></div>`;
+  }
+}
+function lagKode(){
+  const b="ABDEFGHJKLMNPRSTUVY";
+  return Array.from({length:4},()=>b[Math.floor(Math.random()*b.length)]).join("");
+}
+
+function skjermDashboard(){
+  app.innerHTML = `
+    <p class="eyebrow">Lærerrom</p>
+    <h1 class="mb8">Klassens verdiprofil</h1>
+    <p class="grå">Elevene blir med på koden:</p>
+    <div class="romkode">${S.rom}</div>
+    <div class="stat-rad">
+      <div class="stat"><b id="stTot">0</b><span>påkoblet</span></div>
+      <div class="stat"><b id="stFerdig">0</b><span>ferdige</span></div>
+      <div class="stat"><b id="stSamsvar">–</b><span>samsvar snitt</span></div>
+    </div>
+    <div class="kort"><h3 class="mb8">Elever</h3><div class="elev-liste" id="elevListe"><span class="grå liten-tekst">Venter på elever …</span></div></div>
+    <div class="kort"><h3 class="mb8">Klassens viktigste verdier <span class="liten-tekst grå">(rangering)</span></h3><div id="klasseRangering"><span class="grå liten-tekst">Vises når elever har rangert.</span></div></div>
+    <div class="kort"><h3 class="mb8">Verdiene klassen handler etter <span class="liten-tekst grå">(valg i situasjoner)</span></h3><div id="klasseHandling"><span class="grå liten-tekst">Vises når elever er ferdige.</span></div></div>
+    <button class="btn" onclick="lagreRapport()">Lagre klassens profil</button>
+    <p class="senter liten-tekst grå mt8" id="lagretStatus"></p>`;
+}
+
+let sisteData = [];
+let romLytter = null, romLytterSti = null;
+function startLarerLytter(kode){
+  if(romLytter) FB.off(R(romLytterSti),'value',romLytter);
+  romLytterSti = 'verdikompasset/'+kode;
+  romLytter = FB.onValue(R(romLytterSti), snap=>{
+    const d = snap.val() || {};
+    const elever = d.elever || {};
+    sisteData = Object.values(elever);
+    tegnDashboard(sisteData);
+  });
+}
+function tegnDashboard(data){
+  const ferdige = data.filter(d=>d.status==="ferdig");
+  document.getElementById("stTot").textContent = data.length;
+  document.getElementById("stFerdig").textContent = ferdige.length;
+  const snitt = ferdige.length ? Math.round(ferdige.reduce((s,d)=>s+(d.samsvar||0),0)/ferdige.length)+"%" : "–";
+  document.getElementById("stSamsvar").textContent = snitt;
+
+  document.getElementById("elevListe").innerHTML = data.length
+    ? data.map(d=>`<span class="elev-tag ${d.status==='ferdig'?'ferdig':''}">${esc(d.navn)}${d.status==='ferdig'?' ✓':''}</span>`).join("")
+    : `<span class="grå liten-tekst">Venter på elever …</span>`;
+
+  const sumRang={}, sumHand={};
+  VERDIER.forEach(v=>{sumRang[v.id]=0;sumHand[v.id]=0});
+  data.forEach(d=>{
+    VERDIER.forEach(v=>{
+      sumRang[v.id]+= d.poeng?.[v.id]||0;
+      sumHand[v.id]+= d.handling?.[v.id]||0;
+    });
+  });
+  tegnRangering("klasseRangering", sumRang, "p");
+  if(ferdige.length) tegnRangering("klasseHandling", sumHand, "valg");
+}
+function tegnRangering(elId, obj, enhet){
+  const rader = Object.entries(obj).sort((a,b)=>b[1]-a[1]);
+  const maks = Math.max(rader[0]?.[1]||0,1);
+  if(!rader[0][1]) return;
+  document.getElementById(elId).innerHTML = rader.map(([id,p],i)=>`
+    <div class="rangering-rad">
+      <span class="nr">${i+1}.</span>
+      <div class="bar-spor"><div class="bar" style="width:${Math.max(p/maks*100,16)}%">${V[id].navn} · ${p} ${enhet}</div></div>
+    </div>`).join("");
+}
+function lagreRapport(){
+  const rapport = {
+    rom:S.rom, dato:new Date().toISOString(),
+    antall:sisteData.length,
+    elever:sisteData
+  };
+  const blob = new Blob([JSON.stringify(rapport,null,2)],{type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `verdiprofil-${S.rom}.json`;
+  a.click();
+  document.getElementById("lagretStatus").textContent = "Klassens profil er lastet ned. ✅";
+}
+
+skjermStart();
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>

@@ -400,6 +400,62 @@
       }
     },
 
+    "verdikompasset": {
+      "$kode": {
+        ".read": true,
+        ".write": "$kode.matches(/^[A-Z0-9]{4,8}$/) && auth != null && (!data.exists() || data.child('owner').val() === auth.uid || data.child('opprettet').val() < now - 43200000)",
+        ".validate": "newData.hasChildren(['opprettet', 'owner'])",
+
+        "owner": {
+          ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
+        },
+        "opprettet": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+
+        "elever": {
+          ".write": "auth != null && root.child('verdikompasset').child($kode).child('owner').val() === auth.uid",
+
+          "$elevId": {
+            ".write": "auth != null && $elevId === auth.uid",
+            ".validate": "newData.hasChildren(['navn', 'status', 'poeng', 'handling', 'tid'])",
+
+            "navn": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 20"
+            },
+            "status": {
+              ".validate": "newData.isString() && newData.val().matches(/^(startet|rangert|ferdig)$/)"
+            },
+            "poeng": {
+              ".validate": "newData.hasChildren(['aer','ret','ven','mot','oms','res','ans','fri','try','fel','tol','mes'])",
+              "$verdi": {
+                ".validate": "$verdi.matches(/^(aer|ret|ven|mot|oms|res|ans|fri|try|fel|tol|mes)$/) && newData.isNumber() && newData.val() >= 0 && newData.val() <= 6"
+              }
+            },
+            "handling": {
+              ".validate": "newData.hasChildren(['aer','ret','ven','mot','oms','res','ans','fri','try','fel','tol','mes'])",
+              "$verdi": {
+                ".validate": "$verdi.matches(/^(aer|ret|ven|mot|oms|res|ans|fri|try|fel|tol|mes)$/) && newData.isNumber() && newData.val() >= 0 && newData.val() <= 16"
+              }
+            },
+            "samsvar": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100"
+            },
+            "tid": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
