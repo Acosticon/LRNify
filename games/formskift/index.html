@@ -348,7 +348,7 @@
     <details class="teacher">
       <summary>Til læreren</summary>
       <p><b>Kompetansemål (etter 6. trinn):</b> «lage kongruensavbildninger med og uten koordinatsystemer».</p>
-      <p>Elevene trenger ikke kunne begrepene på forhånd. De utfører først handlingene — forskyvning, rotasjon og speiling — og setter matematisk språk på dem etterpå. Spillet tar ca. 8–12 minutter og har 12 oppgaver.</p>
+      <p>Elevene trenger ikke kunne begrepene på forhånd. De utfører først handlingene — forskyvning, rotasjon og speiling — og setter matematisk språk på dem etterpå. Speillinja står først loddrett eller vannrett, og legger seg på skrå mot slutten. Spillet tar ca. 9–13 minutter og har 13 oppgaver.</p>
       <p>Etterpå: tegn én asymmetrisk figur på tavla og spør «Hva kan jeg gjøre med denne uten at den slutter å være kongruent med originalen?» og deretter «Hva er det som aldri forandrer seg?» Målet er at elevene selv peker på at form, sidelengder, vinkler og størrelse bevares, mens plassering og retning kan endres.</p>
     </details>
   </div>
@@ -460,10 +460,13 @@ const PUZZLES = [
   {id:'k2b', slot:8, kap:5, board:8, shape:'pil2', cells:[[1,2],[2,2],[3,1],[3,2],[3,3],[4,3]], pivot:[3,2], target:[[4,4],[5,4],[6,3],[6,4],[6,5],[7,3]], tools:['move','rotate','mirror'], mirrors:[{axis:'h',m:4}], star:true, min:3, text:'Her trengs mer enn én type handling.', focus:'kjede'},
   {id:'k3a', slot:9, kap:5, board:8, shape:'romskip', cells:[[1,1],[2,1],[2,2],[2,3],[2,4],[3,3]], pivot:[2,3], target:[[3,4],[4,3],[4,4],[5,4],[6,4],[6,5]], tools:['move','rotate','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:4, text:'Denne krever alle tre verktøyene.', focus:'kjede'},
   {id:'k3b', slot:9, kap:5, board:8, shape:'L', cells:[[1,1],[1,2],[1,3],[1,4],[2,1]], pivot:[2,3], target:[[2,5],[2,6],[3,5],[4,5],[5,5]], tools:['move','rotate','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:4, text:'Denne krever alle tre verktøyene.', focus:'kjede'},
-  {id:'c1a', slot:10, kap:7, board:8, coord:true, shape:'L', cells:[[1,1],[1,2],[1,3],[1,4],[2,1]], pivot:[2,3], target:[[5,3],[5,4],[5,5],[5,6],[6,3]], tools:['move'], min:2, text:'Forskyv figuren 4 mot høyre og 2 opp.', focus:'koordinater'},
-  {id:'c1b', slot:10, kap:7, board:8, coord:true, shape:'trapp', cells:[[1,4],[1,5],[2,5],[2,6],[2,7]], pivot:[2,6], target:[[5,1],[5,2],[6,2],[6,3],[6,4]], tools:['move'], min:2, text:'Forskyv figuren 4 mot høyre og 3 ned.', focus:'koordinater'},
-  {id:'c2a', slot:11, kap:7, board:8, coord:true, shape:'Y', cells:[[1,1],[1,2],[1,3],[1,4],[2,2]], pivot:[2,3], target:[[3,4],[4,4],[5,4],[5,5],[6,4]], tools:['move','rotate'], star:true, min:3, text:'Roter figuren, og forskyv den på plass.', focus:'koordinater'},
-  {id:'c2b', slot:11, kap:7, board:8, coord:true, shape:'blob', cells:[[1,1],[1,2],[2,1],[2,2],[3,2],[3,3]], pivot:[2,2], target:[[3,5],[3,6],[4,4],[4,5],[5,4],[5,5]], tools:['move','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:3, text:'Speil figuren, og forskyv den på plass.', focus:'koordinater'},
+  {id:'d1a', slot:10, kap:3, lesson:'diagonal', board:8, shape:'trapp', cells:[[3,0],[3,1],[4,1],[4,2],[4,3]], pivot:[4,2], target:[[1,4],[2,4],[2,5],[3,5],[4,5]], tools:['move','mirror'], mirrors:[{axis:'d',m:0}], min:3, text:'Speillinja ligger på skrå. Speil figuren, og flytt den på plass.', focus:'speiling'},
+  {id:'d1b', slot:10, kap:3, lesson:'diagonal', board:8, shape:'blob', cells:[[1,1],[1,2],[2,1],[2,2],[3,2],[3,3]], pivot:[2,2], target:[[5,5],[6,5],[6,6],[6,7],[7,6],[7,7]], tools:['move','mirror'], mirrors:[{axis:'a',m:8}], min:3, text:'Speillinja ligger på skrå. Speil figuren, og flytt den på plass.', focus:'speiling'},
+  {id:'k3c', slot:9, kap:5, board:8, shape:'F', cells:[[2,1],[3,0],[3,1],[3,2],[4,2]], pivot:[3,1], target:[[0,6],[1,4],[1,5],[1,6],[2,5]], tools:['move','rotate','mirror'], mirrors:[{axis:'d',m:0}], star:true, min:4, text:'Denne krever alle tre verktøyene.', focus:'kjede'},
+  {id:'c1a', slot:11, kap:7, board:8, coord:true, shape:'L', cells:[[1,1],[1,2],[1,3],[1,4],[2,1]], pivot:[2,3], target:[[5,3],[5,4],[5,5],[5,6],[6,3]], tools:['move'], min:2, text:'Forskyv figuren 4 mot høyre og 2 opp.', focus:'koordinater'},
+  {id:'c1b', slot:11, kap:7, board:8, coord:true, shape:'trapp', cells:[[1,4],[1,5],[2,5],[2,6],[2,7]], pivot:[2,6], target:[[5,1],[5,2],[6,2],[6,3],[6,4]], tools:['move'], min:2, text:'Forskyv figuren 4 mot høyre og 3 ned.', focus:'koordinater'},
+  {id:'c2a', slot:12, kap:7, board:8, coord:true, shape:'Y', cells:[[1,1],[1,2],[1,3],[1,4],[2,2]], pivot:[2,3], target:[[3,4],[4,4],[5,4],[5,5],[6,4]], tools:['move','rotate'], star:true, min:3, text:'Roter figuren, og forskyv den på plass.', focus:'koordinater'},
+  {id:'c2b', slot:12, kap:7, board:8, coord:true, shape:'blob', cells:[[1,1],[1,2],[2,1],[2,2],[3,2],[3,3]], pivot:[2,2], target:[[3,5],[3,6],[4,4],[4,5],[5,4],[5,5]], tools:['move','mirror'], mirrors:[{axis:'v',m:4}], star:true, min:3, text:'Speil figuren, og forskyv den på plass.', focus:'koordinater'},
 ];
 
 const DESCRIBE = [
@@ -483,6 +486,7 @@ const LESSONS = {
   2: {t:'Rotasjon',    b:'Rotasjon snur figuren rundt et punkt. Form og størrelse er fortsatt den samme.'},
   3: {t:'Speiling',    b:'Speiling vender figuren om på andre siden av linja. Den er like stor som før — bare siden er byttet.'},
   7: {t:'Koordinater', b:'Det er det samme brettet som før. Nå har rutene fått adresser: én rute mot høyre gir x + 1, én rute opp gir y + 1.'},
+  diagonal: {t:'Skrå speillinje', b:'Speillinja trenger ikke stå rett opp eller rett bortover. Figuren vender fortsatt om på andre siden av linja, og hver rute havner like langt fra linja som før.'},
 };
 
 /* ─────────── Kjernematematikk ─────────── */
@@ -507,15 +511,44 @@ function fRotate(f, dir){
   });
   return { cells, pivot:[piv[0],piv[1]], anchor:pRotate(f.anchor, piv, dir) };
 }
+// axis 'v': linja x = m.  'h': linja y = m.
+// axis 'd': den stigende diagonalen y = x + m.  'a': den fallende y = -x + m.
+// Alle fire bytter om på hvilken side av linja figuren ligger, og holder seg
+// på rutenettet fordi m alltid er et heltall.
 function fMirror(f, axis, m){
   if(axis === 'v'){
     return { cells: f.cells.map(c => [2*m-c[0]-1, c[1]]),
              pivot: [2*m-f.pivot[0], f.pivot[1]],
              anchor:[2*m-f.anchor[0], f.anchor[1]] };
   }
-  return { cells: f.cells.map(c => [c[0], 2*m-c[1]-1]),
-           pivot: [f.pivot[0], 2*m-f.pivot[1]],
-           anchor:[f.anchor[0], 2*m-f.anchor[1]] };
+  if(axis === 'h'){
+    return { cells: f.cells.map(c => [c[0], 2*m-c[1]-1]),
+             pivot: [f.pivot[0], 2*m-f.pivot[1]],
+             anchor:[f.anchor[0], 2*m-f.anchor[1]] };
+  }
+  if(axis === 'd'){
+    return { cells: f.cells.map(c => [c[1]-m, c[0]+m]),
+             pivot: [f.pivot[1]-m, f.pivot[0]+m],
+             anchor:[f.anchor[1]-m, f.anchor[0]+m] };
+  }
+  return { cells: f.cells.map(c => [m-c[1]-1, m-c[0]-1]),
+           pivot: [m-f.pivot[1], m-f.pivot[0]],
+           anchor:[m-f.anchor[1], m-f.anchor[0]] };
+}
+const DIAG = axis => axis === 'd' || axis === 'a';
+// Endepunktene der speillinja treffer brettkanten, i matematiske koordinater.
+function mirrorSpan(m, W, H){
+  if(m.axis === 'v') return [[m.m, 0], [m.m, H]];
+  if(m.axis === 'h') return [[0, m.m], [W, m.m]];
+  if(m.axis === 'd'){                       // y = x + m
+    const x1 = Math.max(0, -m.m), x2 = Math.min(W, H-m.m);
+    return [[x1, x1+m.m], [x2, x2+m.m]];
+  }
+  const x1 = Math.max(0, m.m-H), x2 = Math.min(W, m.m);   // y = -x + m
+  return [[x1, m.m-x1], [x2, m.m-x2]];
+}
+function mirrorName(axis){
+  return axis === 'v' ? 'den loddrette' : axis === 'h' ? 'den vannrette' : 'den skrå';
 }
 function fInside(f, W, H){
   return f.cells.every(c => c[0] >= 0 && c[1] >= 0 && c[0] < W && c[1] < H);
@@ -563,7 +596,8 @@ function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
 function buildSession(){
   const s = [];
-  for(let slot = 1; slot <= 11; slot++){
+  const lastSlot = Math.max(...PUZZLES.map(p => p.slot));
+  for(let slot = 1; slot <= lastSlot; slot++){
     const variants = PUZZLES.filter(p => p.slot === slot);
     s.push(pick(variants));
   }
@@ -637,8 +671,8 @@ function renderBoard(){
 
   // speillinjer tegnes over målfiguren, så de aldri blir liggende under skraveringen
   for(const m of (p.mirrors || [])){
-    if(m.axis === 'v') s += '<line class="mirrorline" x1="'+m.m+'" y1="0" x2="'+m.m+'" y2="'+H+'"/>';
-    else s += '<line class="mirrorline" x1="0" y1="'+py(m.m,H)+'" x2="'+W+'" y2="'+py(m.m,H)+'"/>';
+    const [A, B] = mirrorSpan(m, W, H);
+    s += '<line class="mirrorline" x1="'+A[0]+'" y1="'+py(A[1],H)+'" x2="'+B[0]+'" y2="'+py(B[1],H)+'"/>';
   }
 
   // spillerfigur
@@ -706,12 +740,25 @@ function describeBoard(){
 }
 
 /* ─────────── Animasjon ─────────── */
+/* Et trykk som kommer mens forrige animasjon går, skal aldri gå tapt: da
+   hopper vi til slutten av den pågående animasjonen og utfører handlingen med
+   én gang. Rask tapping og tastegjentakelse teller dermed hver eneste gang. */
+let animHandle = null, animDone = null;
+function finishAnim(){
+  if(animHandle !== null){ cancelAnimationFrame(animHandle); animHandle = null; }
+  const g = el('board').querySelector('#playerG');
+  if(g) g.removeAttribute('transform');
+  G.animating = false;
+  const d = animDone; animDone = null;
+  if(d) d();
+}
 function animateShape(kind, prm, done){
   const g = el('board').querySelector('#playerG');
   const H = G.cur.H;
   const dur = reducedMotion() ? 0 : (kind === 'move' ? 160 : kind === 'rot' ? 260 : 300);
   if(!g || dur === 0){ if(g) g.removeAttribute('transform'); done && done(); return; }
   G.animating = true;
+  animDone = done;
   const t0 = performance.now();
   function build(e){
     if(kind === 'move'){
@@ -724,17 +771,33 @@ function animateShape(kind, prm, done){
     }
     const sc = -1 + 2*e;
     if(prm.axis === 'v') return 'translate('+(prm.m*(1-sc))+' 0) scale('+sc+' 1)';
-    const yl = py(prm.m, H);
-    return 'translate(0 '+(yl*(1-sc))+') scale(1 '+sc+')';
+    if(prm.axis === 'h'){ const yl = py(prm.m, H); return 'translate(0 '+(yl*(1-sc))+') scale(1 '+sc+')'; }
+    return diagMatrix(prm, sc, H);
   }
   function frame(now){
     let t = Math.min(1, (now-t0)/dur);
     const e = kind === 'move' ? t*(2-t) : 0.5-0.5*Math.cos(Math.PI*t);
     g.setAttribute('transform', build(e));
-    if(t < 1) requestAnimationFrame(frame);
-    else { g.removeAttribute('transform'); G.animating = false; done && done(); }
+    if(t < 1){ animHandle = requestAnimationFrame(frame); }
+    else { animHandle = null; finishAnim(); }
   }
-  requestAnimationFrame(frame);
+  animHandle = requestAnimationFrame(frame);
+}
+
+/* Vending om en skrå linje er ingen akseparallell skalering. Vi speiler i stedet
+   i linjas eget koordinatsystem: roter til linja, skaler -1 → 1 på tvers av den,
+   roter tilbake. Ved sc = -1 er dette selve speilingen, ved sc = 1 identiteten,
+   så figuren vender seg gjennom linja akkurat som de rette speilingene. */
+function diagMatrix(prm, sc, H){
+  const [A, B] = mirrorSpan({axis: prm.axis, m: prm.m}, prm.W, H);
+  const px = A[0], pyy = py(A[1], H);                       // punkt på linja, i SVG
+  const ang = Math.atan2(py(B[1],H) - pyy, B[0] - px);      // linjas retning, i SVG
+  const c = Math.cos(ang), sn = Math.sin(ang);
+  const a =  c*c + sc*sn*sn,  b = sn*c*(1-sc);
+  const cc = c*sn*(1-sc),     d = sn*sn + sc*c*c;
+  const e = px - (a*px + cc*pyy);
+  const f = pyy - (b*px + d*pyy);
+  return 'matrix('+a+' '+b+' '+cc+' '+d+' '+e+' '+f+')';
 }
 
 function flashEdges(ids){
@@ -747,7 +810,9 @@ function flashEdges(ids){
 /* ─────────── Handlinger ─────────── */
 function doAction(act){
   const c = G.cur;
-  if(!c || c.won || G.animating) return;
+  if(!c || c.won) return;
+  if(G.animating) finishAnim();
+  if(c.won) return;                  // forrige handling traff målet
   let next, kind, prm;
   if(act.type === 'move'){
     next = fTranslate(c.fig, act.dx, act.dy);
@@ -757,7 +822,7 @@ function doAction(act){
     kind = 'rot'; prm = {dir:act.dir, px:c.fig.pivot[0], pyy:c.fig.pivot[1]};
   } else {
     next = fMirror(c.fig, act.axis, act.m);
-    kind = 'mir'; prm = {axis:act.axis, m:act.m};
+    kind = 'mir'; prm = {axis:act.axis, m:act.m, W:c.W};
   }
   if(!fInside(next, c.W, c.H)){
     if(act.type === 'move'){
@@ -782,7 +847,9 @@ function doAction(act){
 
 function undo(){
   const c = G.cur;
-  if(!c || c.won || G.animating || !c.stack.length) return;
+  if(!c || c.won) return;
+  if(G.animating) finishAnim();
+  if(c.won || !c.stack.length) return;
   const last = c.stack.pop();
   c.acts.pop();
   c.fig = last.fig;
@@ -795,7 +862,8 @@ function undo(){
 
 function restartTask(){
   const c = G.cur;
-  if(!c || G.animating) return;
+  if(!c) return;
+  if(G.animating) finishAnim();
   c.fig = c.start; c.stack = []; c.acts = []; c.won = false;
   el('board').classList.remove('solved');
   el('winSheet').hidden = true;
@@ -818,7 +886,7 @@ function describeShort(){
 function actionSpeech(a){
   if(a.type === 'move') return 'Flyttet én rute ' + (a.dx > 0 ? 'mot høyre' : a.dx < 0 ? 'mot venstre' : a.dy > 0 ? 'opp' : 'ned') + '. ' + describeShort();
   if(a.type === 'rot')  return 'Rotert 90 grader ' + (a.dir > 0 ? 'mot klokka' : 'med klokka') + '. ' + describeShort();
-  return 'Speilet over ' + (a.axis === 'v' ? 'den loddrette' : 'den vannrette') + ' linja. ' + describeShort();
+  return 'Speilet over ' + mirrorName(a.axis) + ' linja. ' + describeShort();
 }
 
 /* ─────────── Gruppering av handlinger ─────────── */
@@ -869,7 +937,7 @@ function phraseOf(g){
     const deg = turns === 1 ? '90°' : turns === 3 ? '270°' : '360°';
     return 'roter ' + deg + ' ' + (g.dir > 0 ? 'mot klokka' : 'med klokka');
   }
-  return 'speil over ' + (g.axis === 'v' ? 'den loddrette' : 'den vannrette') + ' linja';
+  return 'speil over ' + mirrorName(g.axis) + ' linja';
 }
 function sequenceText(acts){
   // slå sammen rotasjoner i samme retning til én setning (180°/270°)
@@ -923,7 +991,8 @@ function renderSubrow(){
       '<button class="sub-btn mirror-btn" data-rot="-1" aria-label="Roter 90 grader med klokka">↷ 90°</button>';
   } else if(t === 'mirror'){
     sub.innerHTML = (c.p.mirrors || []).map((m,i) =>
-      '<button class="sub-btn mirror-btn" data-mir="'+i+'">⇄ Speil over ' + (m.axis === 'v' ? 'loddrett' : 'vannrett') + ' linje</button>').join('');
+      '<button class="sub-btn mirror-btn" data-mir="'+i+'">⇄ Speil over '
+      + (m.axis === 'v' ? 'loddrett' : m.axis === 'h' ? 'vannrett' : 'skrå') + ' linje</button>').join('');
   } else {
     sub.innerHTML = '<span class="sub-hint">Velg et verktøy.</span>';
   }
@@ -955,10 +1024,11 @@ function checkWin(){
   el('winNote').textContent = (c.p.coord ? 'Det merkede hjørnet gikk fra ' + pt(c.start.anchor) + ' til ' + pt(c.fig.anchor) + '. ' : '')
     + 'Form og størrelse er uendret. Figuren dekker fortsatt ' + c.fig.cells.length + ' ruter.';
 
-  const lesson = LESSONS[c.p.kap];
-  const showLesson = lesson && !G.seenLesson[c.p.kap];
+  const lessonKey = c.p.lesson || c.p.kap;
+  const lesson = LESSONS[lessonKey];
+  const showLesson = lesson && !G.seenLesson[lessonKey];
   if(showLesson){
-    G.seenLesson[c.p.kap] = true;
+    G.seenLesson[lessonKey] = true;
     el('winLesson').innerHTML = '<b>' + esc(lesson.t) + '</b>' + esc(lesson.b);
   }
   el('winLesson').hidden = !showLesson;
@@ -1235,9 +1305,32 @@ function selftest(){
     chk(K(fTranslate(fTranslate(f0,3,2),-3,-2).cells) === K(f0.cells), p.id+': forskyvning fram og tilbake gir utgangspunktet');
     for(const m of (p.mirrors||[])){
       const m1 = fMirror(f0, m.axis, m.m), m2 = fMirror(m1, m.axis, m.m);
-      chk(K(m2.cells) === K(f0.cells), p.id+': dobbel speiling i samme linje gir utgangspunktet');
+      const nm = mirrorName(m.axis);
+      chk(K(m2.cells) === K(f0.cells), p.id+': dobbel speiling i '+nm+' linja gir utgangspunktet');
       chk(m1.cells.length === f0.cells.length, p.id+': speiling bevarer antall celler');
       chk(distSet(m1.cells) === distSet(f0.cells), p.id+': speiling bevarer alle innbyrdes avstander');
+      chk(m1.cells.every(c => Number.isInteger(c[0]) && Number.isInteger(c[1])),
+          p.id+': speiling om '+nm+' linja holder figuren på rutenettet');
+      // en speiling skal aldri kunne erstattes av en rotasjon — ellers kan ikke
+      // eleven skille de to avbildningene fra hverandre
+      let rot = {cells: f0.cells.map(c => c.slice()), pivot: f0.pivot.slice(), anchor: f0.anchor.slice()};
+      let sameAsRotation = false;
+      for(let i = 0; i < 4; i++){ if(normKey(rot.cells) === normKey(m1.cells)) sameAsRotation = true; rot = fRotate(rot, 1); }
+      chk(!sameAsRotation, p.id+': speiling om '+nm+' linja gir noe annet enn en rotasjon');
+      // linja skal starte og slutte på brettkanten
+      const [A, B] = mirrorSpan(m, W, H);
+      const onEdge = q => q[0] === 0 || q[0] === W || q[1] === 0 || q[1] === H;
+      chk(onEdge(A) && onEdge(B), p.id+': speillinja går fra kant til kant på brettet');
+      // vende-animasjonen for skrå linjer skal treffe nøyaktig samme avbildning
+      // som griddataene — ellers glir figuren visuelt fra det den faktisk gjør
+      if(DIAG(m.axis)){
+        const t = diagMatrix({axis:m.axis, m:m.m, W}, -1, H).match(/matrix\(([^)]+)\)/)[1].split(' ').map(Number);
+        const back = m1.cells.map(q => {
+          const x = q[0]+0.5, y = H-q[1]-0.5;
+          return [Math.round(t[0]*x + t[2]*y + t[4] - 0.5), Math.round(H - (t[1]*x + t[3]*y + t[5]) - 0.5)];
+        });
+        chk(K(back) === K(f0.cells), p.id+': vende-animasjonen om den skrå linja treffer samme celler som utregningen');
+      }
     }
     chk(distSet(fRotate(f0,1).cells) === distSet(f0.cells), p.id+': rotasjon bevarer alle innbyrdes avstander');
     // løsbarhet og minimum
@@ -1264,9 +1357,20 @@ function selftest(){
     chk(K(fRotate(tf,1).cells) !== K(p.target), p.id+': feil orientering på riktig sted godkjennes ikke');
   }
   // banken dekker det økta trenger
-  for(let slot = 1; slot <= 11; slot++) chk(PUZZLES.filter(p => p.slot === slot).length >= 2, 'slot '+slot+': minst to varianter');
+  const lastSlot = Math.max(...PUZZLES.map(p => p.slot));
+  let starSlots = 0;
+  for(let slot = 1; slot <= lastSlot; slot++){
+    const vs = PUZZLES.filter(p => p.slot === slot);
+    chk(vs.length >= 2, 'slot '+slot+': minst to varianter');
+    chk(vs.every(v => !!v.star) || vs.every(v => !v.star),
+        'slot '+slot+': alle variantene er enten stjerneoppgaver eller ingen — antall stjerner er likt hver økt');
+    if(vs[0].star) starSlots++;
+  }
+  chk(starSlots === 4, 'fire stjerneoppgaver i hver økt (fant '+starSlots+')');
   chk(DESCRIBE.length >= 2, 'beskriv: minst to varianter');
-  chk(PUZZLES.filter(p => p.star).length === 8, 'åtte stjerneoppgaver i banken (fire per økt)');
+  chk(PUZZLES.some(p => (p.mirrors||[]).some(m => DIAG(m.axis))), 'banken inneholder skrå speillinjer');
+  chk(PUZZLES.filter(p => (p.mirrors||[]).some(m => m.axis === 'd')).length >= 1, 'minst én oppgave med stigende diagonal');
+  chk(PUZZLES.filter(p => (p.mirrors||[]).some(m => m.axis === 'a')).length >= 1, 'minst én oppgave med fallende diagonal');
   chk(PUZZLES.some(p => p.tools.length === 2 && p.min >= 3), 'minst én oppgave krever to transformasjonstyper');
   chk(PUZZLES.some(p => p.tools.length === 3 && p.id.startsWith('k3')), 'minst én oppgave krever alle tre');
   for(const d of DESCRIBE){
