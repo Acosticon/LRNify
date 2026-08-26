@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Tallbyggeren — LRNify</title>
+<meta name="description" content="Bygg et datasett som oppfyller kravene: gjennomsnitt, median, typetall og variasjonsbredde. 60 oppgaver i seks nivåer, pluss sandkasse.">
+<link rel="canonical" href="https://lrnify.no/games/tallbyggeren/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Tallbyggeren – LRNify">
+<meta property="og:description" content="Bygg et datasett som oppfyller kravene: gjennomsnitt, median, typetall og variasjonsbredde.">
+<meta property="og:image" content="https://lrnify.no/media/cards/tallbyggeren.png">
+<meta property="og:url" content="https://lrnify.no/games/tallbyggeren/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tallbyggeren – LRNify">
+<meta name="twitter:description" content="Bygg et datasett som oppfyller kravene: gjennomsnitt, median, typetall og variasjonsbredde.">
+<meta name="twitter:image" content="https://lrnify.no/media/cards/tallbyggeren.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:  #fff9f0;
+    --ink:    #241b12;
+    --yellow: #facc15;
+    --card:   #ffffff;
+    --muted:  #7a6f63;
+    --green:  #16a34a;
+    --red:    #dc2626;
+    --indigo: #4f46e5;
+    --indigo-soft: #eef2ff;
+    --gridline: #e8dfc9;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SKJERMER ══ */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn .18s ease-out; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+  .wrap { max-width: 640px; margin: 0 auto; padding: 0 20px 70px; }
+  .screen-hero { text-align: center; margin-bottom: 22px; }
+  .hero-emoji { font-size: 3rem; line-height: 1; }
+  h1 {
+    font-family: 'Chewy', cursive; font-size: clamp(2rem,7vw,3rem);
+    font-weight: 400; margin: 6px 0 8px;
+  }
+  .screen-hero p { color: var(--muted); font-weight: 700; font-size: .98rem; }
+
+  .card {
+    background: var(--card); border: 3px solid var(--ink);
+    box-shadow: 0 6px 0 var(--ink); padding: 18px; margin-bottom: 20px;
+  }
+  .card h2 {
+    font-size: .8rem; text-transform: uppercase; letter-spacing: .08em;
+    color: var(--muted); margin-bottom: 12px;
+  }
+
+  .btn-primary {
+    width: 100%; font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: 1.1rem; padding: 15px; background: var(--yellow);
+    border: 3px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    cursor: pointer; color: var(--ink);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--ink); }
+  .btn-ghost {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .85rem;
+    background: var(--card); border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink); padding: 9px 14px; cursor: pointer;
+    color: var(--ink); transition: transform .1s, box-shadow .1s;
+  }
+  .btn-ghost:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-ghost:disabled { opacity: .4; cursor: default; }
+
+  /* ══ NIVÅVALG ══ */
+  .level-list { display: grid; gap: 10px; }
+  .level-btn {
+    display: flex; align-items: center; gap: 14px; text-align: left; width: 100%;
+    font-family: 'Nunito', sans-serif; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 12px 14px; cursor: pointer; color: var(--ink);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .level-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .level-num {
+    flex: 0 0 42px; height: 42px; display: grid; place-items: center;
+    background: var(--indigo); color: #fff; border: 3px solid var(--ink);
+    font-family: 'Chewy', cursive; font-size: 1.4rem;
+  }
+  .level-name { display: block; font-weight: 900; font-size: 1rem; }
+  .level-blurb { display: block; font-size: .8rem; color: var(--muted); font-weight: 700; margin-top: 3px; }
+
+  .field-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .field-row label { font-weight: 800; font-size: .9rem; }
+  select, .num-field {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .95rem;
+    padding: 8px 10px; border: 3px solid var(--ink); background: var(--card);
+    color: var(--ink);
+  }
+
+  /* ══ HUD ══ */
+  .hud {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .hud-label { font-weight: 900; font-size: .95rem; }
+  .hud-level { font-size: .8rem; color: var(--muted); font-weight: 800; }
+  .dots { display: flex; gap: 5px; }
+  .dot { width: 10px; height: 10px; border: 2px solid var(--ink); background: var(--card); }
+  .dot.done { background: var(--green); }
+  .dot.now { background: var(--yellow); }
+
+  /* ══ MÅLOMRÅDE ══ */
+  .goal {
+    background: var(--indigo); color: #fff; border: 3px solid var(--ink);
+    box-shadow: 0 6px 0 var(--ink); padding: 16px 18px; margin-bottom: 18px;
+  }
+  .goal-title {
+    font-family: 'Chewy', cursive; font-size: clamp(1.3rem,5vw,1.7rem);
+    font-weight: 400; margin-bottom: 12px; line-height: 1.15;
+  }
+  .goal-list { display: grid; gap: 7px; }
+  .goal-item {
+    display: flex; align-items: center; gap: 9px;
+    font-weight: 800; font-size: 1.02rem;
+    background: rgba(255,255,255,.12); padding: 7px 11px;
+  }
+  .goal-item.met { background: rgba(255,255,255,.28); }
+  .goal-mark { font-size: 1rem; width: 1.1em; flex: 0 0 auto; }
+  .goal-gap { margin-left: auto; font-weight: 800; font-size: .85rem; opacity: .85; }
+
+  /* ══ TALLBRIKKER ══ */
+  .tiles {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .tile {
+    display: flex; align-items: stretch;
+    border: 3px solid var(--ink); background: var(--card);
+    box-shadow: 0 5px 0 var(--ink);
+  }
+  .tile.locked { background: var(--gridline); box-shadow: 0 5px 0 var(--muted); border-color: var(--muted); }
+  .tile-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.35rem;
+    width: 44px; border: none; background: transparent; cursor: pointer;
+    color: var(--ink); touch-action: manipulation;
+  }
+  .tile-btn:active { background: var(--yellow); }
+  .tile-btn:disabled { opacity: .3; cursor: default; }
+  .tile-value {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.5rem;
+    width: 62px; text-align: center; border: none; border-left: 3px solid var(--ink);
+    border-right: 3px solid var(--ink); background: transparent; color: var(--ink);
+    padding: 12px 2px; -moz-appearance: textfield;
+  }
+  .tile-value::-webkit-outer-spin-button,
+  .tile-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .tile-value:focus { outline: none; background: #fef9c3; }
+  .tile.locked .tile-value { border-color: var(--muted); color: var(--muted); }
+  .tile-lock { font-size: .85rem; align-self: center; padding: 0 8px 0 10px; }
+
+  .tools { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
+  .toggle { display: flex; align-items: center; gap: 7px; font-weight: 800; font-size: .85rem; }
+
+  /* ══ LIVE STATISTIKK ══ */
+  .stats { width: 100%; border-collapse: collapse; font-size: .95rem; }
+  .stats th {
+    font-size: .72rem; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--muted); text-align: right; padding: 0 0 7px;
+  }
+  .stats th:first-child { text-align: left; }
+  .stats td { padding: 8px 0; border-top: 2px solid var(--gridline); text-align: right; font-weight: 800; }
+  .stats td:first-child { text-align: left; font-weight: 700; color: var(--muted); }
+  .stats tr.asked td:first-child { color: var(--ink); font-weight: 900; }
+  .stats tr.asked td { font-weight: 900; }
+  .stats tr.asked.met td:nth-child(2) { color: var(--green); }
+  .stats .target { width: 4.5em; color: var(--muted); }
+  .stats tr.asked .target { color: var(--ink); }
+
+  /* ══ HINT ══ */
+  .hint-list { display: grid; gap: 8px; margin-top: 12px; }
+  .hint {
+    background: #fefce8; border: 3px solid var(--ink); padding: 10px 12px;
+    font-weight: 700; font-size: .92rem;
+  }
+  .hint b { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 3px; }
+
+  /* ══ STATUS OG SUKSESS ══ */
+  .status-row { margin-top: 14px; }
+  .flash {
+    border: 3px solid var(--ink); padding: 10px 12px; font-weight: 800;
+    font-size: .92rem; background: #fff; margin-top: 12px;
+  }
+  .flash.bad { background: #fee2e2; }
+  .flash.good { background: #dcfce7; }
+  .success {
+    background: #dcfce7; border: 3px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 18px; margin-top: 18px;
+  }
+  .success-title { font-family: 'Chewy', cursive; font-size: 1.7rem; font-weight: 400; margin-bottom: 8px; }
+  .success p { font-weight: 700; font-size: .95rem; margin-bottom: 8px; }
+  .success .observation { color: var(--ink); }
+  .success .insight { color: var(--muted); }
+  .success .result-line { font-size: .82rem; color: var(--muted); font-weight: 800; margin-bottom: 14px; }
+  .solution-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .chip {
+    border: 3px solid var(--ink); background: var(--card); padding: 5px 10px;
+    font-weight: 900; font-size: .85rem;
+  }
+  .chip.done { background: #dcfce7; }
+
+  .result-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 9px 0; border-top: 2px solid var(--gridline); font-weight: 700;
+  }
+  .result-row strong { font-weight: 900; }
+
+  @media (max-width: 420px) {
+    .tile-btn { width: 40px; font-size: 1.25rem; }
+    .tile-value { width: 54px; font-size: 1.35rem; }
+    .tiles { gap: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<!-- ════════ START ════════ -->
+<div class="screen active" id="screen-start">
+  <div class="wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🧱</div>
+      <h1>Tallbyggeren</h1>
+      <p>Du får kravene. Du bygger datasettet som oppfyller dem.</p>
+    </div>
+
+    <div class="card">
+      <h2>Slik spiller du</h2>
+      <p style="font-weight:700;font-size:.95rem;margin-bottom:12px;">
+        Oppgaven sier for eksempel: <em>fem tall, median 7, variasjonsbredde 8, må inneholde 4</em>.
+        Du flytter tallbrikkene til alle kravene er oppfylt. Spillet regner med hele tiden —
+        det finnes ingen «sjekk svar»-knapp.
+      </p>
+      <div class="tiles" aria-hidden="true">
+        <div class="tile"><button class="tile-btn" tabindex="-1">−</button><span class="tile-value" style="padding-top:14px">4</span><button class="tile-btn" tabindex="-1">+</button></div>
+        <div class="tile"><button class="tile-btn" tabindex="-1">−</button><span class="tile-value" style="padding-top:14px">7</span><button class="tile-btn" tabindex="-1">+</button></div>
+        <div class="tile"><button class="tile-btn" tabindex="-1">−</button><span class="tile-value" style="padding-top:14px">8</span><button class="tile-btn" tabindex="-1">+</button></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Kampanje · 6 nivåer · 10 oppgaver hver</h2>
+      <div class="level-list" id="levelList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Sandkasse</h2>
+      <p style="font-weight:700;font-size:.9rem;color:var(--muted);margin-bottom:14px;">
+        Nye oppgaver med samme vanskelighetsprofil som nivået du velger.
+      </p>
+      <div class="field-row">
+        <label for="sandboxLevel">Nivå</label>
+        <select id="sandboxLevel"></select>
+        <label for="sandboxCount">Antall oppgaver</label>
+        <select id="sandboxCount"></select>
+      </div>
+      <button class="btn-primary" id="btnSandbox">Start sandkasse</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SPILL ════════ -->
+<div class="screen" id="screen-game">
+  <div class="wrap">
+    <div class="hud">
+      <div>
+        <div class="hud-label" id="hudTask">Oppgave 1/10</div>
+        <div class="hud-level" id="hudLevel">Nivå 1 · Ett mål</div>
+      </div>
+      <div class="dots" id="hudDots"></div>
+    </div>
+
+    <div class="goal">
+      <div class="goal-title" id="goalTitle">Bygg et datasett med 5 tall</div>
+      <div class="goal-list" id="goalList"></div>
+    </div>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="tools">
+      <label class="toggle"><input type="checkbox" id="sortToggle"> Vis sortert</label>
+      <button class="btn-ghost" id="btnReset">Nullstill</button>
+      <button class="btn-ghost" id="btnHint">Hint</button>
+      <button class="btn-ghost" id="btnImpossible" hidden>Dette er umulig</button>
+    </div>
+
+    <div class="card">
+      <h2>Live statistikk</h2>
+      <table class="stats">
+        <thead>
+          <tr><th>Statistikk</th><th>Nå</th><th class="target">Mål</th></tr>
+        </thead>
+        <tbody id="statsBody"></tbody>
+      </table>
+    </div>
+
+    <div class="status-row" id="statusRow"></div>
+    <div class="hint-list" id="hintList"></div>
+    <div class="sr-only" id="srAnnounce" aria-live="polite"></div>
+  </div>
+</div>
+
+<!-- ════════ SLUTT ════════ -->
+<div class="screen" id="screen-end">
+  <div class="wrap">
+    <div class="screen-hero">
+      <div class="hero-emoji">🏁</div>
+      <h1 id="endTitle">Nivå fullført</h1>
+      <p id="endBlurb"></p>
+    </div>
+    <div class="card">
+      <div class="result-row"><span>Løste oppgaver</span><strong id="endSolved">0 av 10</strong></div>
+      <div class="result-row"><span>Løst uten hint</span><strong id="endNoHints">0</strong></div>
+      <div class="result-row"><span>Hint brukt</span><strong id="endHints">0</strong></div>
+    </div>
+    <button class="btn-primary" id="btnNextLevel" style="margin-bottom:10px;">Neste nivå</button>
+    <button class="btn-ghost" id="btnMenu" style="width:100%;">Tilbake til menyen</button>
+  </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+</body>
+</html>
