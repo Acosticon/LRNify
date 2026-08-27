@@ -228,24 +228,26 @@ function renderTiles(session, challenge) {
     tile.className = 'tile' + (locked ? ' locked' : '');
 
     if (locked) {
-      tile.innerHTML = `<span class="tile-lock">🔒</span>
-        <input class="tile-value" data-index="${index}" value="${formatNumber(value)}"
-               disabled aria-label="Låst tall ${formatNumber(value)}">
-        <span class="tile-lock"></span>`;
+      /* Et låst tall kan ikke endres, så det skal heller ikke ha
+         knapper å trykke på. */
+      tile.innerHTML = `
+        <span class="tile-lock" aria-hidden="true">🔒</span>
+        <span class="tile-value">${formatNumber(value)}</span>
+        <span class="sr-only">Låst tall ${formatNumber(value)} på plass ${index + 1}</span>`;
     } else {
       tile.innerHTML = `
-        <button class="tile-btn" data-index="${index}" data-step="-1" aria-label="Tallet på plass ${index + 1} ned">−</button>
+        <button class="tile-btn up" data-index="${index}" data-step="1" aria-label="Tallet på plass ${index + 1} opp">+</button>
         <input class="tile-value" type="number" inputmode="numeric" data-index="${index}"
                value="${value}" aria-label="Tall på plass ${index + 1}"
                min="${challenge.values.min}" max="${challenge.values.max}">
-        <button class="tile-btn" data-index="${index}" data-step="1" aria-label="Tallet på plass ${index + 1} opp">+</button>`;
+        <button class="tile-btn down" data-index="${index}" data-step="-1" aria-label="Tallet på plass ${index + 1} ned">−</button>`;
     }
     container.appendChild(tile);
   }
 
   if (focusIndex !== null) {
-    const input = container.querySelector(`.tile-value[data-index="${focusIndex}"]`);
-    if (input && !input.disabled) input.focus({ preventScroll: true });
+    const input = container.querySelector(`input.tile-value[data-index="${focusIndex}"]`);
+    if (input) input.focus({ preventScroll: true });
   }
 }
 
