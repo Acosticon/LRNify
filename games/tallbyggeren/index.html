@@ -164,35 +164,43 @@
   .goal-mark { font-size: 1rem; width: 1.1em; flex: 0 0 auto; }
   .goal-gap { margin-left: auto; font-weight: 800; font-size: .85rem; opacity: .85; }
 
-  /* ══ TALLBRIKKER ══ */
+  /* ══ TALLBRIKKER ══
+     Alle brikkene skal stå på én rad, også seks av dem på liten
+     skjerm. Derfor deler de bredden mellom seg i stedet for å ha
+     fast bredde, og pluss ligger over tallet, minus under. */
   .tiles {
-    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
-    margin-bottom: 14px;
+    display: flex; flex-wrap: nowrap; gap: 8px; justify-content: center;
+    align-items: stretch; margin-bottom: 14px;
   }
   .tile {
-    display: flex; align-items: stretch;
+    display: flex; flex-direction: column; justify-content: center;
+    flex: 1 1 0; min-width: 0; max-width: 88px;
     border: 3px solid var(--ink); background: var(--card);
     box-shadow: 0 5px 0 var(--ink);
   }
   .tile.locked { background: var(--gridline); box-shadow: 0 5px 0 var(--muted); border-color: var(--muted); }
   .tile-btn {
-    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.35rem;
-    width: 44px; border: none; background: transparent; cursor: pointer;
-    color: var(--ink); touch-action: manipulation;
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: clamp(1rem, 4.5vw, 1.3rem);
+    height: clamp(30px, 8vw, 38px); width: 100%;
+    border: none; background: transparent; cursor: pointer;
+    color: var(--ink); touch-action: manipulation; padding: 0;
   }
   .tile-btn:active { background: var(--yellow); }
-  .tile-btn:disabled { opacity: .3; cursor: default; }
+  .tile-btn.up { border-bottom: 3px solid var(--ink); }
+  .tile-btn.down { border-top: 3px solid var(--ink); }
   .tile-value {
-    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.5rem;
-    width: 62px; text-align: center; border: none; border-left: 3px solid var(--ink);
-    border-right: 3px solid var(--ink); background: transparent; color: var(--ink);
-    padding: 12px 2px; -moz-appearance: textfield;
+    font-family: 'Nunito', sans-serif; font-weight: 900;
+    font-size: clamp(1.05rem, 5vw, 1.5rem);
+    width: 100%; min-width: 0; text-align: center; border: none;
+    background: transparent; color: var(--ink);
+    padding: 10px 0; -moz-appearance: textfield;
   }
   .tile-value::-webkit-outer-spin-button,
   .tile-value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .tile-value:focus { outline: none; background: #fef9c3; }
-  .tile.locked .tile-value { border-color: var(--muted); color: var(--muted); }
-  .tile-lock { font-size: .85rem; align-self: center; padding: 0 8px 0 10px; }
+  .tile.locked .tile-value { color: var(--muted); }
+  .tile-lock { font-size: .8rem; text-align: center; padding-top: 8px; line-height: 1; }
 
   .tools { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 18px; }
   .toggle { display: flex; align-items: center; gap: 7px; font-weight: 800; font-size: .85rem; }
@@ -250,10 +258,8 @@
   }
   .result-row strong { font-weight: 900; }
 
-  @media (max-width: 420px) {
-    .tile-btn { width: 40px; font-size: 1.25rem; }
-    .tile-value { width: 54px; font-size: 1.35rem; }
-    .tiles { gap: 8px; }
+  @media (max-width: 380px) {
+    .tiles { gap: 5px; }
   }
 </style>
 </head>
@@ -280,11 +286,14 @@
         Du flytter tallbrikkene til alle kravene er oppfylt. Spillet regner med hele tiden —
         det finnes ingen «sjekk svar»-knapp.
       </p>
-      <div class="tiles" aria-hidden="true">
-        <div class="tile"><button class="tile-btn" tabindex="-1">−</button><span class="tile-value" style="padding-top:14px">4</span><button class="tile-btn" tabindex="-1">+</button></div>
-        <div class="tile"><button class="tile-btn" tabindex="-1">−</button><span class="tile-value" style="padding-top:14px">7</span><button class="tile-btn" tabindex="-1">+</button></div>
-        <div class="tile"><button class="tile-btn" tabindex="-1">−</button><span class="tile-value" style="padding-top:14px">8</span><button class="tile-btn" tabindex="-1">+</button></div>
+      <div class="tiles" aria-hidden="true" style="max-width:300px;margin:0 auto 4px;">
+        <div class="tile"><button class="tile-btn up" tabindex="-1">+</button><span class="tile-value">4</span><button class="tile-btn down" tabindex="-1">−</button></div>
+        <div class="tile"><button class="tile-btn up" tabindex="-1">+</button><span class="tile-value">7</span><button class="tile-btn down" tabindex="-1">−</button></div>
+        <div class="tile locked"><span class="tile-lock">🔒</span><span class="tile-value">8</span></div>
       </div>
+      <p style="font-weight:700;font-size:.82rem;color:var(--muted);text-align:center;">
+        Brikker med hengelås er gitt på forhånd og kan ikke endres.
+      </p>
     </div>
 
     <div class="card">
