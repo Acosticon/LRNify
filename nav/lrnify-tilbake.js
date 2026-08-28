@@ -25,11 +25,13 @@
 
   var MAAL = '/index.html#grid';
 
-  /* Finnes det allerede en vei hjem? Da lager vi ikke en til.
-     Dekker både «/», «/index.html» og de relative «../../index.html»
-     som spillmappene bruker. */
+  /* Finnes det allerede en synlig LRNify-logo øverst til venstre? Da
+     lager vi ikke en til. Ser bare etter .logo-lenker — en vanlig lenke
+     nederst på sida (f.eks. «Flere spill på LRNify» i en avsnittstekst)
+     dekker ikke kravet om logo øverst til venstre, og skal ikke stoppe
+     denne modulen fra å legge på den flytende knappen. */
   function harAlleredeTilbakelenke() {
-    var lenker = document.querySelectorAll('a[href]');
+    var lenker = document.querySelectorAll('a.logo[href]');
     for (var i = 0; i < lenker.length; i++) {
       var href = lenker[i].getAttribute('href') || '';
       if (/^(\.\.\/)+index\.html/.test(href)) return true;

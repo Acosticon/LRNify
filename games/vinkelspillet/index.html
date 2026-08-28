@@ -76,6 +76,13 @@
     padding: 6px 10px; box-shadow: 0 4px 0 var(--line);
   }
   .back-link:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+  .back-btn {
+    font-family: 'IBM Plex Mono', monospace; font-weight: 700; font-size: .75rem;
+    color: var(--muted); text-decoration: none; letter-spacing: .04em;
+    background: rgba(8,21,43,.55); border: 3px solid var(--line);
+    padding: 6px 10px; box-shadow: 0 4px 0 var(--line);
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
 
   /* ══ SKJERMER ══ */
   .screen { display: none; }
@@ -796,8 +803,8 @@
 <body>
 
 <header>
-  <span></span>
   <a class="back-link" href="../../index.html#grid">← LRNify</a>
+  <a class="back-btn" href="." data-home-screen="screen-start">← Tilbake</a>
 </header>
 
 <!-- ════════ START ════════ -->
@@ -1845,5 +1852,6 @@ renderArm();
 </script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-spillhode.js" defer></script>
 </body>
 </html>
