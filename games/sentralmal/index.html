@@ -1,1 +1,102 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Statistikkbyggeren</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">LRNIFY · STATISTIKK</div>
+        <h1>Statistikkbyggeren</h1>
+      </div>
+      <button id="homeBtn" class="ghost-btn" hidden>← Nivåer</button>
+    </header>
 
+    <section id="levelSelect" class="screen">
+      <div class="hero-card">
+        <div>
+          <span class="pill">Konstruksjonspuslespill</span>
+          <h2>Bygg tallsett som passer kravene</h2>
+          <p>Du får målene. Din jobb er å bygge dataene.</p>
+        </div>
+        <div class="mini-dataset" aria-hidden="true">
+          <span>3</span><span>5</span><span>?</span><span>9</span><span>?</span>
+        </div>
+      </div>
+
+      <div class="section-head">
+        <div>
+          <div class="eyebrow">KAMPANJE</div>
+          <h2>Velg nivå</h2>
+        </div>
+        <div id="progressSummary" class="progress-summary"></div>
+      </div>
+      <div id="levelGrid" class="level-grid"></div>
+    </section>
+
+    <section id="gameScreen" class="screen" hidden>
+      <div class="game-header">
+        <div>
+          <div id="levelLabel" class="eyebrow"></div>
+          <h2 id="challengeTitle">Bygg et datasett</h2>
+        </div>
+        <div class="question-counter" id="questionCounter"></div>
+      </div>
+
+      <section class="challenge-card">
+        <div class="challenge-copy">
+          <div class="eyebrow">OPPDRAG</div>
+          <h3 id="challengePrompt"></h3>
+          <div id="requirementsList" class="requirements"></div>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="workspace-head">
+          <div>
+            <div class="eyebrow">DINE TALL</div>
+            <h3>Bygg datasettet</h3>
+          </div>
+          <button id="resetBtn" class="ghost-btn">Nullstill</button>
+        </div>
+        <div id="numberRow" class="number-row"></div>
+        <p class="sort-note">Rekkefølgen på tallene påvirker ikke statistikken.</p>
+      </section>
+
+      <section class="stats-panel">
+        <div class="eyebrow">LIVE STATISTIKK</div>
+        <div id="statsGrid" class="stats-grid"></div>
+      </section>
+
+      <section id="feedbackPanel" class="feedback-panel">
+        <div id="feedbackText">Prøv deg fram. Statistikken oppdateres med en gang.</div>
+      </section>
+
+      <div class="actions">
+        <button id="hintBtn" class="secondary-btn">Hint</button>
+        <button id="nextBtn" class="primary-btn" disabled>Neste oppgave →</button>
+      </div>
+
+      <div id="hintBox" class="hint-box" hidden></div>
+    </section>
+
+    <section id="completeScreen" class="screen" hidden>
+      <div class="complete-card">
+        <div class="big-check">✓</div>
+        <div class="eyebrow">NIVÅ FULLFØRT</div>
+        <h2 id="completeTitle"></h2>
+        <p id="completeText"></p>
+        <div class="actions centered">
+          <button id="backToLevelsBtn" class="secondary-btn">Til nivåene</button>
+          <button id="nextLevelBtn" class="primary-btn">Neste nivå →</button>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
