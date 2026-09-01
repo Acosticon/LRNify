@@ -1,0 +1,2826 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Tidsarkivet – LRNify</title>
+<link rel="canonical" href="https://lrnify.no/games/tidsarkivet/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Tidsarkivet – LRNify">
+<meta property="og:description" content="Når er dette? Ekte historiske fotografier – din jobb er å datere dem. Spill solo, i duell (lokalt eller mot noen andre online), eller om Norge.">
+<meta property="og:url" content="https://lrnify.no/games/tidsarkivet/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tidsarkivet – LRNify">
+<meta name="twitter:description" content="Når er dette? Ekte historiske fotografier – din jobb er å datere dem.">
+<meta name="description" content="Når er dette? Ekte historiske fotografier – din jobb er å datere dem. Spill solo, i duell, eller om Norge.">
+<!--
+  ═══════════════════════════════════════════════════════════════════
+  TIDSARKIVET · «Når er dette?»  ·  LRNify tidsgjettespill  ·  v001
+  GeoGuessr for tid: ekte historiske foto, gjett årstallet.
+  Alle fotografier er public domain / CC0, embeddet direkte fra
+  Wikimedia Commons (Special:FilePath) med fallback-URL per bilde.
+  Ingen bildefiler hostes av LRNify.
+
+  PLACEHOLDER-GRAFIKK – oversikt (søk på "PLACEHOLDER-GRAFIKK"):
+   1. Modus-ikoner (🕰️ solo, ⚔️ duell, 🗺️ norge)
+   2. Medaljer (🥉🥈🥇 på sluttskjerm)
+   3. Rang-emblem (🎖️)
+   4. Lastespinner (🎞️ filmrull)
+   5. Agent-avatar (🕵️ på startskjerm-rang)
+  ═══════════════════════════════════════════════════════════════════
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+/* ────────────────────────── TOKENS ────────────────────────── */
+:root{
+  --bg0:#0f0c09; --bg1:#1b1510; --bg2:#241c15;
+  --paper:#f2e7d3; --paper-dim:#d8c9ac;
+  --ink:#f0e6d4; --ink-dim:#b9a98d; --ink-faint:#8a7a60;
+  --amber:#e8a33d; --amber-hi:#ffc866; --amber-deep:#b06f14;
+  --teal:#41d6cd; --teal-deep:#1a8f88;
+  --p2:#c98bff;
+  --danger:#ff6b57;
+  --disp:"Fraunces",Georgia,serif;
+  --ui:"Nunito","Segoe UI",system-ui,sans-serif;
+  --rad:14px;
+  --shadow:0 10px 30px rgba(0,0,0,.55);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--ui); color:var(--ink); background:var(--bg0);
+  background-image:
+    radial-gradient(120% 90% at 50% 0%, #2a2016 0%, #171209 55%, #0c0906 100%);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+/* mørkeromsvignett over alt */
+body::after{
+  content:""; position:fixed; inset:0; pointer-events:none; z-index:5;
+  background:radial-gradient(115% 100% at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%);
+}
+button{font-family:var(--ui); cursor:pointer; border:none; background:none; color:inherit}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid var(--teal); outline-offset:3px; border-radius:6px}
+.hidden{display:none !important}
+
+/* ────────────────────────── SKJERMER ────────────────────────── */
+.screen{position:fixed; inset:0; display:none; flex-direction:column; z-index:10; overflow:hidden}
+.screen.active{display:flex}
+.scroll{overflow-y:auto; -webkit-overflow-scrolling:touch}
+
+/* ────────────────────────── START ────────────────────────── */
+#screen-start{align-items:center; padding:max(16px,env(safe-area-inset-top)) 16px 24px; overflow-y:auto}
+.brand{display:flex; align-items:center; gap:12px; margin-top:8px}
+.lrnify-home{display:flex; align-items:center; gap:10px; text-decoration:none; border-radius:14px; padding:2px; transition:opacity .15s}
+.lrnify-home:hover,.lrnify-home:focus-visible{opacity:.85}
+.logo-badge{
+  width:46px;height:46px;border-radius:12px;display:grid;place-items:center;font-size:24px;
+  background:linear-gradient(145deg,#2e2418,#1a140c); border:1px solid #4a3a22;
+  box-shadow:0 0 18px rgba(232,163,61,.25), inset 0 1px 0 rgba(255,255,255,.06);
+}
+.lrnify-word{font-family:var(--disp); font-weight:900; font-size:16px; letter-spacing:.01em; color:var(--paper)}
+.lrnify-word b{font-weight:900; color:var(--amber-hi)}
+.brand small{color:var(--ink-faint); font-weight:800; letter-spacing:.22em; font-size:11px}
+h1.title{
+  font-family:var(--disp); font-weight:900; text-align:center; line-height:.95;
+  font-size:clamp(40px,9vw,76px); margin-top:14px; color:var(--paper);
+  text-shadow:0 0 34px rgba(232,163,61,.35);
+}
+h1.title em{font-style:italic; color:var(--amber-hi)}
+.tagline{color:var(--ink-dim); margin-top:10px; text-align:center; font-weight:600; max-width:46ch}
+.tagline b{color:var(--teal)}
+
+.mode-grid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; width:min(680px,100%); margin-top:26px}
+.mode-card{
+  position:relative; border-radius:var(--rad); padding:18px 12px 14px; text-align:center;
+  background:linear-gradient(165deg,#2b2114 0%,#1c1610 70%);
+  border:1px solid #453520; box-shadow:var(--shadow);
+  transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+}
+.mode-card:hover,.mode-card:focus-visible{transform:translateY(-4px) scale(1.02); border-color:var(--amber); box-shadow:0 14px 34px rgba(0,0,0,.6),0 0 22px rgba(232,163,61,.25)}
+.mode-card:active{transform:translateY(-1px) scale(.99)}
+.mode-ico{font-size:34px; display:block; filter:drop-shadow(0 4px 10px rgba(0,0,0,.5))} /* PLACEHOLDER-GRAFIKK: modus-ikoner */
+.mode-card h3{font-family:var(--disp); font-size:20px; margin-top:8px; color:var(--paper)}
+.mode-card p{font-size:12.5px; color:var(--ink-dim); margin-top:5px; line-height:1.35}
+.mode-card .go{display:inline-block; margin-top:10px; font-weight:900; font-size:12px; letter-spacing:.12em; color:var(--teal)}
+
+.section-label{margin:24px 0 10px; font-size:12px; font-weight:900; letter-spacing:.24em; color:var(--ink-faint)}
+.diff-row{display:flex; gap:10px; width:min(680px,100%)}
+.diff-pill{
+  flex:1; border-radius:12px; padding:11px 8px; text-align:center;
+  background:#1d1710; border:1.5px solid #3c2f1c; transition:.15s;
+}
+.diff-pill b{display:block; font-size:15px; color:var(--ink)}
+.diff-pill span{font-size:11px; color:var(--ink-faint); font-weight:700}
+.diff-pill[aria-pressed="true"]{background:linear-gradient(160deg,#3a2b14,#241a0d); border-color:var(--amber); box-shadow:0 0 16px rgba(232,163,61,.3)}
+.diff-pill[aria-pressed="true"] b{color:var(--amber-hi)}
+
+.opts-row{display:flex; flex-wrap:wrap; gap:10px 22px; width:min(680px,100%); margin-top:14px; justify-content:center}
+.opt{display:flex; align-items:center; gap:8px; font-weight:700; font-size:13.5px; color:var(--ink-dim); cursor:pointer; user-select:none}
+.opt input{width:18px;height:18px;accent-color:var(--amber); cursor:pointer}
+
+.rank-strip{
+  display:flex; align-items:center; gap:12px; margin-top:26px; width:min(680px,100%);
+  background:#171209; border:1px solid #33281a; border-radius:var(--rad); padding:12px 16px;
+}
+.rank-strip .avatar{font-size:26px} /* PLACEHOLDER-GRAFIKK: agent-avatar */
+.rank-strip .r-name{font-family:var(--disp); font-size:18px; color:var(--amber-hi)}
+.rank-strip .r-sub{font-size:12px; color:var(--ink-faint); font-weight:700}
+.rank-strip .r-right{margin-left:auto; text-align:right}
+.best-list{font-size:12px; color:var(--ink-dim); font-weight:700; line-height:1.5}
+
+/* ────────────────────────── SPILL / HUD ────────────────────────── */
+#screen-game{padding:0}
+.hud{
+  display:flex; align-items:center; gap:10px; padding:10px max(14px,env(safe-area-inset-left));
+  padding-top:max(10px,env(safe-area-inset-top));
+  font-weight:800; font-size:13px; color:var(--ink-dim); flex:0 0 auto;
+}
+.hud .h-logo{font-size:18px; opacity:.9} /* PLACEHOLDER-GRAFIKK: mini-logo i HUD */
+.hud .h-round{letter-spacing:.08em}
+.hud-menu-btn{
+  font-weight:800; font-size:11px; letter-spacing:.06em; color:var(--ink-faint);
+  padding:5px 10px; border-radius:999px; border:1px solid #3c2f1c; background:#1d1710;
+  display:flex; align-items:center; gap:4px; transition:.15s; flex:0 0 auto;
+}
+.hud-menu-btn:hover,.hud-menu-btn:focus-visible{color:var(--paper); border-color:var(--amber)}
+.hud .h-score{margin-left:auto; font-size:16px; color:var(--paper); font-variant-numeric:tabular-nums}
+.hud .h-score small{color:var(--ink-faint); font-size:10px; letter-spacing:.18em; display:block; text-align:right}
+#hud-streak{
+  display:none; align-items:center; gap:5px; padding:4px 10px; border-radius:999px;
+  background:rgba(65,214,205,.12); border:1px solid rgba(65,214,205,.5); color:var(--teal);
+  font-size:12px; animation:pulse 1.6s ease-in-out infinite;
+}
+#hud-streak.on{display:flex}
+@keyframes pulse{0%,100%{box-shadow:0 0 4px rgba(65,214,205,.2)}50%{box-shadow:0 0 16px rgba(65,214,205,.55)}}
+#hud-duel{display:none; gap:6px; align-items:center; font-size:13px}
+#hud-duel.on{display:flex}
+.pip{width:11px;height:11px;border-radius:50%;background:#3a2f1e;border:1px solid #5a4527}
+.pip.p1{background:var(--teal);border-color:var(--teal)} .pip.p2{background:var(--p2);border-color:var(--p2)}
+
+.timer-wrap{height:5px; margin:0 14px; border-radius:3px; background:#241b10; overflow:hidden; flex:0 0 auto; visibility:hidden}
+.timer-wrap.on{visibility:visible}
+#timer-bar{height:100%; width:100%; background:linear-gradient(90deg,var(--teal),var(--amber)); transform-origin:left; transition:transform .2s linear}
+#timer-bar.hurry{background:var(--danger)}
+
+/* fotoscene */
+.stage{flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center; padding:10px 14px 4px; position:relative}
+.photo-frame{
+  position:relative; width:100%; height:100%; max-width:960px;
+  display:flex; align-items:center; justify-content:center;
+}
+.photo-mat{
+  position:relative; max-width:100%; max-height:100%;
+  padding:10px; background:linear-gradient(160deg,#f5ecd9,#e4d6b8);
+  border-radius:4px; box-shadow:0 18px 50px rgba(0,0,0,.65);
+}
+.photo-mat.shake{animation:shake .45s cubic-bezier(.36,.07,.19,.97)}
+@keyframes shake{10%,90%{transform:translate(-1px,1px)}20%,80%{transform:translate(2px,-1px)}30%,50%,70%{transform:translate(-3px,2px) rotate(-.4deg)}40%,60%{transform:translate(3px,-2px) rotate(.4deg)}}
+/* fotohjørner */
+.photo-mat::before,.photo-mat::after,
+.photo-inner::before,.photo-inner::after{
+  content:""; position:absolute; width:26px; height:26px; z-index:4;
+  background:linear-gradient(145deg,#20180f,#0e0a06); opacity:.92;
+}
+.photo-mat::before{top:-7px;left:-7px; clip-path:polygon(0 0,100% 0,0 100%)}
+.photo-mat::after{top:-7px;right:-7px; clip-path:polygon(0 0,100% 0,100% 100%)}
+.photo-inner::before{bottom:-7px;left:-7px; clip-path:polygon(0 0,100% 100%,0 100%)}
+.photo-inner::after{bottom:-7px;right:-7px; clip-path:polygon(100% 0,100% 100%,0 100%)}
+.photo-inner{position:relative; line-height:0}
+#photo{
+  display:block; max-width:min(92vw,900px); max-height:100%; width:auto; height:auto;
+  object-fit:contain; border-radius:2px; background:#0a0805;
+  opacity:0; transition:opacity .35s ease;
+}
+#photo.loaded{opacity:1}
+/* filmkorn + indre vignett over bildet */
+.grain{
+  position:absolute; inset:10px; z-index:3; pointer-events:none; border-radius:2px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.16'/%3E%3C/svg%3E");
+  box-shadow:inset 0 0 60px rgba(0,0,0,.45);
+  mix-blend-mode:overlay;
+}
+.spinner{ /* PLACEHOLDER-GRAFIKK: filmrull-spinner */
+  position:absolute; inset:0; display:none; place-items:center; z-index:6;
+  font-size:44px; animation:spin 1.4s linear infinite;
+}
+.spinner.on{display:grid}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* stedstag under fotoet – moderne stedsnavn, røper aldri årstallet */
+#photo-cap{position:absolute; left:0; right:0; bottom:-8px; transform:translateY(100%); text-align:center;
+  font-size:12.5px; color:var(--ink-dim); font-weight:800; letter-spacing:.08em}
+
+/* spiller-tur-banner (duell) */
+#turn-banner{
+  position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:7;
+  padding:6px 18px; border-radius:999px; font-weight:900; font-size:13px; letter-spacing:.1em;
+  background:rgba(10,8,5,.82); border:1px solid var(--teal); color:var(--teal); display:none;
+}
+#turn-banner.p2{border-color:var(--p2); color:var(--p2)}
+#turn-banner.on{display:block}
+
+/* ────────────────────────── TIDSSTRØMMEN ────────────────────────── */
+.controls{flex:0 0 auto; padding:6px 14px calc(12px + env(safe-area-inset-bottom)); position:relative}
+.year-bubble{
+  position:absolute; top:2px; transform:translateX(-50%); z-index:8; pointer-events:none;
+  font-family:var(--disp); font-weight:900; font-size:clamp(30px,6vw,44px); color:var(--amber-hi);
+  text-shadow:0 0 22px rgba(232,163,61,.55), 0 2px 4px rgba(0,0,0,.8);
+  font-variant-numeric:tabular-nums; transition:none;
+}
+.tl-wrap{position:relative; margin-top:52px; padding:14px 0 4px}
+.tl-track{
+  position:relative; height:10px; border-radius:6px;
+  background:linear-gradient(90deg,#3d2c14,#5a3f1a 30%,#2a5f5b 100%);
+  box-shadow:0 0 18px rgba(232,163,61,.28), inset 0 2px 4px rgba(0,0,0,.6);
+}
+.tl-track::before{content:""; position:absolute; inset:3px; border-radius:4px;
+  background:repeating-linear-gradient(90deg,transparent 0,transparent 9px,rgba(0,0,0,.25) 9px,rgba(0,0,0,.25) 10px)}
+.tl-ticks{display:flex; justify-content:space-between; margin-top:7px; font-size:10.5px; font-weight:800; color:var(--ink-faint); letter-spacing:.04em}
+input[type=range]{
+  position:absolute; inset:-14px 0 auto 0; width:100%; height:38px; margin:0;
+  appearance:none; -webkit-appearance:none; background:transparent; cursor:ew-resize; z-index:9;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; width:30px; height:30px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff3d9, var(--amber) 55%, var(--amber-deep));
+  border:2px solid #ffe2ac; box-shadow:0 0 16px rgba(232,163,61,.8), 0 4px 10px rgba(0,0,0,.6);
+}
+input[type=range]::-moz-range-thumb{
+  width:28px;height:28px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #fff3d9, var(--amber) 55%, var(--amber-deep));
+  border:2px solid #ffe2ac; box-shadow:0 0 16px rgba(232,163,61,.8), 0 4px 10px rgba(0,0,0,.6);
+}
+/* tiår-knapper (Rekrutt) */
+#decade-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-top:8px}
+.dec-btn{
+  padding:12px 4px; border-radius:10px; font-weight:900; font-size:15.5px; color:var(--ink);
+  background:#221a10; border:1.5px solid #40311c; font-variant-numeric:tabular-nums;
+  transition:transform .1s, border-color .1s, background .1s;
+}
+.dec-btn small{display:block; font-size:9.5px; color:var(--ink-faint); letter-spacing:.06em}
+.dec-btn:hover{border-color:var(--amber)}
+.dec-btn:active{transform:scale(.96)}
+.dec-btn[aria-pressed="true"]{background:linear-gradient(160deg,#4a3312,#2c1f0c); border-color:var(--amber-hi); color:var(--amber-hi); box-shadow:0 0 14px rgba(232,163,61,.4)}
+.lock-row{display:flex; justify-content:center; margin-top:12px}
+.btn-primary{
+  font-weight:900; letter-spacing:.14em; font-size:16px; color:#241503;
+  padding:14px 46px; border-radius:999px;
+  background:linear-gradient(170deg,var(--amber-hi),var(--amber) 55%,var(--amber-deep));
+  box-shadow:0 6px 0 #7c4d0d, 0 12px 26px rgba(0,0,0,.5), 0 0 24px rgba(232,163,61,.35);
+  transition:transform .08s ease, box-shadow .08s ease, filter .15s;
+}
+.btn-primary:hover{filter:brightness(1.07)}
+.btn-primary:active{transform:translateY(4px); box-shadow:0 2px 0 #7c4d0d, 0 6px 14px rgba(0,0,0,.5)}
+.btn-primary:disabled{filter:grayscale(.7) brightness(.65); cursor:not-allowed; transform:none}
+.btn-ghost{
+  font-weight:800; font-size:14px; letter-spacing:.08em; color:var(--ink-dim);
+  padding:11px 26px; border-radius:999px; border:1.5px solid #4a3a22; transition:.15s;
+}
+.btn-ghost:hover{color:var(--paper); border-color:var(--amber)}
+.btn-teal{
+  font-weight:900; letter-spacing:.12em; font-size:15px; color:#03211f;
+  padding:13px 40px; border-radius:999px;
+  background:linear-gradient(170deg,#8ff0e9,var(--teal) 55%,var(--teal-deep));
+  box-shadow:0 5px 0 #0e5a55, 0 10px 22px rgba(0,0,0,.5), 0 0 20px rgba(65,214,205,.3);
+  transition:transform .08s, box-shadow .08s;
+}
+.btn-teal:active{transform:translateY(4px); box-shadow:0 1px 0 #0e5a55}
+</style>
+
+<style>
+/* ────────────────────────── AVSLØRING ────────────────────────── */
+#reveal{
+  position:fixed; inset:0; z-index:30; display:none; flex-direction:column; justify-content:flex-end;
+  background:rgba(8,6,3,.68); backdrop-filter:blur(2px);
+}
+#reveal.active{display:flex}
+.rev-card{
+  background:linear-gradient(180deg,#211910,#15100a);
+  border-top:1px solid #4a3a22; border-radius:22px 22px 0 0;
+  padding:18px 18px calc(16px + env(safe-area-inset-bottom));
+  box-shadow:0 -16px 50px rgba(0,0,0,.7);
+  max-width:760px; width:100%; margin:0 auto;
+  animation:slideUp .35s cubic-bezier(.2,.9,.3,1.1);
+}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+.rev-year-row{display:flex; align-items:baseline; justify-content:center; gap:16px}
+#rev-year{
+  font-family:var(--disp); font-weight:900; font-size:clamp(52px,13vw,84px); line-height:1;
+  color:var(--paper); font-variant-numeric:tabular-nums;
+  text-shadow:0 0 30px rgba(232,163,61,.4);
+}
+#rev-year.landed{animation:landPop .4s cubic-bezier(.2,1.6,.4,1)}
+@keyframes landPop{0%{transform:scale(1)}45%{transform:scale(1.18); text-shadow:0 0 50px rgba(232,163,61,.9)}100%{transform:scale(1)}}
+#rev-points{
+  font-family:var(--disp); font-weight:700; font-size:clamp(22px,5vw,30px); color:var(--teal);
+  font-variant-numeric:tabular-nums; min-width:3.2em; text-align:left;
+}
+#rev-verdict{text-align:center; font-weight:900; letter-spacing:.16em; font-size:13px; color:var(--ink-dim); margin-top:2px; min-height:18px}
+#rev-verdict.perfect{color:var(--amber-hi); font-size:17px; animation:landPop .5s .1s both}
+/* mini-tidslinje */
+.rev-tl{position:relative; height:46px; margin:14px 6px 4px}
+.rev-track{position:absolute; left:0; right:0; top:20px; height:7px; border-radius:4px;
+  background:linear-gradient(90deg,#3d2c14,#2a5f5b); box-shadow:inset 0 2px 3px rgba(0,0,0,.6)}
+.rev-sweep{position:absolute; top:19px; height:9px; border-radius:4px; background:linear-gradient(90deg,rgba(65,214,205,.9),rgba(232,163,61,.95));
+  box-shadow:0 0 16px rgba(232,163,61,.7); transform:scaleX(0)}
+.rev-mark{position:absolute; top:0; transform:translateX(-50%); text-align:center; font-size:9px; font-weight:900; letter-spacing:.08em}
+.rev-mark .dot{width:15px;height:15px;border-radius:50%;margin:2px auto 0; border:2px solid #0d0a06}
+.rev-mark.guess{color:var(--teal)} .rev-mark.guess .dot{background:var(--teal); box-shadow:0 0 12px rgba(65,214,205,.8)}
+.rev-mark.guess2{color:var(--p2)} .rev-mark.guess2 .dot{background:var(--p2); box-shadow:0 0 12px rgba(201,139,255,.8)}
+.rev-mark.answer{color:var(--amber-hi); top:15px} .rev-mark.answer .dot{background:var(--amber); box-shadow:0 0 16px rgba(232,163,61,.95); animation:landPop .45s both; margin:0 auto 2px}
+.rev-mark span{display:block}
+.rev-labels{display:flex; justify-content:space-between; font-size:9.5px; color:var(--ink-faint); font-weight:800; padding:0 6px}
+/* kontekstkort */
+.ctx-card{
+  margin-top:12px; background:#f2e7d3; color:#33270f; border-radius:12px; padding:13px 16px;
+  box-shadow:0 8px 22px rgba(0,0,0,.5); opacity:0; transform:translateY(14px);
+  transition:opacity .4s ease, transform .4s ease; position:relative;
+}
+.ctx-card.on{opacity:1; transform:none}
+.ctx-card h4{font-family:var(--disp); font-size:17px; margin-bottom:4px}
+.ctx-card .clue{font-size:13.5px; font-weight:700; color:#7a5410; margin-bottom:4px}
+.ctx-card .ctx{font-size:13.5px; line-height:1.45}
+.ctx-card .src{font-size:10.5px; color:#8a7a58; margin-top:6px; font-weight:700}
+#duel-round-result{text-align:center; font-weight:900; font-size:15px; margin-top:10px; color:var(--paper); display:none}
+.rev-next{display:flex; justify-content:center; gap:12px; margin-top:14px}
+#streak-toast{
+  position:fixed; top:16%; left:50%; transform:translateX(-50%); z-index:40; pointer-events:none;
+  font-family:var(--disp); font-weight:900; font-size:clamp(20px,5vw,30px); color:var(--teal);
+  text-shadow:0 0 26px rgba(65,214,205,.8); opacity:0;
+}
+#streak-toast.show{animation:toast 1.6s ease both}
+@keyframes toast{0%{opacity:0; transform:translate(-50%,16px) scale(.8)}18%{opacity:1; transform:translate(-50%,0) scale(1.06)}30%{transform:translate(-50%,0) scale(1)}80%{opacity:1}100%{opacity:0; transform:translate(-50%,-18px)}}
+
+/* konfetti */
+.confetti{position:fixed; top:-14px; z-index:60; width:9px; height:14px; pointer-events:none; animation:fall linear both}
+@keyframes fall{to{transform:translateY(105vh) rotate(720deg); opacity:.9}}
+
+/* ────────────────────────── GI VIDERE (DUELL) ────────────────────────── */
+#handover{position:fixed; inset:0; z-index:50; display:none; place-items:center; background:rgba(10,7,4,.97)}
+#handover.active{display:grid}
+.hand-box{text-align:center; padding:24px}
+.hand-box .big{font-size:56px}
+.hand-box h2{font-family:var(--disp); font-size:clamp(26px,6vw,40px); color:var(--paper); margin-top:10px}
+.hand-box p{color:var(--ink-dim); font-weight:700; margin:10px 0 22px}
+
+/* ────────────────────────── SLUTTSKJERM ────────────────────────── */
+#screen-end{align-items:center; justify-content:flex-start; padding:24px 16px calc(24px + env(safe-area-inset-bottom)); overflow-y:auto}
+.medal{font-size:76px; margin-top:16px; animation:medalDrop .6s cubic-bezier(.2,1.5,.4,1) both} /* PLACEHOLDER-GRAFIKK: medaljer */
+@keyframes medalDrop{from{transform:translateY(-70px) scale(.4); opacity:0}to{transform:none; opacity:1}}
+#end-head{font-family:var(--disp); font-weight:900; font-size:clamp(30px,7vw,48px); color:var(--paper); text-align:center; margin-top:6px}
+#end-score{font-family:var(--disp); font-size:clamp(40px,9vw,64px); color:var(--amber-hi); font-variant-numeric:tabular-nums; text-shadow:0 0 30px rgba(232,163,61,.5)}
+#end-sub{color:var(--ink-dim); font-weight:700; text-align:center; max-width:52ch; margin-top:6px}
+.end-stats{display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; justify-content:center}
+.stat-box{background:#1b1510; border:1px solid #3a2d1a; border-radius:12px; padding:10px 18px; text-align:center; min-width:104px}
+.stat-box b{display:block; font-size:20px; color:var(--paper); font-variant-numeric:tabular-nums}
+.stat-box span{font-size:10.5px; font-weight:900; letter-spacing:.14em; color:var(--ink-faint)}
+.end-btns{display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; justify-content:center}
+.lb{margin-top:22px; width:min(430px,100%); background:#171209; border:1px solid #33281a; border-radius:var(--rad); padding:14px 18px}
+.lb h4{font-size:12px; letter-spacing:.2em; color:var(--ink-faint); margin-bottom:8px}
+.lb ol{list-style:none; counter-reset:lb}
+.lb li{display:flex; gap:10px; padding:4px 0; font-weight:700; font-size:14px; color:var(--ink-dim); counter-increment:lb; font-variant-numeric:tabular-nums}
+.lb li::before{content:counter(lb) "."; color:var(--ink-faint); width:1.4em}
+.lb li b{margin-left:auto; color:var(--paper)}
+.lb li.new b{color:var(--amber-hi)}
+/* attribusjon */
+#about-modal{position:fixed; inset:0; z-index:70; display:none; place-items:center; background:rgba(8,6,3,.8); padding:18px}
+#about-modal.active{display:grid}
+.about-box{background:#1d160e; border:1px solid #4a3a22; border-radius:16px; max-width:560px; width:100%; max-height:80vh; overflow-y:auto; padding:20px}
+.about-box h3{font-family:var(--disp); color:var(--paper); margin-bottom:4px}
+.about-box .note{font-size:12px; color:var(--ink-faint); font-weight:700; margin-bottom:12px}
+.about-box ul{list-style:none}
+.about-box li{padding:7px 0; border-top:1px solid #2c2213; font-size:13px; color:var(--ink-dim); line-height:1.4}
+.about-box li b{color:var(--ink)}
+.about-box a{color:var(--teal); font-weight:700; text-decoration:none}
+.about-box a:hover{text-decoration:underline}
+
+/* ────────────────────────── DUELL ONLINE ────────────────────────── */
+.mini-modal{position:fixed; inset:0; z-index:70; display:none; place-items:center; background:rgba(8,6,3,.8); padding:18px}
+.mini-modal.active{display:grid}
+.choice-box{background:#1d160e; border:1px solid #4a3a22; border-radius:16px; max-width:420px; width:100%; padding:22px; text-align:center}
+.choice-box h3{font-family:var(--disp); color:var(--paper); font-size:22px; margin-bottom:4px}
+.choice-box .note{font-size:13px; color:var(--ink-dim); font-weight:700; margin-bottom:14px; line-height:1.4}
+.choice-btn{
+  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  padding:14px 16px; margin-bottom:10px; border-radius:12px;
+  background:linear-gradient(165deg,#2b2114,#1c1610 70%); border:1px solid #453520;
+  transition:transform .15s ease, border-color .15s ease;
+}
+.choice-btn:hover,.choice-btn:focus-visible{border-color:var(--amber); transform:translateY(-2px)}
+.choice-btn .ci{font-size:26px; flex:0 0 auto}
+.choice-btn .ct{display:flex; flex-direction:column; gap:2px}
+.choice-btn .ct b{font-family:var(--disp); font-size:15px; color:var(--paper); font-weight:900}
+.choice-btn .ct small{font-size:11.5px; color:var(--ink-faint); font-weight:700; line-height:1.3}
+.room-code{
+  font-family:var(--disp); font-weight:900; font-size:clamp(38px,10vw,56px); letter-spacing:.14em;
+  color:var(--amber-hi); text-shadow:0 0 26px rgba(232,163,61,.5); margin:6px 0 12px; font-variant-numeric:tabular-nums;
+}
+.code-input{
+  width:100%; font-family:var(--disp); font-size:26px; letter-spacing:.2em; text-align:center; text-transform:uppercase;
+  padding:12px; border-radius:12px; background:#12100b; border:1.5px solid #4a3a22; color:var(--paper); margin-bottom:10px;
+}
+.code-input:focus-visible{outline:3px solid var(--teal); outline-offset:2px}
+.join-error{font-size:12.5px; font-weight:700; color:var(--danger); margin:-4px 0 10px; display:none}
+.choice-box .lock-row{margin-top:4px}
+#rev-wait-host{display:none; font-size:12px; color:var(--ink-faint); font-weight:700; margin-top:8px}
+
+/* skjult, men lesbar for skjermleser */
+.sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+@media (min-width:760px){
+  #decade-grid{grid-template-columns:repeat(8,1fr)}
+  .controls{padding-bottom:20px}
+}
+@media (max-width:520px){
+  .mode-grid{grid-template-columns:1fr; gap:10px}
+  .mode-card{display:flex; align-items:center; text-align:left; gap:14px; padding:12px 16px}
+  .mode-card .mode-ico{font-size:28px}
+  .mode-card h3{margin-top:0}
+  .mode-card .go{margin-top:0; margin-left:auto}
+  .mode-card p{margin-top:2px}
+  .mode-card .mode-txt{flex:1}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
+</style>
+</head>
+
+<body>
+
+<!-- ══════════════ STARTSKJERM ══════════════ -->
+<section id="screen-start" class="screen active">
+  <div class="brand">
+    <a class="lrnify-home" href="../../index.html#grid" aria-label="Til LRNify sin forside">
+      <span class="logo-badge">⌛</span><!-- PLACEHOLDER-GRAFIKK: logo -->
+      <span class="lrnify-word">LRN<b>ify</b></span>
+    </a>
+    <small>TIDSARKIVET</small>
+  </div>
+  <h1 class="title">TIDSARKIVET</h1>
+  <p class="tagline" style="margin-top:0"><em style="font-family:var(--disp); font-style:italic; color:var(--amber-hi); font-size:1.15em">Når er dette?</em></p>
+  <p class="tagline">Du er <b>tidsagent</b>. Ekte fotografier fra arkivet – din jobb er å datere dem.
+    Jo nærmere du treffer på tidslinjen, jo flere poeng.</p>
+
+  <div class="mode-grid" role="group" aria-label="Velg modus">
+    <button class="mode-card" data-mode="solo">
+      <span class="mode-ico">🕰️</span><!-- PLACEHOLDER-GRAFIKK: solo-ikon -->
+      <span class="mode-txt"><h3>Solo</h3><p>8 bilder fra hele verden. Slå din egen rekord.</p></span>
+      <span class="go">SPILL →</span>
+    </button>
+    <button class="mode-card" data-mode="duel">
+      <span class="mode-ico">⚔️</span><!-- PLACEHOLDER-GRAFIKK: duell-ikon -->
+      <span class="mode-txt"><h3>Duell</h3><p>To spillere, samme bilde. Nærmest vinner. Først til 3.</p></span>
+      <span class="go">SPILL →</span>
+    </button>
+    <button class="mode-card" data-mode="norge">
+      <span class="mode-ico">🗺️</span><!-- PLACEHOLDER-GRAFIKK: norge-ikon -->
+      <span class="mode-txt"><h3>Norge</h3><p>Norske gater og steder – kjenner du igjen landet ditt?</p></span>
+      <span class="go">SPILL →</span>
+    </button>
+  </div>
+
+  <div class="section-label">VANSKELIGHETSGRAD</div>
+  <div class="diff-row" role="group" aria-label="Vanskelighetsgrad">
+    <button class="diff-pill" data-diff="rekrutt" aria-pressed="false"><b>Rekrutt</b><span>Gjett tiår · rause poeng</span></button>
+    <button class="diff-pill" data-diff="agent" aria-pressed="true"><b>Agent</b><span>Full tidslinje · år for år</span></button>
+    <button class="diff-pill" data-diff="tidsmester" aria-pressed="false"><b>Tidsmester</b><span>Alt i banken · brutal kurve</span></button>
+  </div>
+
+  <div class="opts-row">
+    <label class="opt"><input type="checkbox" id="opt-relaxed"> Avslappet (ingen timer, streak ryker aldri)</label>
+    <label class="opt" id="opt-timer-wrap" style="display:none"><input type="checkbox" id="opt-timer"> 20 sek per bilde</label>
+    <label class="opt"><input type="checkbox" id="opt-sound" checked> Lyd</label>
+    <label class="opt"><input type="checkbox" id="opt-decades"> Tiår-knapper på alle nivåer</label>
+  </div>
+
+  <div class="rank-strip">
+    <span class="avatar">🕵️</span><!-- PLACEHOLDER-GRAFIKK: agent-avatar -->
+    <div>
+      <div class="r-name" id="rank-name">Arkivlærling</div>
+      <div class="r-sub" id="rank-sub">Samle poeng for å stige i gradene</div>
+    </div>
+    <div class="r-right">
+      <div class="r-sub">BESTE RUNDER</div>
+      <div class="best-list" id="start-best">–</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ SPILLSKJERM ══════════════ -->
+<section id="screen-game" class="screen">
+  <div class="hud">
+    <span class="h-logo">⌛</span><!-- PLACEHOLDER-GRAFIKK: mini-logo -->
+    <button class="hud-menu-btn" id="btn-quit" type="button">← MENY</button>
+    <span class="h-round" id="hud-round">BILDE 1/8</span>
+    <span id="hud-streak">⏳ TIDSSANS ×<b id="streak-n">3</b></span>
+    <span id="hud-duel"><span id="duel-pips1"></span><span style="color:var(--ink-faint)">·</span><span id="duel-pips2"></span></span>
+    <button class="hud-menu-btn" id="btn-force-reveal" type="button" style="display:none">⏭ AVSLUTT RUNDEN</button>
+    <span class="h-score"><span id="hud-score">0</span><small>POENG</small></span>
+  </div>
+  <div class="timer-wrap" id="timer-wrap"><div id="timer-bar"></div></div>
+
+  <div class="stage">
+    <div id="turn-banner">SPILLER 1 GJETTER</div>
+    <div class="photo-frame">
+      <div class="photo-mat" id="photo-mat">
+        <div class="photo-inner">
+          <img id="photo" alt="Historisk fotografi – studer detaljene og gjett årstallet" draggable="false">
+          <div class="grain"></div>
+        </div>
+        <div class="spinner" id="spinner">🎞️</div><!-- PLACEHOLDER-GRAFIKK: filmrull-spinner -->
+        <div id="photo-cap"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <!-- slider-variant -->
+    <div id="slider-ui">
+      <div class="year-bubble" id="year-bubble">1930</div>
+      <div class="tl-wrap">
+        <div class="tl-track"></div>
+        <input type="range" id="year-slider" min="1850" max="2010" step="1" value="1930"
+               aria-label="Årstall – bruk piltaster for å justere, Enter for å låse inn">
+        <div class="tl-ticks" aria-hidden="true">
+          <span>1850</span><span>1890</span><span>1930</span><span>1970</span><span>2010</span>
+        </div>
+      </div>
+    </div>
+    <!-- tiår-variant (Rekrutt) -->
+    <div id="decade-grid" class="hidden" role="group" aria-label="Velg tiår"></div>
+
+    <div class="lock-row">
+      <button class="btn-primary" id="btn-lock">LÅS INN</button>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ AVSLØRING ══════════════ -->
+<div id="reveal" role="dialog" aria-label="Fasit">
+  <div class="rev-card">
+    <div class="rev-year-row">
+      <div id="rev-year">1930</div>
+      <div id="rev-points">+0</div>
+    </div>
+    <div id="rev-verdict"></div>
+    <div class="rev-tl" id="rev-tl">
+      <div class="rev-track"></div>
+      <div class="rev-sweep" id="rev-sweep"></div>
+    </div>
+    <div class="rev-labels"><span>1850</span><span>2010</span></div>
+    <div class="ctx-card" id="ctx-card">
+      <h4 id="ctx-title"></h4>
+      <div class="clue" id="ctx-clue"></div>
+      <div class="ctx" id="ctx-text"></div>
+      <div class="src" id="ctx-src"></div>
+    </div>
+    <div id="duel-round-result"></div>
+    <div class="rev-next">
+      <button class="btn-teal" id="btn-next">NESTE →</button>
+    </div>
+    <div id="rev-wait-host">Venter på at spillederen går videre til neste runde…</div>
+  </div>
+</div>
+<div id="streak-toast">⏳ TIDSSANS!</div>
+
+<!-- ══════════════ GI VIDERE (DUELL) ══════════════ -->
+<div id="handover">
+  <div class="hand-box">
+    <div class="big">🤝</div>
+    <h2>Gi videre til <span id="hand-name" style="color:var(--p2)">Spiller 2</span></h2>
+    <p>Gjetningen til forrige spiller er trygt gjemt.</p>
+    <button class="btn-primary" id="btn-hand-ready">KLAR!</button>
+  </div>
+</div>
+
+<!-- ══════════════ SLUTTSKJERM ══════════════ -->
+<section id="screen-end" class="screen">
+  <div class="medal" id="end-medal">🥇</div><!-- PLACEHOLDER-GRAFIKK: medalje -->
+  <div id="end-head">Runde fullført!</div>
+  <div id="end-score">6 240</div>
+  <div id="end-sub"></div>
+  <div class="end-stats" id="end-stats"></div>
+  <div class="end-btns">
+    <button class="btn-primary" id="btn-again">SPILL IGJEN</button>
+    <button class="btn-ghost" id="btn-menu">HOVEDMENY</button>
+    <button class="btn-ghost" id="btn-about">OM BILDENE</button>
+  </div>
+  <div class="lb"><h4>LOKAL TOPPLISTE</h4><ol id="lb-list"></ol></div>
+</section>
+
+<!-- ══════════════ DUELL: VELG SPILLTYPE ══════════════ -->
+<div id="duel-choice-modal" class="mini-modal" role="dialog" aria-label="Velg duell-type">
+  <div class="choice-box">
+    <h3>⚔️ Duell</h3>
+    <div class="note">Hvordan vil dere spille?</div>
+    <button class="choice-btn" id="duel-choice-local" type="button">
+      <span class="ci">📱</span>
+      <span class="ct"><b>Spill på samme maskin</b><small>Gi enheten videre mellom hver gjetning.</small></span>
+    </button>
+    <button class="choice-btn" id="duel-choice-host" type="button">
+      <span class="ci">🆕</span>
+      <span class="ct"><b>Start et spill</b><small>Få en kode motstanderen din kan bli med på.</small></span>
+    </button>
+    <button class="choice-btn" id="duel-choice-join" type="button">
+      <span class="ci">🔑</span>
+      <span class="ct"><b>Skriv inn kode</b><small>Bli med i et spill noen andre har startet.</small></span>
+    </button>
+    <div class="lock-row"><button class="btn-ghost" id="duel-choice-close" type="button">AVBRYT</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ DUELL: VERT ══════════════ -->
+<div id="duel-host-modal" class="mini-modal" role="dialog" aria-label="Del koden med motstanderen">
+  <div class="choice-box">
+    <h3>Del denne koden</h3>
+    <div class="note">Motstanderen din taster den inn under «Skriv inn kode».</div>
+    <div class="room-code" id="host-room-code">····</div>
+    <div class="note" id="host-room-status" aria-live="polite">Kobler til…</div>
+    <div class="lock-row"><button class="btn-primary" id="btn-host-start" disabled>START SPILLET</button></div>
+    <div class="lock-row"><button class="btn-ghost" id="btn-host-cancel" type="button">AVBRYT</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ DUELL: SKRIV INN KODE ══════════════ -->
+<div id="duel-join-modal" class="mini-modal" role="dialog" aria-label="Skriv inn kode">
+  <div class="choice-box">
+    <h3>Skriv inn kode</h3>
+    <div class="note">Kort kode fra motstanderen din.</div>
+    <input id="join-code-input" class="code-input" maxlength="8" placeholder="F.EKS. 7K2X" autocomplete="off" autocapitalize="characters" aria-label="Romkode">
+    <div class="join-error" id="join-code-error" role="alert"></div>
+    <div class="lock-row"><button class="btn-primary" id="btn-join-submit" type="button">BLI MED</button></div>
+    <div class="lock-row"><button class="btn-ghost" id="btn-join-cancel" type="button">AVBRYT</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ DUELL: VENTER I LOBBY ══════════════ -->
+<div id="duel-wait-modal" class="mini-modal" role="dialog" aria-label="Venter på spillederen">
+  <div class="choice-box">
+    <h3>Du er med!</h3>
+    <div class="note">Du heter <b id="wait-my-name" style="color:var(--amber-hi)"></b> i denne duellen.</div>
+    <div class="note" id="wait-status" aria-live="polite">Venter på at spillederen starter spillet…</div>
+    <div class="lock-row"><button class="btn-ghost" id="btn-wait-cancel" type="button">FORLAT</button></div>
+  </div>
+</div>
+
+<!-- ══════════════ OM BILDENE ══════════════ -->
+<div id="about-modal" role="dialog" aria-label="Om bildene">
+  <div class="about-box">
+    <h3>Om bildene i denne runden</h3>
+    <div class="note">Alle fotografier er falt i det fri (public domain / CC0) og lastes direkte fra kildene. Ingen bilder lagres av LRNify.</div>
+    <ul id="about-list"></ul>
+    <div class="lock-row"><button class="btn-ghost" id="btn-about-close">LUKK</button></div>
+  </div>
+</div>
+
+<div class="sr-only" aria-live="polite" id="aria-live"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   KONFIG – all balansering skjer her
+   ═══════════════════════════════════════════════════════════════ */
+const YEAR_MIN = 1850, YEAR_MAX = 2010;
+const ROUND_SIZE = 8;               // bilder per runde
+const DUEL_TARGET = 3;              // rundeseire for å vinne duell
+const K_CURVE = { rekrutt: 25, agent: 12, tidsmester: 7 };   // poengkurvens slakhet
+const FLOOR_SAME_HALF = 25;         // minstepoeng når man er i riktig halvdel
+const STREAK_HIT = 5;               // ±år som teller som streak-treff
+const STREAK_BREAK = 15;            // bom større enn dette bryter streak
+const STREAK_MIN = 3;               // streak-lengde før bonus tenner
+const STREAK_BONUS = 50;            // bonus per bilde i tent streak
+const TIMER_SECONDS = 20;           // valgfri timer (Tidsmester)
+const MEDALS = {                    // terskler per nivå: [bronse, sølv, gull]
+  rekrutt:    [3600, 5200, 6800],
+  agent:      [3200, 4800, 6400],
+  tidsmester: [2800, 4200, 5600],
+};
+const RANKS = [                     // samlet poengsum over tid → tittel
+  [0,"Arkivlærling"],[10000,"Tidsspeider"],[25000,"Feltagent"],
+  [60000,"Tidsdetektiv"],[120000,"Kronolog"],[250000,"Tidsmester"]
+];
+const ERA_BUCKETS = [1850,1890,1910,1925,1940,1955,1970,1990,2011]; // rundetrekk dekker epokene
+
+/* ═══════════════════════════════════════════════════════════════
+   BILDEBANKEN – ren data. Nye bilder/temapakker = legg til objekter.
+   url    : Special:FilePath hos Wikimedia Commons (stabil, riktig størrelse)
+   fallback: direkte thumb-URL (verifisert via Commons API)
+   spread : ± år usikkerhet → full pott innenfor vinduet
+   ═══════════════════════════════════════════════════════════════ */
+const IMAGES = [
+ {
+  "id": "int-1860-broadway-i-regnvar",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/-Broadway%2C_New_York_City%2C_in_the_rain-_MET_DP218027.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/-Broadway%2C_New_York_City%2C_in_the_rain-_MET_DP218027.jpg/1280px--Broadway%2C_New_York_City%2C_in_the_rain-_MET_DP218027.jpg",
+  "year": 1860,
+  "spread": 5,
+  "title": "Broadway i regnvær",
+  "place": "New York, USA",
+  "context": "Hestene gjorde jobben bilene gjør i dag – New York hadde over 100 000 arbeidshester.",
+  "clue": "Se på gaten – bare hester og vogner, ikke en eneste bil eller trikk.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Metropolitan Museum of Art",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:-Broadway%2C_New_York_City%2C_in_the_rain-_MET_DP218027.jpg",
+  "license": "CC0",
+  "file": "-Broadway,_New_York_City,_in_the_rain-_MET_DP218027.jpg"
+ },
+ {
+  "id": "int-1865-seiersparade-i-washington",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/The_Grand_Review_of_the_Infantry_on_Pennsylvania_Avenue_Washington%2C_D.C._1865_B%26W.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/6/6a/The_Grand_Review_of_the_Infantry_on_Pennsylvania_Avenue_Washington%2C_D.C._1865_B%26W.jpg",
+  "year": 1865,
+  "spread": 1,
+  "title": "Seiersparade i Washington",
+  "place": "Washington, D.C., USA",
+  "context": "Over 150 000 soldater marsjerte gjennom Washington da den amerikanske borgerkrigen var slutt.",
+  "clue": "Uniformene og bajonettene tilhører soldater fra den amerikanske borgerkrigen.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Grand_Review_of_the_Infantry_on_Pennsylvania_Avenue_Washington%2C_D.C._1865_B%26W.jpg",
+  "license": "Public domain",
+  "file": "The_Grand_Review_of_the_Infantry_on_Pennsylvania_Avenue_Washington,_D.C._1865_B&W.jpg"
+ },
+ {
+  "id": "int-1877-iskrem-til-en-halv-penny",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/From_'Street_Life_in_London'%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith._(6257456398).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/From_%27Street_Life_in_London%27%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith._%286257456398%29.jpg/1280px-From_%27Street_Life_in_London%27%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith._%286257456398%29.jpg",
+  "year": 1877,
+  "spread": 1,
+  "title": "Iskrem til en halv penny",
+  "place": "London, Storbritannia",
+  "context": "Italienske gateselgere gjorde iskrem til gatemat for Londons barn – lenge før kulen i vaffel.",
+  "clue": "Klærne, trevognen og de slitte gatene er viktoriatidens London.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "LSE Library",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:From_'Street_Life_in_London'%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith._(6257456398).jpg",
+  "license": "No restrictions",
+  "file": "From_'Street_Life_in_London',_1877,_by_John_Thomson_and_Adolphe_Smith._(6257456398).jpg"
+ },
+ {
+  "id": "int-1877-londons-drosjekusker",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/From_'Street_Life_in_London'%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith_(5600367314).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/From_%27Street_Life_in_London%27%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith_%285600367314%29.jpg/1280px-From_%27Street_Life_in_London%27%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith_%285600367314%29.jpg",
+  "year": 1877,
+  "spread": 1,
+  "title": "Londons drosjekusker",
+  "place": "London, Storbritannia",
+  "context": "Hansom-vognene var byens taxier, og kuskene ventet i kø akkurat som drosjer i dag.",
+  "clue": "Drosjene har trehjul og trekkes av hester – bilen er ikke oppfunnet ennå.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "LSE Library",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:From_'Street_Life_in_London'%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith_(5600367314).jpg",
+  "license": "No restrictions",
+  "file": "From_'Street_Life_in_London',_1877,_by_John_Thomson_and_Adolphe_Smith_(5600367314).jpg"
+ },
+ {
+  "id": "int-1877-gateselger-med-eselkjerre",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/From_'Street_Life_in_London'%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith-_(6516045387).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/From_%27Street_Life_in_London%27%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith-_%286516045387%29.jpg/1280px-From_%27Street_Life_in_London%27%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith-_%286516045387%29.jpg",
+  "year": 1877,
+  "spread": 1,
+  "title": "Gateselger med eselkjerre",
+  "place": "London, Storbritannia",
+  "context": "Tusenvis av londonere livnærte seg som gateselgere – eselet var deres varebil.",
+  "clue": "Eselkjerre, flosshatt og grovt arbeidstøy – 1870-tallets London.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "LSE Library",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:From_'Street_Life_in_London'%2C_1877%2C_by_John_Thomson_and_Adolphe_Smith-_(6516045387).jpg",
+  "license": "No restrictions",
+  "file": "From_'Street_Life_in_London',_1877,_by_John_Thomson_and_Adolphe_Smith-_(6516045387).jpg"
+ },
+ {
+  "id": "int-1892-tower-bridge-bygges",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Tower_bridge_works_1892.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Tower_bridge_works_1892.jpg",
+  "year": 1892,
+  "spread": 1,
+  "title": "Tower Bridge bygges",
+  "place": "London, Storbritannia",
+  "context": "London-ikonet så halvferdig ut i årevis – gangbroene øverst kom helt til slutt.",
+  "clue": "Tower Bridge er halvferdig – broen åpnet i 1894.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tower_bridge_works_1892.jpg",
+  "license": "Public domain",
+  "file": "Tower_bridge_works_1892.jpg"
+ },
+ {
+  "id": "int-1896-kaf-i-berlin",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Berlin_Unter_den_Linden_Cafe_Bauer_um_1900.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Berlin_Unter_den_Linden_Cafe_Bauer_um_1900.jpg/1280px-Berlin_Unter_den_Linden_Cafe_Bauer_um_1900.jpg",
+  "year": 1896,
+  "spread": 5,
+  "title": "Kafé i Berlin",
+  "place": "Berlin, Tyskland",
+  "context": "Bildet er et photochrom – svart-hvitt-foto fargelagt lenge før fargefilmen fantes.",
+  "clue": "Hestedrosjer og gasslykter, men også elektriske ledninger – slutten av 1890-årene.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Berlin_Unter_den_Linden_Cafe_Bauer_um_1900.jpg",
+  "license": "Public domain",
+  "file": "Berlin_Unter_den_Linden_Cafe_Bauer_um_1900.jpg"
+ },
+ {
+  "id": "int-1895-triumfbuen-i-paris",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Arc_de_Triomphe_de_l'Etoile%2C_Paris%2C_France%2C_ca._1890-1900.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Arc_de_Triomphe_de_l%27Etoile%2C_Paris%2C_France%2C_ca._1890-1900.jpg/1280px-Arc_de_Triomphe_de_l%27Etoile%2C_Paris%2C_France%2C_ca._1890-1900.jpg",
+  "year": 1895,
+  "spread": 5,
+  "title": "Triumfbuen i Paris",
+  "place": "Paris, Frankrike",
+  "context": "Fargelagte photochrom-postkort som dette var datidens Instagram for turister.",
+  "clue": "Bare hestevogner rundt Triumfbuen, og damene går i lange korsettkjoler.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Arc_de_Triomphe_de_l'Etoile%2C_Paris%2C_France%2C_ca._1890-1900.jpg",
+  "license": "Public domain",
+  "file": "Arc_de_Triomphe_de_l'Etoile,_Paris,_France,_ca._1890-1900.jpg"
+ },
+ {
+  "id": "int-1900-triumfbuen-som-forsvant",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dewey_Arch%2C_New_York.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Dewey_Arch%2C_New_York.jpg/1280px-Dewey_Arch%2C_New_York.jpg",
+  "year": 1900,
+  "spread": 1,
+  "title": "Triumfbuen som forsvant",
+  "place": "New York, USA",
+  "context": "Buen ble bygget i gips for en marinehelt i 1899 – og revet allerede året etter.",
+  "clue": "Denne buen sto bare i ett år, fra 1899 til 1900 – sporvognene hjelper også.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dewey_Arch%2C_New_York.jpg",
+  "license": "Public domain",
+  "file": "Dewey_Arch,_New_York.jpg"
+ },
+ {
+  "id": "int-1900-marked-i-mulberry-street",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Mulberry_Street_NYC_c1900_LOC_3g04637u_edit.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Mulberry_Street_NYC_c1900_LOC_3g04637u_edit.jpg/1280px-Mulberry_Street_NYC_c1900_LOC_3g04637u_edit.jpg",
+  "year": 1900,
+  "spread": 3,
+  "title": "Marked i Mulberry Street",
+  "place": "New York, USA",
+  "context": "Gaten var hjertet i Little Italy, der nyankomne immigranter startet sitt Amerika-liv.",
+  "clue": "Hestevogner, tønner og hatter overalt – ikke en eneste bil i gatebildet.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mulberry_Street_NYC_c1900_LOC_3g04637u_edit.jpg",
+  "license": "Public domain",
+  "file": "Mulberry_Street_NYC_c1900_LOC_3g04637u_edit.jpg"
+ },
+ {
+  "id": "int-1903-verdens-forste-flytur",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/First_flight2.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/First_flight2.jpg/1280px-First_flight2.jpg",
+  "year": 1903,
+  "spread": 1,
+  "title": "Verdens første flytur",
+  "place": "Kitty Hawk, USA",
+  "context": "Flyet var i lufta i 12 sekunder – kortere enn en gjennomsnittlig TikTok-video.",
+  "clue": "Verdens mest berømte flyfoto – brødrene Wright, desember 1903.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:First_flight2.jpg",
+  "license": "Public domain",
+  "file": "First_flight2.jpg"
+ },
+ {
+  "id": "int-1905-broadway-mot-times-square",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Broadway%2C_Manhattan%2C_view_north_from_39th_Street_-_jpg_version.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Broadway%2C_Manhattan%2C_view_north_from_39th_Street_-_jpg_version.jpg/1280px-Broadway%2C_Manhattan%2C_view_north_from_39th_Street_-_jpg_version.jpg",
+  "year": 1905,
+  "spread": 1,
+  "title": "Broadway mot Times Square",
+  "place": "New York, USA",
+  "context": "Times Square fikk navnet sitt året før, da avisen The New York Times flyttet inn.",
+  "clue": "Sporvogner og hestevogner deler gaten – bilene har så vidt begynt å dukke opp.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Broadway%2C_Manhattan%2C_view_north_from_39th_Street_-_jpg_version.jpg",
+  "license": "Public domain",
+  "file": "Broadway,_Manhattan,_view_north_from_39th_Street_-_jpg_version.jpg"
+ },
+ {
+  "id": "int-1913-samlebandet-er-fodt",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ford_assembly_line_-_1913_(restored).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Ford_assembly_line_-_1913_%28restored%29.jpg/1280px-Ford_assembly_line_-_1913_%28restored%29.jpg",
+  "year": 1913,
+  "spread": 1,
+  "title": "Samlebåndet er født",
+  "place": "Detroit, USA",
+  "context": "Fords samlebånd kuttet tiden det tok å bygge en bil fra 12 timer til 93 minutter.",
+  "clue": "T-Ford-karosserier på rekke og rad – samlebåndet startet i 1913.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ford_assembly_line_-_1913_(restored).jpg",
+  "license": "Public domain",
+  "file": "Ford_assembly_line_-_1913_(restored).jpg"
+ },
+ {
+  "id": "int-1913-paskefint-pa-fifth-avenue",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/5th_Ave_at_42d_(i.e.%2C_42nd)_St._-_Easter%2C_1913_LCCN2014691099.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/5th_Ave_at_42d_%28i.e.%2C_42nd%29_St._-_Easter%2C_1913_LCCN2014691099.jpg/1280px-thumbnail.jpg",
+  "year": 1913,
+  "spread": 1,
+  "title": "Påskefint på Fifth Avenue",
+  "place": "New York, USA",
+  "context": "Å spasere i finstasen på Fifth Avenue etter påskegudstjenesten var årets motevisning.",
+  "clue": "Alle – absolutt alle – går med hatt, og bilene har åpne kupeer.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:5th_Ave_at_42d_(i.e.%2C_42nd)_St._-_Easter%2C_1913_LCCN2014691099.jpg",
+  "license": "Public domain",
+  "file": "5th_Ave_at_42d_(i.e.,_42nd)_St._-_Easter,_1913_LCCN2014691099.jpg"
+ },
+ {
+  "id": "int-1913-vinterdag-pa-broadway",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Broadway_N._from_Worth_St._Dec._1913_LCCN2014695038.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Broadway_N._from_Worth_St._Dec._1913_LCCN2014695038.jpg/1280px-Broadway_N._from_Worth_St._Dec._1913_LCCN2014695038.jpg",
+  "year": 1913,
+  "spread": 1,
+  "title": "Vinterdag på Broadway",
+  "place": "New York, USA",
+  "context": "Trikker, biler og hestevogner kjempet om plassen i samme gate – kaos garantert.",
+  "clue": "Blandingen av trikk, bil og hest plasserer bildet rett før første verdenskrig.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Broadway_N._from_Worth_St._Dec._1913_LCCN2014695038.jpg",
+  "license": "Public domain",
+  "file": "Broadway_N._from_Worth_St._Dec._1913_LCCN2014695038.jpg"
+ },
+ {
+  "id": "int-1918-krigsparade-i-new-york",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/4th_July_LOC_28705986501.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/6/6a/4th_July_LOC_28705986501.jpg",
+  "year": 1918,
+  "spread": 1,
+  "title": "Krigsparade i New York",
+  "place": "New York, USA",
+  "context": "Skipsmodellen er malt i dazzle-kamuflasje – sikksakkmønster som skulle forvirre tyske ubåter.",
+  "clue": "Sikksakk-kamuflasjen på skipet er et triks fra første verdenskrig.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:4th_July_LOC_28705986501.jpg",
+  "license": "Public domain",
+  "file": "4th_July_LOC_28705986501.jpg"
+ },
+ {
+  "id": "int-1918-4-juli-under-krigen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/4th_July_(parade)_LOC_28705974551.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/1/13/4th_July_%28parade%29_LOC_28705974551.jpg",
+  "year": 1918,
+  "spread": 1,
+  "title": "4. juli under krigen",
+  "place": "New York, USA",
+  "context": "USA feiret nasjonaldagen midt under første verdenskrig – med de allierte landene i paraden.",
+  "clue": "Hvite kjoler, flagg og uniformer – en hjemmefrontparade fra første verdenskrig.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:4th_July_(parade)_LOC_28705974551.jpg",
+  "license": "Public domain",
+  "file": "4th_July_(parade)_LOC_28705974551.jpg"
+ },
+ {
+  "id": "int-1922-badedraktkontroll-pa-stran",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Col._Sherrell%2C_Supt._of_Public_Buildings_and_Grounds%2C_has_issued_an_order_that_bathing_suits_at_the_Wash(ington)_bathing_beach_must_not_be_over_six_inches_above_the_knee_..._LCCN90708909.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Col._Sherrell%2C_Supt._of_Public_Buildings_and_Grounds%2C_has_issued_an_order_that_bathing_suits_at_the_Wash%28ington%29_bathing_beach_must_not_be_over_six_inches_above_the_knee_..._LCCN90708909.jpg/1280px-thumbnail.jpg",
+  "year": 1922,
+  "spread": 1,
+  "title": "Badedraktkontroll på stranden",
+  "place": "Washington, D.C., USA",
+  "context": "I 1922 kunne du få bot hvis badedrakten sluttet mer enn 15 cm over kneet.",
+  "clue": "Badedraktene dekker nesten hele kroppen – strandmote fra tidlig 1920-tall.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Col._Sherrell%2C_Supt._of_Public_Buildings_and_Grounds%2C_has_issued_an_order_that_bathing_suits_at_the_Wash(ington)_bathing_beach_must_not_be_over_six_inches_above_the_knee_..._LCCN90708909.jpg",
+  "license": "Public domain",
+  "file": "Col._Sherrell,_Supt._of_Public_Buildings_and_Grounds,_has_issued_an_order_that_bathing_suits_at_the_Wash(ington)_bathing_beach_must_not_be_over_six_inches_above_the_knee_..._LCCN90708909.jpg"
+ },
+ {
+  "id": "int-1925-hele-familien-rundt-radioe",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hood_River_County%2C_Oregon%2C_Farm_Family_Listening_to_the_Radio_-_NARA_-_6788418.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Hood_River_County%2C_Oregon%2C_Farm_Family_Listening_to_the_Radio_-_NARA_-_6788418.jpg/1280px-Hood_River_County%2C_Oregon%2C_Farm_Family_Listening_to_the_Radio_-_NARA_-_6788418.jpg",
+  "year": 1925,
+  "spread": 1,
+  "title": "Hele familien rundt radioen",
+  "place": "Hood River, Oregon, USA",
+  "context": "Radioen var 1920-tallets TikTok – hele familien stimlet sammen rundt apparatet.",
+  "clue": "Et digert radioapparat med batterikasse – radioens aller første år.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "NARA",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hood_River_County%2C_Oregon%2C_Farm_Family_Listening_to_the_Radio_-_NARA_-_6788418.jpg",
+  "license": "Public domain",
+  "file": "Hood_River_County,_Oregon,_Farm_Family_Listening_to_the_Radio_-_NARA_-_6788418.jpg"
+ },
+ {
+  "id": "int-1928-manhattan-fra-lufta",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/New_York_-_New_York_City_-_NARA_-_68146143.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/New_York_-_New_York_City_-_NARA_-_68146143.jpg/1280px-New_York_-_New_York_City_-_NARA_-_68146143.jpg",
+  "year": 1928,
+  "spread": 1,
+  "title": "Manhattan fra lufta",
+  "place": "New York, USA",
+  "context": "Skyskraperkappløpet var i gang – men de aller høyeste var ennå ikke bygget.",
+  "clue": "Let etter Empire State Building – den mangler! Altså før 1931.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "NARA",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:New_York_-_New_York_City_-_NARA_-_68146143.jpg",
+  "license": "Public domain",
+  "file": "New_York_-_New_York_City_-_NARA_-_68146143.jpg"
+ },
+ {
+  "id": "int-1939-verdensutstillingen-i-new-",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/-Fountains%2C_1939_New_York_World's_Fair%2C_with_Trylon_and_Perisphere_in_Background-_MET_DP103123.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/-Fountains%2C_1939_New_York_World%27s_Fair%2C_with_Trylon_and_Perisphere_in_Background-_MET_DP103123.jpg/1280px--Fountains%2C_1939_New_York_World%27s_Fair%2C_with_Trylon_and_Perisphere_in_Background-_MET_DP103123.jpg",
+  "year": 1939,
+  "spread": 1,
+  "title": "Verdensutstillingen i New York",
+  "place": "New York, USA",
+  "context": "Utstillingen viste frem fremtiden: TV, motorveier og roboter – rett før krigen brøt ut.",
+  "clue": "Den hvite kulen og spiret er Trylon og Perisphere fra verdensutstillingen i 1939.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Metropolitan Museum of Art",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:-Fountains%2C_1939_New_York_World's_Fair%2C_with_Trylon_and_Perisphere_in_Background-_MET_DP103123.jpg",
+  "license": "CC0",
+  "file": "-Fountains,_1939_New_York_World's_Fair,_with_Trylon_and_Perisphere_in_Background-_MET_DP103123.jpg"
+ },
+ {
+  "id": "int-1939-landhandelen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Mr._R._B._Whitley_visiting_in_his_general_store%2C_Wendell._Wake_County%2C_North_Carolina%2C_8c30356.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fb/Mr._R._B._Whitley_visiting_in_his_general_store%2C_Wendell._Wake_County%2C_North_Carolina%2C_8c30356.jpg/1280px-Mr._R._B._Whitley_visiting_in_his_general_store%2C_Wendell._Wake_County%2C_North_Carolina%2C_8c30356.jpg",
+  "year": 1939,
+  "spread": 1,
+  "title": "Landhandelen",
+  "place": "Wendell, North Carolina, USA",
+  "context": "I landhandelen fikk du alt fra mel til arbeidsklær – og en prat på kjøpet.",
+  "clue": "Varene, prisene og klærne i butikken røper 1930-tallets USA.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mr._R._B._Whitley_visiting_in_his_general_store%2C_Wendell._Wake_County%2C_North_Carolina%2C_8c30356.jpg",
+  "license": "Public domain",
+  "file": "Mr._R._B._Whitley_visiting_in_his_general_store,_Wendell._Wake_County,_North_Carolina,_8c30356.jpg"
+ },
+ {
+  "id": "int-1942-damplokomotiver-i-texas",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Amarillo_Rail_Yard_1942a.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Amarillo_Rail_Yard_1942a.jpg/1280px-Amarillo_Rail_Yard_1942a.jpg",
+  "year": 1942,
+  "spread": 3,
+  "title": "Damplokomotiver i Texas",
+  "place": "Amarillo, Texas, USA",
+  "context": "Jernbanen fraktet soldater og krigsutstyr døgnet rundt under andre verdenskrig.",
+  "clue": "Damplokomotiver i fargefoto – Kodachrome-filmen kom først på slutten av 1930-tallet.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Amarillo_Rail_Yard_1942a.jpg",
+  "license": "Public domain",
+  "file": "Amarillo_Rail_Yard_1942a.jpg"
+ },
+ {
+  "id": "int-1943-toget-har-ankommet-chicago",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Chicago%2C_Illinois_by_Jack_Delano_1943.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e7/Chicago%2C_Illinois_by_Jack_Delano_1943.jpg/1280px-Chicago%2C_Illinois_by_Jack_Delano_1943.jpg",
+  "year": 1943,
+  "spread": 1,
+  "title": "Toget har ankommet Chicago",
+  "place": "Chicago, USA",
+  "context": "Fotografen Jack Delano jobbet for staten med å dokumentere USAs hjemmefront under krigen.",
+  "clue": "Damplokomotiv og fargefoto samtidig – da er vi på det tidlige 1940-tallet.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chicago%2C_Illinois_by_Jack_Delano_1943.jpg",
+  "license": "Public domain",
+  "file": "Chicago,_Illinois_by_Jack_Delano_1943.jpg"
+ },
+ {
+  "id": "int-1943-lunsjpause-pa-jernbanen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Roundhouse_wipers.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Roundhouse_wipers.jpg/1280px-Roundhouse_wipers.jpg",
+  "year": 1943,
+  "spread": 1,
+  "title": "Lunsjpause på jernbanen",
+  "place": "Clinton, Iowa, USA",
+  "context": "Da mennene dro i krigen, tok kvinnene over de tunge jobbene på jernbanen.",
+  "clue": "Kvinner i arbeidsklær på mannsarbeidsplass – hjemmefronten under andre verdenskrig.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Roundhouse_wipers.jpg",
+  "license": "Public domain",
+  "file": "Roundhouse_wipers.jpg"
+ },
+ {
+  "id": "int-1945-freden-feires-pa-times-squ",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kissing_the_War_Goodbye.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Kissing_the_War_Goodbye.jpg/1280px-Kissing_the_War_Goodbye.jpg",
+  "year": 1945,
+  "spread": 1,
+  "title": "Freden feires på Times Square",
+  "place": "New York, USA",
+  "context": "Japan hadde nettopp kapitulert – andre verdenskrig var endelig over.",
+  "clue": "Matroser, konfetti og full jubel – seiersdagen i august 1945.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "US Navy / NARA",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kissing_the_War_Goodbye.jpg",
+  "license": "Public domain",
+  "file": "Kissing_the_War_Goodbye.jpg"
+ },
+ {
+  "id": "int-1947-jazzmusikere-pa-times-squa",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/(Portrait_of_Kaiser_Marshall%2C_Art_Hodes%2C_Sandy_Williams%2C_Cecil_(Xavier)_Scott%2C_and_Henry_(Clay)_Goodwin%2C_Times_Square%2C_New_York%2C_N.Y.%2C_ca._July_1947)_(LOC)_(4843755088).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/0/0d/%28Portrait_of_Kaiser_Marshall%2C_Art_Hodes%2C_Sandy_Williams%2C_Cecil_%28Xavier%29_Scott%2C_and_Henry_%28Clay%29_Goodwin%2C_Times_Square%2C_New_York%2C_N.Y.%2C_ca._July_1947%29_%28LOC%29_%284843755088%29.jpg",
+  "year": 1947,
+  "spread": 1,
+  "title": "Jazzmusikere på Times Square",
+  "place": "New York, USA",
+  "context": "New York var jazzens hovedstad, og Gottliebs jazzfotografier er verdensberømte.",
+  "clue": "Dressene, hattene og neonskiltene skriker sent 1940-tall.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:(Portrait_of_Kaiser_Marshall%2C_Art_Hodes%2C_Sandy_Williams%2C_Cecil_(Xavier)_Scott%2C_and_Henry_(Clay)_Goodwin%2C_Times_Square%2C_New_York%2C_N.Y.%2C_ca._July_1947)_(LOC)_(4843755088).jpg",
+  "license": "Public domain",
+  "file": "(Portrait_of_Kaiser_Marshall,_Art_Hodes,_Sandy_Williams,_Cecil_(Xavier)_Scott,_and_Henry_(Clay)_Goodwin,_Times_Square,_New_York,_N.Y.,_ca._July_1947)_(LOC)_(4843755088).jpg"
+ },
+ {
+  "id": "int-1956-bilbrann-i-amsterdam",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Autobrand_Weteringschans_Amsterdam%2C_Bestanddeelnr_907-7712.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b7/Autobrand_Weteringschans_Amsterdam%2C_Bestanddeelnr_907-7712.jpg/1280px-Autobrand_Weteringschans_Amsterdam%2C_Bestanddeelnr_907-7712.jpg",
+  "year": 1956,
+  "spread": 1,
+  "title": "Bilbrann i Amsterdam",
+  "place": "Amsterdam, Nederland",
+  "context": "Brannvesenet rykket ut til en brennende Citroën-varebil midt i gaten.",
+  "clue": "Se på bilene og syklene rundt – typisk europeisk 1950-tall.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Autobrand_Weteringschans_Amsterdam%2C_Bestanddeelnr_907-7712.jpg",
+  "license": "CC0",
+  "file": "Autobrand_Weteringschans_Amsterdam,_Bestanddeelnr_907-7712.jpg"
+ },
+ {
+  "id": "int-1956-barn-pa-sebrastripene",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Collectie_Fotocollectiie_Afdrukken_ANEFO_Rousel%2C_fotonummer_157-0185%2C_Bestanddeelnr_157-0185.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/Collectie_Fotocollectiie_Afdrukken_ANEFO_Rousel%2C_fotonummer_157-0185%2C_Bestanddeelnr_157-0185.jpg/1280px-Collectie_Fotocollectiie_Afdrukken_ANEFO_Rousel%2C_fotonummer_157-0185%2C_Bestanddeelnr_157-0185.jpg",
+  "year": 1956,
+  "spread": 3,
+  "title": "Barn på sebrastripene",
+  "place": "Nederland",
+  "context": "Fotgjengerfeltet var ganske nytt – og barna lærte trafikkregler på skolen.",
+  "clue": "Kjolene, strømpene og de runde bilene plasserer oss på 1950-tallet.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Collectie_Fotocollectiie_Afdrukken_ANEFO_Rousel%2C_fotonummer_157-0185%2C_Bestanddeelnr_157-0185.jpg",
+  "license": "CC0",
+  "file": "Collectie_Fotocollectiie_Afdrukken_ANEFO_Rousel,_fotonummer_157-0185,_Bestanddeelnr_157-0185.jpg"
+ },
+ {
+  "id": "int-1959-skvettlapper-monteres",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Monteren_van_spatlappen_aan_autos%2C_Bestanddeelnr_910-8909.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/Monteren_van_spatlappen_aan_autos%2C_Bestanddeelnr_910-8909.jpg/1280px-Monteren_van_spatlappen_aan_autos%2C_Bestanddeelnr_910-8909.jpg",
+  "year": 1959,
+  "spread": 1,
+  "title": "Skvettlapper monteres",
+  "place": "Nederland",
+  "context": "Nye trafikkregler skapte arbeid: bilene skulle utstyres med skvettlapper.",
+  "clue": "Bilene har krom og begynnende halefinner – sent 1950-tall.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Monteren_van_spatlappen_aan_autos%2C_Bestanddeelnr_910-8909.jpg",
+  "license": "CC0",
+  "file": "Monteren_van_spatlappen_aan_autos,_Bestanddeelnr_910-8909.jpg"
+ },
+ {
+  "id": "int-1964-beatles-lander-i-nederland",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aankomst_Beatles_op_Schiphol%2C_omringd_door_politiemensen_gaan_de_Beatles_naar_de%2C_Bestanddeelnr_916-5127.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Aankomst_Beatles_op_Schiphol%2C_omringd_door_politiemensen_gaan_de_Beatles_naar_de%2C_Bestanddeelnr_916-5127.jpg/1280px-Aankomst_Beatles_op_Schiphol%2C_omringd_door_politiemensen_gaan_de_Beatles_naar_de%2C_Bestanddeelnr_916-5127.jpg",
+  "year": 1964,
+  "spread": 1,
+  "title": "Beatles lander i Nederland",
+  "place": "Schiphol, Nederland",
+  "context": "Beatlemania! Politiet måtte eskortere bandet forbi hylende fans overalt.",
+  "clue": "Bowlefrisyrene avslører alt – Beatles på turné i 1964.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aankomst_Beatles_op_Schiphol%2C_omringd_door_politiemensen_gaan_de_Beatles_naar_de%2C_Bestanddeelnr_916-5127.jpg",
+  "license": "CC0",
+  "file": "Aankomst_Beatles_op_Schiphol,_omringd_door_politiemensen_gaan_de_Beatles_naar_de,_Bestanddeelnr_916-5127.jpg"
+ },
+ {
+  "id": "int-1969-mennesket-pa-manen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aldrin_Apollo_11.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Aldrin_Apollo_11.jpg/1280px-Aldrin_Apollo_11.jpg",
+  "year": 1969,
+  "spread": 1,
+  "title": "Mennesket på Månen",
+  "place": "Månen",
+  "context": "Buzz Aldrin fotografert av Neil Armstrong – se nøye, fotografen speiles i visiret.",
+  "clue": "Månelandingen – dette bildet gikk verden rundt i juli 1969.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "NASA",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Aldrin_Apollo_11.jpg",
+  "license": "Public domain",
+  "file": "Aldrin_Apollo_11.jpg"
+ },
+ {
+  "id": "int-1973-gagate-i-m-nchen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/MUNICH'S_LARGE_AND_BEAUTIFUL_FUSSGANGERZONE_(PEDESTRIAN_ZONE)_HAS_RETURNED_THE_CITY'S_COMMERCIAL_AND_CULTURAL_CENTER..._-_NARA_-_551858.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/MUNICH%27S_LARGE_AND_BEAUTIFUL_FUSSGANGERZONE_%28PEDESTRIAN_ZONE%29_HAS_RETURNED_THE_CITY%27S_COMMERCIAL_AND_CULTURAL_CENTER..._-_NARA_-_551858.jpg/1280px-MUNICH%27S_LARGE_AND_BEAUTIFUL_FUSSGANGERZONE_%28PEDESTRIAN_ZONE%29_HAS_RETURNED_THE_CITY%27S_COMMERCIAL_AND_CULTURAL_CENTER..._-_NARA_-_551858.jpg",
+  "year": 1973,
+  "spread": 1,
+  "title": "Gågate i München",
+  "place": "München, Tyskland",
+  "context": "Gågata ble laget til OL i 1972 – og forandret europeiske byer for alltid.",
+  "clue": "Slengbukser, store krager og knallfarger – midt på 1970-tallet.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "NARA / EPA Documerica",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:MUNICH'S_LARGE_AND_BEAUTIFUL_FUSSGANGERZONE_(PEDESTRIAN_ZONE)_HAS_RETURNED_THE_CITY'S_COMMERCIAL_AND_CULTURAL_CENTER..._-_NARA_-_551858.jpg",
+  "license": "Public domain",
+  "file": "MUNICH'S_LARGE_AND_BEAUTIFUL_FUSSGANGERZONE_(PEDESTRIAN_ZONE)_HAS_RETURNED_THE_CITY'S_COMMERCIAL_AND_CULTURAL_CENTER..._-_NARA_-_551858.jpg"
+ },
+ {
+  "id": "int-1973-bensinkrise-i-usa",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/GASOLINE_SHORTAGE_-_NARA_-_548049.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/GASOLINE_SHORTAGE_-_NARA_-_548049.jpg/1280px-GASOLINE_SHORTAGE_-_NARA_-_548049.jpg",
+  "year": 1973,
+  "spread": 1,
+  "title": "Bensinkrise i USA",
+  "place": "USA",
+  "context": "Oljekrisen i 1973 gjorde bensin så sjelden at stasjonene stengte midt på dagen.",
+  "clue": "Skilt om tomme bensinpumper pluss kantete biler er lik oljekrisen på 70-tallet.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "NARA / EPA Documerica",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:GASOLINE_SHORTAGE_-_NARA_-_548049.jpg",
+  "license": "Public domain",
+  "file": "GASOLINE_SHORTAGE_-_NARA_-_548049.jpg"
+ },
+ {
+  "id": "int-1974-kjor-sammen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/%22POOL_IT%22_SIGN_NORTH_OF_VANCOUVER%2C_WASHINGTON%2C_WAS_A_REMINDER_THAT_THE_GASOLINE_SHORTAGE_WAS_NOT_OVER_IN_MARCH%2C_1974..._-_NARA_-_555504.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/%22POOL_IT%22_SIGN_NORTH_OF_VANCOUVER%2C_WASHINGTON%2C_WAS_A_REMINDER_THAT_THE_GASOLINE_SHORTAGE_WAS_NOT_OVER_IN_MARCH%2C_1974..._-_NARA_-_555504.jpg/1280px-%22POOL_IT%22_SIGN_NORTH_OF_VANCOUVER%2C_WASHINGTON%2C_WAS_A_REMINDER_THAT_THE_GASOLINE_SHORTAGE_WAS_NOT_OVER_IN_MARCH%2C_1974..._-_NARA_-_555504.jpg",
+  "year": 1974,
+  "spread": 1,
+  "title": "Kjør sammen!",
+  "place": "Vancouver, Washington, USA",
+  "context": "Under oljekrisen ble det plutselig en patriotisk plikt å dele bil til jobben.",
+  "clue": "Kjempeplakat om samkjøring – og 70-tallsbiler på motorveien.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "NARA / EPA Documerica",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:%22POOL_IT%22_SIGN_NORTH_OF_VANCOUVER%2C_WASHINGTON%2C_WAS_A_REMINDER_THAT_THE_GASOLINE_SHORTAGE_WAS_NOT_OVER_IN_MARCH%2C_1974..._-_NARA_-_555504.jpg",
+  "license": "Public domain",
+  "file": "\"POOL_IT\"_SIGN_NORTH_OF_VANCOUVER,_WASHINGTON,_WAS_A_REMINDER_THAT_THE_GASOLINE_SHORTAGE_WAS_NOT_OVER_IN_MARCH,_1974..._-_NARA_-_555504.jpg"
+ },
+ {
+  "id": "int-1981-romfergens-forste-ferd",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Space_Shuttle_Columbia_launching.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Space_Shuttle_Columbia_launching.jpg/1280px-Space_Shuttle_Columbia_launching.jpg",
+  "year": 1981,
+  "spread": 1,
+  "title": "Romfergens første ferd",
+  "place": "Cape Canaveral, Florida, USA",
+  "context": "Columbia var verdens første gjenbrukbare romskip – en romalder-revolusjon.",
+  "clue": "Drivstofftanken er malt hvit – det skjedde bare på de to første fergeturene i 1981.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "NASA",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Space_Shuttle_Columbia_launching.jpg",
+  "license": "Public domain",
+  "file": "Space_Shuttle_Columbia_launching.jpg"
+ },
+ {
+  "id": "int-1981-regntung-handlegate",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Reisbureaus_in_de_Leidsestraat_in_Amsterdam_in_de_regen%2C_1981%2C_Bestanddeelnr_931-5723.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Reisbureaus_in_de_Leidsestraat_in_Amsterdam_in_de_regen%2C_1981%2C_Bestanddeelnr_931-5723.jpg/1280px-Reisbureaus_in_de_Leidsestraat_in_Amsterdam_in_de_regen%2C_1981%2C_Bestanddeelnr_931-5723.jpg",
+  "year": 1981,
+  "spread": 1,
+  "title": "Regntung handlegate",
+  "place": "Amsterdam, Nederland",
+  "context": "Reisebyråenes vinduer solgte syden-drømmer – chartertur var 80-tallets store eventyr.",
+  "clue": "Plakatene, skrifttypene og regnjakkene er tidlig 1980-tall.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Reisbureaus_in_de_Leidsestraat_in_Amsterdam_in_de_regen%2C_1981%2C_Bestanddeelnr_931-5723.jpg",
+  "license": "CC0",
+  "file": "Reisbureaus_in_de_Leidsestraat_in_Amsterdam_in_de_regen,_1981,_Bestanddeelnr_931-5723.jpg"
+ },
+ {
+  "id": "int-1981-unge-velgere-ved-valgurnen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Tweede_Kamer_verkiezingen_1981_jongeren_stemmen_in_Amsterdam%2C_Bestanddeelnr_931-5091.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Tweede_Kamer_verkiezingen_1981_jongeren_stemmen_in_Amsterdam%2C_Bestanddeelnr_931-5091.jpg/1280px-Tweede_Kamer_verkiezingen_1981_jongeren_stemmen_in_Amsterdam%2C_Bestanddeelnr_931-5091.jpg",
+  "year": 1981,
+  "spread": 1,
+  "title": "Unge velgere ved valgurnen",
+  "place": "Amsterdam, Nederland",
+  "context": "Stemmelokalet var lavteknologisk: papir, blyant og en diger urne.",
+  "clue": "Frisyrene, dongerien og jakkene sier tidlig 1980-tall.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tweede_Kamer_verkiezingen_1981_jongeren_stemmen_in_Amsterdam%2C_Bestanddeelnr_931-5091.jpg",
+  "license": "CC0",
+  "file": "Tweede_Kamer_verkiezingen_1981_jongeren_stemmen_in_Amsterdam,_Bestanddeelnr_931-5091.jpg"
+ },
+ {
+  "id": "int-1987-sommerkarneval-i-amsterdam",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Tropisch_carnaval_in_Amsterdam_26_juli_1987%2C_Bestanddeelnr_934-0393.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Tropisch_carnaval_in_Amsterdam_26_juli_1987%2C_Bestanddeelnr_934-0393.jpg/1280px-Tropisch_carnaval_in_Amsterdam_26_juli_1987%2C_Bestanddeelnr_934-0393.jpg",
+  "year": 1987,
+  "spread": 1,
+  "title": "Sommerkarneval i Amsterdam",
+  "place": "Amsterdam, Nederland",
+  "context": "Karnevalet feirer karibisk kultur i Nederland – en tradisjon som lever fortsatt.",
+  "clue": "Solbrillene, permanenten og fargene er sent 1980-tall.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tropisch_carnaval_in_Amsterdam_26_juli_1987%2C_Bestanddeelnr_934-0393.jpg",
+  "license": "CC0",
+  "file": "Tropisch_carnaval_in_Amsterdam_26_juli_1987,_Bestanddeelnr_934-0393.jpg"
+ },
+ {
+  "id": "int-1987-stengt-handlegate",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gesloten_rolluiken_in_Kalverstraat_Amsterdam_27_juli_1987%2C_Bestanddeelnr_934-0394.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Gesloten_rolluiken_in_Kalverstraat_Amsterdam_27_juli_1987%2C_Bestanddeelnr_934-0394.jpg/1280px-Gesloten_rolluiken_in_Kalverstraat_Amsterdam_27_juli_1987%2C_Bestanddeelnr_934-0394.jpg",
+  "year": 1987,
+  "spread": 1,
+  "title": "Stengt handlegate",
+  "place": "Amsterdam, Nederland",
+  "context": "Nedrullede gitter og søndagsstengte butikker var helt normalt i 1987.",
+  "clue": "Butikkskiltene og logoene har umiskjennelig 80-tallsdesign.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Gesloten_rolluiken_in_Kalverstraat_Amsterdam_27_juli_1987%2C_Bestanddeelnr_934-0394.jpg",
+  "license": "CC0",
+  "file": "Gesloten_rolluiken_in_Kalverstraat_Amsterdam_27_juli_1987,_Bestanddeelnr_934-0394.jpg"
+ },
+ {
+  "id": "int-1998-discovery-letter",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/STS-95_launch.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/STS-95_launch.jpg/1280px-STS-95_launch.jpg",
+  "year": 1998,
+  "spread": 1,
+  "title": "Discovery letter",
+  "place": "Cape Canaveral, Florida, USA",
+  "context": "Om bord satt 77 år gamle John Glenn – historiens eldste astronaut.",
+  "clue": "Romfergen med oransje tank – altså mellom 1982 og 2011. Detaljene avgjør.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "NASA",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:STS-95_launch.jpg",
+  "license": "Public domain",
+  "file": "STS-95_launch.jpg"
+ },
+ {
+  "id": "int-1998-presidenten-jubler",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/President_Bill_Clinton_and_First_Lady_Hillary_Clinton_applaud_the_STS-95_launch_team.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/President_Bill_Clinton_and_First_Lady_Hillary_Clinton_applaud_the_STS-95_launch_team.jpg/1280px-President_Bill_Clinton_and_First_Lady_Hillary_Clinton_applaud_the_STS-95_launch_team.jpg",
+  "year": 1998,
+  "spread": 1,
+  "title": "Presidenten jubler",
+  "place": "Cape Canaveral, Florida, USA",
+  "context": "Bill Clinton så John Glenn dra til rommet igjen – 36 år etter hans første romferd.",
+  "clue": "Kjenner du igjen presidentparet Clinton, har du nesten året.",
+  "region": "int",
+  "difficulty": 2,
+  "source": "NASA",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:President_Bill_Clinton_and_First_Lady_Hillary_Clinton_applaud_the_STS-95_launch_team.jpg",
+  "license": "Public domain",
+  "file": "President_Bill_Clinton_and_First_Lady_Hillary_Clinton_applaud_the_STS-95_launch_team.jpg"
+ },
+ {
+  "id": "int-2005-fleet-week-pa-times-square",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/USMC-02882.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/USMC-02882.jpg/1280px-USMC-02882.jpg",
+  "year": 2005,
+  "spread": 1,
+  "title": "Fleet Week på Times Square",
+  "place": "New York, USA",
+  "context": "Hver vår inntar tusenvis av marinesoldater New York – og poserer gjerne med Broadway-dansere.",
+  "clue": "Digitale reklameskjermer og musikalplakater – Times Square på 2000-tallet.",
+  "region": "int",
+  "difficulty": 1,
+  "source": "US Marine Corps",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:USMC-02882.jpg",
+  "license": "Public domain",
+  "file": "USMC-02882.jpg"
+ },
+ {
+  "id": "int-2005-konserthus-i-stal",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Image-Disney_Concert_Hall_by_Carol_Highsmith_edit.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Image-Disney_Concert_Hall_by_Carol_Highsmith_edit.jpg/1280px-Image-Disney_Concert_Hall_by_Carol_Highsmith_edit.jpg",
+  "year": 2005,
+  "spread": 1,
+  "title": "Konserthus i stål",
+  "place": "Los Angeles, USA",
+  "context": "Frank Gehrys blanke stålvegger måtte slipes ned – refleksene blendet naboene.",
+  "clue": "Det bølgende stålet er 2000-tallsarkitektur – bygget åpnet i 2003.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Carol M. Highsmith / Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Image-Disney_Concert_Hall_by_Carol_Highsmith_edit.jpg",
+  "license": "Public domain",
+  "file": "Image-Disney_Concert_Hall_by_Carol_Highsmith_edit.jpg"
+ },
+ {
+  "id": "int-2009-las-vegas-om-natten",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Night_aerial_view%2C_Las_Vegas%2C_Nevada%2C_04649u.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/Night_aerial_view%2C_Las_Vegas%2C_Nevada%2C_04649u.jpg/1280px-Night_aerial_view%2C_Las_Vegas%2C_Nevada%2C_04649u.jpg",
+  "year": 2009,
+  "spread": 1,
+  "title": "Las Vegas om natten",
+  "place": "Las Vegas, USA",
+  "context": "The Strip regnes som et av de sterkest opplyste stedene på jorda.",
+  "clue": "Let etter de nyeste megahotellene – flere åpnet først etter 2005.",
+  "region": "int",
+  "difficulty": 3,
+  "source": "Carol M. Highsmith / Library of Congress",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Night_aerial_view%2C_Las_Vegas%2C_Nevada%2C_04649u.jpg",
+  "license": "Public domain",
+  "file": "Night_aerial_view,_Las_Vegas,_Nevada,_04649u.jpg"
+ },
+ {
+  "id": "no-1865-bryggen-i-bergen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bryggen_in_Bergen_by_Knud_Knudsen_abt_1866.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Bryggen_in_Bergen_by_Knud_Knudsen_abt_1866.jpg",
+  "year": 1865,
+  "spread": 3,
+  "title": "Bryggen i Bergen",
+  "place": "Bergen, Norge",
+  "context": "Dette er et av de aller eldste fotografiene av Bryggen – tatt bare 26 år etter at fotografiet ble oppfunnet.",
+  "clue": "Bare seilskuter og robåter i havnen – ikke en eneste dampbåt å se.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bryggen_in_Bergen_by_Knud_Knudsen_abt_1866.jpg",
+  "license": "Public domain",
+  "file": "Bryggen_in_Bergen_by_Knud_Knudsen_abt_1866.jpg"
+ },
+ {
+  "id": "no-1876-fisketorget-i-bergen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/2171_Parti_af_Fisketorvet_i_Bergen_K.K.A_-_no-nb_digifoto_20160302_00070_bldsa_L_KK0207.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/2171_Parti_af_Fisketorvet_i_Bergen_K.K.A_-_no-nb_digifoto_20160302_00070_bldsa_L_KK0207.jpg/1280px-2171_Parti_af_Fisketorvet_i_Bergen_K.K.A_-_no-nb_digifoto_20160302_00070_bldsa_L_KK0207.jpg",
+  "year": 1876,
+  "spread": 5,
+  "title": "Fisketorget i Bergen",
+  "place": "Bergen, Norge",
+  "context": "Fisketorget har ligget på samme sted i over 700 år – her selges fisk rett fra båtene.",
+  "clue": "Alle mennene har hatt eller lue, og varene fraktes med håndkjerre og robåt.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:2171_Parti_af_Fisketorvet_i_Bergen_K.K.A_-_no-nb_digifoto_20160302_00070_bldsa_L_KK0207.jpg",
+  "license": "Public domain",
+  "file": "2171_Parti_af_Fisketorvet_i_Bergen_K.K.A_-_no-nb_digifoto_20160302_00070_bldsa_L_KK0207.jpg"
+ },
+ {
+  "id": "no-1885-karl-johans-gate-kristiani",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/0126._Christiania%2C_Carl_Johans_Gade_-_NB_bldsa_AL0126.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/0126._Christiania%2C_Carl_Johans_Gade_-_NB_bldsa_AL0126.jpg/1280px-0126._Christiania%2C_Carl_Johans_Gade_-_NB_bldsa_AL0126.jpg",
+  "year": 1885,
+  "spread": 5,
+  "title": "Karl Johans gate, Kristiania",
+  "place": "Oslo, Norge",
+  "context": "Oslo het Kristiania helt frem til 1925 – og gata var byens stolteste paradegate allerede da.",
+  "clue": "Se etter hestekjøretøy og hestetrikk – ingen motorer i gata ennå.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:0126._Christiania%2C_Carl_Johans_Gade_-_NB_bldsa_AL0126.jpg",
+  "license": "Public domain",
+  "file": "0126._Christiania,_Carl_Johans_Gade_-_NB_bldsa_AL0126.jpg"
+ },
+ {
+  "id": "no-1883-jernbanestasjonen-i-bergen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Den_gamle_jernbanestasjonen%2C_Christies_gate_i_Bergen_ca_1883_-_Rettighetshaver_til_fotoet_er_Spesialsamlingene_til_Universitetsbiblioteket_i_Bergen._Fotograf_Knud_Knudsen_01.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/9/95/Den_gamle_jernbanestasjonen%2C_Christies_gate_i_Bergen_ca_1883_-_Rettighetshaver_til_fotoet_er_Spesialsamlingene_til_Universitetsbiblioteket_i_Bergen._Fotograf_Knud_Knudsen_01.jpg",
+  "year": 1883,
+  "spread": 3,
+  "title": "Jernbanestasjonen i Bergen",
+  "place": "Bergen, Norge",
+  "context": "Dette var Bergens første jernbanestasjon – Vossebanen åpnet i 1883 og var en sensasjon.",
+  "clue": "En splitter ny stasjonsbygning i damplokomotivets tid – jernbanen var helt fersk i Bergen.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Universitetsbiblioteket i Bergen",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Den_gamle_jernbanestasjonen%2C_Christies_gate_i_Bergen_ca_1883_-_Rettighetshaver_til_fotoet_er_Spesialsamlingene_til_Universitetsbiblioteket_i_Bergen._Fotograf_Knud_Knudsen_01.jpg",
+  "license": "Public domain",
+  "file": "Den_gamle_jernbanestasjonen,_Christies_gate_i_Bergen_ca_1883_-_Rettighetshaver_til_fotoet_er_Spesialsamlingene_til_Universitetsbiblioteket_i_Bergen._Fotograf_Knud_Knudsen_01.jpg"
+ },
+ {
+  "id": "no-1883-torghandel-i-bergen",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/8642_Fisketorvet_i_Bergen_-_no-nb_digifoto_20160308_00261_bldsa_FAKnudsen_17.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/8642_Fisketorvet_i_Bergen_-_no-nb_digifoto_20160308_00261_bldsa_FAKnudsen_17.jpg/1280px-8642_Fisketorvet_i_Bergen_-_no-nb_digifoto_20160308_00261_bldsa_FAKnudsen_17.jpg",
+  "year": 1883,
+  "spread": 3,
+  "title": "Torghandel i Bergen",
+  "place": "Bergen, Norge",
+  "context": "Før kjøleskapets tid måtte fisken selges levende eller rykende fersk – rett fra torget.",
+  "clue": "Lange kjoler, sjal og trebåter side om side – typisk 1880-tall.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:8642_Fisketorvet_i_Bergen_-_no-nb_digifoto_20160308_00261_bldsa_FAKnudsen_17.jpg",
+  "license": "Public domain",
+  "file": "8642_Fisketorvet_i_Bergen_-_no-nb_digifoto_20160308_00261_bldsa_FAKnudsen_17.jpg"
+ },
+ {
+  "id": "no-1885-utsikt-over-kristiania",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/View_over_Christiania_(older_name_of_central_Oslo)_1890s.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/d/d3/View_over_Christiania_%28older_name_of_central_Oslo%29_1890s.jpg",
+  "year": 1885,
+  "spread": 5,
+  "title": "Utsikt over Kristiania",
+  "place": "Oslo, Norge",
+  "context": "Hele Karl Johans gate ender i Slottet – akkurat som i dag, men byen rundt er nesten uten høyhus.",
+  "clue": "Ingen biler, ingen ledninger i luften – og byen heter fortsatt Christiania.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:View_over_Christiania_(older_name_of_central_Oslo)_1890s.jpg",
+  "license": "No restrictions",
+  "file": "View_over_Christiania_(older_name_of_central_Oslo)_1890s.jpg"
+ },
+ {
+  "id": "no-1902-egertorget-mot-slottet",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/0127._Christiania%2C_Carl_Johans_Gade%2C_1902_-_NB_bldsa_AL0127_2.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/0127._Christiania%2C_Carl_Johans_Gade%2C_1902_-_NB_bldsa_AL0127_2.jpg/1280px-0127._Christiania%2C_Carl_Johans_Gade%2C_1902_-_NB_bldsa_AL0127_2.jpg",
+  "year": 1902,
+  "spread": 1,
+  "title": "Egertorget mot Slottet",
+  "place": "Oslo, Norge",
+  "context": "Skiltene avslører datidens yrker: urmaker, barbersalong og bakeri – W. B. Samson finnes faktisk ennå.",
+  "clue": "Trikkeskinner i gata, men hestene dominerer fortsatt – tidlig 1900-tall.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:0127._Christiania%2C_Carl_Johans_Gade%2C_1902_-_NB_bldsa_AL0127_2.jpg",
+  "license": "Public domain",
+  "file": "0127._Christiania,_Carl_Johans_Gade,_1902_-_NB_bldsa_AL0127_2.jpg"
+ },
+ {
+  "id": "no-1904-barn-i-vika-oslo",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/H%C3%A5ndkolorert_dias._En_jente_kledd_i_kjole_st%C3%A5r_p%C3%A5_gata_foran_en_byg%C3%A5rd_i_Vika%2C_Oslo%2C_i_1904._I_bakgrunnen_st%C3%A5r_tre_andre_sm%C3%A5_barn_og_en_ung_gutt._P%C3%A5_byg%C3%A5rden_henger_et_skilt_for_%22Strandgadens_Kul_og_(9456255859).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/d/dc/H%C3%A5ndkolorert_dias._En_jente_kledd_i_kjole_st%C3%A5r_p%C3%A5_gata_foran_en_byg%C3%A5rd_i_Vika%2C_Oslo%2C_i_1904._I_bakgrunnen_st%C3%A5r_tre_andre_sm%C3%A5_barn_og_en_ung_gutt._P%C3%A5_byg%C3%A5rden_henger_et_skilt_for_%22Strandgadens_Kul_og_%289456255859%29.jpg",
+  "year": 1904,
+  "spread": 1,
+  "title": "Barn i Vika, Oslo",
+  "place": "Oslo, Norge",
+  "context": "Bildet er håndkolorert – fargefilm fantes ikke, så noen malte fargene på for hånd!",
+  "clue": "Skiltet reklamerer for kull og ved – det folk fyrte med før strøm og olje.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:H%C3%A5ndkolorert_dias._En_jente_kledd_i_kjole_st%C3%A5r_p%C3%A5_gata_foran_en_byg%C3%A5rd_i_Vika%2C_Oslo%2C_i_1904._I_bakgrunnen_st%C3%A5r_tre_andre_sm%C3%A5_barn_og_en_ung_gutt._P%C3%A5_byg%C3%A5rden_henger_et_skilt_for_%22Strandgadens_Kul_og_(9456255859).jpg",
+  "license": "No restrictions",
+  "file": "Håndkolorert_dias._En_jente_kledd_i_kjole_står_på_gata_foran_en_bygård_i_Vika,_Oslo,_i_1904._I_bakgrunnen_står_tre_andre_små_barn_og_en_ung_gutt._På_bygården_henger_et_skilt_for_\"Strandgadens_Kul_og_(9456255859).jpg"
+ },
+ {
+  "id": "no-1910-reinsdyr-pa-finse-stasjon",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bergensbanen_km302_Finse_001_1910_no-nb_digifoto_20161031_00098_NB_MIT_ENR_00999.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Bergensbanen_km302_Finse_001_1910_no-nb_digifoto_20161031_00098_NB_MIT_ENR_00999.jpg/1280px-Bergensbanen_km302_Finse_001_1910_no-nb_digifoto_20161031_00098_NB_MIT_ENR_00999.jpg",
+  "year": 1910,
+  "spread": 1,
+  "title": "Reinsdyr på Finse stasjon",
+  "place": "Finse, Norge",
+  "context": "Bergensbanen over fjellet åpnet i 1909 – plutselig kunne tog og reinsdyr møtes på 1222 meters høyde.",
+  "clue": "Stasjonen ser helt ny ut – banen hadde nettopp åpnet.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bergensbanen_km302_Finse_001_1910_no-nb_digifoto_20161031_00098_NB_MIT_ENR_00999.jpg",
+  "license": "CC0",
+  "file": "Bergensbanen_km302_Finse_001_1910_no-nb_digifoto_20161031_00098_NB_MIT_ENR_00999.jpg"
+ },
+ {
+  "id": "no-1911-rikstelefonen-i-kristiania",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Rikstelefon_1911.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Rikstelefon_1911.jpg/1280px-Rikstelefon_1911.jpg",
+  "year": 1911,
+  "spread": 1,
+  "title": "Rikstelefonen i Kristiania",
+  "place": "Oslo, Norge",
+  "context": "Skulle du ringe til en annen by, måtte du møte opp her og bestille samtalen hos en telefondame.",
+  "clue": "Telefonene har sveiv og ingen tastatur – og alle operatørene er kvinner i lange kjoler.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Riksarkivet",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Rikstelefon_1911.jpg",
+  "license": "Public domain",
+  "file": "Rikstelefon_1911.jpg"
+ },
+ {
+  "id": "no-1913-karl-johans-gate-1913",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/15674._Karl_Johansgade_Kristiania_(17066012085).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/15674._Karl_Johansgade_Kristiania_%2817066012085%29.jpg/1280px-15674._Karl_Johansgade_Kristiania_%2817066012085%29.jpg",
+  "year": 1913,
+  "spread": 1,
+  "title": "Karl Johans gate 1913",
+  "place": "Oslo, Norge",
+  "context": "Samme år fikk norske kvinner stemmerett – som ett av de første landene i verden.",
+  "clue": "Elektrisk trikk og stråhatter, men fortsatt nesten ingen biler i gata.",
+  "region": "no",
+  "difficulty": 1,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:15674._Karl_Johansgade_Kristiania_(17066012085).jpg",
+  "license": "No restrictions",
+  "file": "15674._Karl_Johansgade_Kristiania_(17066012085).jpg"
+ },
+ {
+  "id": "no-1915-musikktimen-pa-karl-johan",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kristiania._Fra_Carl_Johans_Gade_i_Musiktiden_(22463486043).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d2/Kristiania._Fra_Carl_Johans_Gade_i_Musiktiden_%2822463486043%29.jpg/1280px-Kristiania._Fra_Carl_Johans_Gade_i_Musiktiden_%2822463486043%29.jpg",
+  "year": 1915,
+  "spread": 5,
+  "title": "Musikktimen på Karl Johan",
+  "place": "Oslo, Norge",
+  "context": "Hver dag spilte et orkester i Studenterlunden, og halve byen kom for å promenere og bli sett.",
+  "clue": "Alle – absolutt alle – går med hatt, og damene har ankellange kjoler.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Kristiania._Fra_Carl_Johans_Gade_i_Musiktiden_(22463486043).jpg",
+  "license": "No restrictions",
+  "file": "Kristiania._Fra_Carl_Johans_Gade_i_Musiktiden_(22463486043).jpg"
+ },
+ {
+  "id": "no-1930-husmorskolen-pa-nordstrand",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/37458_%22B%22_Nordstrand_Husmorskole_3_Mai_1930_-_no-nb_digifoto_20150113_00027_bldsa_HUSMORSK_42.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f7/37458_%22B%22_Nordstrand_Husmorskole_3_Mai_1930_-_no-nb_digifoto_20150113_00027_bldsa_HUSMORSK_42.jpg/1280px-37458_%22B%22_Nordstrand_Husmorskole_3_Mai_1930_-_no-nb_digifoto_20150113_00027_bldsa_HUSMORSK_42.jpg",
+  "year": 1930,
+  "spread": 1,
+  "title": "Husmorskolen på Nordstrand",
+  "place": "Oslo, Norge",
+  "context": "Husmorskole var et eget skoleslag der unge jenter lærte matlaging og husstell – helt vanlig frem til 1970-tallet.",
+  "clue": "Like forklær og kjøkkenutstyr uten et eneste elektrisk apparat i sikte.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:37458_%22B%22_Nordstrand_Husmorskole_3_Mai_1930_-_no-nb_digifoto_20150113_00027_bldsa_HUSMORSK_42.jpg",
+  "license": "Public domain",
+  "file": "37458_\"B\"_Nordstrand_Husmorskole_3_Mai_1930_-_no-nb_digifoto_20150113_00027_bldsa_HUSMORSK_42.jpg"
+ },
+ {
+  "id": "no-1925-torvet-i-trondheim",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/548_Trondhjem_Torvet_-_no-nb_digifoto_20150623_00006_bldsa_PK16947.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/44/548_Trondhjem_Torvet_-_no-nb_digifoto_20150623_00006_bldsa_PK16947.jpg/1280px-548_Trondhjem_Torvet_-_no-nb_digifoto_20150623_00006_bldsa_PK16947.jpg",
+  "year": 1925,
+  "spread": 5,
+  "title": "Torvet i Trondheim",
+  "place": "Trondheim, Norge",
+  "context": "Byen skiftet navn frem og tilbake på 1920- og 30-tallet: Trondhjem, Nidaros – og til slutt Trondheim.",
+  "clue": "Hotell Phoenix-skiltet og blandingen av hestekjerrer og tidlige biler røper tiden.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:548_Trondhjem_Torvet_-_no-nb_digifoto_20150623_00006_bldsa_PK16947.jpg",
+  "license": "Public domain",
+  "file": "548_Trondhjem_Torvet_-_no-nb_digifoto_20150623_00006_bldsa_PK16947.jpg"
+ },
+ {
+  "id": "no-1932-akerselva-ved-vaterland",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/133._Akerselven_ved_Vaterlands_bro_-_no-nb_digifoto_20140613_00007_bldsa_PK01734.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/133._Akerselven_ved_Vaterlands_bro_-_no-nb_digifoto_20140613_00007_bldsa_PK01734.jpg/1280px-133._Akerselven_ved_Vaterlands_bro_-_no-nb_digifoto_20140613_00007_bldsa_PK01734.jpg",
+  "year": 1932,
+  "spread": 3,
+  "title": "Akerselva ved Vaterland",
+  "place": "Oslo, Norge",
+  "context": "Akerselva var Oslos industrimotor – fabrikkene langs elva ga jobb til tusenvis.",
+  "clue": "Fabrikkpiper og arbeiderboliger tett i tett langs elva – industribyen på sitt travleste.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:133._Akerselven_ved_Vaterlands_bro_-_no-nb_digifoto_20140613_00007_bldsa_PK01734.jpg",
+  "license": "Public domain",
+  "file": "133._Akerselven_ved_Vaterlands_bro_-_no-nb_digifoto_20140613_00007_bldsa_PK01734.jpg"
+ },
+ {
+  "id": "no-1930-nedgangen-til-undergrunnsb",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/130_Oslo._Nedgang_undergrunnsbanen_-_no-nb_digifoto_20151210_00375_bldsa_PK08612.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/130_Oslo._Nedgang_undergrunnsbanen_-_no-nb_digifoto_20151210_00375_bldsa_PK08612.jpg/1280px-130_Oslo._Nedgang_undergrunnsbanen_-_no-nb_digifoto_20151210_00375_bldsa_PK08612.jpg",
+  "year": 1930,
+  "spread": 5,
+  "title": "Nedgangen til undergrunnsbanen",
+  "place": "Oslo, Norge",
+  "context": "Oslo fikk Nordens første undergrunnsbane i 1928 – lenge før Stockholm og København.",
+  "clue": "Byen kalles «Oslo» på skiltet (altså etter 1925), og undergrunnsbanen er splitter ny.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:130_Oslo._Nedgang_undergrunnsbanen_-_no-nb_digifoto_20151210_00375_bldsa_PK08612.jpg",
+  "license": "Public domain",
+  "file": "130_Oslo._Nedgang_undergrunnsbanen_-_no-nb_digifoto_20151210_00375_bldsa_PK08612.jpg"
+ },
+ {
+  "id": "no-1934-drammensveien-i-oslo",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/24._Oslo._Drammensveien._(6216342937).jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/9/99/24._Oslo._Drammensveien._%286216342937%29.jpg",
+  "year": 1934,
+  "spread": 3,
+  "title": "Drammensveien i Oslo",
+  "place": "Oslo, Norge",
+  "context": "Gata heter i dag Henrik Ibsens gate – navnebyttet kom først i 2006.",
+  "clue": "Kantete 30-tallsbiler og trikk side om side i samme gate.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:24._Oslo._Drammensveien._(6216342937).jpg",
+  "license": "No restrictions",
+  "file": "24._Oslo._Drammensveien._(6216342937).jpg"
+ },
+ {
+  "id": "no-1945-milorg-marsjerer-fra-akers",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Milorg_men_march_from_Akershus_Fortress%2C_1945.jpeg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Milorg_men_march_from_Akershus_Fortress%2C_1945.jpeg/1280px-Milorg_men_march_from_Akershus_Fortress%2C_1945.jpeg",
+  "year": 1945,
+  "spread": 1,
+  "title": "Milorg marsjerer fra Akershus",
+  "place": "Oslo, Norge",
+  "context": "Etter fem års okkupasjon overtok den norske motstandsbevegelsen Akershus festning i fredsdagene 1945.",
+  "clue": "Sivile klær med armbind i stedet for uniformer – hjemmestyrkene rett etter frigjøringen.",
+  "region": "no",
+  "difficulty": 1,
+  "source": "Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Milorg_men_march_from_Akershus_Fortress%2C_1945.jpeg",
+  "license": "Public domain",
+  "file": "Milorg_men_march_from_Akershus_Fortress,_1945.jpeg"
+ },
+ {
+  "id": "no-1954-skoytelop-i-oslo",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Oslo_schaatslandenwedstrijdrace_Broekman_tegen_Anderson%2C_Bestanddeelnr_906-2384.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Oslo_schaatslandenwedstrijdrace_Broekman_tegen_Anderson%2C_Bestanddeelnr_906-2384.jpg/1280px-Oslo_schaatslandenwedstrijdrace_Broekman_tegen_Anderson%2C_Bestanddeelnr_906-2384.jpg",
+  "year": 1954,
+  "spread": 1,
+  "title": "Skøyteløp i Oslo",
+  "place": "Oslo, Norge",
+  "context": "På 1950-tallet var skøyteløp folkesport nummer én i Norge – tribunene var stappfulle i kulda.",
+  "clue": "Lange skøyter og ullcaps – hurtigløpets gullalder etter krigen.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Oslo_schaatslandenwedstrijdrace_Broekman_tegen_Anderson%2C_Bestanddeelnr_906-2384.jpg",
+  "license": "CC0",
+  "file": "Oslo_schaatslandenwedstrijdrace_Broekman_tegen_Anderson,_Bestanddeelnr_906-2384.jpg"
+ },
+ {
+  "id": "no-1955-bislett-stadion-oslo",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/36_A_6._Oslo._Bislet_-_no-nb_digifoto_20140801_00002_bldsa_PK01921.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/36_A_6._Oslo._Bislet_-_no-nb_digifoto_20140801_00002_bldsa_PK01921.jpg/1280px-36_A_6._Oslo._Bislet_-_no-nb_digifoto_20140801_00002_bldsa_PK01921.jpg",
+  "year": 1955,
+  "spread": 5,
+  "title": "Bislett stadion, Oslo",
+  "place": "Oslo, Norge",
+  "context": "Bislett var verdens mest berømte skøytebane – her ble det satt verdensrekord etter verdensrekord.",
+  "clue": "Rundvorne 50-tallsbiler parkert i gatene rundt stadion.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:36_A_6._Oslo._Bislet_-_no-nb_digifoto_20140801_00002_bldsa_PK01921.jpg",
+  "license": "Public domain",
+  "file": "36_A_6._Oslo._Bislet_-_no-nb_digifoto_20140801_00002_bldsa_PK01921.jpg"
+ },
+ {
+  "id": "no-1957-kong-haakons-gravferd-oslo",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Fra_Kong_Haakon_VII_begravelse_-_no-nb_digifoto_20160713_00131_NB_MIT_FNR_17830.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Fra_Kong_Haakon_VII_begravelse_-_no-nb_digifoto_20160713_00131_NB_MIT_FNR_17830.jpg/1280px-Fra_Kong_Haakon_VII_begravelse_-_no-nb_digifoto_20160713_00131_NB_MIT_FNR_17830.jpg",
+  "year": 1957,
+  "spread": 1,
+  "title": "Kong Haakons gravferd, Oslo",
+  "place": "Oslo, Norge",
+  "context": "Kong Haakon VII var konge i 52 år – fra unionsoppløsningen i 1905 helt til 1957.",
+  "clue": "Sørgetoget går gjennom Oslo sentrum – mennene i følget bærer flosshatt.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Fra_Kong_Haakon_VII_begravelse_-_no-nb_digifoto_20160713_00131_NB_MIT_FNR_17830.jpg",
+  "license": "Public domain",
+  "file": "Fra_Kong_Haakon_VII_begravelse_-_no-nb_digifoto_20160713_00131_NB_MIT_FNR_17830.jpg"
+ },
+ {
+  "id": "no-1967-vigelandsparken-i-oslo",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Vigelunds_Kultur_park_te_Oslo%2C_Bestanddeelnr_920-0774.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c4/Vigelunds_Kultur_park_te_Oslo%2C_Bestanddeelnr_920-0774.jpg/1280px-Vigelunds_Kultur_park_te_Oslo%2C_Bestanddeelnr_920-0774.jpg",
+  "year": 1967,
+  "spread": 1,
+  "title": "Vigelandsparken i Oslo",
+  "place": "Oslo, Norge",
+  "context": "Vigelandsparken har over 200 skulpturer og er blant verdens største skulpturparker laget av én kunstner.",
+  "clue": "Klærne til de besøkende – kåper og hatter fra 60-tallet – daterer bildet, ikke statuene.",
+  "region": "no",
+  "difficulty": 2,
+  "source": "Nationaal Archief",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vigelunds_Kultur_park_te_Oslo%2C_Bestanddeelnr_920-0774.jpg",
+  "license": "CC0",
+  "file": "Vigelunds_Kultur_park_te_Oslo,_Bestanddeelnr_920-0774.jpg"
+ },
+ {
+  "id": "no-1968-statsbesok-pa-fornebu",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Icelands-President-Kristjan-Eldjarn-is-welcomed-by-Norways-King-Olav-352130626316.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/e/ed/Icelands-President-Kristjan-Eldjarn-is-welcomed-by-Norways-King-Olav-352130626316.jpg",
+  "year": 1968,
+  "spread": 1,
+  "title": "Statsbesøk på Fornebu",
+  "place": "Fornebu, Norge",
+  "context": "Fornebu var Oslos hovedflyplass helt til 1998, da Gardermoen tok over.",
+  "clue": "Dresser, frakker og flyplass-stil fra slutten av 60-tallet.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Wikimedia Commons",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Icelands-President-Kristjan-Eldjarn-is-welcomed-by-Norways-King-Olav-352130626316.jpg",
+  "license": "Public domain",
+  "file": "Icelands-President-Kristjan-Eldjarn-is-welcomed-by-Norways-King-Olav-352130626316.jpg"
+ },
+ {
+  "id": "no-1973-nyland-verksted-oslo",
+  "url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nyland_Mek._versted._-_no-nb_digifoto_20150625_00077_NB_MIT_FNR_27927.jpg?width=1200",
+  "fallback": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Nyland_Mek._versted._-_no-nb_digifoto_20150625_00077_NB_MIT_FNR_27927.jpg/1280px-Nyland_Mek._versted._-_no-nb_digifoto_20150625_00077_NB_MIT_FNR_27927.jpg",
+  "year": 1973,
+  "spread": 1,
+  "title": "Nyland verksted, Oslo",
+  "place": "Oslo, Norge",
+  "context": "Der skipsverftet lå i Bjørvika, ligger i dag Operahuset og Barcode-rekka.",
+  "clue": "Store kraner og skip under bygging midt i Oslo – industri-Norge før oljealderen tok over.",
+  "region": "no",
+  "difficulty": 3,
+  "source": "Nasjonalbiblioteket",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nyland_Mek._versted._-_no-nb_digifoto_20150625_00077_NB_MIT_FNR_27927.jpg",
+  "license": "Public domain",
+  "file": "Nyland_Mek._versted._-_no-nb_digifoto_20150625_00077_NB_MIT_FNR_27927.jpg"
+ }
+];
+</script>
+
+<script>
+/* ═══════════════ SMÅHJELPERE ═══════════════ */
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const pctOf = y => (y - YEAR_MIN) / (YEAR_MAX - YEAR_MIN);
+const fmt = n => n.toLocaleString('nb-NO');
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const commonsPage = f => 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(f.replace(/ /g,'_'));
+
+/* localStorage-vern: private mode skal aldri krasje spillet */
+function lsGet(k, fallback){ try { const v = localStorage.getItem(k); return v==null ? fallback : JSON.parse(v); } catch(e){ return fallback; } }
+function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+
+/* ═══════════════ LYD (WebAudio – ingen lydfiler) ═══════════════ */
+const AudioFX = (() => {
+  let ctx = null;
+  const on = () => $('opt-sound').checked;
+  function ac(){ if(!ctx){ try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(ctx&&ctx.state==='suspended') ctx.resume(); return ctx; }
+  function blip(freq, dur=.05, type='square', gain=.05, when=0){
+    const c = ac(); if(!c||!on()) return;
+    const o=c.createOscillator(), g=c.createGain();
+    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(c.destination);
+    const t=c.currentTime+when; g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.start(t); o.stop(t+dur+.02);
+  }
+  return {
+    unlock(){ ac(); },
+    tick(pos){ blip(320+pos*420, .03, 'square', .028); },          // slider-puls
+    count(){ blip(700, .02, 'square', .02); },                      // telleverk
+    lock(){ blip(190,.09,'triangle',.09); blip(120,.12,'sine',.07,.02); }, // lås inn
+    whoosh(){ const c=ac(); if(!c||!on())return;                    // spoling
+      const o=c.createOscillator(),g=c.createGain();
+      o.type='sawtooth'; o.connect(g); g.connect(c.destination);
+      const t=c.currentTime; o.frequency.setValueAtTime(140,t);
+      o.frequency.exponentialRampToValueAtTime(900,t+.9);
+      g.gain.setValueAtTime(.035,t); g.gain.exponentialRampToValueAtTime(.0001,t+1);
+      o.start(t); o.stop(t+1.05); },
+    land(good){ blip(good?660:330,.12,'triangle',.08); if(good) blip(880,.14,'triangle',.07,.09); },
+    perfect(){ [523,659,784,1047].forEach((f,i)=>blip(f,.24,'triangle',.09,i*.09)); },
+    streak(){ blip(587,.1,'square',.06); blip(880,.16,'square',.06,.09); }
+  };
+})();
+
+/* ═══════════════ TILSTAND ═══════════════ */
+const S = {
+  mode:'solo', diff:'agent',
+  items:[], reserve:[], idx:0,
+  score:0, streak:0, maxStreak:0, perfects:0, bestMiss:null,
+  results:[],
+  duel:{ wins1:0, wins2:0, phase:1, guess1:null },
+  locked:false, revealBusy:false,
+  timerId:null, timeLeft:0,
+  online:null, // se ONLINE DUELL lenger ned – null når man ikke spiller mot noen andre
+};
+const opts = lsGet('naar_opts', {});
+if (opts.sound===false) $('opt-sound').checked=false;
+if (opts.relaxed) $('opt-relaxed').checked=true;
+if (opts.decades) $('opt-decades').checked=true;
+if (opts.timer)   $('opt-timer').checked=true;
+if (opts.diff) S.diff = opts.diff;
+function saveOpts(){ lsSet('naar_opts',{ sound:$('opt-sound').checked, relaxed:$('opt-relaxed').checked,
+  decades:$('opt-decades').checked, timer:$('opt-timer').checked, diff:S.diff }); }
+
+/* ═══════════════ POENG ═══════════════ */
+function scoreGuess(guess, item, diff, isDecade){
+  let dist;
+  if (isDecade){ // guess = tiårets startår
+    const lo=guess, hi=guess+9;
+    dist = (item.year>=lo && item.year<=hi) ? 0 : (item.year<lo ? lo-item.year : item.year-hi);
+    dist = Math.max(0, dist - item.spread);
+  } else {
+    dist = Math.max(0, Math.abs(guess-item.year) - item.spread);
+  }
+  let p = Math.round(1000 * Math.exp(-dist / K_CURVE[diff]));
+  // aldri 0 hvis man er i riktig halvdel av tidslinjen
+  const mid=(YEAR_MIN+YEAR_MAX)/2, gY=isDecade?guess+5:guess;
+  if (p < FLOOR_SAME_HALF && ((gY<=mid)===(item.year<=mid))) p = FLOOR_SAME_HALF;
+  return { points:p, dist, miss:Math.abs((isDecade?guess+5:guess)-item.year), perfect:dist===0 };
+}
+
+/* ═══════════════ RUNDETREKK – alle epoker dekkes ═══════════════ */
+function poolFor(mode, diff){
+  let pool = IMAGES.filter(im => mode==='norge' ? im.region==='no' : true);
+  if (diff==='rekrutt' || diff==='agent') pool = pool.filter(im=>im.difficulty<=2);
+  return pool;
+}
+function buildRound(){
+  const pool = shuffle(poolFor(S.mode, S.diff).slice());
+  const picked=[], used=new Set();
+  for (let b=0;b<ERA_BUCKETS.length-1 && picked.length<ROUND_SIZE;b++){
+    const hit = pool.find(im => !used.has(im.id) && im.year>=ERA_BUCKETS[b] && im.year<ERA_BUCKETS[b+1]);
+    if (hit){ picked.push(hit); used.add(hit.id); }
+  }
+  for (const im of pool){ if (picked.length>=ROUND_SIZE) break; if(!used.has(im.id)){ picked.push(im); used.add(im.id);} }
+  S.items = shuffle(picked);
+  S.reserve = pool.filter(im=>!used.has(im.id));
+}
+
+/* ═══════════════ BILDELASTING: fallback + preload + stille hopp ═══════════════ */
+function srcFor(item){ return item._fb ? item.fallback : item.url; }
+function preload(item){
+  if (!item || item._ok || item._dead) return;
+  const im = new Image();
+  im.onload = ()=>{ item._ok = true; };
+  im.onerror = ()=>{
+    if (!item._fb && item.fallback){ item._fb = true; preload(item); }
+    else { item._dead = true; swapDead(item); }
+  };
+  im.src = srcFor(item);
+}
+function swapDead(deadItem){ // bytt ut et dødt bilde med reserve – spilleren merker ingenting
+  const j = S.items.indexOf(deadItem);
+  if (j > S.idx && S.reserve.length){ const r = S.reserve.shift(); S.items[j] = r; preload(r); }
+}
+function preloadAhead(){ preload(S.items[S.idx+1]); preload(S.items[S.idx+2]); }
+
+let imgErrCount = 0;
+function showPhoto(item){
+  const img=$('photo'); imgErrCount=0;
+  $('spinner').classList.add('on'); img.classList.remove('loaded');
+  img.onload = ()=>{ $('spinner').classList.remove('on'); img.classList.add('loaded'); };
+  img.onerror = ()=>{
+    imgErrCount++;
+    if (imgErrCount===1 && item.fallback){ item._fb=true; img.src=item.fallback; }
+    else { item._dead=true;
+      if (S.reserve.length){ const r=S.reserve.shift(); S.items[S.idx]=r; showPhoto(r); preloadAhead(); }
+      else nextImage(); // banken tom for reserver: hopp stille videre
+    }
+  };
+  img.src = srcFor(item);
+}
+
+/* ═══════════════ SKJERMBYTTE ═══════════════ */
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $(id).classList.add('active'); }
+
+/* ═══════════════ SLIDER / TIÅR ═══════════════ */
+const slider=$('year-slider'), bubble=$('year-bubble');
+let selDecade=null;
+function useDecades(){ return S.diff==='rekrutt' || $('opt-decades').checked; }
+function updateBubble(){
+  const v=+slider.value, p=pctOf(v);
+  bubble.textContent=v;
+  bubble.style.left=`calc(${(p*100).toFixed(2)}% + ${(15-30*p).toFixed(1)}px)`;
+}
+slider.addEventListener('input', ()=>{ updateBubble(); AudioFX.tick(pctOf(+slider.value)); });
+slider.addEventListener('keydown', e=>{
+  if (e.key==='PageUp'||e.key==='PageDown'){ e.preventDefault();
+    slider.value = clamp(+slider.value + (e.key==='PageUp'?10:-10), YEAR_MIN, YEAR_MAX);
+    slider.dispatchEvent(new Event('input'));
+  } else if (e.key==='Enter'){ e.preventDefault(); e.stopPropagation(); lockGuess(); }
+});
+function buildDecadeGrid(){
+  const g=$('decade-grid'); g.innerHTML='';
+  for(let d=1850; d<=2000; d+=10){
+    const b=document.createElement('button');
+    b.className='dec-btn'; b.dataset.dec=d; b.setAttribute('aria-pressed','false');
+    b.innerHTML=`${d}<small>–${String(d+9).slice(2)}</small>`;
+    b.addEventListener('click', ()=>{
+      g.querySelectorAll('.dec-btn').forEach(x=>x.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true'); selDecade=d; $('btn-lock').disabled=false;
+      AudioFX.tick(pctOf(d));
+    });
+    g.appendChild(b);
+  }
+}
+function resetInput(){
+  if (useDecades()){
+    $('slider-ui').classList.add('hidden'); $('decade-grid').classList.remove('hidden');
+    selDecade=null; $('btn-lock').disabled=true;
+    $('decade-grid').querySelectorAll('.dec-btn').forEach(x=>x.setAttribute('aria-pressed','false'));
+  } else {
+    $('decade-grid').classList.add('hidden'); $('slider-ui').classList.remove('hidden');
+    slider.value=1930; updateBubble(); $('btn-lock').disabled=false;
+    setTimeout(()=>slider.focus({preventScroll:true}), 60);
+  }
+}
+
+/* ═══════════════ TIMER (valgfri, Tidsmester) ═══════════════ */
+function timerActive(){ return S.diff==='tidsmester' && $('opt-timer').checked && !$('opt-relaxed').checked; }
+function startTimer(){
+  stopTimer();
+  if (!timerActive()){ $('timer-wrap').classList.remove('on'); return; }
+  $('timer-wrap').classList.add('on'); S.timeLeft=TIMER_SECONDS;
+  const bar=$('timer-bar'); bar.classList.remove('hurry'); bar.style.transform='scaleX(1)';
+  S.timerId=setInterval(()=>{
+    S.timeLeft-=.1; const f=Math.max(0,S.timeLeft/TIMER_SECONDS);
+    bar.style.transform=`scaleX(${f})`;
+    if (S.timeLeft<=5) bar.classList.add('hurry');
+    if (S.timeLeft<=0){ stopTimer(); autoLock(); }
+  },100);
+}
+function stopTimer(){ if(S.timerId){ clearInterval(S.timerId); S.timerId=null; } }
+function autoLock(){
+  if (S.locked) return;
+  if (useDecades() && selDecade==null){ selDecade=1930; }
+  lockGuess(true);
+}
+
+/* ═══════════════ SPILLFLYT ═══════════════ */
+function startGame(mode){
+  AudioFX.unlock(); saveOpts();
+  if (S.online) leaveOnlineGame(true);
+  $('btn-next').style.display=''; $('rev-wait-host').style.display='none';
+  S.mode=mode; S.idx=0; S.score=0; S.streak=0; S.maxStreak=0; S.perfects=0;
+  S.bestMiss=null; S.results=[]; S.locked=false; S.revealBusy=false;
+  S.duel={wins1:0,wins2:0,phase:1,guess1:null};
+  IMAGES.forEach(im=>{ delete im._ok; delete im._fb; delete im._dead; });
+  buildRound();
+  $('hud-score').textContent='0';
+  $('hud-streak').classList.remove('on');
+  $('hud-duel').classList.toggle('on', mode==='duel');
+  document.querySelector('.h-score').style.display = mode==='duel' ? 'none' : '';
+  if (mode==='duel') renderPips();
+  show('screen-game');
+  beginImage();
+}
+function beginImage(){
+  const item=S.items[S.idx];
+  S.locked=false; S.duel.phase=1; S.duel.guess1=null;
+  $('hud-round').textContent = `BILDE ${S.idx+1}/${S.items.length}`;
+  $('turn-banner').classList.toggle('on', S.mode==='duel');
+  $('turn-banner').classList.remove('p2'); $('turn-banner').textContent='SPILLER 1 GJETTER';
+  $('photo-cap').textContent = '📍 ' + item.place;
+  resetInput(); requestAnimationFrame(fitPhoto); showPhoto(item); preloadAhead(); startTimer();
+  announce(`Bilde ${S.idx+1} av ${S.items.length}. Sted: ${item.place}. Gjett årstallet.`);
+}
+function currentGuess(){
+  return useDecades() ? {g:selDecade, dec:true} : {g:+slider.value, dec:false};
+}
+function lockGuess(auto=false){
+  if (S.locked || S.revealBusy) return;
+  const {g,dec}=currentGuess();
+  if (g==null) return;
+  AudioFX.lock(); stopTimer();
+  if (S.online){ lockOnlineGuess(g,dec); return; }
+  if (S.mode==='duel' && S.duel.phase===1){
+    S.duel.guess1={g,dec};
+    $('handover').classList.add('active'); $('btn-hand-ready').focus();
+    return;
+  }
+  S.locked=true;
+  reveal(g,dec);
+}
+$('btn-hand-ready').addEventListener('click', ()=>{
+  $('handover').classList.remove('active');
+  S.duel.phase=2;
+  $('turn-banner').classList.add('p2'); $('turn-banner').textContent='SPILLER 2 GJETTER';
+  resetInput(); startTimer();
+});
+
+/* ═══════════════ AVSLØRINGEN – hjertet i spillet ═══════════════ */
+function markerEl(cls,label,year){
+  const m=document.createElement('div');
+  m.className='rev-mark '+cls;
+  m.style.left=(pctOf(year)*100).toFixed(2)+'%';
+  // fasit-markøren får etiketten UNDER streken så den aldri kolliderer med gjetningen
+  m.innerHTML = cls==='answer'
+    ? `<div class="dot"></div><span>${label}</span>`
+    : `<span>${label}</span><div class="dot"></div>`;
+  return m;
+}
+/* foto skal aldri sprenge scenen – mål tilgjengelig høyde */
+function fitPhoto(){
+  const st=document.querySelector('.stage');
+  if (st) $('photo').style.maxHeight=Math.max(120, st.clientHeight-64)+'px'; // plass til stedstag under
+}
+window.addEventListener('resize', fitPhoto);
+function animateCount(el, from, to, ms, done){
+  const t0=performance.now(); let last=from;
+  function step(t){
+    const k=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-k,3);
+    const v=Math.round(from+(to-from)*e);
+    if (v!==last){ el.textContent=v; last=v; AudioFX.count(); }
+    if (k<1) requestAnimationFrame(step); else done&&done();
+  }
+  requestAnimationFrame(step);
+}
+function animatePoints(el, to, ms){
+  const t0=performance.now(); let last=-1;
+  function step(t){
+    const k=Math.min(1,(t-t0)/ms), e=1-Math.pow(1-k,3);
+    const v=Math.round(to*e);
+    if (v!==last){ el.textContent='+'+fmt(v); last=v; }
+    if (k<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function reveal(guess, dec){
+  S.revealBusy=true;
+  const item=S.items[S.idx];
+  const res=scoreGuess(guess,item,S.diff,dec);
+  let res1=null, winner=0;
+  if (S.mode==='duel'){
+    res1=scoreGuess(S.duel.guess1.g,item,S.diff,S.duel.guess1.dec);
+    winner = res1.miss===res.miss ? 0 : (res1.miss<res.miss ? 1 : 2);
+    if (winner===1) S.duel.wins1++; else if (winner===2) S.duel.wins2++;
+  }
+  // rydd og bygg avsløring
+  const tl=$('rev-tl');
+  tl.querySelectorAll('.rev-mark').forEach(m=>m.remove());
+  const sweep=$('rev-sweep'); sweep.style.transition='none'; sweep.style.transform='scaleX(0)';
+  $('ctx-card').classList.remove('on'); $('rev-verdict').textContent=''; $('rev-verdict').classList.remove('perfect');
+  $('duel-round-result').style.display='none';
+  $('rev-year').classList.remove('landed');
+  $('rev-points').textContent='+0';
+
+  const gY = dec ? guess+5 : guess;
+  const g1Y = res1 ? (S.duel.guess1.dec ? S.duel.guess1.g+5 : S.duel.guess1.g) : null;
+  if (S.mode==='duel'){
+    tl.appendChild(markerEl('guess','S1',g1Y));
+    tl.appendChild(markerEl('guess2','S2',gY));
+  } else {
+    tl.appendChild(markerEl('guess','DU',gY));
+  }
+  $('rev-year').textContent = dec ? `${guess}` : guess;
+  $('reveal').classList.add('active');
+
+  // spol: lysstripe fra gjetning til fasit
+  const fromY = S.mode==='duel' ? (winner===2 ? gY : g1Y ?? gY) : gY;
+  const a=pctOf(Math.min(fromY,item.year)), b=pctOf(Math.max(fromY,item.year));
+  sweep.style.left=(a*100)+'%'; sweep.style.width=Math.max(.6,(b-a)*100)+'%';
+  sweep.style.transformOrigin = item.year>=fromY ? 'left' : 'right';
+  AudioFX.whoosh();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    sweep.style.transition='transform 1.05s cubic-bezier(.25,.8,.3,1)';
+    sweep.style.transform='scaleX(1)';
+  }));
+  // telleverk mot fasit
+  animateCount($('rev-year'), fromY, item.year, 1100, ()=>{
+    $('rev-year').classList.add('landed');
+    tl.appendChild(markerEl('answer','FASIT',item.year));
+    const good=res.miss<=10;
+    if (res.perfect || (res1&&res1.perfect)){ AudioFX.perfect(); confetti(); shakePhoto(); }
+    else AudioFX.land(good);
+    // dom + poeng
+    const v=$('rev-verdict');
+    if (S.mode==='duel'){
+      v.textContent=`S1 bommet ${res1.miss} år · S2 bommet ${res.miss} år`;
+    } else if (res.perfect){ v.textContent='⭐ PERFEKT TREFF! ⭐'; v.classList.add('perfect'); }
+    else v.textContent = res.miss===0 ? 'Innenfor vinduet – full pott!' : `${res.miss} år unna`;
+    const pts = S.mode==='duel' ? Math.max(res.points,res1.points) : res.points;
+    animatePoints($('rev-points'), pts, 650);
+    setTimeout(()=>finishReveal(item,res,res1,winner,gY,g1Y), 720);
+  });
+}
+function finishReveal(item,res,res1,winner,gY,g1Y){
+  // kontekst-payoff
+  $('ctx-title').textContent=`${item.title} · ${item.year}`;
+  $('ctx-clue').textContent='🔍 '+item.clue;
+  $('ctx-text').textContent=item.context;
+  $('ctx-src').textContent=`📍 ${item.place} · Kilde: ${item.source} · ${item.license}`;
+  $('ctx-card').classList.add('on');
+
+  let bonus=0;
+  if (S.mode==='duel'){
+    const dr=$('duel-round-result'); dr.style.display='block';
+    dr.innerHTML = winner===0 ? '🤝 Uavgjort runde!' :
+      `<span style="color:${winner===1?'var(--teal)':'var(--p2)'}">Spiller ${winner} tar runden!</span>`;
+    renderPips();
+  } else {
+    // streak-logikk
+    if (res.miss <= STREAK_HIT + item.spread){
+      S.streak++;
+      if (S.streak>=STREAK_MIN){
+        bonus=STREAK_BONUS*S.streak;
+        $('hud-streak').classList.add('on'); $('streak-n').textContent=S.streak;
+        const t=$('streak-toast'); t.textContent=`⏳ TIDSSANS ×${S.streak}  +${bonus}`;
+        t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
+        AudioFX.streak();
+      }
+    } else if (res.miss > STREAK_BREAK && !$('opt-relaxed').checked){
+      S.streak=0; $('hud-streak').classList.remove('on');
+    }
+    S.maxStreak=Math.max(S.maxStreak,S.streak);
+    S.score += res.points + bonus;
+    if (res.perfect) S.perfects++;
+    if (S.bestMiss==null || res.miss<S.bestMiss) S.bestMiss=res.miss;
+    $('hud-score').textContent=fmt(S.score);
+  }
+  S.results.push({item, miss:res.miss, points:res.points+bonus});
+  announce(S.mode==='duel'
+    ? `Fasit ${item.year}. Spiller 1 bommet ${res1.miss} år, spiller 2 bommet ${res.miss} år. ${winner? 'Spiller '+winner+' vant runden.':'Uavgjort.'} ${item.context}`
+    : `Fasit ${item.year}. Du gjettet ${gY} og fikk ${res.points+bonus} poeng. ${item.clue} ${item.context}`);
+  S.revealBusy=false; S.locked=true;
+  $('btn-next').focus();
+}
+function renderPips(){
+  const p1=$('duel-pips1'), p2=$('duel-pips2');
+  p1.innerHTML=''; p2.innerHTML='';
+  for(let i=0;i<DUEL_TARGET;i++){
+    p1.innerHTML+=`<span class="pip ${i<S.duel.wins1?'p1':''}" style="display:inline-block;margin:0 1px"></span>`;
+    p2.innerHTML+=`<span class="pip ${i<S.duel.wins2?'p2':''}" style="display:inline-block;margin:0 1px"></span>`;
+  }
+}
+function nextImage(){
+  $('reveal').classList.remove('active');
+  const duelDone = S.mode==='duel' && (S.duel.wins1>=DUEL_TARGET || S.duel.wins2>=DUEL_TARGET);
+  if (duelDone || S.idx >= S.items.length-1){ endRound(); return; }
+  S.idx++; beginImage();
+}
+$('btn-next').addEventListener('click', ()=>{
+  if (S.revealBusy) return;
+  if (S.online){ onlineNext(); return; }
+  nextImage();
+});
+$('btn-lock').addEventListener('click', ()=>lockGuess());
+
+/* ═══════════════ KONFETTI + SHAKE ═══════════════ */
+function confetti(){
+  const colors=['#e8a33d','#ffc866','#41d6cd','#f2e7d3','#c98bff'];
+  for(let i=0;i<70;i++){
+    const c=document.createElement('div'); c.className='confetti';
+    c.style.left=Math.random()*100+'vw';
+    c.style.background=colors[i%colors.length];
+    c.style.animationDuration=(1.4+Math.random()*1.6)+'s';
+    c.style.animationDelay=(Math.random()*.5)+'s';
+    c.style.transform=`rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(c);
+    setTimeout(()=>c.remove(), 3600);
+  }
+}
+function shakePhoto(){ const m=$('photo-mat'); m.classList.remove('shake'); void m.offsetWidth; m.classList.add('shake'); }
+
+/* ═══════════════ SLUTTSKJERM ═══════════════ */
+function medalFor(score){
+  const [b,s,g]=MEDALS[S.diff];
+  return score>=g?['🥇','Gull!']:score>=s?['🥈','Sølv!']:score>=b?['🥉','Bronse!']:['⌛','Runde fullført'];
+}
+function endRound(){
+  stopTimer();
+  $('streak-toast').classList.remove('show');
+  const stats=$('end-stats'); stats.innerHTML='';
+  const stat=(v,l)=>{ stats.innerHTML+=`<div class="stat-box"><b>${v}</b><span>${l}</span></div>`; };
+  if (S.mode==='duel'){
+    const w=S.duel.wins1>S.duel.wins2?1:S.duel.wins2>S.duel.wins1?2:0;
+    $('end-medal').textContent = w? '🏆':'🤝';
+    $('end-head').innerHTML = w? `Spiller ${w} vinner duellen!` : 'Uavgjort duell!';
+    $('end-score').textContent=`${S.duel.wins1} – ${S.duel.wins2}`;
+    $('end-sub').textContent='Samme bilder, samme tidslinje – bare ett godt øye skiller dere.';
+  } else {
+    const [ico,txt]=medalFor(S.score);
+    $('end-medal').textContent=ico;
+    $('end-head').textContent=txt;
+    $('end-score').textContent=fmt(S.score);
+    $('end-sub').textContent = S.perfects>0
+      ? `${S.perfects} perfekte treff – tidssansen din er skummel god.`
+      : (S.bestMiss!=null && S.bestMiss<=3 ? `Beste treff: bare ${S.bestMiss} år unna.` : 'Studer bilene, klærne og skiltene – de sladrer alltid om årstallet.');
+    stat(fmt(S.score),'POENG'); stat(S.perfects,'PERFEKTE');
+    stat(S.maxStreak,'BESTE STREAK'); stat(S.bestMiss==null?'–':S.bestMiss+' år','BESTE TREFF');
+    saveScore();
+  }
+  renderLb(); renderRank();
+  show('screen-end');
+  announce($('end-head').textContent+' '+$('end-score').textContent+' poeng.');
+}
+function lbKey(){ return `${S.mode}_${S.diff}`; }
+let lastEntryId=null;
+function saveScore(){
+  const all=lsGet('naar_lb',{});
+  const list=all[lbKey()]||[];
+  lastEntryId=Date.now();
+  list.push({s:S.score, d:new Date().toLocaleDateString('nb-NO'), id:lastEntryId});
+  list.sort((a,b)=>b.s-a.s); all[lbKey()]=list.slice(0,5);
+  lsSet('naar_lb',all);
+  lsSet('naar_total', (lsGet('naar_total',0)||0) + S.score);
+}
+function renderLb(){
+  const list=(lsGet('naar_lb',{})[lbKey()]||[]);
+  $('lb-list').innerHTML = list.length
+    ? list.map(e=>`<li class="${e.id===lastEntryId?'new':''}"><span>${e.d}</span><b>${fmt(e.s)}</b></li>`).join('')
+    : '<li><span>Ingen runder ennå – bli den første!</span></li>';
+}
+function rankFor(total){ let r=RANKS[0][1]; for(const [t,n] of RANKS) if(total>=t) r=n; return r; }
+function renderRank(){
+  const tot=lsGet('naar_total',0)||0;
+  $('rank-name').textContent=rankFor(tot);
+  $('rank-sub').textContent = tot>0 ? `🎖️ ${fmt(tot)} poeng samlet` : 'Samle poeng for å stige i gradene'; /* PLACEHOLDER-GRAFIKK: rang-emblem */
+  const all=lsGet('naar_lb',{}); const best=[];
+  for(const k in all) for(const e of all[k]) best.push(e.s);
+  best.sort((a,b)=>b-a);
+  $('start-best').textContent = best.length ? best.slice(0,3).map(fmt).join(' · ') : '–';
+}
+
+/* ═══════════════ OM BILDENE (attribusjon) ═══════════════ */
+$('btn-about').addEventListener('click', ()=>{
+  $('about-list').innerHTML = S.results.map(r=>{
+    const it=r.item;
+    return `<li><b>${it.title}</b> (${it.place}, ${it.year}) – ${it.source}, ${it.license}.
+      <a href="${commonsPage(it.file)}" target="_blank" rel="noopener">Se kilden ↗</a></li>`;
+  }).join('') || '<li>Ingen bilder å vise.</li>';
+  $('about-modal').classList.add('active'); $('btn-about-close').focus();
+});
+$('btn-about-close').addEventListener('click', ()=>$('about-modal').classList.remove('active'));
+$('about-modal').addEventListener('click', e=>{ if(e.target.id==='about-modal') $('about-modal').classList.remove('active'); });
+
+/* ═══════════════ MENY & OPPSTART ═══════════════ */
+document.querySelectorAll('.mode-card').forEach(c=>c.addEventListener('click', ()=>{
+  if (c.dataset.mode==='duel'){ openModal('duel-choice-modal'); return; }
+  startGame(c.dataset.mode);
+}));
+document.querySelectorAll('.diff-pill').forEach(p=>p.addEventListener('click', ()=>{
+  document.querySelectorAll('.diff-pill').forEach(x=>x.setAttribute('aria-pressed','false'));
+  p.setAttribute('aria-pressed','true'); S.diff=p.dataset.diff;
+  $('opt-timer-wrap').style.display = S.diff==='tidsmester' ? 'flex':'none';
+  saveOpts();
+}));
+document.querySelectorAll('.diff-pill').forEach(p=>{ if(p.dataset.diff===S.diff){ p.click(); } });
+['opt-relaxed','opt-sound','opt-decades','opt-timer'].forEach(id=>$(id).addEventListener('change',saveOpts));
+$('btn-again').addEventListener('click', ()=>startGame(S.mode));
+$('btn-menu').addEventListener('click', ()=>{ renderRank(); show('screen-start'); });
+
+/* Tilbake til menyen midt i en runde (evt. midt i et online-spill). */
+function quitToMenu(){
+  if (!confirm('Avslutte runden og gå tilbake til menyen?')) return;
+  stopTimer();
+  if (S.online) leaveOnlineGame();
+  $('reveal').classList.remove('active');
+  $('handover').classList.remove('active');
+  renderRank();
+  show('screen-start');
+}
+$('btn-quit').addEventListener('click', quitToMenu);
+
+document.addEventListener('keydown', e=>{
+  if (e.key!=='Enter' && e.key!==' ') return;
+  if ($('handover').classList.contains('active')){ e.preventDefault(); $('btn-hand-ready').click(); }
+  else if ($('reveal').classList.contains('active') && !S.revealBusy && document.activeElement!==$('btn-next')){
+    e.preventDefault(); $('btn-next').click();
+  }
+});
+function announce(msg){ $('aria-live').textContent=msg; }
+
+/* ═══════════════════════════════════════════════════════════════
+   ONLINE DUELL – to spillere på hver sin enhet, koblet via en
+   4-tegns romkode i den delte LRNify Firebase-databasen (poll-c6bd2).
+   Samme mønster (lat lasting, anonym pålogging, romkode) som
+   Temaspinner/KRLE-terningen – se firebase/README.md.
+
+   Datamodell: tidsarkivet/{kode} = {
+     owner, opprettet, diff, fase:'lobby'|'spill'|'ferdig',
+     itemIds:[...8 bilde-id-er], runde, tving,
+     spillere: { uid: { navn, ts, gjett: { runde: {g,dec,ts} } } }
+   }
+   Poeng/duell-stilling regnes likt (og deterministisk) av begge
+   klienter ut fra de samme synkroniserte gjetningene – selve
+   poengsummen sendes aldri over nettet.
+   ═══════════════════════════════════════════════════════════════ */
+const HISTORISKE_NAVN = [
+  'Kleopatra','Julius Cæsar','Hannibal Barca','Konfucius','Boudica',
+  'Leiv Eiriksson','Snorre Sturlason','Marco Polo','Leonardo da Vinci',
+  'Johannes Gutenberg','Christoffer Columbus','Elizabeth I','Galileo Galilei',
+  'Isaac Newton','Napoleon Bonaparte','Marie Antoinette','Camilla Collett',
+  'Henrik Wergeland','Charles Darwin','Florence Nightingale','Fridtjof Nansen',
+  'Roald Amundsen','Kristian Birkeland','Marie Curie','Nikola Tesla',
+  'Sigrid Undset','Albert Einstein','Amelia Earhart','Kirsten Flagstad',
+  'Wangari Maathai','Nelson Mandela','Rosa Parks','Katherine Johnson',
+  'Thor Heyerdahl','Ada Lovelace','Mahatma Gandhi'
+];
+function tilfeldigHistoriskNavn(unntatt){
+  const ledige = HISTORISKE_NAVN.filter(n=>!unntatt || !unntatt.includes(n));
+  const pool = ledige.length ? ledige : HISTORISKE_NAVN;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+function openModal(id){ $(id).classList.add('active'); }
+function closeModal(id){ $(id).classList.remove('active'); }
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBdbRSnz-02Cq2BITAcKY_mvWI5D91BYBM",
+  authDomain: "poll-c6bd2.firebaseapp.com",
+  databaseURL: "https://poll-c6bd2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "poll-c6bd2",
+  storageBucket: "poll-c6bd2.firebasestorage.app",
+  messagingSenderId: "541647069675",
+  appId: "1:541647069675:web:d8ee426e242e7757dbf9ae"
+};
+const FIREBASE_KILDE = 'https://www.gstatic.com/firebasejs/10.12.2/';
+let FB=null, fbDb=null, fbLasting=null;
+function lastFirebase(){
+  if (FB) return Promise.resolve(FB);
+  if (!fbLasting){
+    fbLasting = Promise.all([
+      import(FIREBASE_KILDE+'firebase-app.js'),
+      import(FIREBASE_KILDE+'firebase-database.js'),
+      import(FIREBASE_KILDE+'firebase-auth.js')
+    ]).then(([a,d,g])=>{
+      const app=a.initializeApp(FIREBASE_CONFIG);
+      fbDb=d.getDatabase(app);
+      const auth=g.getAuth(app);
+      FB={ref:d.ref, set:d.set, update:d.update, get:d.get, onValue:d.onValue, auth, paalogg:g.signInAnonymously};
+      return FB;
+    }).catch(e=>{ fbLasting=null; throw e; });
+  }
+  return fbLasting;
+}
+const R = sti => FB.ref(fbDb, sti);
+let onlineUid=null, onlineAuthP=null;
+function sikreOnlineAuth(){
+  if (onlineUid) return Promise.resolve(onlineUid);
+  if (!onlineAuthP){
+    onlineAuthP = lastFirebase().then(()=>FB.paalogg(FB.auth)).then(c=>onlineUid=c.user.uid)
+      .catch(e=>{ onlineAuthP=null; throw e; });
+  }
+  return onlineAuthP;
+}
+function lagRomkode(){
+  const tegn='ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // uten I/O/0/1 – lettere å lese og taste inn
+  let k=''; for(let i=0;i<4;i++) k+=tegn[Math.floor(Math.random()*tegn.length)];
+  return k;
+}
+function itemIdsFraRom(rom){
+  return rom.itemIds ? Object.keys(rom.itemIds).sort((a,b)=>a-b).map(k=>rom.itemIds[k]) : [];
+}
+
+/* ── Duell-valgmenyen ─────────────────────────────────────────────── */
+$('duel-choice-local').addEventListener('click', ()=>{ closeModal('duel-choice-modal'); startGame('duel'); });
+$('duel-choice-host').addEventListener('click', ()=>{ closeModal('duel-choice-modal'); hostOnlineGame(); });
+$('duel-choice-join').addEventListener('click', ()=>{
+  closeModal('duel-choice-modal'); openModal('duel-join-modal');
+  $('join-code-error').style.display='none'; $('join-code-input').value='';
+  setTimeout(()=>$('join-code-input').focus(), 60);
+});
+$('duel-choice-close').addEventListener('click', ()=>closeModal('duel-choice-modal'));
+
+/* ── Vert: opprett rom ───────────────────────────────────────────── */
+async function hostOnlineGame(){
+  openModal('duel-host-modal');
+  $('host-room-code').textContent='····';
+  $('host-room-status').textContent='Kobler til…';
+  $('btn-host-start').disabled=true;
+  try{
+    await sikreOnlineAuth();
+    const kode = lagRomkode();
+    const navn = tilfeldigHistoriskNavn();
+    S.mode='duel';
+    buildRound();
+    const itemIds = S.items.map(im=>im.id);
+    await FB.set(R('tidsarkivet/'+kode), {
+      owner: onlineUid, opprettet: Date.now(), diff: S.diff, fase:'lobby', runde:0,
+      itemIds, spillere: { [onlineUid]: { navn, ts: Date.now() } }
+    });
+    S.online = {
+      kode, uid:onlineUid, isHost:true, myName:navn, otherUid:null, otherName:null,
+      itemIds, diff:S.diff, unsub:null, gameEntered:false, runde:-1, avslort:false,
+      sisteTving:0, ferdigVist:false
+    };
+    $('host-room-code').textContent=kode;
+    $('host-room-status').textContent='Venter på at noen blir med…';
+    lyttPaRom(kode);
+  }catch(e){
+    $('host-room-status').textContent='Klarte ikke å opprette spillet. Sjekk nettet og prøv igjen.';
+  }
+}
+$('btn-host-cancel').addEventListener('click', ()=>{ leaveOnlineGame(true); closeModal('duel-host-modal'); });
+$('btn-host-start').addEventListener('click', async ()=>{
+  if (!S.online || !S.online.otherUid) return;
+  $('btn-host-start').disabled=true;
+  try{ await FB.update(R('tidsarkivet/'+S.online.kode), { fase:'spill', runde:0 }); }
+  catch(e){ $('host-room-status').textContent='Klarte ikke å starte. Prøv igjen.'; $('btn-host-start').disabled=false; }
+});
+
+/* ── Bli med via kode ────────────────────────────────────────────── */
+function visJoinFeil(msg){ $('join-code-error').textContent=msg; $('join-code-error').style.display='block'; }
+$('join-code-input').addEventListener('input', e=>{
+  e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8);
+});
+$('join-code-input').addEventListener('keydown', e=>{ if (e.key==='Enter') submitJoinCode(); });
+$('btn-join-submit').addEventListener('click', submitJoinCode);
+$('btn-join-cancel').addEventListener('click', ()=>closeModal('duel-join-modal'));
+async function submitJoinCode(){
+  const kode = $('join-code-input').value.trim();
+  $('join-code-error').style.display='none';
+  if (!/^[A-Z0-9]{4,8}$/.test(kode)){ visJoinFeil('Skriv inn en gyldig kode.'); return; }
+  $('btn-join-submit').disabled=true;
+  try{
+    await sikreOnlineAuth();
+    const snap = await FB.get(R('tidsarkivet/'+kode));
+    if (!snap.exists()){ visJoinFeil('Fant ingen aktiv duell med den koden.'); return; }
+    const rom = snap.val();
+    if (rom.owner===onlineUid){ visJoinFeil('Du er allerede verten for denne duellen.'); return; }
+    const spillere = rom.spillere || {};
+    let navn = spillere[onlineUid] ? spillere[onlineUid].navn : null;
+    if (!navn){
+      if (rom.fase!=='lobby'){ visJoinFeil('Den duellen har allerede startet.'); return; }
+      if (Object.keys(spillere).length>=2){ visJoinFeil('Duellen er full.'); return; }
+      navn = tilfeldigHistoriskNavn(Object.values(spillere).map(s=>s.navn));
+      await FB.set(R(`tidsarkivet/${kode}/spillere/${onlineUid}`), { navn, ts: Date.now() });
+    }
+    S.online = {
+      kode, uid:onlineUid, isHost:false, myName:navn, otherUid: rom.owner, otherName:null,
+      itemIds: itemIdsFraRom(rom), diff: rom.diff, unsub:null, gameEntered:false, runde:-1,
+      avslort:false, sisteTving:0, ferdigVist:false
+    };
+    closeModal('duel-join-modal'); openModal('duel-wait-modal');
+    $('wait-my-name').textContent = navn;
+    $('wait-status').textContent = 'Venter på at spillederen starter spillet…';
+    lyttPaRom(kode);
+  }catch(e){
+    visJoinFeil('Noe gikk galt. Prøv igjen.');
+  }finally{
+    $('btn-join-submit').disabled=false;
+  }
+}
+$('btn-wait-cancel').addEventListener('click', ()=>{
+  if (S.online && !S.online.isHost && onlineUid){
+    FB.set(R(`tidsarkivet/${S.online.kode}/spillere/${onlineUid}`), null).catch(()=>{});
+  }
+  leaveOnlineGame(false);
+  closeModal('duel-wait-modal');
+});
+
+/* ── Felles romlytter ────────────────────────────────────────────── */
+function lyttPaRom(kode){
+  const unsub = FB.onValue(R('tidsarkivet/'+kode), snap=>{
+    if (!S.online || S.online.kode!==kode) return; // vi har forlatt rommet
+    if (!snap.exists()){
+      if (!S.online.isHost && !S.online.ferdigVist){
+        alert('Verten avsluttet duellen.');
+        leaveOnlineGame(false);
+        closeModal('duel-wait-modal'); closeModal('duel-host-modal');
+        show('screen-start');
+      }
+      return;
+    }
+    handleRoomUpdate(snap.val());
+  });
+  if (S.online) S.online.unsub = unsub;
+}
+function handleRoomUpdate(rom){
+  const online = S.online; if (!online) return;
+  const uids = Object.keys(rom.spillere||{});
+  const annen = uids.find(u=>u!==online.uid);
+  if (annen){ online.otherUid=annen; online.otherName=rom.spillere[annen].navn; }
+  online.diff = rom.diff || online.diff;
+  if (rom.itemIds) online.itemIds = itemIdsFraRom(rom);
+
+  if (rom.fase==='lobby'){
+    if (online.isHost){
+      $('host-room-status').textContent = annen ? `${online.otherName} har blitt med! Klar til å starte.` : 'Venter på at noen blir med…';
+      $('btn-host-start').disabled = !annen;
+    }
+    return;
+  }
+  if (rom.fase==='ferdig'){
+    if (!online.ferdigVist){ online.ferdigVist=true; onlineEndGame(); }
+    return;
+  }
+  if (rom.fase!=='spill') return;
+
+  if (!online.gameEntered){ online.gameEntered=true; enterOnlineGame(); }
+
+  const runde = rom.runde||0;
+  if (runde !== online.runde){ online.runde = runde; onlineBeginRound(); }
+
+  const mineGjett = rom.spillere[online.uid] && rom.spillere[online.uid].gjett;
+  const andresGjett = annen && rom.spillere[annen] && rom.spillere[annen].gjett;
+  const megNa = mineGjett && mineGjett[runde];
+  const andreNa = andresGjett && andresGjett[runde];
+  const tvingNy = rom.tving && rom.tving !== online.sisteTving;
+
+  if (!online.avslort && ((megNa && andreNa) || tvingNy)){
+    online.sisteTving = rom.tving || online.sisteTving;
+    onlineReveal(megNa, andreNa);
+  }
+  updateOnlineHud();
+}
+
+/* ── Selve rundene ───────────────────────────────────────────────── */
+function enterOnlineGame(){
+  const online=S.online;
+  closeModal('duel-host-modal'); closeModal('duel-wait-modal'); closeModal('duel-choice-modal');
+  AudioFX.unlock();
+  S.mode='duel'; S.diff=online.diff;
+  S.score=0; S.streak=0; S.maxStreak=0; S.perfects=0; S.bestMiss=null; S.results=[];
+  S.duel={wins1:0,wins2:0,phase:1,guess1:null};
+  S.locked=false; S.revealBusy=false;
+  IMAGES.forEach(im=>{ delete im._ok; delete im._fb; delete im._dead; });
+  $('hud-duel').classList.add('on');
+  document.querySelector('.h-score').style.display='none';
+  renderPips();
+  show('screen-game');
+}
+function onlineBeginRound(){
+  const online=S.online;
+  online.avslort=false; S.locked=false; S.revealBusy=false;
+  const id = online.itemIds[online.runde];
+  const item = IMAGES.find(im=>im.id===id);
+  if (!item) return;
+  S.items = online.itemIds.map(i=>IMAGES.find(im=>im.id===i)).filter(Boolean);
+  S.idx = online.runde; S.diff = online.diff;
+  $('reveal').classList.remove('active'); $('handover').classList.remove('active');
+  $('hud-round').textContent = `BILDE ${online.runde+1}/${online.itemIds.length}`;
+  $('photo-cap').textContent = '📍 ' + item.place;
+  resetInput(); requestAnimationFrame(fitPhoto); showPhoto(item);
+  const nesteId = online.itemIds[online.runde+1];
+  const neste = nesteId && IMAGES.find(im=>im.id===nesteId);
+  if (neste) preload(neste);
+  updateOnlineHud();
+  announce(`Runde ${online.runde+1}. Sted: ${item.place}. Gjett årstallet.`);
+}
+function updateOnlineHud(){
+  const online=S.online; if (!online) return;
+  const banner=$('turn-banner');
+  banner.classList.add('on'); banner.classList.remove('p2');
+  banner.textContent = S.locked
+    ? (online.otherName ? `VENTER PÅ ${online.otherName.toUpperCase()}…` : 'VENTER PÅ MOTSTANDEREN…')
+    : 'GJETT OG LÅS INN';
+  $('btn-force-reveal').style.display = (online.isHost && !online.avslort) ? 'flex' : 'none';
+}
+function lockOnlineGuess(g,dec){
+  const online=S.online; if (!online) return;
+  S.locked=true; $('btn-lock').disabled=true;
+  FB.set(R(`tidsarkivet/${online.kode}/spillere/${online.uid}/gjett/${online.runde}`), { g, dec, ts: Date.now() }).catch(()=>{});
+  updateOnlineHud();
+}
+$('btn-force-reveal').addEventListener('click', ()=>{
+  const online=S.online; if (!online || !online.isHost) return;
+  FB.update(R('tidsarkivet/'+online.kode), { tving: Date.now() }).catch(()=>{});
+});
+
+/* ── Avsløring (gjenbruker det visuelle fra lokal duell) ────────────── */
+function syntetiskBom(item){
+  const g = item.year < (YEAR_MIN+YEAR_MAX)/2 ? YEAR_MAX : YEAR_MIN;
+  return { g, dec:false };
+}
+function onlineReveal(mineGjett, andresGjett){
+  const online=S.online; online.avslort=true;
+  S.revealBusy=true; S.locked=true; stopTimer();
+  const item=S.items[S.idx];
+  const meg = mineGjett || syntetiskBom(item);
+  const andre = andresGjett || syntetiskBom(item);
+  const resMeg = scoreGuess(meg.g,item,S.diff,meg.dec);
+  const resAndre = scoreGuess(andre.g,item,S.diff,andre.dec);
+  const vinner = resMeg.miss===resAndre.miss ? 0 : (resMeg.miss<resAndre.miss ? 1 : 2);
+  if (vinner===1) S.duel.wins1++; else if (vinner===2) S.duel.wins2++;
+
+  const tl=$('rev-tl'); tl.querySelectorAll('.rev-mark').forEach(m=>m.remove());
+  const sweep=$('rev-sweep'); sweep.style.transition='none'; sweep.style.transform='scaleX(0)';
+  $('ctx-card').classList.remove('on'); $('rev-verdict').textContent=''; $('rev-verdict').classList.remove('perfect');
+  $('duel-round-result').style.display='none';
+  $('rev-year').classList.remove('landed'); $('rev-points').textContent='+0';
+
+  const gY = meg.dec ? meg.g+5 : meg.g;
+  const g1Y = andre.dec ? andre.g+5 : andre.g;
+  tl.appendChild(markerEl('guess2', 'DU', gY));
+  tl.appendChild(markerEl('guess', (online.otherName||'MOTSTANDER').slice(0,3).toUpperCase(), g1Y));
+  $('rev-year').textContent = meg.dec ? `${meg.g}` : meg.g;
+  $('reveal').classList.add('active');
+  $('turn-banner').classList.remove('on');
+  $('btn-force-reveal').style.display='none';
+
+  const fromY=gY;
+  const a=pctOf(Math.min(fromY,item.year)), b=pctOf(Math.max(fromY,item.year));
+  sweep.style.left=(a*100)+'%'; sweep.style.width=Math.max(.6,(b-a)*100)+'%';
+  sweep.style.transformOrigin = item.year>=fromY ? 'left' : 'right';
+  AudioFX.whoosh();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    sweep.style.transition='transform 1.05s cubic-bezier(.25,.8,.3,1)';
+    sweep.style.transform='scaleX(1)';
+  }));
+  animateCount($('rev-year'), fromY, item.year, 1100, ()=>{
+    $('rev-year').classList.add('landed');
+    tl.appendChild(markerEl('answer','FASIT',item.year));
+    const good=resMeg.miss<=10;
+    if (resMeg.perfect || resAndre.perfect){ AudioFX.perfect(); confetti(); shakePhoto(); }
+    else AudioFX.land(good);
+    $('rev-verdict').textContent = `Du bommet ${resMeg.miss} år · ${online.otherName||'Motstanderen'} bommet ${resAndre.miss} år`;
+    animatePoints($('rev-points'), Math.max(resMeg.points,resAndre.points), 650);
+    setTimeout(()=>finishOnlineReveal(item,resMeg,resAndre,vinner), 720);
+  });
+}
+function finishOnlineReveal(item,resMeg,resAndre,vinner){
+  $('ctx-title').textContent=`${item.title} · ${item.year}`;
+  $('ctx-clue').textContent='🔍 '+item.clue;
+  $('ctx-text').textContent=item.context;
+  $('ctx-src').textContent=`📍 ${item.place} · Kilde: ${item.source} · ${item.license}`;
+  $('ctx-card').classList.add('on');
+  const dr=$('duel-round-result'); dr.style.display='block';
+  dr.innerHTML = vinner===0 ? '🤝 Uavgjort runde!' :
+    (vinner===1 ? `<span style="color:var(--teal)">Du tar runden!</span>` : `<span style="color:var(--p2)">${(S.online&&S.online.otherName)||'Motstanderen'} tar runden!</span>`);
+  renderPips();
+  S.results.push({item, miss:resMeg.miss, points:resMeg.points});
+  S.revealBusy=false;
+  updateOnlineControls();
+  $('btn-next').focus();
+}
+function updateOnlineControls(){
+  const online=S.online; if (!online) return;
+  $('btn-next').style.display = online.isHost ? '' : 'none';
+  $('rev-wait-host').style.display = online.isHost ? 'none' : 'block';
+}
+function onlineNext(){
+  const online=S.online; if (!online || !online.isHost) return;
+  const duelDone = S.duel.wins1>=DUEL_TARGET || S.duel.wins2>=DUEL_TARGET;
+  const nesteRunde = online.runde+1;
+  if (duelDone || nesteRunde>=online.itemIds.length){
+    FB.update(R('tidsarkivet/'+online.kode), { fase:'ferdig' }).catch(()=>{});
+  } else {
+    FB.update(R('tidsarkivet/'+online.kode), { runde: nesteRunde }).catch(()=>{});
+  }
+}
+function onlineEndGame(){
+  stopTimer();
+  $('streak-toast').classList.remove('show');
+  $('reveal').classList.remove('active');
+  const w = S.duel.wins1>S.duel.wins2 ? 1 : (S.duel.wins2>S.duel.wins1 ? 2 : 0);
+  const navn = (S.online&&S.online.otherName) || 'motstanderen';
+  $('end-medal').textContent = w? '🏆':'🤝';
+  $('end-head').innerHTML = w===1 ? 'Du vinner duellen!' : (w===2 ? `${navn} vinner duellen!` : 'Uavgjort duell!');
+  $('end-score').textContent = `${S.duel.wins1} – ${S.duel.wins2}`;
+  $('end-sub').textContent = `Live duell mot ${navn} – samme bilder, samme tidslinje.`;
+  $('end-stats').innerHTML='';
+  renderLb(); renderRank();
+  show('screen-end');
+  announce($('end-head').textContent);
+  leaveOnlineGame(true);
+}
+function leaveOnlineGame(cleanupRoom=true){
+  const online=S.online; if (!online) return;
+  if (online.unsub) online.unsub();
+  if (cleanupRoom && online.isHost){
+    FB && fbDb && FB.set(R('tidsarkivet/'+online.kode), null).catch(()=>{});
+  }
+  S.online=null;
+  $('hud-duel').classList.remove('on');
+  document.querySelector('.h-score').style.display='';
+  $('turn-banner').classList.remove('on');
+  $('btn-force-reveal').style.display='none';
+  $('btn-next').style.display='';
+  $('rev-wait-host').style.display='none';
+}
+
+buildDecadeGrid();
+renderRank();
+</script>
+</body>
+</html>
