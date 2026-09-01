@@ -400,6 +400,72 @@
       }
     },
 
+    "tidsarkivet": {
+      "$kode": {
+        ".read": true,
+        ".write": "$kode.matches(/^[A-Z0-9]{4,8}$/) && auth != null && (!data.exists() || data.child('owner').val() === auth.uid || data.child('opprettet').val() < now - 43200000)",
+        ".validate": "newData.hasChildren(['opprettet', 'owner', 'fase', 'diff'])",
+
+        "owner": {
+          ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
+        },
+        "opprettet": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+        "diff": {
+          ".write": "auth != null && root.child('tidsarkivet').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^(rekrutt|agent|tidsmester)$/)"
+        },
+        "fase": {
+          ".write": "auth != null && root.child('tidsarkivet').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^(lobby|spill|ferdig)$/)"
+        },
+        "itemIds": {
+          ".write": "auth != null && root.child('tidsarkivet').child($kode).child('owner').val() === auth.uid",
+          "$i": {
+            ".validate": "$i.matches(/^[0-9]{1,2}$/) && newData.isString() && newData.val().length > 0 && newData.val().length <= 80"
+          }
+        },
+        "runde": {
+          ".write": "auth != null && root.child('tidsarkivet').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 20"
+        },
+        "tving": {
+          ".write": "auth != null && root.child('tidsarkivet').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+
+        "spillere": {
+          ".write": "!newData.exists() && auth != null && root.child('tidsarkivet').child($kode).child('owner').val() === auth.uid",
+
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid && ((data.exists() && !newData.exists()) || (!data.exists() && data.parent().exists()))",
+            ".validate": "newData.hasChildren(['navn', 'ts'])",
+
+            "navn": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 30"
+            },
+            "ts": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "gjett": {
+              "$runde": {
+                ".write": "auth != null && $uid === auth.uid && !data.exists()",
+                ".validate": "newData.hasChildren(['g', 'dec', 'ts']) && newData.child('g').isNumber() && newData.child('g').val() >= 1850 && newData.child('g').val() <= 2010 && newData.child('dec').isBoolean() && newData.child('ts').isNumber() && newData.child('ts').val() <= now + 300000"
+              }
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
