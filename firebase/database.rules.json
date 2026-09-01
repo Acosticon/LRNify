@@ -439,7 +439,7 @@
           ".write": "!newData.exists() && auth != null && root.child('tidsarkivet').child($kode).child('owner').val() === auth.uid",
 
           "$uid": {
-            ".write": "auth != null && $uid === auth.uid && (data.exists() ? !newData.exists() : (data.parent().exists() && data.parent().numChildren() < 2))",
+            ".write": "auth != null && $uid === auth.uid && ((data.exists() && !newData.exists()) || (!data.exists() && data.parent().exists() && data.parent().numChildren() < 2))",
             ".validate": "newData.hasChildren(['navn', 'ts'])",
 
             "navn": {
