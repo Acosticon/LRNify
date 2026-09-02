@@ -258,7 +258,7 @@ export function renderEventPanel(state, handlers) {
 
       ${escalationNote}
 
-      <p class="event-description">${esc((ev.description || '').replace(/{navn}/g, state.playerName))}</p>
+      <p class="event-description">${esc((ev.description || ev.newsIngress || '').replace(/{navn}/g, state.playerName))}</p>
 
       <div class="event-choices">
         ${choices.map((ch, i) => {

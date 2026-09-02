@@ -261,6 +261,12 @@ export function undeferRegion(state, regionId) {
   return s;
 }
 
+export function closeRegion(state) {
+  const s = deepClone(state);
+  s.openRegion = null;
+  return s;
+}
+
 // ─── Årsslutt ─────────────────────────────────────────
 // Her gjøres opp status: forsømte saker eskalerer, drift trekkes,
 // og avisoppslaget bygges.
