@@ -75,10 +75,12 @@
   .graf-legend .rad{ display:flex; align-items:center; gap:6px; }
   .legend-strek{ width:16px; height:3px; border-radius:2px; display:inline-block; }
 
-  /* Søylediagram — dagens topp 10 spill */
-  #grafSpill{ display:block; width:100%; height:auto; }
-  #grafSpill rect{ transition:opacity .1s; }
-  #grafSpill rect:hover{ opacity:.8; }
+  /* Søylediagram — dagens/ukens topp 5 spill */
+  .topp-spill-rad{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:22px; margin-bottom:22px; }
+  .topp-spill-rad .kort{ margin-bottom:0; }
+  .graf-soyle{ display:block; width:100%; height:auto; }
+  .graf-soyle rect{ transition:opacity .1s; }
+  .graf-soyle rect:hover{ opacity:.8; }
 
   .chip{
     display:inline-flex; align-items:center; gap:8px; border:3px solid var(--ink); border-radius:20px;
@@ -148,13 +150,24 @@
   <div id="rapport" class="skjult">
     <div class="tall-rad" id="nokkeltall"></div>
 
-    <div class="kort">
-      <h2>🏆 Dagens topp 10 spill</h2>
-      <p class="fotnote" style="margin:-8px 0 14px;" id="topSpillDato"></p>
-      <div id="topSpillBoks">
-        <svg id="grafSpill" viewBox="0 0 800 300" preserveAspectRatio="none" role="img" aria-label="Dagens topp 10 spill"></svg>
+    <div class="topp-spill-rad">
+      <div class="kort">
+        <h2>🏆 Dagens topp 5 spill</h2>
+        <p class="fotnote" style="margin:-8px 0 14px;" id="topSpillDatoDag"></p>
+        <div id="topSpillBoksDag">
+          <svg id="grafSpillDag" class="graf-soyle" viewBox="0 0 800 300" preserveAspectRatio="none" role="img" aria-label="Dagens topp 5 spill"></svg>
+        </div>
+        <p class="tom skjult" id="topSpillTomDag">Ingen spill registrert i dag ennå.</p>
       </div>
-      <p class="tom skjult" id="topSpillTom">Ingen spill registrert i dag ennå.</p>
+
+      <div class="kort">
+        <h2>📅 Ukens topp 5 spill</h2>
+        <p class="fotnote" style="margin:-8px 0 14px;" id="topSpillDatoUke"></p>
+        <div id="topSpillBoksUke">
+          <svg id="grafSpillUke" class="graf-soyle" viewBox="0 0 800 300" preserveAspectRatio="none" role="img" aria-label="Ukens topp 5 spill"></svg>
+        </div>
+        <p class="tom skjult" id="topSpillTomUke">Ingen spill registrert denne uken ennå.</p>
+      </div>
     </div>
 
     <div class="kort">
@@ -384,7 +397,7 @@ function tegn(data, fra){
   });
 
   tegnGraf();
-  tegnTopSpillGraf(iDag);
+  tegnTopSpillGrafer(iDag);
 }
 
 function maksDag(perDag){
@@ -577,25 +590,30 @@ function tegnDagTabell(){
     </table>`;
 }
 
-/* Søylediagram over dagens topp 10 spill. Et «spill» er en side under
-   /games/ eller /spill/ — se bruk/lrnify-bruk.js for hvordan sidenavnet
-   utledes av adressen. Bruker perDagSide, som allerede er summert per side
-   per dag av tegn(), så ingen nye kall mot Firebase trengs. */
+/* Søylediagram over topp 5 spill — i dag og siste 7 dager. Et «spill» er en
+   side under /games/ eller /spill/ — se bruk/lrnify-bruk.js for hvordan
+   sidenavnet utledes av adressen. Forsiden holdes uttrykkelig utenfor,
+   selv om den aldri har matchet prefikset. Bruker perDagSide, som allerede
+   er summert per side per dag av tegn() — uke-grafen trenger derfor ikke
+   noe eget kall mot Firebase, siden perioden som hentes alltid er minst
+   7 dager (korteste periodevalg). */
 const SPILL_PREFIKS=/^(games|spill)-/;
 
-function tegnTopSpillGraf(iDag){
-  document.getElementById('topSpillDato').textContent='I dag, '+norskDato(iDag);
+/* Summerer visninger per spill over et sett dager, høyest først. */
+function spillRader(dager, antall){
+  const summer={};
+  for(const [side,perDag] of Object.entries(perDagSide)){
+    if(!SPILL_PREFIKS.test(side) || side==='forsiden') continue;
+    const navn=side.replace(SPILL_PREFIKS,'');
+    for(const d of dager) summer[navn]=(summer[navn]||0)+(perDag[d]||0);
+  }
+  return Object.entries(summer).filter(([,n])=>n>0).sort((a,b)=>b[1]-a[1]).slice(0,antall);
+}
 
-  const rader=Object.entries(perDagSide)
-    .filter(([side])=>SPILL_PREFIKS.test(side))
-    .map(([side,dager])=>[side.replace(SPILL_PREFIKS,''), dager[iDag]||0])
-    .filter(([,n])=>n>0)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,10);
-
-  const svg=document.getElementById('grafSpill');
-  const boks=document.getElementById('topSpillBoks');
-  const tom=document.getElementById('topSpillTom');
+function tegnSoylediagram(svgId, boksId, tomId, rader){
+  const svg=document.getElementById(svgId);
+  const boks=document.getElementById(boksId);
+  const tom=document.getElementById(tomId);
 
   if(!rader.length){
     svg.innerHTML='';
@@ -610,7 +628,7 @@ function tegnTopSpillGraf(iDag){
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const n=rader.length;
   const bredde=plotW/n;
-  const barBredde=Math.min(50, bredde*.62);
+  const barBredde=Math.min(70, bredde*.55);
 
   const maksRaatt=Math.max(1,...rader.map(([,v])=>v));
   const {steg,maks:maksY}=penTrinn(maksRaatt,4);
@@ -639,6 +657,17 @@ function tegnTopSpillGraf(iDag){
   });
 
   svg.innerHTML=inn;
+}
+
+function tegnTopSpillGrafer(iDag){
+  document.getElementById('topSpillDatoDag').textContent='I dag, '+norskDato(iDag);
+
+  const siste7=dagsliste.slice(-7);
+  document.getElementById('topSpillDatoUke').textContent=
+    'Siste 7 dager, '+norskDato(siste7[0])+' – '+norskDato(siste7[siste7.length-1]);
+
+  tegnSoylediagram('grafSpillDag','topSpillBoksDag','topSpillTomDag', spillRader([iDag],5));
+  tegnSoylediagram('grafSpillUke','topSpillBoksUke','topSpillTomUke', spillRader(siste7,5));
 }
 </script>
 </body>
