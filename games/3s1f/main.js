@@ -7,6 +7,7 @@ import {
   dismissNewsSplash,
   applyChoice,
   deferRegion,
+  closeRegion,
   endYear,
   dismissYearSummary,
   advanceYear,
@@ -115,7 +116,7 @@ function onChoice(regionId, choiceIndex) {
 
 function onDefer(regionId) {
   state = deferRegion(state, regionId);
-  openFirstPendingRegion();
+  openFirstPendingRegion(regionId);
   renderAll();
   saveGame(state);
 }
@@ -150,10 +151,15 @@ function onContinueFromSummary() {
   });
 }
 
-// Åpner årets første ubehandlede sak, så hendelsespanelet aldri står tomt.
-function openFirstPendingRegion() {
-  const [first] = outstandingRegions(state);
-  if (first) state = selectRegion(state, first);
+// Åpner neste sak, så hendelsespanelet aldri står tomt. Uåpnede saker går
+// foran saker som allerede er utsatt, og excludeId hindrer at man havner
+// tilbake på saken man nettopp tok stilling til.
+function openFirstPendingRegion(excludeId = null) {
+  const ids = Object.keys(state.activeRegions).filter(r => r !== excludeId);
+  const fresh    = ids.find(r => state.regionDecisions[r] === undefined);
+  const deferred = ids.find(r => state.regionDecisions[r] === 'deferred');
+  const next = fresh ?? deferred;
+  state = next ? selectRegion(state, next) : closeRegion(state);
 }
 
 // ─── Sluttrapport ─────────────────────────────────────
