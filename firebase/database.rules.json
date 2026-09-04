@@ -466,7 +466,7 @@
       }
     },
 
-    "musikkquiz": {
+    "eliquiz": {
       "$kode": {
         ".read": true,
         ".write": "$kode.matches(/^[A-Z0-9]{4,8}$/) && auth != null && (!data.exists() || data.child('owner').val() === auth.uid || data.child('createdAt').val() < now - 43200000)",
@@ -480,39 +480,39 @@
         },
 
         "phase": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isString() && newData.val().matches(/^(lobby|music|timeline|tiebreaker|finished)$/)"
         },
         "currentRound": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 15"
         },
         "roundStatus": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isString() && newData.val().matches(/^(ready|answering|scoring|reveal|leaderboard)$/)"
         },
         "finalOpen": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isBoolean()"
         },
         "tiebreakerActive": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isBoolean()"
         },
         "tiebreakerStartedAt": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isNumber() || newData.val() === null"
         },
         "tiebreakerResolved": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isBoolean()"
         },
         "tiebreakerWinner": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isString() || newData.val() === null"
         },
         "finaleRevealIndex": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 16"
         },
 
@@ -560,7 +560,7 @@
         },
 
         "results": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           "$round": {
             ".validate": "$round.matches(/^([0-9]|1[0-5])$/)",
             "songId": {
@@ -602,13 +602,13 @@
           }
         },
         "finalResults": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           "$uid": {
             ".validate": "newData.hasChild('correct') && newData.child('correct').isNumber() && newData.child('correct').val() >= 0 && newData.child('correct').val() <= 16"
           }
         },
         "finaleReveal": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           "$song": {
             ".validate": "$song.matches(/^([1-9]|1[0-6])$/) && newData.hasChildren(['year', 'artist', 'title'])",
             "year": { ".validate": "newData.isNumber() && newData.val() >= 2011 && newData.val() <= 2026" },
@@ -619,15 +619,15 @@
         },
 
         "tiebreakerEligible": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           "$uid": {
             ".validate": "newData.isBoolean()"
           }
         },
         "tiebreakerAnswers": {
-          ".write": "auth != null && root.child('musikkquiz').child($kode).child('owner').val() === auth.uid",
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           "$uid": {
-            ".write": "auth != null && $uid === auth.uid && root.child('musikkquiz').child($kode).child('tiebreakerEligible').child($uid).val() === true",
+            ".write": "auth != null && $uid === auth.uid && root.child('eliquiz').child($kode).child('tiebreakerEligible').child($uid).val() === true",
             ".validate": "newData.hasChildren(['artist', 'title', 'year', 'answeredAt'])",
             "artist": { ".validate": "newData.isString() && newData.val().length <= 80" },
             "title": { ".validate": "newData.isString() && newData.val().length <= 80" },

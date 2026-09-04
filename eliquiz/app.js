@@ -1,4 +1,4 @@
-// LRNify Musikkquiz — sanntidsmotor på Firebase Realtime Database.
+// LRNify Eliquiz — sanntidsmotor på Firebase Realtime Database.
 // Samme mønster (lat innlasting av Firebase, anonym pålogging, romkode
 // i den delte LRNify-databasen poll-c6bd2) som brukes i
 // games/tidsarkivet og games/geografi/kartografen.
@@ -61,10 +61,10 @@ function romkode() {
   return k;
 }
 
-const LS = { host: 'lrnify_mq_host_kode', screen: 'lrnify_mq_active_kode', team: 'lrnify_mq_team_kode' };
+const LS = { host: 'lrnify_eliquiz_host_kode', screen: 'lrnify_eliquiz_active_kode', team: 'lrnify_eliquiz_team_kode' };
 
 function esc(s = '') { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c])); }
-function top(title = 'MUSIKKQUIZ') { return `<div class="topbar"><div class="brand">🦋 ${title}</div><div class="pill">LRNify</div></div>`; }
+function top(title = 'ELIQUIZ') { return `<div class="topbar"><div class="brand">🦋 ${title}</div><div class="pill">LRNify</div></div>`; }
 function navigate(r) { location.hash = '#/' + r; }
 function connBadge(ok) { return `<div class="pill ${ok ? 'status-ok' : 'status-bad'}">${ok ? '● Tilkoblet' : '○ Kobler til…'}</div>`; }
 
@@ -122,7 +122,7 @@ async function renderPlay() {
   try { await ensureAuth(); } catch (e) { app.innerHTML = `<main class="shell">${top()}<section class="card"><p class="notice">Klarte ikke å koble til. Sjekk nettet og prøv igjen.</p></section></main>`; return; }
   const savedKode = localStorage.getItem(LS.team);
   if (savedKode) {
-    const snap = await FB.get(R('musikkquiz/' + savedKode));
+    const snap = await FB.get(R('eliquiz/' + savedKode));
     if (snap.exists() && snap.val().teams && snap.val().teams[uid]) {
       subscribePlay(savedKode);
       return;
@@ -147,11 +147,11 @@ function renderJoinForm(error = '') {
     if (!kode || !name) return;
     playState.joining = true;
     try {
-      const snap = await FB.get(R('musikkquiz/' + kode));
+      const snap = await FB.get(R('eliquiz/' + kode));
       if (!snap.exists()) { playState.joining = false; renderJoinForm('Fant ingen quiz med den koden.'); return; }
       const existing = snap.val().teams && snap.val().teams[uid];
       if (!existing) {
-        await FB.set(R(`musikkquiz/${kode}/teams/${uid}`), { name, icon: '🦋', color, joinedAt: Date.now() });
+        await FB.set(R(`eliquiz/${kode}/teams/${uid}`), { name, icon: '🦋', color, joinedAt: Date.now() });
       }
       localStorage.setItem(LS.team, kode);
       subscribePlay(kode);
@@ -165,7 +165,7 @@ function renderJoinForm(error = '') {
 function subscribePlay(kode) {
   playState.kode = kode;
   if (playState.unsub) playState.unsub();
-  playState.unsub = FB.onValue(R('musikkquiz/' + kode), snap => {
+  playState.unsub = FB.onValue(R('eliquiz/' + kode), snap => {
     const g = snap.val();
     if (!g) { localStorage.removeItem(LS.team); renderJoinForm('Quizen finnes ikke lenger.'); return; }
     drawPlay(g);
@@ -191,7 +191,7 @@ function drawPlay(g) {
     const editable = g.roundStatus === 'answering';
     app.innerHTML = `<main class="shell">${top()}<section class="card"><div class="small">SANG ${round + 1} / 16</div><h1 class="round-title">Hva hører du?</h1><label class="label">Artist</label><input id="artist" class="input" ${editable ? '' : 'disabled'} value="${esc(ans.artist)}" autocomplete="off"><label class="label">Sangtittel</label><input id="title" class="input" ${editable ? '' : 'disabled'} value="${esc(ans.title)}" autocomplete="off"><div class="actions"><button class="btn primary" id="submit" ${editable ? '' : 'disabled'}>${ans.artist || ans.title ? 'Oppdater svar' : 'Send svar'}</button></div><p class="small">${editable ? 'Du kan endre svaret helt til host stenger runden.' : 'Venter på host…'}</p></section></main>`;
     if (editable) document.querySelector('#submit').onclick = () => {
-      FB.update(R(`musikkquiz/${playState.kode}/answers/${uid}/${round}`), { artist: document.querySelector('#artist').value, title: document.querySelector('#title').value, updatedAt: Date.now() });
+      FB.update(R(`eliquiz/${playState.kode}/answers/${uid}/${round}`), { artist: document.querySelector('#artist').value, title: document.querySelector('#title').value, updatedAt: Date.now() });
     };
     return;
   }
@@ -220,11 +220,11 @@ function drawTimelinePlayer(g, t) {
     const updates = {};
     for (const [sid, yy] of Object.entries(placed)) if (Number(yy) === year) updates[sid] = null;
     updates[selected] = year;
-    await FB.update(R(`musikkquiz/${playState.kode}/finalAnswers/${uid}`), updates);
+    await FB.update(R(`eliquiz/${playState.kode}/finalAnswers/${uid}`), updates);
     playState.selectedSong = null;
   });
   const fs = document.querySelector('#finalSubmit');
-  if (fs) fs.onclick = () => FB.set(R(`musikkquiz/${playState.kode}/finalSubmitted/${uid}`), true);
+  if (fs) fs.onclick = () => FB.set(R(`eliquiz/${playState.kode}/finalSubmitted/${uid}`), true);
 }
 
 function drawTiebreakerPlayer(g, t) {
@@ -237,7 +237,7 @@ function drawTiebreakerPlayer(g, t) {
   const old = g.tiebreakerAnswers && g.tiebreakerAnswers[uid];
   app.innerHTML = `<main class="shell">${top('TIEBREAKER')}<section class="card"><h1>The winner takes it all…</h1><label class="label">Artist</label><input id="ta" class="input" ${old ? 'disabled' : ''}><label class="label">Sangtittel</label><input id="tt" class="input" ${old ? 'disabled' : ''}><label class="label">Årstall</label><input id="ty" class="input" inputmode="numeric" ${old ? 'disabled' : ''}><div class="actions"><button id="ts" class="btn primary" ${old ? 'disabled' : ''}>Send svar</button></div>${old ? '<p class="notice">Svaret er sendt. Raskeste helt riktige svar vinner.</p>' : ''}</section></main>`;
   if (!old) document.querySelector('#ts').onclick = () => {
-    FB.set(R(`musikkquiz/${playState.kode}/tiebreakerAnswers/${uid}`), {
+    FB.set(R(`eliquiz/${playState.kode}/tiebreakerAnswers/${uid}`), {
       artist: document.querySelector('#ta').value, title: document.querySelector('#tt').value,
       year: Number(document.querySelector('#ty').value) || 0, answeredAt: FB.serverTimestamp(),
     });
@@ -259,7 +259,7 @@ async function renderHost() {
   }
   const savedKode = localStorage.getItem(LS.host);
   if (savedKode) {
-    const snap = await FB.get(R('musikkquiz/' + savedKode));
+    const snap = await FB.get(R('eliquiz/' + savedKode));
     if (snap.exists() && snap.val().owner === uid) { subscribeHost(savedKode); return; }
     localStorage.removeItem(LS.host);
   }
@@ -270,7 +270,7 @@ function renderHostLanding() {
   app.innerHTML = `<main class="shell">${top('HOST')}<section class="card hero"><h1>Ny quiz</h1><p>Opprett en ny musikkquiz og få en spillkode lagene kan bli med på.</p><div class="actions"><button class="btn primary" id="create">Opprett quiz</button></div></section></main>`;
   document.querySelector('#create').onclick = async () => {
     const kode = romkode();
-    await FB.set(R('musikkquiz/' + kode), {
+    await FB.set(R('eliquiz/' + kode), {
       owner: uid, createdAt: Date.now(), phase: 'lobby', currentRound: 0, roundStatus: 'ready',
       finalOpen: false, tiebreakerActive: false, tiebreakerResolved: false, finaleRevealIndex: 0,
     });
@@ -284,7 +284,7 @@ function subscribeHost(kode) {
   hostState.kode = kode;
   localStorage.setItem(LS.screen, kode);
   if (hostState.unsub) hostState.unsub();
-  hostState.unsub = FB.onValue(R('musikkquiz/' + kode), snap => {
+  hostState.unsub = FB.onValue(R('eliquiz/' + kode), snap => {
     const g = snap.val();
     if (!g) return;
     if (g.roundStatus !== 'scoring') hostState.draft = null;
@@ -370,8 +370,8 @@ function bindHost(g, song, teams) {
 
 async function handleHostAction(act, g, song, teams) {
   const kode = hostState.kode;
-  const groot = R(`musikkquiz/${kode}`);
-  const gref = p => R(`musikkquiz/${kode}/${p}`);
+  const groot = R(`eliquiz/${kode}`);
+  const gref = p => R(`eliquiz/${kode}/${p}`);
   if (act === 'reset') {
     localStorage.removeItem(LS.host);
     renderHostLanding();
@@ -416,13 +416,13 @@ async function closeFinal(g, teams) {
     }
     finalResults[t.uid] = { correct };
   }
-  await FB.set(R(`musikkquiz/${hostState.kode}/finalResults`), finalResults);
-  await FB.update(R(`musikkquiz/${hostState.kode}`), { phase: 'finished', finalOpen: false });
+  await FB.set(R(`eliquiz/${hostState.kode}/finalResults`), finalResults);
+  await FB.update(R(`eliquiz/${hostState.kode}`), { phase: 'finished', finalOpen: false });
   const tie = getTieTeamsFresh(finalResults, teams, g);
   if (tie.length > 1) {
     const eligible = {}; for (const t of tie) eligible[t.uid] = true;
-    await FB.update(R(`musikkquiz/${hostState.kode}`), { phase: 'tiebreaker', tiebreakerActive: true, tiebreakerStartedAt: FB.serverTimestamp() });
-    await FB.set(R(`musikkquiz/${hostState.kode}/tiebreakerEligible`), eligible);
+    await FB.update(R(`eliquiz/${hostState.kode}`), { phase: 'tiebreaker', tiebreakerActive: true, tiebreakerStartedAt: FB.serverTimestamp() });
+    await FB.set(R(`eliquiz/${hostState.kode}/tiebreakerEligible`), eligible);
   }
 }
 function getTieTeamsFresh(finalResults, teams, g) {
@@ -443,7 +443,7 @@ async function resolveTiebreaker(g, teams) {
     if (!a) continue;
     if (scoreTiebreaker(a) && typeof a.answeredAt === 'number' && a.answeredAt < bestTs) { bestTs = a.answeredAt; winner = teamUid; }
   }
-  await FB.update(R(`musikkquiz/${hostState.kode}`), { tiebreakerWinner: winner, tiebreakerResolved: true, phase: 'finished' });
+  await FB.update(R(`eliquiz/${hostState.kode}`), { tiebreakerWinner: winner, tiebreakerResolved: true, phase: 'finished' });
 }
 
 // ══════════════════════════════════ SCREEN ══════════════════════════════════
@@ -468,7 +468,7 @@ async function subscribeScreen(kode) {
   screenState.kode = kode;
   try { await loadFirebase(); } catch (e) { renderScreenConnect('Klarte ikke å koble til.'); return; }
   if (screenState.unsub) screenState.unsub();
-  screenState.unsub = FB.onValue(R('musikkquiz/' + kode), snap => {
+  screenState.unsub = FB.onValue(R('eliquiz/' + kode), snap => {
     const g = snap.val();
     if (!g) { localStorage.removeItem(LS.screen); renderScreenConnect('Fant ingen quiz med den koden.'); return; }
     drawScreen(g);
