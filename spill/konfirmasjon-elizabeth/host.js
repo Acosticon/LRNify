@@ -133,8 +133,9 @@ async function createRoom() {
     localStorage.setItem(LS_HOST_ROOM, code);
     subscribeRoom(); // kan rendre om skjermen synkront (lobby) — ikke anta at oppsett-DOM-en fortsatt finnes under
   } catch (e) {
+    console.error('Klarte ikke å opprette quizen:', e);
     const errEl = els('setupError');
-    if (errEl) { errEl.textContent = 'Klarte ikke å opprette quizen. Prøv igjen.'; errEl.style.display = 'block'; }
+    if (errEl) { errEl.textContent = 'Klarte ikke å opprette quizen: ' + (e.code || e.message || e); errEl.style.display = 'block'; }
   }
   const btn = els('createBtn');
   if (btn) btn.disabled = false;
