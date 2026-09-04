@@ -246,7 +246,8 @@ function drawTiebreakerPlayer(g, t) {
 
 // ══════════════════════════════════ HOST ══════════════════════════════════
 
-let hostState = { kode: null, unsub: null, quiz: null, draft: null };
+let hostState = { kode: null, unsub: null, quiz: null, draft: null, spotify: null, spotifyBusy: false, spotifyMsg: '', lastGame: null };
+function redrawHost() { if (hostState.lastGame) drawHost(hostState.lastGame); }
 
 async function renderHost() {
   app.innerHTML = `<main class="shell">${top('HOST')}<section class="card hero"><p>Kobler til…</p></section></main>`;
@@ -257,6 +258,11 @@ async function renderHost() {
     app.innerHTML = `<main class="shell">${top('HOST')}<section class="card"><p class="notice">Klarte ikke å laste quizmotoren. Sjekk nettet og last siden på nytt.</p></section></main>`;
     return;
   }
+  // Spotify er valgfritt og skal aldri kunne blokkere quizmotoren.
+  try {
+    hostState.spotify = await import('./spotify.js');
+    await hostState.spotify.handleRedirectCallback();
+  } catch (e) { console.warn('Spotify-modul kunne ikke lastes', e); }
   const savedKode = localStorage.getItem(LS.host);
   if (savedKode) {
     const snap = await FB.get(R('eliquiz/' + savedKode));
@@ -293,6 +299,7 @@ function subscribeHost(kode) {
 }
 
 function drawHost(g) {
+  hostState.lastGame = g;
   const { songForRound } = hostState.quiz;
   const song = g.phase === 'music' ? songForRound(g.currentRound || 0) : null;
   const teams = Object.entries(g.teams || {}).map(([teamUid, t]) => ({ uid: teamUid, ...t }));
@@ -305,12 +312,27 @@ function drawHost(g) {
   else if (g.phase === 'tiebreaker') mid = hostTiebreakerPanel(g, teams);
   else if (g.phase === 'finished') mid = `<p>Quizen er ferdig.</p>`;
 
-  app.innerHTML = `<main class="shell">${top('HOST')}${connBadge(true)}<div class="host-grid"><section class="card"><div class="small">Fase: ${g.phase}${g.phase === 'music' ? ` · runde ${g.roundStatus}` : ''}</div><h1>${g.phase === 'music' ? `Sang ${(g.currentRound || 0) + 1} / 16` : g.phase === 'timeline' ? 'Tidslinjefinale' : g.phase === 'tiebreaker' ? 'Tiebreaker' : g.phase === 'finished' ? 'Ferdig' : 'Lobby'}</h1>${mid}<div class="actions">${hostActionButtons(g)}</div></section><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span style="font-size:1.5rem;filter:drop-shadow(0 0 8px ${t.color})">${t.icon}</span><div><b>${esc(t.name)}</b><div class="small">${musicScoreFor(g, t.uid)} musikk + ${timelineScoreFor(g, t.uid)} finale</div></div></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section></div></main>`;
+  app.innerHTML = `<main class="shell">${top('HOST')}${connBadge(true)}${spotifyPanelHTML()}<div class="spacer"></div><div class="host-grid"><section class="card"><div class="small">Fase: ${g.phase}${g.phase === 'music' ? ` · runde ${g.roundStatus}` : ''}</div><h1>${g.phase === 'music' ? `Sang ${(g.currentRound || 0) + 1} / 16` : g.phase === 'timeline' ? 'Tidslinjefinale' : g.phase === 'tiebreaker' ? 'Tiebreaker' : g.phase === 'finished' ? 'Ferdig' : 'Lobby'}</h1>${mid}<div class="actions">${hostActionButtons(g)}</div></section><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span style="font-size:1.5rem;filter:drop-shadow(0 0 8px ${t.color})">${t.icon}</span><div><b>${esc(t.name)}</b><div class="small">${musicScoreFor(g, t.uid)} musikk + ${timelineScoreFor(g, t.uid)} finale</div></div></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section></div></main>`;
   bindHost(g, song, teams);
+}
+
+function spotifyPanelHTML() {
+  const sp = hostState.spotify;
+  const msg = hostState.spotifyMsg ? `<p class="notice">${esc(hostState.spotifyMsg)}</p>` : '';
+  if (!sp) return `<div class="card"><h2>Spotify</h2><p class="small">Spotify-modulen kunne ikke lastes. Bruk "Åpne / spill manuelt" under hver sang i stedet.</p></div>`;
+  if (!sp.isConfigured()) {
+    return `<div class="card"><h2>Spotify (valgfritt)</h2><p class="small">Lim inn en gratis Client ID fra <span class="kbd">developer.spotify.com/dashboard</span> for å styre avspillingen herfra. Quizen fungerer helt fint uten — bruk "Åpne / spill manuelt" om du hopper over dette.</p><div class="grid two"><input id="spClientId" class="input" placeholder="Spotify Client ID"><button class="btn primary" data-sp="save">Lagre</button></div>${msg}</div>`;
+  }
+  if (!sp.isConnected()) {
+    return `<div class="card"><h2>Spotify</h2><span class="pill status-bad">Ikke tilkoblet</span><div class="actions"><button class="btn primary" data-sp="connect">Koble til Spotify</button><button class="btn small" data-sp="forget">Bytt Client ID</button></div>${msg}</div>`;
+  }
+  return `<div class="card"><h2>Spotify</h2><span class="pill status-ok">✓ Tilkoblet</span><div class="actions"><button class="btn small" data-sp="disconnect">Koble fra</button></div>${msg}</div>`;
 }
 
 function hostMusicPanel(g, song, answered, teams) {
   const clipLink = song.spotifyTrackId ? `<a class="btn" target="_blank" rel="noopener" href="https://open.spotify.com/track/${song.spotifyTrackId}">↗ Åpne / spill manuelt</a>` : '';
+  const spReady = hostState.spotify && hostState.spotify.isConnected() && song.spotifyTrackId;
+  const spBtns = spReady ? `<button class="btn primary" data-sp="play" ${hostState.spotifyBusy ? 'disabled' : ''}>▶ Spill klipp</button><button class="btn" data-sp="pause" ${hostState.spotifyBusy ? 'disabled' : ''}>⏸ Pause</button>` : '';
   if (g.roundStatus === 'scoring') {
     if (!hostState.draft) hostState.draft = buildDraft(g, song, teams);
     return `<p><b>${esc(song.artist)}</b> – ${esc(song.title)} <span class="small">(${song.year})</span></p><h2>Overstyr retting før publisering</h2>${teams.map(t => {
@@ -319,7 +341,7 @@ function hostMusicPanel(g, song, answered, teams) {
       return `<div class="override-row"><div><div class="name">${esc(t.name)}</div><div class="small">${esc(ans.artist) || '—'} / ${esc(ans.title) || '—'}</div></div><button class="toggle ${d.artistCorrect ? 'on' : 'off'}" data-ov="${t.uid}:artist">Artist ${d.artistCorrect ? '✓' : '✗'}</button><button class="toggle ${d.titleCorrect ? 'on' : 'off'}" data-ov="${t.uid}:title">Tittel ${d.titleCorrect ? '✓' : '✗'}</button></div>`;
     }).join('')}`;
   }
-  return `<p><b>${esc(song.artist)}</b> – ${esc(song.title)} <span class="small">(${song.year})</span></p><p class="small">Klipp: ${(song.startMs / 1000).toFixed(0)}s → ${((song.startMs + song.durationMs) / 1000).toFixed(0)}s</p><div class="actions">${clipLink}</div><div class="answer-status">${answered} / ${teams.length} lag har svart</div>`;
+  return `<p><b>${esc(song.artist)}</b> – ${esc(song.title)} <span class="small">(${song.year})</span></p><p class="small">Klipp: ${(song.startMs / 1000).toFixed(0)}s → ${((song.startMs + song.durationMs) / 1000).toFixed(0)}s</p><div class="actions">${spBtns}${clipLink}</div>${hostState.spotifyMsg ? `<p class="notice">${esc(hostState.spotifyMsg)}</p>` : ''}<div class="answer-status">${answered} / ${teams.length} lag har svart</div>`;
 }
 function buildDraft(g, song, teams) {
   const { scoreAnswer } = hostState.quiz;
@@ -366,6 +388,41 @@ function bindHost(g, song, teams) {
     drawHost(g);
   });
   document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => handleHostAction(b.dataset.act, g, song, teams));
+  document.querySelectorAll('[data-sp]').forEach(b => b.onclick = () => handleSpotifyAction(b.dataset.sp, song));
+}
+
+async function handleSpotifyAction(action, song) {
+  const sp = hostState.spotify;
+  if (!sp) return;
+  hostState.spotifyMsg = '';
+  try {
+    if (action === 'save') {
+      const val = document.querySelector('#spClientId').value.trim();
+      if (!val) return;
+      sp.setClientId(val);
+      redrawHost();
+      return;
+    }
+    if (action === 'forget') { sp.setClientId(''); sp.disconnect(); redrawHost(); return; }
+    if (action === 'connect') { await sp.beginLogin(); return; } // full sideomdirigering, ingen redraw nødvendig
+    if (action === 'disconnect') { sp.disconnect(); redrawHost(); return; }
+    if (action === 'play') {
+      hostState.spotifyBusy = true; redrawHost();
+      await sp.playClip({ trackId: song.spotifyTrackId, startMs: song.startMs, durationMs: song.durationMs, fadeInMs: 1000 });
+      hostState.spotifyBusy = false; redrawHost();
+      return;
+    }
+    if (action === 'pause') {
+      hostState.spotifyBusy = true; redrawHost();
+      await sp.pause();
+      hostState.spotifyBusy = false; redrawHost();
+      return;
+    }
+  } catch (e) {
+    hostState.spotifyBusy = false;
+    hostState.spotifyMsg = e.message || 'Spotify-feil.';
+    redrawHost();
+  }
 }
 
 async function handleHostAction(act, g, song, teams) {
@@ -535,4 +592,9 @@ function render() {
   else renderHome();
 }
 window.addEventListener('hashchange', render);
-render();
+// Spotifys OAuth-redirect lander tilbake på siden uten hash (redirect_uri
+// har ingen #/host), men det er alltid host som logger inn — send dit.
+// Dette trigger et hashchange som selv kaller render(), så vi hopper over
+// det direkte kallet i denne ene grenen for å unngå å tegne siden to ganger.
+if (!location.hash && new URLSearchParams(location.search).has('code')) location.hash = '#/host';
+else render();
