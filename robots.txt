@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /eliquiz/
 
 Sitemap: https://lrnify.no/sitemap.xml
