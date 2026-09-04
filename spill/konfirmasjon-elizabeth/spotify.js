@@ -128,11 +128,29 @@ export function disconnect() {
 }
 
 // ── Web Playback SDK ────────────────────────────────────────────────────
+const TARGET_VOLUME = 0.85;
 let sdkLoadPromise = null;
 let player = null;
 let deviceId = null;
 let playerReadyResolve = null;
 let playerReadyPromise = null;
+let fadeGeneration = 0;
+
+// Glir volumet jevnt fra "from" til "to" over "ms". Avbrytes stille av neste
+// kall (playClip/pause) via fadeGeneration, så to overlappende faseinn ikke
+// kjemper mot hverandre.
+async function fadeVolume(from, to, ms) {
+  if (!player || ms <= 0) { if (player) { try { await player.setVolume(to); } catch (e) {} } return; }
+  const myGen = ++fadeGeneration;
+  const steps = 16;
+  try { await player.setVolume(from); } catch (e) { return; }
+  for (let i = 1; i <= steps; i++) {
+    await new Promise(r => setTimeout(r, ms / steps));
+    if (fadeGeneration !== myGen) return; // en nyere fade/pause har overtatt
+    const v = from + (to - from) * (i / steps);
+    try { await player.setVolume(v); } catch (e) { return; }
+  }
+}
 
 function loadSdkScript() {
   if (sdkLoadPromise) return sdkLoadPromise;
@@ -187,22 +205,28 @@ async function apiCall(path, opts = {}) {
 let stopTimer = null;
 
 // Spiller et klipp: bytter til vertens Web Playback-enhet, seeker til
-// startMs, spiller, og stopper automatisk etter durationMs.
-export async function playClip({ trackId, startMs = 0, durationMs = 25000 }) {
+// startMs, spiller, og stopper automatisk etter durationMs. fadeInMs (0 for
+// å skru av) glir volumet opp fra stillhet i stedet for å starte brått.
+export async function playClip({ trackId, startMs = 0, durationMs = 25000, fadeInMs = 1000 }) {
   if (!trackId) throw new Error('Denne sangen mangler en Spotify-lenke ennå.');
   clearTimeout(stopTimer);
+  fadeGeneration++; // avbryt en ev. pågående fade fra forrige klipp
   const id = await ensurePlayer();
+  if (fadeInMs > 0 && player) { try { await player.setVolume(0); } catch (e) {} }
   await apiCall('/me/player/play?device_id=' + id, {
     method: 'PUT',
     body: JSON.stringify({ uris: [`spotify:track:${trackId}`], position_ms: startMs })
   });
+  if (fadeInMs > 0) fadeVolume(0, TARGET_VOLUME, fadeInMs).catch(() => {});
   stopTimer = setTimeout(() => { pause().catch(() => {}); }, durationMs);
 }
 
 export async function pause() {
   clearTimeout(stopTimer);
+  fadeGeneration++; // avbryt en ev. pågående fade
   if (!deviceId) return;
   await apiCall('/me/player/pause?device_id=' + deviceId, { method: 'PUT' });
+  if (player) { try { await player.setVolume(TARGET_VOLUME); } catch (e) {} } // klar for neste avspilling
 }
 
 export function openManually(trackId) {
