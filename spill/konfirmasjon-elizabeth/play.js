@@ -233,6 +233,7 @@ function renderMusic(room, myTeam) {
   const status = room.roundStatus;
   const round = room.currentRound;
   if (status === 'answering') return renderAnswering(room, myTeam, round);
+  if (status === 'scoring') return setScreen(waitingHTML(`SANG ${round} / 16`, 'Svarene sjekkes — se storskjermen for fasit og ledertavle!'));
   if (status === 'reveal') return renderMusicReveal(room, myTeam, round);
   if (status === 'leaderboard') return renderLeaderboard(room, myTeam, 'Stillingen etter sang ' + round);
   return setScreen(waitingHTML(`SANG ${round} / 16`, 'Gjør dere klare — verten starter runden straks.'));
