@@ -57,6 +57,12 @@ button,input{font:inherit} button{cursor:pointer}
 .host-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
 .kbd{font-family:ui-monospace,monospace;background:#eee;border-radius:8px;padding:2px 6px}
 .spacer{height:12px}
+.countdown{margin-top:14px}
+.countdown-track{height:20px;border:2px solid var(--line);border-radius:999px;background:#fff;overflow:hidden}
+.countdown-fill{height:100%;width:0%;background:var(--yellow);transition:width .2s linear}
+.countdown-label{margin-top:6px;font-weight:950;font-size:1.4rem;text-align:center}
+.year-chip{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--line);border-radius:999px;padding:6px 12px;background:white;font-weight:900;font-size:.9rem}
+.year-chip-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
 .override-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;border-bottom:1px solid #ddd;padding:10px 0}
 .override-row .name{font-weight:900}
 .toggle{border:2px solid var(--line);border-radius:12px;padding:8px 12px;background:#fff;font-weight:900}

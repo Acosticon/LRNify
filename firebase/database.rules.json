@@ -515,6 +515,23 @@
           ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
           ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 16"
         },
+        "timelineStatus": {
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^(open|revealing)$/)"
+        },
+        "playback": {
+          ".write": "auth != null && root.child('eliquiz').child($kode).child('owner').val() === auth.uid",
+          ".validate": "!newData.exists() || (newData.hasChildren(['startedAt', 'durationMs']) && newData.child('durationMs').isNumber() && newData.child('durationMs').val() > 0 && newData.child('durationMs').val() <= 60000)",
+          "startedAt": {
+            ".validate": "newData.val() === now"
+          },
+          "durationMs": {
+            ".validate": "newData.isNumber() && newData.val() > 0 && newData.val() <= 60000"
+          },
+          "$other": {
+            ".validate": false
+          }
+        },
 
         "teams": {
           "$uid": {

@@ -68,6 +68,34 @@ function top(title = 'ELIQUIZ') { return `<div class="topbar"><div class="brand"
 function navigate(r) { location.hash = '#/' + r; }
 function connBadge(ok) { return `<div class="pill ${ok ? 'status-ok' : 'status-bad'}">${ok ? '● Tilkoblet' : '○ Kobler til…'}</div>`; }
 
+// ── Synkronisert nedtellingsklokke for avspillingsklipp ──────────────────
+// Host skriver playback{startedAt: server-tidsstempel, durationMs} til
+// databasen når klippet startes, og fjerner den ved pause. Både host- og
+// storskjerm-visningen kan da vise nøyaktig samme nedtelling ved å regne
+// ut differansen mot serverens starttidspunkt, i stedet for å stole på at
+// alle enheters klokker er synkroniserte.
+let livePlayback = null;
+let countdownTimerId = null;
+function updateLivePlayback(g) { livePlayback = g.playback || null; }
+function countdownBarHTML() { return `<div class="countdown"><div class="countdown-track"><div id="clipTimer" class="countdown-fill"></div></div><div id="clipTimerLabel" class="countdown-label"></div></div>`; }
+function startCountdownTicker() {
+  if (countdownTimerId) return;
+  countdownTimerId = setInterval(() => {
+    const fillEls = document.querySelectorAll('#clipTimer');
+    if (!fillEls.length) return;
+    const labelEls = document.querySelectorAll('#clipTimerLabel');
+    if (!livePlayback) {
+      fillEls.forEach(el => el.style.width = '0%');
+      labelEls.forEach(el => el.textContent = '');
+      return;
+    }
+    const remaining = Math.max(0, livePlayback.startedAt + livePlayback.durationMs - Date.now());
+    const pct = Math.max(0, Math.min(100, (remaining / livePlayback.durationMs) * 100));
+    fillEls.forEach(el => el.style.width = pct + '%');
+    labelEls.forEach(el => el.textContent = Math.ceil(remaining / 1000) + 's');
+  }, 200);
+}
+
 // ── Offentlig, avledet spillestand (ingen fasit her — kun det host har publisert) ──
 function musicScoreFor(g, teamUid) {
   let s = 0;
@@ -187,10 +215,11 @@ function drawPlay(g) {
       app.innerHTML = `<main class="shell">${top()}<section class="card reveal"><div class="small">SANG ${round + 1} / 16</div><div class="artist">${esc((result && result.artist) || '')}</div><div class="title">${esc((result && result.title) || '')}</div><div class="spacer"></div><div class="result-line"><b>Artist</b><b>${perTeam.artistCorrect ? '✅ +1' : '❌ 0'}</b></div><div class="result-line"><b>Sangtittel</b><b>${perTeam.titleCorrect ? '✅ +1' : '❌ 0'}</b></div><h2>+${perTeam.points} poeng</h2></section></main>`;
       return;
     }
+    // Uhøytidelig quiz: svaret er alltid redigerbart frem til fasit vises —
+    // host sier bare ifra muntlig når det er tid for å gå videre.
     const ans = (g.answers && g.answers[uid] && g.answers[uid][round]) || { artist: '', title: '' };
-    const editable = g.roundStatus === 'answering';
-    app.innerHTML = `<main class="shell">${top()}<section class="card"><div class="small">SANG ${round + 1} / 16</div><h1 class="round-title">Hva hører du?</h1><label class="label">Artist</label><input id="artist" class="input" ${editable ? '' : 'disabled'} value="${esc(ans.artist)}" autocomplete="off"><label class="label">Sangtittel</label><input id="title" class="input" ${editable ? '' : 'disabled'} value="${esc(ans.title)}" autocomplete="off"><div class="actions"><button class="btn primary" id="submit" ${editable ? '' : 'disabled'}>${ans.artist || ans.title ? 'Oppdater svar' : 'Send svar'}</button></div><p class="small">${editable ? 'Du kan endre svaret helt til host stenger runden.' : 'Venter på host…'}</p></section></main>`;
-    if (editable) document.querySelector('#submit').onclick = () => {
+    app.innerHTML = `<main class="shell">${top()}<section class="card"><div class="small">SANG ${round + 1} / 16</div><h1 class="round-title">Hva hører du?</h1><label class="label">Artist</label><input id="artist" class="input" value="${esc(ans.artist)}" autocomplete="off"><label class="label">Sangtittel</label><input id="title" class="input" value="${esc(ans.title)}" autocomplete="off"><div class="actions"><button class="btn primary" id="submit">${ans.artist || ans.title ? 'Oppdater svar' : 'Send svar'}</button></div><p class="small">Du kan endre svaret helt til fasiten vises.</p></section></main>`;
+    document.querySelector('#submit').onclick = () => {
       FB.update(R(`eliquiz/${playState.kode}/answers/${uid}/${round}`), { artist: document.querySelector('#artist').value, title: document.querySelector('#title').value, updatedAt: Date.now() });
     };
     return;
@@ -206,6 +235,11 @@ function drawPlay(g) {
 }
 
 function drawTimelinePlayer(g, t) {
+  if (g.timelineStatus === 'revealing') {
+    const idx = g.finaleRevealIndex || 0;
+    app.innerHTML = `<main class="shell">${top('FINALEN')}<section class="card hero"><div class="butterfly">🦋</div><h1>Se storskjermen!</h1><p>Verten avslører tidslinjen — ${idx} / 16 år vist.</p></section></main>`;
+    return;
+  }
   const YEARS = Array.from({ length: 16 }, (_, i) => 2011 + i);
   const placed = (g.finalAnswers && g.finalAnswers[uid]) || {};
   const cards = revealedSongCards(g);
@@ -246,7 +280,7 @@ function drawTiebreakerPlayer(g, t) {
 
 // ══════════════════════════════════ HOST ══════════════════════════════════
 
-let hostState = { kode: null, unsub: null, quiz: null, draft: null, spotify: null, spotifyBusy: false, spotifyMsg: '', lastGame: null };
+let hostState = { kode: null, unsub: null, quiz: null, draft: null, spotify: null, spotifyBusy: false, spotifyMsg: '', spotifyEditingClientId: false, lastGame: null };
 function redrawHost() { if (hostState.lastGame) drawHost(hostState.lastGame); }
 
 async function renderHost() {
@@ -300,6 +334,7 @@ function subscribeHost(kode) {
 
 function drawHost(g) {
   hostState.lastGame = g;
+  updateLivePlayback(g);
   const { songForRound } = hostState.quiz;
   const song = g.phase === 'music' ? songForRound(g.currentRound || 0) : null;
   const teams = Object.entries(g.teams || {}).map(([teamUid, t]) => ({ uid: teamUid, ...t }));
@@ -320,11 +355,11 @@ function spotifyPanelHTML() {
   const sp = hostState.spotify;
   const msg = hostState.spotifyMsg ? `<p class="notice">${esc(hostState.spotifyMsg)}</p>` : '';
   if (!sp) return `<div class="card"><h2>Spotify</h2><p class="small">Spotify-modulen kunne ikke lastes. Bruk "Åpne / spill manuelt" under hver sang i stedet.</p></div>`;
-  if (!sp.isConfigured()) {
-    return `<div class="card"><h2>Spotify (valgfritt)</h2><p class="small">Lim inn en gratis Client ID fra <span class="kbd">developer.spotify.com/dashboard</span> for å styre avspillingen herfra. Quizen fungerer helt fint uten — bruk "Åpne / spill manuelt" om du hopper over dette.</p><div class="grid two"><input id="spClientId" class="input" placeholder="Spotify Client ID"><button class="btn primary" data-sp="save">Lagre</button></div>${msg}</div>`;
+  if (!sp.isConfigured() || hostState.spotifyEditingClientId) {
+    return `<div class="card"><h2>Spotify${sp.isConfigured() ? '' : ' (valgfritt)'}</h2><p class="small">Lim inn en gratis Client ID fra <span class="kbd">developer.spotify.com/dashboard</span> for å styre avspillingen herfra. Quizen fungerer helt fint uten — bruk "Åpne / spill manuelt" om du hopper over dette.</p><div class="grid two"><input id="spClientId" class="input" placeholder="Spotify Client ID" value="${esc(sp.getClientId())}"><button class="btn primary" data-sp="save">Lagre</button></div>${msg}</div>`;
   }
   if (!sp.isConnected()) {
-    return `<div class="card"><h2>Spotify</h2><span class="pill status-bad">Ikke tilkoblet</span><div class="actions"><button class="btn primary" data-sp="connect">Koble til Spotify</button><button class="btn small" data-sp="forget">Bytt Client ID</button></div>${msg}</div>`;
+    return `<div class="card"><h2>Spotify</h2><span class="pill status-bad">Ikke tilkoblet</span><div class="actions"><button class="btn primary" data-sp="connect">Koble til Spotify</button><button class="btn small" data-sp="editId">Bytt Client ID</button></div>${msg}</div>`;
   }
   return `<div class="card"><h2>Spotify</h2><span class="pill status-ok">✓ Tilkoblet</span><div class="actions"><button class="btn small" data-sp="disconnect">Koble fra</button></div>${msg}</div>`;
 }
@@ -341,7 +376,7 @@ function hostMusicPanel(g, song, answered, teams) {
       return `<div class="override-row"><div><div class="name">${esc(t.name)}</div><div class="small">${esc(ans.artist) || '—'} / ${esc(ans.title) || '—'}</div></div><button class="toggle ${d.artistCorrect ? 'on' : 'off'}" data-ov="${t.uid}:artist">Artist ${d.artistCorrect ? '✓' : '✗'}</button><button class="toggle ${d.titleCorrect ? 'on' : 'off'}" data-ov="${t.uid}:title">Tittel ${d.titleCorrect ? '✓' : '✗'}</button></div>`;
     }).join('')}`;
   }
-  return `<p><b>${esc(song.artist)}</b> – ${esc(song.title)} <span class="small">(${song.year})</span></p><p class="small">Klipp: ${(song.startMs / 1000).toFixed(0)}s → ${((song.startMs + song.durationMs) / 1000).toFixed(0)}s</p><div class="actions">${spBtns}${clipLink}</div>${hostState.spotifyMsg ? `<p class="notice">${esc(hostState.spotifyMsg)}</p>` : ''}<div class="answer-status">${answered} / ${teams.length} lag har svart</div>`;
+  return `<p><b>${esc(song.artist)}</b> – ${esc(song.title)} <span class="small">(${song.year})</span></p><p class="small">Klipp: ${(song.startMs / 1000).toFixed(0)}s → ${((song.startMs + song.durationMs) / 1000).toFixed(0)}s</p><div class="actions">${spBtns}${clipLink}</div>${hostState.spotifyMsg ? `<p class="notice">${esc(hostState.spotifyMsg)}</p>` : ''}${g.playback ? countdownBarHTML() : ''}<div class="answer-status">${answered} / ${teams.length} lag har svart</div>`;
 }
 function buildDraft(g, song, teams) {
   const { scoreAnswer } = hostState.quiz;
@@ -353,6 +388,11 @@ function buildDraft(g, song, teams) {
   return draft;
 }
 function hostTimelinePanel(g, teams) {
+  if (g.timelineStatus === 'revealing') {
+    const idx = g.finaleRevealIndex || 0;
+    const last = idx > 0 ? (g.finaleReveal && g.finaleReveal[idx]) : null;
+    return `<p>Avslører tidslinjen på storskjermen: ${idx} / 16 år vist.</p>${last ? `<p class="small">Sist avslørt: ${last.year} — ${esc(last.artist)} – ${esc(last.title)}</p>` : ''}`;
+  }
   const done = teams.filter(t => g.finalSubmitted && g.finalSubmitted[t.uid]).length;
   return `<p>Del 2: lagene plasserer de 16 sangene på riktig årstall.</p><p class="answer-status">${done} / ${teams.length} lag har levert finalen</p>`;
 }
@@ -371,7 +411,13 @@ function hostActionButtons(g) {
     if (g.roundStatus === 'reveal') return `<button class="btn primary" data-act="leader">Vis leaderboard</button>`;
     if (g.roundStatus === 'leaderboard') return (g.currentRound || 0) < 15 ? `<button class="btn primary" data-act="next">Neste sang</button>` : `<button class="btn primary" data-act="timeline">Start finalen</button>`;
   }
-  if (g.phase === 'timeline') return `<button class="btn primary" data-act="closeFinal">Steng finalen</button>`;
+  if (g.phase === 'timeline') {
+    if (g.timelineStatus === 'revealing') {
+      const idx = g.finaleRevealIndex || 0;
+      return idx < 16 ? `<button class="btn primary" data-act="revealNextYear">Neste år (${idx}/16)</button>` : `<button class="btn primary" data-act="finishReveal">Vis sluttresultat</button>`;
+    }
+    return `<button class="btn primary" data-act="closeFinal">Steng finalen</button>`;
+  }
   if (g.phase === 'tiebreaker') {
     const anyAnswered = g.tiebreakerAnswers && Object.keys(g.tiebreakerAnswers).length > 0;
     return `<button class="btn primary" data-act="resolveTie">Avgjør automatisk</button>${anyAnswered ? '' : `<button class="btn" data-act="restartTie">Start på nytt</button>`}`;
@@ -400,20 +446,24 @@ async function handleSpotifyAction(action, song) {
       const val = document.querySelector('#spClientId').value.trim();
       if (!val) return;
       sp.setClientId(val);
+      sp.disconnect();
+      hostState.spotifyEditingClientId = false;
       redrawHost();
       return;
     }
-    if (action === 'forget') { sp.setClientId(''); sp.disconnect(); redrawHost(); return; }
+    if (action === 'editId') { hostState.spotifyEditingClientId = true; redrawHost(); return; }
     if (action === 'connect') { await sp.beginLogin(); return; } // full sideomdirigering, ingen redraw nødvendig
     if (action === 'disconnect') { sp.disconnect(); redrawHost(); return; }
     if (action === 'play') {
       hostState.spotifyBusy = true; redrawHost();
+      await FB.update(R(`eliquiz/${hostState.kode}`), { playback: { startedAt: FB.serverTimestamp(), durationMs: song.durationMs } });
       await sp.playClip({ trackId: song.spotifyTrackId, startMs: song.startMs, durationMs: song.durationMs, fadeInMs: 1000 });
       hostState.spotifyBusy = false; redrawHost();
       return;
     }
     if (action === 'pause') {
       hostState.spotifyBusy = true; redrawHost();
+      await FB.update(R(`eliquiz/${hostState.kode}`), { playback: null });
       await sp.pause();
       hostState.spotifyBusy = false; redrawHost();
       return;
@@ -436,7 +486,7 @@ async function handleHostAction(act, g, song, teams) {
   }
   if (act === 'start') { await FB.update(groot, { phase: 'music', currentRound: 0, roundStatus: 'ready' }); return; }
   if (act === 'open') { await FB.update(groot, { roundStatus: 'answering' }); return; }
-  if (act === 'close') { await FB.update(groot, { roundStatus: 'scoring' }); return; }
+  if (act === 'close') { await FB.update(groot, { roundStatus: 'scoring', playback: null }); return; }
   if (act === 'publish') {
     const draft = hostState.draft || buildDraft(g, song, teams);
     const perTeam = {};
@@ -450,9 +500,11 @@ async function handleHostAction(act, g, song, teams) {
     return;
   }
   if (act === 'leader') { await FB.update(groot, { roundStatus: 'leaderboard' }); return; }
-  if (act === 'next') { await FB.update(groot, { currentRound: (g.currentRound || 0) + 1, roundStatus: 'ready' }); return; }
-  if (act === 'timeline') { await FB.update(groot, { phase: 'timeline', finalOpen: true }); return; }
+  if (act === 'next') { await FB.update(groot, { currentRound: (g.currentRound || 0) + 1, roundStatus: 'ready', playback: null }); return; }
+  if (act === 'timeline') { await FB.update(groot, { phase: 'timeline', timelineStatus: 'open', finalOpen: true }); return; }
   if (act === 'closeFinal') { await closeFinal(g, teams); return; }
+  if (act === 'revealNextYear') { await revealNextYear(g); return; }
+  if (act === 'finishReveal') { await finishReveal(g, teams); return; }
   if (act === 'resolveTie') { await resolveTiebreaker(g, teams); return; }
   if (act === 'restartTie') {
     await FB.set(gref('tiebreakerAnswers'), null);
@@ -474,13 +526,31 @@ async function closeFinal(g, teams) {
     finalResults[t.uid] = { correct };
   }
   await FB.set(R(`eliquiz/${hostState.kode}/finalResults`), finalResults);
-  await FB.update(R(`eliquiz/${hostState.kode}`), { phase: 'finished', finalOpen: false });
+  // Ikke gå rett til sluttresultatet ennå — host avslører tidslinjen
+  // 2011->2026 år for år på storskjermen først (revealNextYear/finishReveal).
+  await FB.update(R(`eliquiz/${hostState.kode}`), { timelineStatus: 'revealing', finalOpen: false, finaleRevealIndex: 0 });
+}
+
+async function revealNextYear(g) {
+  const { songById_ } = hostState.quiz;
+  const index = g.finaleRevealIndex || 0;
+  if (index >= 16) return;
+  const songId = index + 1; // song-id 1..16 tilsvarer år 2011..2026
+  const s = songById_(songId);
+  await FB.update(R(`eliquiz/${hostState.kode}/finaleReveal/${songId}`), { year: s.year, artist: s.artist, title: s.title });
+  await FB.update(R(`eliquiz/${hostState.kode}`), { finaleRevealIndex: index + 1 });
+}
+
+async function finishReveal(g, teams) {
+  const finalResults = g.finalResults || {};
   const tie = getTieTeamsFresh(finalResults, teams, g);
   if (tie.length > 1) {
     const eligible = {}; for (const t of tie) eligible[t.uid] = true;
     await FB.update(R(`eliquiz/${hostState.kode}`), { phase: 'tiebreaker', tiebreakerActive: true, tiebreakerStartedAt: FB.serverTimestamp() });
     await FB.set(R(`eliquiz/${hostState.kode}/tiebreakerEligible`), eligible);
+    return;
   }
+  await FB.update(R(`eliquiz/${hostState.kode}`), { phase: 'finished' });
 }
 function getTieTeamsFresh(finalResults, teams, g) {
   const withTotals = teams.map(t => ({ uid: t.uid, name: t.name, total: musicScoreFor(g, t.uid) + ((finalResults[t.uid] && finalResults[t.uid].correct) || 0) }));
@@ -532,6 +602,7 @@ async function subscribeScreen(kode) {
   });
 }
 function drawScreen(g) {
+  updateLivePlayback(g);
   if (g.phase === 'lobby') {
     const teams = Object.values(g.teams || {});
     app.innerHTML = `<main class="shell">${top()}<section class="card hero"><div class="butterfly">🦋</div><h1>Musikkquiz</h1><p>Gå til <b>/play</b> og bruk kode</p><div class="round-title">${esc(screenState.kode)}</div><div class="team-grid">${teams.map(t => `<div class="team"><span style="font-size:1.7rem;filter:drop-shadow(0 0 8px ${t.color})">${t.icon}</span><b>${esc(t.name)}</b></div>`).join('')}</div></section></main>`;
@@ -544,10 +615,11 @@ function drawScreen(g) {
       return;
     }
     if (g.roundStatus === 'leaderboard') { renderLeaderboardScreen(g, false, `Etter sang ${(g.currentRound || 0) + 1}`); return; }
-    app.innerHTML = `<main class="shell">${top()}<section class="card hero"><div class="small">SANG ${(g.currentRound || 0) + 1} / 16</div><h1>Hva hører du?</h1><p>${g.roundStatus === 'answering' ? 'Svar på mobilen' : 'Gjør dere klare!'}</p></section></main>`;
+    app.innerHTML = `<main class="shell">${top()}<section class="card hero"><div class="small">SANG ${(g.currentRound || 0) + 1} / 16</div><h1>Hva hører du?</h1><p>Svar på mobilen</p>${g.playback ? countdownBarHTML() : ''}</section></main>`;
     return;
   }
   if (g.phase === 'timeline') {
+    if (g.timelineStatus === 'revealing') { renderTimelineRevealScreen(g); return; }
     app.innerHTML = `<main class="shell">${top('FINALEN')}<section class="card hero"><div class="butterfly">🦋</div><h1>2011 → 2026</h1><p>Plasser alle 16 sangene på riktig årstall.</p><h2>16 poeng står på spill!</h2></section></main>`;
     return;
   }
@@ -557,6 +629,18 @@ function drawScreen(g) {
     return;
   }
   if (g.phase === 'finished') { renderLeaderboardScreen(g, true, 'Sluttresultat'); return; }
+}
+
+function renderTimelineRevealScreen(g) {
+  const idx = g.finaleRevealIndex || 0;
+  const reveal = g.finaleReveal || {};
+  const last = idx > 0 ? reveal[idx] : null;
+  const chips = [];
+  for (let i = 1; i <= idx; i++) { const r = reveal[i]; if (r) chips.push(`<span class="year-chip">🦋 ${r.year}</span>`); }
+  const mid = last
+    ? `<div class="small">ÅR</div><div class="artist">${last.year}</div><div class="title">${esc(last.artist)} – ${esc(last.title)}</div>`
+    : `<h1>Tidslinjen avsløres…</h1><p>Vent på verten</p>`;
+  app.innerHTML = `<main class="shell">${top('FINALEN')}<section class="card reveal">${mid}</section><div class="year-chip-row">${chips.join('')}</div></main>`;
 }
 
 function renderLeaderboardScreen(g, final, title) {
@@ -598,3 +682,4 @@ window.addEventListener('hashchange', render);
 // det direkte kallet i denne ene grenen for å unngå å tegne siden to ganger.
 if (!location.hash && new URLSearchParams(location.search).has('code')) location.hash = '#/host';
 else render();
+startCountdownTicker();

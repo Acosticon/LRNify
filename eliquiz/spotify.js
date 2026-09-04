@@ -15,6 +15,11 @@ const SDK_SRC = 'https://sdk.scdn.co/spotify-player.js';
 const SCOPES = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state';
 
 const LS_CLIENT_ID = 'eliquiz_spotify_client_id';
+// Standard Client ID for Eliquiz sitt eget Spotify-utviklerapp — Client ID-er
+// er ikke hemmelige i Authorization Code + PKCE (ingen client secret i
+// frontend), så det er trygt å legge den inn direkte. Verten kan fortsatt
+// bytte til sin egen via "Bytt Client ID" i Spotify-panelet.
+const DEFAULT_CLIENT_ID = 'f5ec6d539ce04893899a6abbf43b6664';
 const LS_TOKENS = 'eliquiz_spotify_tokens';
 const LS_VERIFIER = 'eliquiz_spotify_verifier';
 
@@ -45,7 +50,7 @@ function saveTokens(tokens) {
 }
 function clearTokens() { localStorage.removeItem(LS_TOKENS); }
 
-export function getClientId() { return localStorage.getItem(LS_CLIENT_ID) || ''; }
+export function getClientId() { return localStorage.getItem(LS_CLIENT_ID) || DEFAULT_CLIENT_ID; }
 export function setClientId(id) { localStorage.setItem(LS_CLIENT_ID, id.trim()); }
 export function isConfigured() { return !!getClientId(); }
 export function isConnected() { return !!getTokens(); }
