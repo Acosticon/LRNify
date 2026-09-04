@@ -197,7 +197,7 @@ function renderNameIcon(room) {
           </div>
         </div>
         <div id="nameIconError" class="error-msg" style="display:none"></div>
-        <button id="confirmTeamBtn" class="btn btn-primary btn-block btn-lg">BLI MED LAGET</button>
+        <button id="confirmTeamBtn" class="btn btn-primary btn-block btn-lg">Bli med!</button>
       </div>
     </div>
   `);
@@ -208,20 +208,22 @@ function renderNameIcon(room) {
     els('iconGrid').querySelectorAll('.icon-opt').forEach(o => o.classList.toggle('selected', o === opt));
   });
   els('confirmTeamBtn').addEventListener('click', async () => {
-    const name = els('teamName').value.trim();
     const errEl = els('nameIconError');
-    if (!name) { errEl.textContent = 'Skriv inn et lagnavn.'; errEl.style.display = 'block'; return; }
-    if (name.length > 24) { errEl.textContent = 'Lagnavnet er for langt.'; errEl.style.display = 'block'; return; }
-    errEl.style.display = 'none';
-    els('confirmTeamBtn').disabled = true;
     try {
+      const name = els('teamName').value.trim();
+      if (!name) { errEl.textContent = 'Skriv inn et lagnavn.'; errEl.style.display = 'block'; return; }
+      if (name.length > 24) { errEl.textContent = 'Lagnavnet er for langt.'; errEl.style.display = 'block'; return; }
+      errEl.style.display = 'none';
+      els('confirmTeamBtn').disabled = true;
       await FB.set(dbRef(`${ROOM_PATH}/${roomCode}/teams/${myUid}`), {
         name, icon: state.selectedIcon, joinedAt: FB.serverTimestamp()
       });
     } catch (e) {
-      errEl.textContent = 'Klarte ikke å melde laget på. Prøv igjen.';
+      console.error('Klarte ikke å melde laget på:', e);
+      errEl.textContent = 'Klarte ikke å melde laget på: ' + (e.code || e.message || e);
       errEl.style.display = 'block';
-      els('confirmTeamBtn').disabled = false;
+      const btn = els('confirmTeamBtn');
+      if (btn) btn.disabled = false;
     }
   });
 }
