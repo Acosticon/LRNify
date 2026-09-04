@@ -280,7 +280,7 @@ function drawTiebreakerPlayer(g, t) {
 
 // ══════════════════════════════════ HOST ══════════════════════════════════
 
-let hostState = { kode: null, unsub: null, quiz: null, draft: null, spotify: null, spotifyBusy: false, spotifyMsg: '', spotifyEditingClientId: false, lastGame: null };
+let hostState = { kode: null, unsub: null, quiz: null, draft: null, spotify: null, spotifyBusy: false, spotifyMsg: '', spotifyEditingClientId: false, lastGame: null, actionError: '' };
 function redrawHost() { if (hostState.lastGame) drawHost(hostState.lastGame); }
 
 async function renderHost() {
@@ -306,17 +306,22 @@ async function renderHost() {
   renderHostLanding();
 }
 
-function renderHostLanding() {
-  app.innerHTML = `<main class="shell">${top('HOST')}<section class="card hero"><h1>Ny quiz</h1><p>Opprett en ny musikkquiz og få en spillkode lagene kan bli med på.</p><div class="actions"><button class="btn primary" id="create">Opprett quiz</button></div></section></main>`;
+function renderHostLanding(error = '') {
+  app.innerHTML = `<main class="shell">${top('HOST')}<section class="card hero"><h1>Ny quiz</h1><p>Opprett en ny musikkquiz og få en spillkode lagene kan bli med på.</p><div class="actions"><button class="btn primary" id="create">Opprett quiz</button></div>${error ? `<p class="notice">${esc(error)}</p>` : ''}</section></main>`;
   document.querySelector('#create').onclick = async () => {
+    document.querySelector('#create').disabled = true;
     const kode = romkode();
-    await FB.set(R('eliquiz/' + kode), {
-      owner: uid, createdAt: Date.now(), phase: 'lobby', currentRound: 0, roundStatus: 'ready',
-      finalOpen: false, tiebreakerActive: false, tiebreakerResolved: false, finaleRevealIndex: 0,
-    });
-    localStorage.setItem(LS.host, kode);
-    localStorage.setItem(LS.screen, kode);
-    subscribeHost(kode);
+    try {
+      await FB.set(R('eliquiz/' + kode), {
+        owner: uid, createdAt: Date.now(), phase: 'lobby', currentRound: 0, roundStatus: 'ready',
+        finalOpen: false, tiebreakerActive: false, tiebreakerResolved: false, finaleRevealIndex: 0,
+      });
+      localStorage.setItem(LS.host, kode);
+      localStorage.setItem(LS.screen, kode);
+      subscribeHost(kode);
+    } catch (e) {
+      renderHostLanding(e && e.message ? `Kunne ikke opprette quiz: ${e.message}` : 'Kunne ikke opprette quiz. Sjekk internett-tilkoblingen.');
+    }
   };
 }
 
@@ -347,7 +352,7 @@ function drawHost(g) {
   else if (g.phase === 'tiebreaker') mid = hostTiebreakerPanel(g, teams);
   else if (g.phase === 'finished') mid = `<p>Quizen er ferdig.</p>`;
 
-  app.innerHTML = `<main class="shell">${top('HOST')}${connBadge(true)}${spotifyPanelHTML()}<div class="spacer"></div><div class="host-grid"><section class="card"><div class="small">Fase: ${g.phase}${g.phase === 'music' ? ` · runde ${g.roundStatus}` : ''}</div><h1>${g.phase === 'music' ? `Sang ${(g.currentRound || 0) + 1} / 16` : g.phase === 'timeline' ? 'Tidslinjefinale' : g.phase === 'tiebreaker' ? 'Tiebreaker' : g.phase === 'finished' ? 'Ferdig' : 'Lobby'}</h1>${mid}<div class="actions">${hostActionButtons(g)}</div></section><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span style="font-size:1.5rem;filter:drop-shadow(0 0 8px ${t.color})">${t.icon}</span><div><b>${esc(t.name)}</b><div class="small">${musicScoreFor(g, t.uid)} musikk + ${timelineScoreFor(g, t.uid)} finale</div></div></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section></div></main>`;
+  app.innerHTML = `<main class="shell">${top('HOST')}${connBadge(true)}${hostState.actionError ? `<p class="notice">${esc(hostState.actionError)}</p>` : ''}${spotifyPanelHTML()}<div class="spacer"></div><div class="host-grid"><section class="card"><div class="small">Fase: ${g.phase}${g.phase === 'music' ? ` · runde ${g.roundStatus}` : ''}</div><h1>${g.phase === 'music' ? `Sang ${(g.currentRound || 0) + 1} / 16` : g.phase === 'timeline' ? 'Tidslinjefinale' : g.phase === 'tiebreaker' ? 'Tiebreaker' : g.phase === 'finished' ? 'Ferdig' : 'Lobby'}</h1>${mid}<div class="actions">${hostActionButtons(g)}</div></section><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span style="font-size:1.5rem;filter:drop-shadow(0 0 8px ${t.color})">${t.icon}</span><div><b>${esc(t.name)}</b><div class="small">${musicScoreFor(g, t.uid)} musikk + ${timelineScoreFor(g, t.uid)} finale</div></div></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section></div></main>`;
   bindHost(g, song, teams);
 }
 
@@ -484,32 +489,38 @@ async function handleHostAction(act, g, song, teams) {
     renderHostLanding();
     return;
   }
-  if (act === 'start') { await FB.update(groot, { phase: 'music', currentRound: 0, roundStatus: 'ready' }); return; }
-  if (act === 'open') { await FB.update(groot, { roundStatus: 'answering' }); return; }
-  if (act === 'close') { await FB.update(groot, { roundStatus: 'scoring', playback: null }); return; }
-  if (act === 'publish') {
-    const draft = hostState.draft || buildDraft(g, song, teams);
-    const perTeam = {};
-    for (const t of teams) {
-      const d = draft[t.uid] || { artistCorrect: false, titleCorrect: false };
-      perTeam[t.uid] = { artistCorrect: !!d.artistCorrect, titleCorrect: !!d.titleCorrect, points: (d.artistCorrect ? 1 : 0) + (d.titleCorrect ? 1 : 0) };
+  hostState.actionError = '';
+  try {
+    if (act === 'start') { await FB.update(groot, { phase: 'music', currentRound: 0, roundStatus: 'ready' }); return; }
+    if (act === 'open') { await FB.update(groot, { roundStatus: 'answering' }); return; }
+    if (act === 'close') { await FB.update(groot, { roundStatus: 'scoring', playback: null }); return; }
+    if (act === 'publish') {
+      const draft = hostState.draft || buildDraft(g, song, teams);
+      const perTeam = {};
+      for (const t of teams) {
+        const d = draft[t.uid] || { artistCorrect: false, titleCorrect: false };
+        perTeam[t.uid] = { artistCorrect: !!d.artistCorrect, titleCorrect: !!d.titleCorrect, points: (d.artistCorrect ? 1 : 0) + (d.titleCorrect ? 1 : 0) };
+      }
+      await FB.update(gref(`results/${g.currentRound}`), { songId: song.id, artist: song.artist, title: song.title, perTeam });
+      await FB.update(groot, { roundStatus: 'reveal' });
+      hostState.draft = null;
+      return;
     }
-    await FB.update(gref(`results/${g.currentRound}`), { songId: song.id, artist: song.artist, title: song.title, perTeam });
-    await FB.update(groot, { roundStatus: 'reveal' });
-    hostState.draft = null;
-    return;
-  }
-  if (act === 'leader') { await FB.update(groot, { roundStatus: 'leaderboard' }); return; }
-  if (act === 'next') { await FB.update(groot, { currentRound: (g.currentRound || 0) + 1, roundStatus: 'ready', playback: null }); return; }
-  if (act === 'timeline') { await FB.update(groot, { phase: 'timeline', timelineStatus: 'open', finalOpen: true }); return; }
-  if (act === 'closeFinal') { await closeFinal(g, teams); return; }
-  if (act === 'revealNextYear') { await revealNextYear(g); return; }
-  if (act === 'finishReveal') { await finishReveal(g, teams); return; }
-  if (act === 'resolveTie') { await resolveTiebreaker(g, teams); return; }
-  if (act === 'restartTie') {
-    await FB.set(gref('tiebreakerAnswers'), null);
-    await FB.update(groot, { tiebreakerStartedAt: FB.serverTimestamp() });
-    return;
+    if (act === 'leader') { await FB.update(groot, { roundStatus: 'leaderboard' }); return; }
+    if (act === 'next') { await FB.update(groot, { currentRound: (g.currentRound || 0) + 1, roundStatus: 'ready', playback: null }); return; }
+    if (act === 'timeline') { await FB.update(groot, { phase: 'timeline', timelineStatus: 'open', finalOpen: true }); return; }
+    if (act === 'closeFinal') { await closeFinal(g, teams); return; }
+    if (act === 'revealNextYear') { await revealNextYear(g); return; }
+    if (act === 'finishReveal') { await finishReveal(g, teams); return; }
+    if (act === 'resolveTie') { await resolveTiebreaker(g, teams); return; }
+    if (act === 'restartTie') {
+      await FB.set(gref('tiebreakerAnswers'), null);
+      await FB.update(groot, { tiebreakerStartedAt: FB.serverTimestamp() });
+      return;
+    }
+  } catch (e) {
+    hostState.actionError = e && e.message ? e.message : 'Noe gikk galt mot databasen.';
+    redrawHost();
   }
 }
 
