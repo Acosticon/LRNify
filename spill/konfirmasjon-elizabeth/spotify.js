@@ -16,6 +16,10 @@ const SDK_SRC = 'https://sdk.scdn.co/spotify-player.js';
 const SCOPES = 'streaming user-read-email user-read-private user-modify-playback-state user-read-playback-state';
 
 const LS_CLIENT_ID = 'konfquiz_spotify_client_id';
+// Ferdig registrert Spotify-app for denne quizen (Client ID er ikke
+// hemmelig — trygt å ha i frontend). En egen enhet kan fortsatt overstyre
+// via setClientId() om nødvendig (f.eks. med et Client ID for sin egen app).
+const DEFAULT_CLIENT_ID = '52b89e7a018a4b62bcafd8cdd36badd2';
 const LS_TOKENS = 'konfquiz_spotify_tokens';
 const LS_VERIFIER = 'konfquiz_spotify_verifier';
 
@@ -46,7 +50,7 @@ function saveTokens(tokens) {
 }
 function clearTokens() { localStorage.removeItem(LS_TOKENS); }
 
-export function getClientId() { return localStorage.getItem(LS_CLIENT_ID) || ''; }
+export function getClientId() { return localStorage.getItem(LS_CLIENT_ID) || DEFAULT_CLIENT_ID; }
 export function setClientId(id) { localStorage.setItem(LS_CLIENT_ID, id.trim()); }
 export function isConfigured() { return !!getClientId(); }
 export function isConnected() { return !!getTokens(); }
