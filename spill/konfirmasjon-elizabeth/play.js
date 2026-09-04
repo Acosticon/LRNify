@@ -29,6 +29,12 @@ function setScreen(html) { screenEl().innerHTML = html; }
     setScreen(errorScreenHTML('Fikk ikke kontakt med serveren. Sjekk internett og prøv igjen.'));
     return;
   }
+  const codeFromUrl = new URLSearchParams(location.search).get('code');
+  if (codeFromUrl) {
+    window.history.replaceState({}, '', location.pathname); // rydd ?code= fra adresselinja (f.eks. etter QR-skann)
+    await tryJoin(codeFromUrl);
+    return;
+  }
   const saved = localStorage.getItem('konfquiz_room');
   if (saved) {
     roomCode = saved;

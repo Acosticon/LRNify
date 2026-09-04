@@ -3,7 +3,7 @@ import {
   generateRoomCode, butterflySvg, mountAmbientButterflies, els,
   answerMatches, computeMusicPoints, animateLeaderboard, leaderboardRows
 } from './shared.js';
-import { SONGS, TIEBREAKER_SONG } from './songs-data.js';
+import { SONGS, ROUND_ORDER, songForRound, TIEBREAKER_SONG } from './songs-data.js';
 import * as SP from './spotify.js';
 
 let FB, myUid, roomCode = null, unwatch = null;
@@ -26,6 +26,7 @@ function saveSongOverride(id, patch) {
   localStorage.setItem(LS_SONG_OVERRIDES, JSON.stringify(all));
 }
 function mergedSong(id) { return Object.assign({}, SONGS[id - 1], songOverrides()[id]); }
+function mergedSongForRound(round) { return mergedSong(ROUND_ORDER[round - 1]); }
 function mergedTiebreakerSong() { return Object.assign({ id: 'tb' }, TIEBREAKER_SONG, songOverrides()['tb']); }
 
 // ── Boot ─────────────────────────────────────────────────────────────────
@@ -197,7 +198,13 @@ function topBarHTML(room) {
 }
 
 // ── Lobby ────────────────────────────────────────────────────────────────
+function joinUrl() {
+  return `${location.origin}${location.pathname.replace('host.html', 'play.html')}?code=${roomCode}`;
+}
+
 function renderLobby(room) {
+  const url = joinUrl();
+  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=8&data=${encodeURIComponent(url)}`;
   setScreen(`
     <div class="stack">
       ${topBarHTML(room)}
@@ -205,6 +212,10 @@ function renderLobby(room) {
         <p class="eyebrow">Spillkode — del med lagene</p>
         <p class="big-number">${roomCode}</p>
         <p class="hint">Gå til <b>${location.origin}${location.pathname.replace('host.html', 'play.html')}</b></p>
+        <div style="background:#fff;border-radius:16px;padding:12px;display:inline-block;line-height:0">
+          <img src="${qrSrc}" width="220" height="220" alt="QR-kode til å bli med i quizen" onerror="this.style.display='none'">
+        </div>
+        <p class="hint">Skann for å bli med direkte</p>
       </div>
       <div class="card stack">
         <div class="row-between"><p class="eyebrow" style="margin:0">Lag klare</p><span class="status-pill"><span id="teamCount">0</span> lag</span></div>
@@ -228,7 +239,7 @@ function renderLobby(room) {
 // ── Musikkrunder ─────────────────────────────────────────────────────────
 function renderMusic(room) {
   const round = Number(room.currentRound);
-  const song = mergedSong(round);
+  const song = mergedSongForRound(round);
   if (room.roundStatus !== 'scoring') { scoringDraft = null; scoringDraftRound = null; }
 
   setScreen(`

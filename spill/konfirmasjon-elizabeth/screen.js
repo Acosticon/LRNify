@@ -2,7 +2,7 @@ import {
   loadFirebase, dbRef, ensureAuth, ROOM_PATH, TOTAL_ROUNDS,
   butterflySvg, mountAmbientButterflies, els, animateLeaderboard, leaderboardRows
 } from './shared.js';
-import { SONGS, TIEBREAKER_SONG } from './songs-data.js';
+import { SONGS, songForRound, TIEBREAKER_SONG } from './songs-data.js';
 
 const LS_HOST_ROOM = 'konfquiz_host_room';   // samme nøkkel som host.js — gjenbrukes hvis åpnet i samme nettleser
 const LS_SCREEN_ROOM = 'konfquiz_screen_room';
@@ -133,7 +133,7 @@ function renderMusic(room) {
   `);
 }
 function renderReveal(round) {
-  const song = SONGS[round - 1];
+  const song = songForRound(round);
   setScreen(`
     <div class="center stack" style="padding-top:10vh">
       <p class="eyebrow">SANG ${round} — FASIT</p>

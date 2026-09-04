@@ -5,9 +5,11 @@
 // host.html (som retter svar) og screen.html (som viser fasiten etter at
 // verten har åpnet den). Spillernes mobiler ser aldri dette innholdet.
 //
-// Rekkefølgen under er både rundenummer i musikkquizen (1–16) og
-// sang-id i tidslinjefinalen — sang nr. 5 er alltid "runde 5" og alltid
-// tidslinjekortet for 2015.
+// Rekkefølgen sangene står i her under (SONGS) er bare sang-id-en som
+// brukes i tidslinjefinalen — id 5 er alltid tidslinjekortet for 2015,
+// uansett hvilken runde den spilles i musikkquizen. Rundenummeret i
+// musikkquizen (1–16) er en EGEN, stokket rekkefølge — se ROUND_ORDER og
+// songForRound() nederst i fila. Ikke bland disse to sammen.
 //
 // spotifyTrackId/startMs/durationMs settes av verten i host.html (lagres
 // lokalt på vertens maskin, se KONF_SPOTIFY_OVERRIDES i localStorage) —
@@ -130,6 +132,18 @@ export const SONGS = [
     spotifyTrackId: '', startMs: 0, durationMs: 25000
   }
 ];
+
+// Rekkefølgen sangene spilles i under selve musikkquizen (runde 1–16).
+// Med vilje IKKE kronologisk — det ville vært forutsigbart og kjedelig.
+// Dette er sang-id-er (se SONGS over), ikke årstall. Tidslinjefinalen
+// bruker fortsatt de ekte årstallene (2011–2026), uavhengig av denne
+// rekkefølgen.
+export const ROUND_ORDER = [9, 3, 14, 6, 1, 11, 5, 16, 8, 2, 13, 7, 10, 4, 15, 12];
+
+// Sangen som spilles i musikkquiz-runde N (1–16).
+export function songForRound(round) {
+  return SONGS[ROUND_ORDER[round - 1] - 1];
+}
 
 export const TIEBREAKER_SONG = {
   artist: 'ABBA', title: 'The Winner Takes It All', year: 1980,
