@@ -325,7 +325,7 @@ function drawTimelinePlayer(g, t) {
 
 // ══════════════════════════════════ HOST ══════════════════════════════════
 
-let hostState = { kode: null, unsub: null, quiz: null, spotify: null, spotifyBusy: false, spotifyMsg: '', spotifyEditingClientId: false, lastGame: null };
+let hostState = { kode: null, unsub: null, quiz: null, spotify: null, spotifyBusy: false, spotifyMsg: '', spotifyEditingClientId: false, lastGame: null, actionError: '' };
 function redrawHost() { if (hostState.lastGame) drawHost(hostState.lastGame); }
 
 async function renderHost() {
@@ -351,16 +351,21 @@ async function renderHost() {
   renderHostLanding();
 }
 
-function renderHostLanding() {
-  app.innerHTML = `<main class="shell">${top('HOST')}<section class="card hero"><h1>Nytt spill</h1><p>Opprett en ny musikkquiz og få en spillkode/QR-kode lagene kan bli med på.</p><div class="actions"><button class="btn primary" id="create">Opprett spill</button></div></section></main>`;
+function renderHostLanding(error = '') {
+  app.innerHTML = `<main class="shell">${top('HOST')}<section class="card hero"><h1>Nytt spill</h1><p>Opprett en ny musikkquiz og få en spillkode/QR-kode lagene kan bli med på.</p><div class="actions"><button class="btn primary" id="create">Opprett spill</button></div>${error ? `<p class="notice">${esc(error)}</p>` : ''}</section></main>`;
   document.querySelector('#create').onclick = async () => {
+    document.querySelector('#create').disabled = true;
     const kode = romkode();
-    await FB.set(R('eliquiz/' + kode), {
-      owner: uid, createdAt: Date.now(), phase: 'lobby', currentRound: 0, roundStatus: 'ready', podiumStep: 0,
-    });
-    localStorage.setItem(LS.host, kode);
-    localStorage.setItem(LS.screen, kode);
-    subscribeHost(kode);
+    try {
+      await FB.set(R('eliquiz/' + kode), {
+        owner: uid, createdAt: Date.now(), phase: 'lobby', currentRound: 0, roundStatus: 'ready', podiumStep: 0,
+      });
+      localStorage.setItem(LS.host, kode);
+      localStorage.setItem(LS.screen, kode);
+      subscribeHost(kode);
+    } catch (e) {
+      renderHostLanding(e && e.message ? `Kunne ikke opprette spill: ${e.message}` : 'Kunne ikke opprette spill. Sjekk internett-tilkoblingen.');
+    }
   };
 }
 
@@ -390,7 +395,7 @@ function drawHost(g) {
   else if (g.phase === 'timeline') mid = hostTimelinePanel(g, teams);
   else if (g.phase === 'finished') mid = `<p>Quizen er ferdig. Bruk knappen for å avsløre pallen på storskjermen, steg for steg.</p>`;
 
-  app.innerHTML = `<main class="shell">${top('HOST')}${connBadge(true)}${spotifyPanelHTML()}<div class="spacer"></div><div class="host-grid"><section class="card"><div class="small">Fase: ${g.phase}${g.phase === 'music' ? ` · runde ${g.roundStatus}` : ''}</div><h1>${g.phase === 'music' ? `Sang ${(g.currentRound || 0) + 1} / 16` : g.phase === 'timeline' ? 'Ekstraoppgave' : g.phase === 'finished' ? 'Sluttresultat' : 'Lobby'}</h1>${mid}<div class="actions">${hostActionButtons(g)}</div></section><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span class="leader-icon">${iconSvg(t.icon, 32)}</span><div><b>${esc(t.name)}</b><div class="small">${musicScoreFor(g, t.uid)} musikk + ${timelineScoreFor(g, t.uid)} ekstra</div></div></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section></div></main>`;
+  app.innerHTML = `<main class="shell">${top('HOST')}${connBadge(true)}${hostState.actionError ? `<p class="notice">${esc(hostState.actionError)}</p>` : ''}${spotifyPanelHTML()}<div class="spacer"></div><div class="host-grid"><section class="card"><div class="small">Fase: ${g.phase}${g.phase === 'music' ? ` · runde ${g.roundStatus}` : ''}</div><h1>${g.phase === 'music' ? `Sang ${(g.currentRound || 0) + 1} / 16` : g.phase === 'timeline' ? 'Ekstraoppgave' : g.phase === 'finished' ? 'Sluttresultat' : 'Lobby'}</h1>${mid}<div class="actions">${hostActionButtons(g)}</div></section><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span class="leader-icon">${iconSvg(t.icon, 32)}</span><div><b>${esc(t.name)}</b><div class="small">${musicScoreFor(g, t.uid)} musikk + ${timelineScoreFor(g, t.uid)} ekstra</div></div></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section></div></main>`;
   bindHost(g, song, teams);
   if (g.phase === 'lobby') renderQrInto('qrboxHost', hostState.kode);
 }
@@ -497,33 +502,39 @@ async function handleHostAction(act, g, song, teams) {
     renderHostLanding();
     return;
   }
-  if (act === 'start') { await FB.update(groot, { phase: 'music', currentRound: 0, roundStatus: 'ready' }); return; }
-  if (act === 'startRound') {
-    await FB.update(groot, { roundStatus: 'answering' });
-    if (hostState.spotify && hostState.spotify.isConnected() && song.spotifyTrackId) {
-      try {
-        await FB.update(groot, { playback: { startedAt: FB.serverTimestamp(), durationMs: song.durationMs } });
-        await hostState.spotify.playClip({ trackId: song.spotifyTrackId, startMs: song.startMs, durationMs: song.durationMs, fadeInMs: 1000 });
-      } catch (e) { hostState.spotifyMsg = e.message || 'Spotify-feil.'; redrawHost(); }
+  hostState.actionError = '';
+  try {
+    if (act === 'start') { await FB.update(groot, { phase: 'music', currentRound: 0, roundStatus: 'ready' }); return; }
+    if (act === 'startRound') {
+      await FB.update(groot, { roundStatus: 'answering' });
+      if (hostState.spotify && hostState.spotify.isConnected() && song.spotifyTrackId) {
+        try {
+          await FB.update(groot, { playback: { startedAt: FB.serverTimestamp(), durationMs: song.durationMs } });
+          await hostState.spotify.playClip({ trackId: song.spotifyTrackId, startMs: song.startMs, durationMs: song.durationMs, fadeInMs: 1000 });
+        } catch (e) { hostState.spotifyMsg = e.message || 'Spotify-feil.'; redrawHost(); }
+      }
+      return;
     }
-    return;
-  }
-  if (act === 'check') {
-    const { scoreAnswer } = hostState.quiz;
-    const perTeam = {};
-    for (const t of teams) {
-      const ans = (g.answers && g.answers[t.uid] && g.answers[t.uid][g.currentRound]) || {};
-      const d = scoreAnswer(song, ans);
-      perTeam[t.uid] = { artistCorrect: !!d.artistCorrect, titleCorrect: !!d.titleCorrect, points: (d.artistCorrect ? 1 : 0) + (d.titleCorrect ? 1 : 0) };
+    if (act === 'check') {
+      const { scoreAnswer } = hostState.quiz;
+      const perTeam = {};
+      for (const t of teams) {
+        const ans = (g.answers && g.answers[t.uid] && g.answers[t.uid][g.currentRound]) || {};
+        const d = scoreAnswer(song, ans);
+        perTeam[t.uid] = { artistCorrect: !!d.artistCorrect, titleCorrect: !!d.titleCorrect, points: (d.artistCorrect ? 1 : 0) + (d.titleCorrect ? 1 : 0) };
+      }
+      await FB.update(gref(`results/${g.currentRound}`), { songId: song.id, artist: song.artist, title: song.title, perTeam });
+      await FB.update(groot, { roundStatus: 'revealed', playback: null });
+      return;
     }
-    await FB.update(gref(`results/${g.currentRound}`), { songId: song.id, artist: song.artist, title: song.title, perTeam });
-    await FB.update(groot, { roundStatus: 'revealed', playback: null });
-    return;
+    if (act === 'next') { await FB.update(groot, { currentRound: (g.currentRound || 0) + 1, roundStatus: 'ready', playback: null }); return; }
+    if (act === 'startTimeline') { await FB.update(groot, { phase: 'timeline', finaleDeadline: Date.now() + 5 * 60 * 1000 }); return; }
+    if (act === 'endGame') { await endGame(g, teams); return; }
+    if (act === 'podiumNext') { await FB.update(groot, { podiumStep: Math.min(4, (g.podiumStep || 0) + 1) }); return; }
+  } catch (e) {
+    hostState.actionError = e && e.message ? e.message : 'Noe gikk galt mot databasen.';
+    redrawHost();
   }
-  if (act === 'next') { await FB.update(groot, { currentRound: (g.currentRound || 0) + 1, roundStatus: 'ready', playback: null }); return; }
-  if (act === 'startTimeline') { await FB.update(groot, { phase: 'timeline', finaleDeadline: Date.now() + 5 * 60 * 1000 }); return; }
-  if (act === 'endGame') { await endGame(g, teams); return; }
-  if (act === 'podiumNext') { await FB.update(groot, { podiumStep: Math.min(4, (g.podiumStep || 0) + 1) }); return; }
 }
 
 async function endGame(g, teams) {

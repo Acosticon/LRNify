@@ -138,9 +138,14 @@ export function leaderboardRows(room) {
   })).sort((a, b) => b.total - a.total);
 }
 
+const RANK_BADGES = { 1: 'assets/badge-first.png', 2: 'assets/badge-second.png', 3: 'assets/badge-third.png' };
+
 export function leaderboardRowInnerHTML(rank, row, isMe) {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  return `<span class="lb-rank">${rank}</span>
+  const rankHTML = RANK_BADGES[rank]
+    ? `<img src="${RANK_BADGES[rank]}" class="lb-badge" alt="Plass ${rank}" width="34" height="34">`
+    : `<span class="lb-rank">${rank}</span>`;
+  return `${rankHTML}
     <span class="lb-icon">${butterflySvg(row.icon, isMe ? 32 : 32)}</span>
     <span class="lb-name">${esc(row.name)}</span>
     <span class="lb-score">${row.total}</span>`;
