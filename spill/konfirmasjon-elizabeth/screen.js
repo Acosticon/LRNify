@@ -31,6 +31,7 @@ function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;
 (async function init() {
   document.body.classList.add('screen-mode');
   mountAmbientButterflies(els('bgButterflies'), 10);
+  els('exitBtn').addEventListener('click', onExitClick);
   setScreen(loadingHTML('Kobler til…'));
   try {
     FB = await loadFirebase();
@@ -86,7 +87,18 @@ function renderNow(key, room) {
   setScreen(loadingHTML('Vent litt…'));
 }
 
-function forgetRoom() { localStorage.removeItem(LS_HOST_ROOM); roomCode = null; state.room = null; if (unwatch) unwatch(); render(true); }
+function forgetRoom() {
+  localStorage.removeItem(LS_HOST_ROOM); roomCode = null; state.room = null; if (unwatch) unwatch();
+  const exitBtn = els('exitBtn'); if (exitBtn) exitBtn.style.display = 'none';
+  render(true);
+}
+
+async function onExitClick() {
+  if (!roomCode) return;
+  if (!confirm('Avslutte denne quizen og starte en ny sesjon? Alt som er spilt så langt blir borte, og lagene mister tilgangen.')) return;
+  try { await FB.remove(dbRef(`${ROOM_PATH}/${roomCode}`)); } catch (e) { console.error('Klarte ikke å slette rommet:', e); }
+  forgetRoom();
+}
 
 function renderSetup() {
   setScreen(`
@@ -157,6 +169,7 @@ async function resumeRoom(code) {
 function patchLiveBits() {
   const room = state.room;
   if (!room) return;
+  const exitBtn = els('exitBtn'); if (exitBtn) exitBtn.style.display = 'flex';
   const teamCount = Object.keys(room.teams || {}).length;
   const teamCountEl = els('teamCount');
   if (teamCountEl) teamCountEl.textContent = String(teamCount);
@@ -200,17 +213,11 @@ function renderLobby(room) {
         <div id="lobbyGrid" class="icon-grid" style="grid-template-columns:repeat(auto-fill,minmax(90px,1fr))"></div>
       </div>
       <button id="startBtn" class="btn btn-primary btn-block btn-lg">START QUIZ</button>
-      <button id="resetBtn" class="btn btn-ghost btn-sm">Slett dette rommet</button>
     </div>
   `);
   renderLobbyGrid(room);
   els('startBtn').addEventListener('click', async () => {
     await FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), { phase: 'music', roundStatus: 'ready', currentRound: '1' });
-  });
-  els('resetBtn').addEventListener('click', async () => {
-    if (!confirm('Slette hele rommet? Dette kan ikke angres.')) return;
-    await FB.remove(dbRef(`${ROOM_PATH}/${roomCode}`));
-    forgetRoom();
   });
 }
 function renderLobbyGrid(room) {
