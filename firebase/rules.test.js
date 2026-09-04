@@ -660,5 +660,65 @@ check('objekt i navnefeltet', false, db(tomTavle, null).write(LT + '/-Nt2', { na
 check('ugyldig tavlenøkkel', false, db(tomTavle, null).write('/ledertavle/kartografen/Norge Fylker/-Nt2', tid));
 check('ugyldig spillnøkkel', false, db(tomTavle, null).write('/ledertavle/Kartografen!/norge_fylker_tid/-Nt2', tid));
 
+console.log('--- konfquiz: vert oppretter og styrer quizen');
+const VERT = { uid: 'vert-1', provider: 'anonymous' };
+const LAG1 = { uid: 'lag-1', provider: 'anonymous' };
+const LAG2 = { uid: 'lag-2', provider: 'anonymous' };
+
+const baseKonfquiz = { owner: VERT.uid, createdAt: now, phase: 'lobby', currentRound: '1', roundStatus: 'ready', timelineStatus: 'intro', tiebreakerActive: false };
+const nyttKonfquizRom = { konfquiz: { ELIZ: baseKonfquiz } };
+const konfquizMedLag = teams => Object.assign({}, baseKonfquiz, { teams });
+const lagene = { [LAG1.uid]: { name: 'Team Disco', icon: 'b1', joinedAt: now }, [LAG2.uid]: { name: 'Bord 7', icon: 'b2', joinedAt: now } };
+
+check('vert oppretter quiz', true, db({}, VERT).write('/konfquiz/ELIZ', baseKonfquiz));
+check('uinnlogget kan ikke opprette quiz', false, db({}, null).write('/konfquiz/ELIZ', baseKonfquiz));
+check('alle kan lese quizen', true, db(nyttKonfquizRom, null).read('/konfquiz/ELIZ'));
+check('vert setter fase til music', true, db(nyttKonfquizRom, VERT).write('/konfquiz/ELIZ/phase', 'music'));
+check('lag kan ikke sette fase', false, db(nyttKonfquizRom, LAG1).write('/konfquiz/ELIZ/phase', 'music'));
+check('ugyldig fase avvises', false, db(nyttKonfquizRom, VERT).write('/konfquiz/ELIZ/phase', 'fest'));
+
+console.log('--- konfquiz: lag registrerer seg i lobbyen');
+check('lag oppretter eget lag', true, db(nyttKonfquizRom, LAG1).write('/konfquiz/ELIZ/teams/' + LAG1.uid, { name: 'Team Disco', icon: 'b1', joinedAt: now }));
+check('lag kan ikke opprette et annet lags rad', false, db(nyttKonfquizRom, LAG1).write('/konfquiz/ELIZ/teams/' + LAG2.uid, { name: 'Jukselag', icon: 'b1', joinedAt: now }));
+check('for langt lagnavn avvises', false, db(nyttKonfquizRom, LAG1).write('/konfquiz/ELIZ/teams/' + LAG1.uid, { name: 'x'.repeat(30), icon: 'b1', joinedAt: now }));
+check('smugler inn et ekstra felt på laget', false, db(nyttKonfquizRom, LAG1).write('/konfquiz/ELIZ/teams/' + LAG1.uid, { name: 'Team Disco', icon: 'b1', joinedAt: now, hemmelig: 'juks' }));
+
+console.log('--- konfquiz: svarrunde');
+const romApen = { konfquiz: { ELIZ: Object.assign(konfquizMedLag(lagene), { roundStatus: 'answering' }) } };
+check('lag sender svar i åpen runde', true, db(romApen, LAG1).update('/konfquiz/ELIZ/answers/1/' + LAG1.uid, { artist: 'Adele', title: 'Someone Like You', ts: now }));
+check('lag sender svar i feil runde', false, db(romApen, LAG1).update('/konfquiz/ELIZ/answers/2/' + LAG1.uid, { artist: 'Adele', title: 'Someone Like You', ts: now }));
+check('lag kan ikke sende svar for et annet lag', false, db(romApen, LAG1).update('/konfquiz/ELIZ/answers/1/' + LAG2.uid, { artist: 'Adele', title: 'Someone Like You', ts: now }));
+
+const romStengt = { konfquiz: { ELIZ: Object.assign(konfquizMedLag(lagene), { roundStatus: 'scoring' }) } };
+check('lag kan ikke sende svar når runden er stengt', false, db(romStengt, LAG1).update('/konfquiz/ELIZ/answers/1/' + LAG1.uid, { artist: 'Adele', title: 'Someone Like You', ts: now }));
+
+console.log('--- konfquiz: retting og poeng (bare vert)');
+const romMedSvar = { konfquiz: { ELIZ: Object.assign(konfquizMedLag(lagene), { roundStatus: 'scoring', answers: { 1: { [LAG1.uid]: { artist: 'Adele', title: 'Someone Like You', ts: now } } } }) } };
+check('vert retter svaret', true, db(romMedSvar, VERT).update('/konfquiz/ELIZ/answers/1/' + LAG1.uid, { artistCorrect: true, titleCorrect: true, points: 2, scoredAt: now }));
+check('lag kan ikke rette sitt eget svar', false, db(romMedSvar, LAG1).write('/konfquiz/ELIZ/answers/1/' + LAG1.uid + '/points', 2));
+check('vert setter poengsum for laget', true, db(romMedSvar, VERT).write('/konfquiz/ELIZ/scores/' + LAG1.uid, { music: 2, timeline: 0, total: 2 }));
+check('lag kan ikke sette egen poengsum', false, db(romMedSvar, LAG1).write('/konfquiz/ELIZ/scores/' + LAG1.uid, { music: 32, timeline: 16, total: 48 }));
+
+console.log('--- konfquiz: tidslinjefinalen');
+const romFinale = { konfquiz: { ELIZ: Object.assign(konfquizMedLag(lagene), { phase: 'timeline', timelineStatus: 'open' }) } };
+check('vert publiserer sangkort til finalen', true, db(romFinale, VERT).write('/konfquiz/ELIZ/timelineCards/1', { title: 'Someone Like You', artist: 'Adele' }));
+check('lag kan ikke publisere sangkort', false, db(romFinale, LAG1).write('/konfquiz/ELIZ/timelineCards/1', { title: 'Someone Like You', artist: 'Adele' }));
+check('lag plasserer et kort', true, db(romFinale, LAG1).write('/konfquiz/ELIZ/timeline/' + LAG1.uid + '/placements/3', '2013'));
+check('lag plasserer med ugyldig årstall', false, db(romFinale, LAG1).write('/konfquiz/ELIZ/timeline/' + LAG1.uid + '/placements/3', '1999'));
+check('lag leverer finalen', true, db(romFinale, LAG1).write('/konfquiz/ELIZ/timeline/' + LAG1.uid + '/submitted', true));
+
+const romFinaleStengt = { konfquiz: { ELIZ: Object.assign(konfquizMedLag(lagene), { phase: 'timeline', timelineStatus: 'closed' }) } };
+check('lag kan ikke endre plassering etter at finalen er stengt', false, db(romFinaleStengt, LAG1).write('/konfquiz/ELIZ/timeline/' + LAG1.uid + '/placements/3', '2013'));
+
+console.log('--- konfquiz: tiebreaker');
+const romTiebreak = { konfquiz: { ELIZ: Object.assign(konfquizMedLag(lagene), { phase: 'tiebreaker', tiebreakerActive: true, tiebreakerTeams: { [LAG1.uid]: true } }) } };
+check('lag i tiebreaker kan sende svar', true, db(romTiebreak, LAG1).write('/konfquiz/ELIZ/tiebreaker/' + LAG1.uid, { artist: 'ABBA', title: 'The Winner Takes It All', year: '1980', ts: now }));
+check('lag utenfor tiebreaker kan ikke sende svar', false, db(romTiebreak, LAG2).write('/konfquiz/ELIZ/tiebreaker/' + LAG2.uid, { artist: 'ABBA', title: 'The Winner Takes It All', year: '1980', ts: now }));
+
+console.log('--- konfquiz: overtakelse av gammelt rom');
+const gammelKonfquiz = { konfquiz: { ELIZ: Object.assign({}, baseKonfquiz, { createdAt: now - 13 * 60 * 60 * 1000 }) } };
+check('gammelt rom (over 12 t) kan overtas av ny vert', true, db(gammelKonfquiz, LAG2).write('/konfquiz/ELIZ', Object.assign({}, baseKonfquiz, { owner: LAG2.uid, createdAt: now })));
+check('ferskt rom kan ikke overtas', false, db(nyttKonfquizRom, LAG2).write('/konfquiz/ELIZ', Object.assign({}, baseKonfquiz, { owner: LAG2.uid })));
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

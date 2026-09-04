@@ -660,6 +660,205 @@
       }
     },
 
+    "konfquiz": {
+      "$room": {
+        ".read": true,
+        ".write": "$room.matches(/^[A-Z0-9]{4,8}$/) && auth != null && (!data.exists() || data.child('owner').val() === auth.uid || data.child('createdAt').val() < now - 43200000)",
+        ".validate": "newData.hasChildren(['owner', 'createdAt', 'phase'])",
+
+        "owner": {
+          ".validate": "newData.isString() && auth != null && newData.val() === auth.uid"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+        },
+        "title": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length <= 80"
+        },
+        "phase": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^(lobby|music|timeline|tiebreaker|finished)$/)"
+        },
+        "currentRound": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^([1-9]|1[0-6])$/)"
+        },
+        "roundStatus": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^(ready|answering|scoring|reveal|leaderboard)$/)"
+        },
+        "timelineStatus": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^(intro|open|closed|revealing|results)$/)"
+        },
+        "timelineRevealIndex": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().matches(/^([0-9]|1[0-6])$/)"
+        },
+        "tiebreakerActive": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          ".validate": "newData.isBoolean()"
+        },
+        "tiebreakerWinner": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length <= 64"
+        },
+        "tiebreakerTeams": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          "$uid": {
+            ".validate": "newData.isBoolean()"
+          }
+        },
+
+        "teams": {
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid",
+            ".validate": "newData.hasChildren(['name', 'icon', 'joinedAt'])",
+
+            "name": {
+              ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 24"
+            },
+            "icon": {
+              ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9-]{1,24}$/)"
+            },
+            "joinedAt": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "answers": {
+          "$round": {
+            "$uid": {
+              "artist": {
+                ".write": "auth != null && $uid === auth.uid && root.child('konfquiz').child($room).child('roundStatus').val() === 'answering' && root.child('konfquiz').child($room).child('currentRound').val() === $round",
+                ".validate": "newData.isString() && newData.val().length <= 120"
+              },
+              "title": {
+                ".write": "auth != null && $uid === auth.uid && root.child('konfquiz').child($room).child('roundStatus').val() === 'answering' && root.child('konfquiz').child($room).child('currentRound').val() === $round",
+                ".validate": "newData.isString() && newData.val().length <= 120"
+              },
+              "ts": {
+                ".write": "auth != null && $uid === auth.uid && root.child('konfquiz').child($room).child('roundStatus').val() === 'answering' && root.child('konfquiz').child($room).child('currentRound').val() === $round",
+                ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+              },
+              "artistCorrect": {
+                ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+                ".validate": "newData.isBoolean()"
+              },
+              "titleCorrect": {
+                ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+                ".validate": "newData.isBoolean()"
+              },
+              "points": {
+                ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 2"
+              },
+              "scoredAt": {
+                ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+                ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          }
+        },
+
+        "scores": {
+          "$uid": {
+            ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+            "music": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 32"
+            },
+            "timeline": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 16"
+            },
+            "total": {
+              ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 48"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "timelineCards": {
+          ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+          "$songId": {
+            ".validate": "$songId.matches(/^([1-9]|1[0-6])$/) && newData.hasChildren(['title', 'artist'])",
+            "title": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "artist": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            }
+          }
+        },
+
+        "timeline": {
+          "$uid": {
+            "placements": {
+              "$songId": {
+                ".write": "auth != null && $uid === auth.uid && root.child('konfquiz').child($room).child('phase').val() === 'timeline' && root.child('konfquiz').child($room).child('timelineStatus').val() === 'open'",
+                ".validate": "$songId.matches(/^([1-9]|1[0-6])$/) && newData.isString() && newData.val().matches(/^20(1[1-9]|2[0-6])$/)"
+              }
+            },
+            "submitted": {
+              ".write": "auth != null && $uid === auth.uid && root.child('konfquiz').child($room).child('phase').val() === 'timeline' && root.child('konfquiz').child($room).child('timelineStatus').val() === 'open'",
+              ".validate": "newData.isBoolean()"
+            },
+            "submittedAt": {
+              ".write": "auth != null && $uid === auth.uid && root.child('konfquiz').child($room).child('phase').val() === 'timeline' && root.child('konfquiz').child($room).child('timelineStatus').val() === 'open'",
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "timelineResult": {
+          "$uid": {
+            ".write": "auth != null && root.child('konfquiz').child($room).child('owner').val() === auth.uid",
+            "$songId": {
+              ".validate": "$songId.matches(/^([1-9]|1[0-6])$/) && newData.isBoolean()"
+            }
+          }
+        },
+
+        "tiebreaker": {
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid && root.child('konfquiz').child($room).child('tiebreakerActive').val() === true && root.child('konfquiz').child($room).child('tiebreakerTeams').child($uid).val() === true",
+            ".validate": "newData.hasChildren(['artist', 'title', 'year', 'ts'])",
+            "artist": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "title": {
+              ".validate": "newData.isString() && newData.val().length <= 120"
+            },
+            "year": {
+              ".validate": "newData.isString() && newData.val().matches(/^[0-9]{4}$/)"
+            },
+            "ts": {
+              ".validate": "newData.isNumber() && newData.val() <= now + 300000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        },
+
+        "$other": {
+          ".validate": false
+        }
+      }
+    },
+
     "users": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
