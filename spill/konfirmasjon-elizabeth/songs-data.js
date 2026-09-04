@@ -112,10 +112,10 @@ export const SONGS = [
   },
   {
     id: 14, year: 2024,
-    artist: 'Sabrina Carpenter', title: 'Please Please Please',
-    acceptedArtists: ['sabrina carpenter'],
-    acceptedTitles: ['please please please'],
-    spotifyTrackId: '5N3hjp1WNayUPZrA8kJmJP', startMs: 0, durationMs: 30000
+    artist: 'DJ MøMø ft. Kjartan Lauritzen', title: 'Badebussen',
+    acceptedArtists: ['dj momo', 'dj mømø', 'kjartan lauritzen'],
+    acceptedTitles: ['badebussen'],
+    spotifyTrackId: '5F8c71PbayLIedqmjskrhM', startMs: 0, durationMs: 30000
   },
   {
     id: 15, year: 2025,
