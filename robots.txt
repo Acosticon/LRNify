@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /musikkquiz/
 
 Sitemap: https://lrnify.no/sitemap.xml
