@@ -1,0 +1,139 @@
+// HEMMELIG fasit for Elizabeths konfirmasjonsquiz.
+//
+// VIKTIG: denne filen skal ALDRI importeres av play.html — den inneholder
+// riktige svar og godkjente alternativer, og lastes derfor bare av
+// host.html (som retter svar) og screen.html (som viser fasiten etter at
+// verten har åpnet den). Spillernes mobiler ser aldri dette innholdet.
+//
+// Rekkefølgen under er både rundenummer i musikkquizen (1–16) og
+// sang-id i tidslinjefinalen — sang nr. 5 er alltid "runde 5" og alltid
+// tidslinjekortet for 2015.
+//
+// spotifyTrackId/startMs/durationMs settes av verten i host.html (lagres
+// lokalt på vertens maskin, se KONF_SPOTIFY_OVERRIDES i localStorage) —
+// feltene her er bare defaultverdier.
+
+export const SONGS = [
+  {
+    id: 1, year: 2011,
+    artist: 'Adele', title: 'Someone Like You',
+    acceptedArtists: ['adele'],
+    acceptedTitles: ['someone like you'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 2, year: 2012,
+    artist: 'Justin Bieber ft. Nicki Minaj', title: 'Beauty and a Beat',
+    acceptedArtists: ['justin bieber', 'justin bieber ft nicki minaj', 'justin bieber feat nicki minaj', 'nicki minaj'],
+    acceptedTitles: ['beauty and a beat', 'beauty and the beat'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 3, year: 2013,
+    artist: 'Idina Menzel (Frozen)', title: 'Let It Go',
+    acceptedArtists: ['idina menzel', 'frozen', 'frost'],
+    acceptedTitles: ['let it go', 'la det ga'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 4, year: 2014,
+    artist: 'Mark Ronson ft. Bruno Mars', title: 'Uptown Funk',
+    acceptedArtists: ['mark ronson', 'mark ronson ft bruno mars', 'bruno mars'],
+    acceptedTitles: ['uptown funk'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 5, year: 2015,
+    artist: 'Marcus & Martinus ft. Katastrofe', title: 'Elektrisk',
+    acceptedArtists: ['marcus and martinus', 'marcus martinus', 'marcus and martinus ft katastrofe', 'katastrofe'],
+    acceptedTitles: ['elektrisk'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 6, year: 2016,
+    artist: "Auli'i Cravalho (Moana)", title: "How Far I'll Go",
+    acceptedArtists: ['aulii cravalho', 'moana', 'vaiana'],
+    acceptedTitles: ['how far ill go', "how far i'll go"],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 7, year: 2017,
+    artist: 'The Greatest Showman Cast', title: 'A Million Dreams',
+    acceptedArtists: ['the greatest showman', 'greatest showman cast', 'ziv zaifman', 'hugh jackman'],
+    acceptedTitles: ['a million dreams'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 8, year: 2018,
+    artist: 'Lady Gaga & Bradley Cooper', title: 'Shallow',
+    acceptedArtists: ['lady gaga', 'lady gaga and bradley cooper', 'bradley cooper'],
+    acceptedTitles: ['shallow'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 9, year: 2019,
+    artist: 'Tones and I', title: 'Dance Monkey',
+    acceptedArtists: ['tones and i', 'tones & i'],
+    acceptedTitles: ['dance monkey'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 10, year: 2020,
+    artist: 'The Weeknd', title: 'Blinding Lights',
+    acceptedArtists: ['the weeknd', 'weeknd'],
+    acceptedTitles: ['blinding lights'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 11, year: 2021,
+    artist: 'Encanto Cast', title: "We Don't Talk About Bruno",
+    acceptedArtists: ['encanto', 'encanto cast', 'lin manuel miranda', 'cast of encanto'],
+    acceptedTitles: ["we dont talk about bruno", "we don't talk about bruno"],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 12, year: 2022,
+    artist: 'Harry Styles', title: 'As It Was',
+    acceptedArtists: ['harry styles'],
+    acceptedTitles: ['as it was'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 13, year: 2023,
+    artist: 'UNDERGRUNN', title: 'Italia',
+    acceptedArtists: ['undergrunn'],
+    acceptedTitles: ['italia'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 14, year: 2024,
+    artist: 'Sabrina Carpenter', title: 'Please Please Please',
+    acceptedArtists: ['sabrina carpenter'],
+    acceptedTitles: ['please please please'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    id: 15, year: 2025,
+    artist: 'Tobias Sten', title: 'Eli',
+    acceptedArtists: ['tobias sten'],
+    acceptedTitles: ['eli'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  },
+  {
+    // Oppgitt som "Kygo / Lyng — Kygo Jo (feat. Lyng) – Kygo Remix" i
+    // spesifikasjonen. Dobbeltsjekk artist/tittel/Spotify-lenke før bruk —
+    // dette er den eneste sangen i lista uten et opplagt entydig opphav.
+    id: 16, year: 2026,
+    artist: 'Kygo / Lyng', title: 'Kygo Jo (feat. Lyng) – Kygo Remix',
+    acceptedArtists: ['kygo', 'lyng', 'kygo and lyng'],
+    acceptedTitles: ['kygo jo', 'kygo jo feat lyng', 'kygo jo kygo remix'],
+    spotifyTrackId: '', startMs: 0, durationMs: 25000
+  }
+];
+
+export const TIEBREAKER_SONG = {
+  artist: 'ABBA', title: 'The Winner Takes It All', year: 1980,
+  acceptedArtists: ['abba'],
+  acceptedTitles: ['the winner takes it all'],
+  spotifyTrackId: '', startMs: 0, durationMs: 30000
+};
