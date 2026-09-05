@@ -81,7 +81,7 @@ export async function handleRedirectCallback() {
   const verifier = localStorage.getItem(LS_VERIFIER);
   url.searchParams.delete('code');
   url.searchParams.delete('state');
-  window.history.replaceState({}, '', url.pathname + url.search + '#/host');
+  window.history.replaceState({}, '', url.pathname + url.search);
   if (!verifier) return false;
   try {
     const body = new URLSearchParams({
