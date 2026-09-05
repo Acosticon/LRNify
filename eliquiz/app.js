@@ -395,7 +395,7 @@ function drawHost(g) {
   else if (g.phase === 'timeline') mid = hostTimelinePanel(g, teams);
   else if (g.phase === 'finished') mid = `<p>Quizen er ferdig. Bruk knappen for å avsløre pallen på storskjermen, steg for steg.</p>`;
 
-  app.innerHTML = `<main class="shell">${top('HOST')}${connBadge(true)}${hostState.actionError ? `<p class="notice">${esc(hostState.actionError)}</p>` : ''}${spotifyPanelHTML()}<div class="spacer"></div><div class="host-grid"><section class="card"><div class="small">Fase: ${g.phase}${g.phase === 'music' ? ` · runde ${g.roundStatus}` : ''}</div><h1>${g.phase === 'music' ? `Sang ${(g.currentRound || 0) + 1} / 16` : g.phase === 'timeline' ? 'Ekstraoppgave' : g.phase === 'finished' ? 'Sluttresultat' : 'Lobby'}</h1>${mid}<div class="actions">${hostActionButtons(g)}</div></section><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span class="leader-icon">${iconSvg(t.icon, 32)}</span><div><b>${esc(t.name)}</b><div class="small">${musicScoreFor(g, t.uid)} musikk + ${timelineScoreFor(g, t.uid)} ekstra</div></div></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section></div></main>`;
+  app.innerHTML = `<main class="shell">${top('HOST')}${connBadge(true)}<button class="btn danger small" id="abortGame">✕ Avbryt quiz</button>${hostState.actionError ? `<p class="notice">${esc(hostState.actionError)}</p>` : ''}${g.phase === 'lobby' ? spotifyPanelHTML() : ''}<div class="spacer"></div><div class="host-grid"><section class="card"><div class="small">Fase: ${g.phase}${g.phase === 'music' ? ` · runde ${g.roundStatus}` : ''}</div><h1>${g.phase === 'music' ? `Sang ${(g.currentRound || 0) + 1} / 16` : g.phase === 'timeline' ? 'Ekstraoppgave' : g.phase === 'finished' ? 'Sluttresultat' : 'Lobby'}</h1>${mid}<div class="actions">${hostActionButtons(g)}</div></section><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span class="leader-icon">${iconSvg(t.icon, 32)}</span><div><b>${esc(t.name)}</b><div class="small">${musicScoreFor(g, t.uid)} musikk + ${timelineScoreFor(g, t.uid)} ekstra</div></div></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section></div></main>`;
   bindHost(g, song, teams);
   if (g.phase === 'lobby') renderQrInto('qrboxHost', hostState.kode);
 }
@@ -417,16 +417,17 @@ function hostMusicPanel(g, song, answered, teams) {
   const clipLink = song.spotifyTrackId ? `<a class="btn" target="_blank" rel="noopener" href="https://open.spotify.com/track/${song.spotifyTrackId}">↗ Åpne / spill manuelt</a>` : '';
   const spReady = hostState.spotify && hostState.spotify.isConnected() && song.spotifyTrackId;
   const spBtns = spReady ? `<button class="btn" data-sp="play" ${hostState.spotifyBusy ? 'disabled' : ''}>▶ Spill på nytt</button><button class="btn" data-sp="pause" ${hostState.spotifyBusy ? 'disabled' : ''}>⏸ Pause</button>` : '';
-  const answerLine = `<p><b>${esc(song.artist)}</b> – ${esc(song.title)} <span class="small">(${song.year})</span></p>`;
   if (g.roundStatus === 'revealed') {
+    const answerLine = `<p><b>${esc(song.artist)}</b> – ${esc(song.title)} <span class="small">(${song.year})</span></p>`;
     const r = g.results && g.results[g.currentRound];
     return `${answerLine}<h2>Fasit vist</h2><p class="small">${r ? teams.map(t => { const p = (r.perTeam && r.perTeam[t.uid]) || { points: 0 }; return `${esc(t.name)}: ${p.points}p`; }).join(' · ') : ''}</p>`;
   }
+  const hiddenNotice = `<p class="small">🔒 Fasit er skjult til du trykker «Sjekk svar».</p>`;
   if (g.roundStatus === 'answering') {
-    return `${answerLine}<div class="actions">${spBtns}${clipLink}</div>${g.playback ? countdownBarHTML() : ''}<div class="answer-status">${answered} / ${teams.length} lag har svart</div>`;
+    return `${hiddenNotice}<div class="actions">${spBtns}${clipLink}</div>${g.playback ? countdownBarHTML() : ''}<div class="answer-status">${answered} / ${teams.length} lag har svart</div>`;
   }
   // ready
-  return `${answerLine}${song.spotifyTrackId ? `<p class="small">Klipp: ${(song.startMs / 1000).toFixed(0)}s → ${((song.startMs + song.durationMs) / 1000).toFixed(0)}s</p>` : '<p class="small">Denne sangen mangler ennå en Spotify-lenke (plassholder).</p>'}${!spReady && song.spotifyTrackId ? '<p class="small">Koble til Spotify over for automatisk avspilling når du trykker «Start sang».</p>' : ''}`;
+  return `${hiddenNotice}${song.spotifyTrackId ? `<p class="small">Klipp: ${(song.startMs / 1000).toFixed(0)}s → ${((song.startMs + song.durationMs) / 1000).toFixed(0)}s</p>` : '<p class="small">Denne sangen mangler ennå en Spotify-lenke (plassholder).</p>'}${!spReady && song.spotifyTrackId ? '<p class="small">Koble til Spotify over for automatisk avspilling når du trykker «Start sang».</p>' : ''}`;
 }
 function hostTimelinePanel(g, teams) {
   const done = teams.filter(t => g.finalSubmitted && g.finalSubmitted[t.uid]).length;
@@ -453,6 +454,8 @@ function hostActionButtons(g) {
 function bindHost(g, song, teams) {
   document.querySelectorAll('[data-act]').forEach(b => b.onclick = () => handleHostAction(b.dataset.act, g, song, teams));
   document.querySelectorAll('[data-sp]').forEach(b => b.onclick = () => handleSpotifyAction(b.dataset.sp, song));
+  const abortBtn = document.querySelector('#abortGame');
+  if (abortBtn) abortBtn.onclick = () => handleHostAction('abort', g, null, teams);
 }
 
 async function handleSpotifyAction(action, song) {
@@ -498,6 +501,13 @@ async function handleHostAction(act, g, song, teams) {
   const groot = R(`eliquiz/${kode}`);
   const gref = p => R(`eliquiz/${kode}/${p}`);
   if (act === 'reset') {
+    localStorage.removeItem(LS.host);
+    renderHostLanding();
+    return;
+  }
+  if (act === 'abort') {
+    if (!confirm('Avbryte quizen og starte en ny? Alt som er spilt så langt blir borte, og lagene mister tilgangen.')) return;
+    try { await FB.remove(groot); } catch (e) { /* rommet slettes uansett lokalt, selv om fjernsletting feiler */ }
     localStorage.removeItem(LS.host);
     renderHostLanding();
     return;
