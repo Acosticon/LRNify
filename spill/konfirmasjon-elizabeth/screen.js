@@ -247,45 +247,57 @@ function renderMusic(room) {
       </div>
       <div class="card stack">
         ${fasitVisible ? `<p class="reveal-artist">${esc(song.artist)}</p><p class="reveal-title" style="font-size:1.6rem">${esc(song.title)}</p><hr class="sep">` : ''}
-        ${spotifyPanelHTML(song)}
+        ${spotifyConnectHTML()}
       </div>
       <div class="card stack" id="roundBody"></div>
     </div>
   `);
-  wireSpotifyPanel(song);
+  wireSpotifyConnect();
   renderRoundBody(room, round, song);
 }
+
+// Spiller sangen og åpner for svar i samme trykk.
+async function playAndOpen(song) {
+  setMusicStatus('Spiller…');
+  try { await SP.playClip({ trackId: song.spotifyTrackId, startMs: song.startMs, durationMs: song.durationMs }); setMusicStatus(''); }
+  catch (e) { setMusicStatus('Spotify-feil (fortsetter uten musikk): ' + e.message); }
+  await FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), { roundStatus: 'answering' });
+}
+async function replaySong(song) {
+  setMusicStatus('Spiller igjen…');
+  try { await SP.playClip({ trackId: song.spotifyTrackId, startMs: song.startMs, durationMs: song.durationMs }); setMusicStatus(''); }
+  catch (e) { setMusicStatus('Spotify-feil: ' + e.message); }
+}
+// Stopper sangen og tar oss til rette+ledertavle-skjermen i samme trykk.
+async function checkAnswers(round) {
+  try { await SP.pause(); } catch (e) { /* ikke kritisk — fortsett uansett */ }
+  await FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), { roundStatus: 'scoring' });
+}
+function setMusicStatus(msg) { const el = els('musicStatus'); if (el) el.textContent = msg; }
 
 function renderRoundBody(room, round, song) {
   const body = els('roundBody');
   if (room.roundStatus === 'ready') {
-    body.innerHTML = `<p class="hint center">Spill klippet, så åpner du for svar.</p><button id="openBtn" class="btn btn-primary btn-block btn-lg">ÅPNE FOR SVAR</button>`;
-    els('openBtn').addEventListener('click', () => FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), { roundStatus: 'answering' }));
+    body.innerHTML = `<button id="playBtn" class="btn btn-primary btn-block btn-lg">▶ SPILL SANG</button><p class="hint center" id="musicStatus"></p>`;
+    els('playBtn').addEventListener('click', () => playAndOpen(song));
   } else if (room.roundStatus === 'answering') {
-    body.innerHTML = `<p class="hint center">Lagene svarer nå.</p><button id="closeBtn" class="btn btn-primary btn-block btn-lg">STENG SVAR</button>`;
-    els('closeBtn').addEventListener('click', () => { FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), { roundStatus: 'scoring' }); });
-  } else if (room.roundStatus === 'scoring') {
-    renderScoring(room, round, song, body);
-  } else if (room.roundStatus === 'reveal') {
-    body.innerHTML = `<button id="lbBtn" class="btn btn-primary btn-block btn-lg">VIS LEDERTAVLE</button>`;
-    els('lbBtn').addEventListener('click', () => FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), { roundStatus: 'leaderboard' }));
-  } else if (room.roundStatus === 'leaderboard') {
-    const rows = leaderboardRows(room);
-    const isLast = round >= TOTAL_ROUNDS;
     body.innerHTML = `
-      <div class="leaderboard" id="lbScreen"></div>
-      <div class="btn-row">
-        <button id="editBtn" class="btn btn-ghost btn-sm">Rediger rettingen for denne sangen</button>
+      <p class="hint center">Lagene svarer nå.</p>
+      <div class="btn-row" style="justify-content:center;margin-bottom:10px">
+        <button id="replayBtn" class="btn btn-secondary btn-sm">↻ SPILL IGJEN</button>
       </div>
-      <button id="nextBtn" class="btn btn-primary btn-block btn-lg">${isLast ? 'GÅ TIL FINALEN' : 'NESTE SANG'}</button>
+      <button id="checkBtn" class="btn btn-primary btn-block btn-lg">SJEKK SVAR</button>
+      <p class="hint center" id="musicStatus"></p>
     `;
-    animateLeaderboard(els('lbScreen'), rows, null);
-    els('editBtn').addEventListener('click', () => FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), { roundStatus: 'scoring' }));
-    els('nextBtn').addEventListener('click', () => (isLast ? goToFinale() : nextRound(round)));
+    els('replayBtn').addEventListener('click', () => replaySong(song));
+    els('checkBtn').addEventListener('click', () => checkAnswers(round));
+  } else if (room.roundStatus === 'scoring') {
+    renderScoringAndLeaderboard(room, round, song, body);
   }
 }
 
-function renderScoring(room, round, song, body) {
+// ── Sjekk svar + ledertavle i ett, oppdateres live mens man retter ──────
+function renderScoringAndLeaderboard(room, round, song, body) {
   const teams = room.teams || {};
   const answers = (room.answers && room.answers[round]) || {};
   if (scoringDraft === null || scoringDraftRound !== round) {
@@ -303,6 +315,13 @@ function renderScoring(room, round, song, body) {
     });
     scoringDraftRound = round;
   }
+  renderScoringBody(room, round, body);
+}
+
+function renderScoringBody(room, round, body) {
+  const teams = room.teams || {};
+  const answers = (room.answers && room.answers[round]) || {};
+  const isLast = round >= TOTAL_ROUNDS;
   const rows = Object.keys(teams).map(uid => {
     const a = answers[uid];
     const d = scoringDraft[uid];
@@ -316,19 +335,48 @@ function renderScoring(room, round, song, body) {
       </div>
     </div>`;
   }).join('');
-  body.innerHTML = `<p class="eyebrow center">Rett svarene — trykk for å overstyre</p>${rows}
-    <button id="publishBtn" class="btn btn-primary btn-block btn-lg">PUBLISER FASIT OG POENG</button>`;
+  body.innerHTML = `
+    <div class="split">
+      <div>
+        <p class="eyebrow center">Sjekk svarene — trykk for å overstyre</p>
+        ${rows}
+      </div>
+      <div>
+        <p class="eyebrow center">Ledertavle</p>
+        <div class="leaderboard" id="lbScreen"></div>
+      </div>
+    </div>
+    <button id="nextBtn" class="btn btn-primary btn-block btn-lg">${isLast ? 'GÅ TIL FINALEN' : 'NESTE SANG'}</button>
+  `;
+  animateLeaderboard(els('lbScreen'), provisionalLeaderboardRows(room, round), null);
   body.querySelectorAll('button[data-field]').forEach(btn => {
     btn.addEventListener('click', () => {
       const uid = btn.dataset.uid, field = btn.dataset.field;
       scoringDraft[uid][field] = !scoringDraft[uid][field];
-      renderScoring(room, round, song, body);
+      renderScoringBody(room, round, body);
     });
   });
-  els('publishBtn').addEventListener('click', () => publishRoundScores(room, round));
+  els('nextBtn').addEventListener('click', () => (isLast ? publishAndGoToFinale(room, round) : publishAndNextRound(room, round)));
 }
 
-async function publishRoundScores(room, round) {
+// Ledertavle inkl. denne rundens poeng-utkast, FØR de er publisert til Firebase.
+function provisionalLeaderboardRows(room, round) {
+  const teams = room.teams || {};
+  const scores = room.scores || {};
+  return Object.keys(teams).map(uid => {
+    const d = scoringDraft[uid] || { artistCorrect: false, titleCorrect: false };
+    const draftPoints = (d.artistCorrect ? 1 : 0) + (d.titleCorrect ? 1 : 0);
+    let music = draftPoints;
+    for (let r = 1; r <= TOTAL_ROUNDS; r++) {
+      if (r === round) continue; // denne runden brukes fortsatt som utkast
+      music += (room.answers && room.answers[r] && room.answers[r][uid] && room.answers[r][uid].points) || 0;
+    }
+    const timeline = (scores[uid] && scores[uid].timeline) || 0;
+    return { uid, name: teams[uid].name, icon: teams[uid].icon, total: music + timeline };
+  }).sort((a, b) => b.total - a.total);
+}
+
+function buildScoreUpdates(room, round) {
   const updates = {};
   const teams = room.teams || {};
   const justPoints = {};
@@ -352,22 +400,53 @@ async function publishRoundScores(room, round) {
     updates[`scores/${uid}/timeline`] = timeline;
     updates[`scores/${uid}/total`] = music + timeline;
   });
-  updates.roundStatus = 'reveal';
+  return updates;
+}
+
+async function publishAndNextRound(room, round) {
+  const updates = buildScoreUpdates(room, round);
+  updates.currentRound = String(round + 1);
+  updates.roundStatus = 'ready';
   await FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), updates);
 }
 
-async function nextRound(round) {
-  await FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), { currentRound: String(round + 1), roundStatus: 'ready' });
-}
-
-async function goToFinale() {
-  const updates = { phase: 'timeline', timelineStatus: 'intro', timelineRevealIndex: '0' };
+async function publishAndGoToFinale(room, round) {
+  const updates = buildScoreUpdates(room, round);
+  updates.phase = 'timeline';
+  updates.timelineStatus = 'intro';
+  updates.timelineRevealIndex = '0';
   SONGS.forEach(s => { updates[`timelineCards/${s.id}`] = { title: s.title, artist: s.artist }; });
   await FB.update(dbRef(`${ROOM_PATH}/${roomCode}`), updates);
 }
 
-// ── Spotify (enkelt panel — ingen justering av start/slutt-tid her,
-//    tidspunktene er faste i songs-data.js) ──────────────────────────────
+// ── Spotify-tilkobling (bare vist til den er koblet til — ingen egne
+//    avspillingsknapper her, det gjør SPILL SANG/SJEKK SVAR selv) ───────
+function spotifyConnectHTML() {
+  if (SP.isConnected()) return '';
+  const configured = SP.isConfigured();
+  return `<div class="card-tight" style="background:rgba(0,0,0,.18);border-radius:14px">
+    <p class="eyebrow">Spotify</p>
+    ${!configured ? `
+      <p class="hint">Sett opp en gratis Spotify-app på <a href="https://developer.spotify.com/dashboard" target="_blank" rel="noopener">developer.spotify.com/dashboard</a>
+      med Redirect URI satt til <code>${location.href.split('?')[0]}</code>, og lim inn Client ID under.</p>
+      <div class="row"><input id="spClientId" type="text" placeholder="Spotify Client ID" class="grow"><button id="spSaveId" class="btn btn-secondary btn-sm">Lagre</button></div>
+    ` : `
+      <button id="spConnect" class="btn btn-secondary">KOBLE TIL SPOTIFY</button>
+    `}
+    <p class="hint" id="spConnectStatus"></p>
+  </div>`;
+}
+function wireSpotifyConnect() {
+  const saveIdBtn = els('spSaveId');
+  if (saveIdBtn) saveIdBtn.addEventListener('click', () => { SP.setClientId(els('spClientId').value); render(true); });
+  const connectBtn = els('spConnect');
+  if (connectBtn) connectBtn.addEventListener('click', () => SP.beginLogin().catch(e => {
+    const el = els('spConnectStatus'); if (el) el.textContent = e.message;
+  }));
+}
+
+// ── Spotify (fullt panel med spill/pause/manuelt — brukes av tiebreaker,
+//    som ikke har en "åpne for svar"-runde å henge avspillingen på) ─────
 function spotifyPanelHTML(song) {
   const configured = SP.isConfigured();
   const connected = SP.isConnected();
