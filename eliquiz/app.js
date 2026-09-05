@@ -17,22 +17,64 @@ const app = document.querySelector('#app');
 // Fast database-sti — kun ett spill om gangen, ingen romkode å dele.
 const SINGLETON_CODE = 'GAME';
 
-// ── Lagikoner — 8 fargetema, tegnet som SVG (ingen eksterne bildefiler) ──
+// ── Lagikoner — 24 illustrerte sommerfugler (icons/*.webp, beskåret og
+// komprimert til 192×192 fra de originale bildene i icons-source/) ──
 const ICONS = [
-  { id: 'ild', from: '#3a0d10', to: '#e11d33' },
-  { id: 'natt', from: '#1e1b4b', to: '#a855f7' },
-  { id: 'jord', from: '#4b2f18', to: '#d6a75c' },
-  { id: 'gull', from: '#b91c1c', to: '#eab308' },
-  { id: 'hav', from: '#0b1f4d', to: '#38bdf8' },
-  { id: 'skog', from: '#14532d', to: '#84cc16' },
-  { id: 'korall', from: '#7c2d12', to: '#fb7185' },
-  { id: 'ametyst', from: '#3b0764', to: '#c4b5fd' },
+  { id: '01', file: 'icons/01-rounded-gold-coral.webp' },
+  { id: '02', file: 'icons/02-long-wings-purple-turquoise.webp' },
+  { id: '03', file: 'icons/03-angular-teal-gold.webp' },
+  { id: '04', file: 'icons/04-heart-wings-pink-coral.webp' },
+  { id: '05', file: 'icons/05-narrow-blue-cream.webp' },
+  { id: '06', file: 'icons/06-broad-lower-wings-purple-gold.webp' },
+  { id: '07', file: 'icons/07-scalloped-turquoise-pink.webp' },
+  { id: '08', file: 'icons/08-slim-coral-charcoal.webp' },
+  { id: '09', file: 'icons/09-geometric-teal-coral.webp' },
+  { id: '10', file: 'icons/10-soft-oval-purple-gold.webp' },
+  { id: '11', file: 'icons/11-asymmetric-turquoise-cream.webp' },
+  { id: '12', file: 'icons/12-pointed-pink-gold.webp' },
+  { id: '13', file: 'icons/13-compact-bluegreen-coral.webp' },
+  { id: '14', file: 'icons/14-airy-purple-teal.webp' },
+  { id: '15', file: 'icons/15-bold-outline-gold-turquoise.webp' },
+  { id: '16', file: 'icons/16-sweeping-coral-purple.webp' },
+  { id: '17', file: 'icons/17-heavy-metal.webp' },
+  { id: '18', file: 'icons/18-pixel.webp' },
+  { id: '19', file: 'icons/19-goat.webp' },
+  { id: '20', file: 'icons/20-candy.webp' },
+  { id: '21', file: 'icons/21-origami.webp' },
+  { id: '22', file: 'icons/22-stained-glass.webp' },
+  { id: '23', file: 'icons/23-art-deco.webp' },
+  { id: '24', file: 'icons/24-neon.webp' },
 ];
-let _iconSeq = 0;
-function iconSvg(iconId, size = 44) {
+function iconImg(iconId, size = 44) {
   const theme = ICONS.find(i => i.id === iconId) || ICONS[0];
-  const gid = 'bfg' + (_iconSeq++);
-  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${theme.from}"/><stop offset="1" stop-color="${theme.to}"/></linearGradient></defs><g fill="url(#${gid})" stroke="#181818" stroke-width="2" stroke-linejoin="round"><ellipse cx="20" cy="24" rx="15" ry="19" transform="rotate(-25 20 24)"/><ellipse cx="44" cy="24" rx="15" ry="19" transform="rotate(25 44 24)"/><ellipse cx="24" cy="42" rx="10" ry="13" transform="rotate(-15 24 42)"/><ellipse cx="40" cy="42" rx="10" ry="13" transform="rotate(15 40 42)"/><rect x="30" y="17" width="4" height="32" rx="2" fill="#181818" stroke="none"/><circle cx="32" cy="15" r="3" fill="#181818" stroke="none"/></g></svg>`;
+  return `<img class="icon-img" src="${theme.file}" width="${size}" height="${size}" alt="" loading="lazy">`;
+}
+
+// ── Flagrende sommerfugler i bakgrunnen — rent dekorativt, aldri i veien
+// for innhold (pointer-events:none, lav opasitet). Monteres én gang og
+// lever utenfor #app, så den overlever alle re-render.
+let bgButterfliesMounted = false;
+function mountAmbientButterflies(count = 9) {
+  if (bgButterfliesMounted) return;
+  bgButterfliesMounted = true;
+  const layer = document.createElement('div');
+  layer.id = 'bgButterflies';
+  layer.setAttribute('aria-hidden', 'true');
+  for (let i = 0; i < count; i++) {
+    const ic = ICONS[Math.floor(Math.random() * ICONS.length)];
+    const size = Math.round(26 + Math.random() * 38);
+    const img = document.createElement('img');
+    img.src = ic.file;
+    img.width = size; img.height = size;
+    img.alt = '';
+    img.style.left = (Math.random() * 92) + '%';
+    img.style.top = (Math.random() * 90) + '%';
+    img.style.opacity = (0.14 + Math.random() * 0.18).toFixed(2);
+    img.style.animationDelay = (Math.random() * 5).toFixed(2) + 's';
+    img.style.animationDuration = (6 + Math.random() * 5).toFixed(2) + 's';
+    layer.appendChild(img);
+  }
+  document.body.appendChild(layer);
 }
 
 const FIREBASE_CONFIG = {
@@ -83,7 +125,7 @@ function ensureAuth() {
 }
 
 function esc(s = '') { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c])); }
-function top(title = 'MUSIKKQUIZ') { return `<div class="topbar"><div class="brand">🦋 ${title}</div><div class="pill">LRNify</div></div>`; }
+function top(title = 'MUSIKKQUIZ') { return `<div class="topbar"><div class="brand">${iconImg('01', 34)} ${title}</div><div class="pill">LRNify</div></div>`; }
 function connBadge(ok) { return `<div class="pill ${ok ? 'status-ok' : 'status-bad'}">${ok ? '● Tilkoblet' : '○ Kobler til…'}</div>`; }
 
 // ── QR-kode for å bli med (lastes kun ved behov, ingen server) ──────────
@@ -218,7 +260,7 @@ async function renderPlay() {
 }
 
 function renderJoinForm(error = '') {
-  app.innerHTML = `<main class="shell">${top()}<section class="card"><h1>Bli med</h1><label class="label">Lagnavn</label><input id="name" class="input" maxlength="28" placeholder="Team Sommerfugl"><label class="label">Velg sommerfugl</label><div class="icon-grid">${ICONS.map((ic, i) => `<button class="icon-choice ${i === 0 ? 'active' : ''}" data-icon="${ic.id}">${iconSvg(ic.id, 40)}</button>`).join('')}</div><div class="actions"><button class="btn primary" id="join">Bli med</button></div><div id="msg">${error ? `<p class="notice">${esc(error)}</p>` : ''}</div></section></main>`;
+  app.innerHTML = `<main class="shell">${top()}<section class="card"><h1>Bli med</h1><label class="label">Lagnavn</label><input id="name" class="input" maxlength="28" placeholder="Team Sommerfugl"><label class="label">Velg sommerfugl</label><div class="icon-grid">${ICONS.map((ic, i) => `<button class="icon-choice ${i === 0 ? 'active' : ''}" data-icon="${ic.id}">${iconImg(ic.id, 40)}</button>`).join('')}</div><div class="actions"><button class="btn primary" id="join">Bli med</button></div><div id="msg">${error ? `<p class="notice">${esc(error)}</p>` : ''}</div></section></main>`;
   let iconId = ICONS[0].id;
   document.querySelectorAll('.icon-choice').forEach(b => b.onclick = () => {
     iconId = b.dataset.icon;
@@ -259,7 +301,7 @@ function drawPlay(g) {
   const t = g.teams && g.teams[uid];
   if (!t) { renderJoinForm(); return; }
   if (g.phase === 'lobby') {
-    app.innerHTML = `<main class="shell">${top()}<section class="card hero">${iconSvg(t.icon, 64)}<h1>${esc(t.name)}</h1><p>Du er med! Venter på at quizen starter.</p></section></main>`;
+    app.innerHTML = `<main class="shell">${top()}<section class="card hero">${iconImg(t.icon, 64)}<h1>${esc(t.name)}</h1><p>Du er med! Venter på at quizen starter.</p></section></main>`;
     return;
   }
   if (g.phase === 'music') {
@@ -286,7 +328,7 @@ function drawPlay(g) {
   if (g.phase === 'finished') {
     const order = leaders(g, true);
     const place = order.findIndex(x => x.uid === uid) + 1;
-    app.innerHTML = `<main class="shell">${top()}<section class="card hero">${iconSvg(t.icon, 72)}<h1>Dere kom på ${place}. plass!</h1><p>${esc(t.name)}</p><h2>Bra jobba! ${totalFor(g, uid)} poeng</h2></section></main>`;
+    app.innerHTML = `<main class="shell">${top()}<section class="card hero">${iconImg(t.icon, 72)}<h1>Dere kom på ${place}. plass!</h1><p>${esc(t.name)}</p><h2>Bra jobba! ${totalFor(g, uid)} poeng</h2></section></main>`;
     return;
   }
 }
@@ -395,14 +437,14 @@ function drawMain(g) {
 }
 
 function mainLobbyBody(g, teams) {
-  return `<section class="card hero"><h1>Musikkquiz</h1><div class="qr-wrap"><div id="qrboxMain" class="qr-box"></div><p class="small">Skann koden for å bli med.</p></div></section><div class="spacer"></div><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span class="leader-icon">${iconSvg(t.icon, 32)}</span><b>${esc(t.name)}</b></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section>${g.owner === uid ? spotifyPanelHTML() : ''}`;
+  return `<section class="card hero"><h1>Musikkquiz</h1><div class="qr-wrap"><div id="qrboxMain" class="qr-box"></div><p class="small">Skann koden for å bli med.</p></div></section><div class="spacer"></div><section class="card"><h2>Lag (${teams.length})</h2><div class="team-grid">${teams.map(t => `<div class="team"><span class="leader-icon">${iconImg(t.icon, 32)}</span><b>${esc(t.name)}</b></div>`).join('') || '<p class="small">Ingen lag ennå.</p>'}</div></section>${g.owner === uid ? spotifyPanelHTML() : ''}`;
 }
 
 function mainMusicBody(g, song, answered, teams) {
   if (g.roundStatus === 'revealed') {
     const r = g.results && g.results[g.currentRound];
     const arr = leaders(g, false);
-    return `<section class="card reveal"><div class="small">SANG ${(g.currentRound || 0) + 1} / 16 — FASIT</div><div class="artist">${esc((r && r.artist) || '')}</div><div class="title">${esc((r && r.title) || '')}</div></section><div class="spacer"></div><section class="card"><h2>Toppliste</h2><div class="leaderboard">${arr.map((t, i) => `<div class="leader" data-uid="${t.uid}"><div class="rank">${i + 1}</div><div class="leader-icon">${iconSvg(t.icon, 40)}</div><div><b>${esc(t.name)}</b></div><div class="score">${musicScoreFor(g, t.uid)}</div></div>`).join('')}</div></section>`;
+    return `<section class="card reveal"><div class="small">SANG ${(g.currentRound || 0) + 1} / 16 — FASIT</div><div class="artist">${esc((r && r.artist) || '')}</div><div class="title">${esc((r && r.title) || '')}</div></section><div class="spacer"></div><section class="card"><h2>Toppliste</h2><div class="leaderboard">${arr.map((t, i) => `<div class="leader" data-uid="${t.uid}"><div class="rank">${i + 1}</div><div class="leader-icon">${iconImg(t.icon, 40)}</div><div><b>${esc(t.name)}</b></div><div class="score">${musicScoreFor(g, t.uid)}</div></div>`).join('')}</div></section>`;
   }
   if (g.roundStatus === 'scoring') return mainScoringBody(g, song, teams);
   const clipLink = song.spotifyTrackId ? `<a class="btn small" target="_blank" rel="noopener" href="https://open.spotify.com/track/${song.spotifyTrackId}">↗ Åpne manuelt</a>` : '';
@@ -430,7 +472,7 @@ function mainScoringBody(g, song, teams) {
   const rows = teams.map(t => {
     const ans = (g.answers && g.answers[t.uid] && g.answers[t.uid][g.currentRound]) || { artist: '', title: '' };
     const d = draft[t.uid] || { artistCorrect: false, titleCorrect: false };
-    return `<div class="score-row"><div class="score-team"><span class="leader-icon">${iconSvg(t.icon, 28)}</span><b>${esc(t.name)}</b></div><button class="answer-chip ${d.artistCorrect ? 'ok' : 'bad'}" data-ov="${t.uid}:artist"><span class="small">Artist/film ${d.artistCorrect ? '✓' : '✗'}</span><br>${ans.artist ? esc(ans.artist) : '<i>(tomt)</i>'}</button><button class="answer-chip ${d.titleCorrect ? 'ok' : 'bad'}" data-ov="${t.uid}:title"><span class="small">Tittel ${d.titleCorrect ? '✓' : '✗'}</span><br>${ans.title ? esc(ans.title) : '<i>(tomt)</i>'}</button></div>`;
+    return `<div class="score-row"><div class="score-team"><span class="leader-icon">${iconImg(t.icon, 28)}</span><b>${esc(t.name)}</b></div><button class="answer-chip ${d.artistCorrect ? 'ok' : 'bad'}" data-ov="${t.uid}:artist"><span class="small">Artist/film ${d.artistCorrect ? '✓' : '✗'}</span><br>${ans.artist ? esc(ans.artist) : '<i>(tomt)</i>'}</button><button class="answer-chip ${d.titleCorrect ? 'ok' : 'bad'}" data-ov="${t.uid}:title"><span class="small">Tittel ${d.titleCorrect ? '✓' : '✗'}</span><br>${ans.title ? esc(ans.title) : '<i>(tomt)</i>'}</button></div>`;
   }).join('') || '<p class="small">Ingen lag har svart.</p>';
   return `<section class="card"><div class="small">SANG ${(g.currentRound || 0) + 1} / 16</div><h1>Godkjenn svar</h1><p class="small">Trykk på et svar for å endre riktig/feil, f.eks. ved skrivefeil.</p></section><div class="spacer"></div><section class="card">${rows}</section>`;
 }
@@ -448,12 +490,12 @@ function mainPodiumBody(g) {
     const shown = step >= neededStep;
     const isNew = step === neededStep;
     if (!shown || !team) return `<div class="podium-slot place-${place}"><div class="podium-rank">${place}.</div><div class="podium-mystery">?</div></div>`;
-    return `<div class="podium-slot place-${place} ${isNew ? 'newly' : ''}"><div class="podium-rank">${place}.</div><div class="leader-icon big">${iconSvg(team.icon, 64)}</div><div class="podium-name">${esc(team.name)}</div><div class="podium-score">${totalFor(g, team.uid)} p</div></div>`;
+    return `<div class="podium-slot place-${place} ${isNew ? 'newly' : ''}"><div class="podium-rank">${place}.</div><div class="leader-icon big">${iconImg(team.icon, 64)}</div><div class="podium-name">${esc(team.name)}</div><div class="podium-score">${totalFor(g, team.uid)} p</div></div>`;
   };
   const stageHtml = `<section class="podium-stage">${slot(third, 3, 1)}${slot(first, 1, 3)}${slot(second, 2, 2)}</section>`;
   let tableHtml = '';
   if (step >= 4) {
-    tableHtml = `<section class="card podium-table-in"><h2>Full liste</h2><div class="leaderboard">${order.map((t, i) => `<div class="leader" data-uid="${t.uid}"><div class="rank">${i + 1}</div><div class="leader-icon">${iconSvg(t.icon, 40)}</div><div><b>${esc(t.name)}</b></div><div class="score">${totalFor(g, t.uid)}</div></div>`).join('')}</div></section>`;
+    tableHtml = `<section class="card podium-table-in"><h2>Full liste</h2><div class="leaderboard">${order.map((t, i) => `<div class="leader" data-uid="${t.uid}"><div class="rank">${i + 1}</div><div class="leader-icon">${iconImg(t.icon, 40)}</div><div><b>${esc(t.name)}</b></div><div class="score">${totalFor(g, t.uid)}</div></div>`).join('')}</div></section>`;
   }
   const heading = step === 0 ? 'Trommevirvel…' : 'Sluttresultat';
   return `<section class="card hero"><h1>${heading}</h1></section>${stageHtml}${tableHtml}`;
@@ -640,5 +682,6 @@ function render() {
   else renderMain();
 }
 window.addEventListener('hashchange', render);
+mountAmbientButterflies();
 render();
 startCountdownTicker();
