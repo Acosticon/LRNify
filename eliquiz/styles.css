@@ -50,9 +50,27 @@ button,input{font:inherit} button{cursor:pointer}
 .bank{display:grid;gap:8px;margin-bottom:16px}
 .sticky{position:sticky;top:8px;z-index:10}
 .progress{font-weight:950}
-.icon-picker{display:flex;gap:8px;flex-wrap:wrap}
-.icon-choice{width:52px;height:52px;border:2px solid var(--line);border-radius:16px;background:white;font-size:1.6rem}
+.icon-grid{display:flex;gap:10px;flex-wrap:wrap}
+.icon-choice{width:64px;height:64px;padding:6px;border:2px solid var(--line);border-radius:16px;background:white}
+.icon-choice svg{width:100%;height:100%}
 .icon-choice.active{background:var(--yellow)}
+.leader-icon{display:inline-flex;align-items:center;justify-content:center}
+.hero h1 .sub{display:block;font-size:.55em;color:var(--muted);margin-top:.15em}
+.qr-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;margin-top:14px}
+.qr-box{background:white;padding:12px;border:2px solid var(--line);border-radius:16px;box-shadow:3px 3px 0 var(--line);min-height:200px;min-width:200px;display:flex;align-items:center;justify-content:center}
+.countdown-big{font-size:clamp(3rem,12vw,7rem);font-weight:950;line-height:1}
+.podium-stage{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end;margin:24px 0}
+.podium-slot{border:2px solid var(--line);border-radius:20px;background:white;box-shadow:4px 4px 0 var(--line);padding:16px 10px;text-align:center;min-height:130px;display:flex;flex-direction:column;justify-content:flex-end;gap:6px}
+.podium-slot.place-1{order:2;min-height:190px;background:var(--yellow)}
+.podium-slot.place-2{order:1;min-height:150px}
+.podium-slot.place-3{order:3;min-height:120px}
+.podium-rank{font-weight:950;font-size:1.6rem}
+.podium-mystery{font-size:2.4rem;font-weight:950;color:var(--muted)}
+.podium-name{font-weight:950;font-size:1.1rem}
+.podium-score{font-weight:900;color:var(--muted)}
+.podium-slot.newly{animation:podiumPop .7s cubic-bezier(.2,.8,.3,1.3)}
+.podium-table-in{animation:podiumPop .6s cubic-bezier(.2,.8,.3,1.2)}
+@keyframes podiumPop{0%{transform:translateY(40px) scale(.7);opacity:0}60%{transform:translateY(-6px) scale(1.06);opacity:1}100%{transform:translateY(0) scale(1)}}
 .notice{border:2px solid var(--line);border-radius:16px;padding:12px;background:#fff3b4;font-weight:800}
 .host-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
 .kbd{font-family:ui-monospace,monospace;background:#eee;border-radius:8px;padding:2px 6px}
@@ -61,13 +79,6 @@ button,input{font:inherit} button{cursor:pointer}
 .countdown-track{height:20px;border:2px solid var(--line);border-radius:999px;background:#fff;overflow:hidden}
 .countdown-fill{height:100%;width:0%;background:var(--yellow);transition:width .2s linear}
 .countdown-label{margin-top:6px;font-weight:950;font-size:1.4rem;text-align:center}
-.year-chip{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--line);border-radius:999px;padding:6px 12px;background:white;font-weight:900;font-size:.9rem}
-.year-chip-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
-.override-row{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;border-bottom:1px solid #ddd;padding:10px 0}
-.override-row .name{font-weight:900}
-.toggle{border:2px solid var(--line);border-radius:12px;padding:8px 12px;background:#fff;font-weight:900}
-.toggle.on{background:var(--ok);color:white}
-.toggle.off{background:#eee;color:var(--muted)}
 @media(max-width:720px){
   .shell{padding:12px}
   .grid.two,.host-grid{grid-template-columns:1fr}
@@ -76,5 +87,6 @@ button,input{font:inherit} button{cursor:pointer}
   .hero{padding:20px 12px}
   .btn{min-height:46px}
   .year-slot{min-height:78px}
-  .override-row{grid-template-columns:1fr auto;row-gap:6px}
+  .podium-slot{min-height:100px!important;padding:10px 6px}
+  .podium-slot.place-1{min-height:130px!important}
 }
