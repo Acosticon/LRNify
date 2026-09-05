@@ -270,6 +270,10 @@ function drawPlay(g) {
       app.innerHTML = `<main class="shell">${top()}<section class="card reveal"><div class="small">SANG ${round + 1} / 16</div><div class="artist">${esc((result && result.artist) || '')}</div><div class="title">${esc((result && result.title) || '')}</div><div class="spacer"></div><div class="result-line"><b>Hvilken artist/film?</b><b>${perTeam.artistCorrect ? '✅ Riktig' : '❌ Feil'}</b></div><div class="result-line"><b>Hva heter sangen?</b><b>${perTeam.titleCorrect ? '✅ Riktig' : '❌ Feil'}</b></div><h2>+${perTeam.points} poeng</h2></section></main>`;
       return;
     }
+    if (g.roundStatus === 'scoring') {
+      app.innerHTML = `<main class="shell">${top()}<section class="card hero"><p>Svarene er låst — verten sjekker svarene nå…</p></section></main>`;
+      return;
+    }
     // Svaret er redigerbart frem til fasit vises.
     const ans = (g.answers && g.answers[uid] && g.answers[uid][round]) || { artist: '', title: '' };
     app.innerHTML = `<main class="shell">${top()}<section class="card"><div class="small">SANG ${round + 1} / 16</div><h1 class="round-title">Lytt og svar!</h1><label class="label">Hvilken artist/film?</label><input id="artist" class="input" value="${esc(ans.artist)}" autocomplete="off"><label class="label">Hva heter sangen?</label><input id="title" class="input" value="${esc(ans.title)}" autocomplete="off"><div class="actions"><button class="btn primary" id="submit">${ans.artist || ans.title ? 'Oppdater svar' : 'Send svar'}</button></div><p class="small">Du kan endre svaret helt til fasiten vises.</p></section></main>`;
@@ -315,7 +319,7 @@ function drawTimelinePlayer(g, t) {
 
 // ═══════════════════════════ HOVEDSKJERM (kontroll + storskjerm i ett) ═══════════════════════════
 
-let mainState = { unsub: null, quiz: null, spotify: null, spotifyBusy: false, spotifyMsg: '', spotifyEditingClientId: false, lastGame: undefined, actionError: '', creating: false };
+let mainState = { unsub: null, quiz: null, spotify: null, spotifyBusy: false, spotifyMsg: '', spotifyEditingClientId: false, lastGame: undefined, actionError: '', creating: false, draft: null };
 function redrawMain() { if (mainState.lastGame !== undefined) drawMain(mainState.lastGame); }
 
 async function renderMain() {
@@ -366,6 +370,7 @@ function drawMain(g) {
     return;
   }
   mainState.lastGame = g;
+  if (g.roundStatus !== 'scoring') mainState.draft = null;
   const notOwner = g.owner !== uid;
   const { songForRound } = mainState.quiz;
   const song = g.phase === 'music' ? songForRound(g.currentRound || 0) : null;
@@ -399,10 +404,35 @@ function mainMusicBody(g, song, answered, teams) {
     const arr = leaders(g, false);
     return `<section class="card reveal"><div class="small">SANG ${(g.currentRound || 0) + 1} / 16 — FASIT</div><div class="artist">${esc((r && r.artist) || '')}</div><div class="title">${esc((r && r.title) || '')}</div></section><div class="spacer"></div><section class="card"><h2>Toppliste</h2><div class="leaderboard">${arr.map((t, i) => `<div class="leader" data-uid="${t.uid}"><div class="rank">${i + 1}</div><div class="leader-icon">${iconSvg(t.icon, 40)}</div><div><b>${esc(t.name)}</b></div><div class="score">${musicScoreFor(g, t.uid)}</div></div>`).join('')}</div></section>`;
   }
+  if (g.roundStatus === 'scoring') return mainScoringBody(g, song, teams);
   const clipLink = song.spotifyTrackId ? `<a class="btn small" target="_blank" rel="noopener" href="https://open.spotify.com/track/${song.spotifyTrackId}">↗ Åpne manuelt</a>` : '';
   const spReady = mainState.spotify && mainState.spotify.isConnected() && song.spotifyTrackId;
   const spBtns = (g.roundStatus === 'answering' && spReady) ? `<button class="btn small" data-sp="play" ${mainState.spotifyBusy ? 'disabled' : ''}>▶ Spill på nytt</button><button class="btn small" data-sp="pause" ${mainState.spotifyBusy ? 'disabled' : ''}>⏸ Pause</button>` : '';
   return `<section class="card hero"><div class="small">SANG ${(g.currentRound || 0) + 1} / 16</div><h1>Hvilken artist/film?<span class="sub">Hva heter sangen?</span></h1><p class="small">🔒 Fasit er skjult til du trykker «Sjekk svar».</p>${g.roundStatus === 'answering' ? `<p class="answer-status">${answered} / ${teams.length} lag har svart</p>` : ''}${g.playback ? countdownBarHTML() : ''}<div class="actions">${spBtns}${clipLink}</div>${mainState.spotifyMsg ? `<p class="notice">${esc(mainState.spotifyMsg)}</p>` : ''}</section>`;
+}
+
+// Automatisk retting er bare et startpunkt — verten kan overstyre hver
+// enkelt artist-/tittel-vurdering før poengene publiseres (skrivefeil,
+// varianter fasit-listen ikke dekker, osv). Ligger kun lokalt i minnet til
+// «Vis fasit» trykkes, altså blir aldri sendt til lagene før da.
+function buildDraft(g, song, teams) {
+  const { scoreAnswer } = mainState.quiz;
+  const draft = {};
+  for (const t of teams) {
+    const ans = (g.answers && g.answers[t.uid] && g.answers[t.uid][g.currentRound]) || {};
+    draft[t.uid] = scoreAnswer(song, ans);
+  }
+  return draft;
+}
+function mainScoringBody(g, song, teams) {
+  if (!mainState.draft) mainState.draft = buildDraft(g, song, teams);
+  const draft = mainState.draft;
+  const rows = teams.map(t => {
+    const ans = (g.answers && g.answers[t.uid] && g.answers[t.uid][g.currentRound]) || { artist: '', title: '' };
+    const d = draft[t.uid] || { artistCorrect: false, titleCorrect: false };
+    return `<div class="score-row"><div class="score-team"><span class="leader-icon">${iconSvg(t.icon, 28)}</span><b>${esc(t.name)}</b></div><button class="answer-chip ${d.artistCorrect ? 'ok' : 'bad'}" data-ov="${t.uid}:artist"><span class="small">Artist/film ${d.artistCorrect ? '✓' : '✗'}</span><br>${ans.artist ? esc(ans.artist) : '<i>(tomt)</i>'}</button><button class="answer-chip ${d.titleCorrect ? 'ok' : 'bad'}" data-ov="${t.uid}:title"><span class="small">Tittel ${d.titleCorrect ? '✓' : '✗'}</span><br>${ans.title ? esc(ans.title) : '<i>(tomt)</i>'}</button></div>`;
+  }).join('') || '<p class="small">Ingen lag har svart.</p>';
+  return `<section class="card"><div class="small">SANG ${(g.currentRound || 0) + 1} / 16</div><h1>Godkjenn svar</h1><p class="small">Trykk på et svar for å endre riktig/feil, f.eks. ved skrivefeil.</p></section><div class="spacer"></div><section class="card">${rows}</section>`;
 }
 
 function mainTimelineBody(g, teams) {
@@ -447,6 +477,7 @@ function advanceLabel(g) {
   if (g.phase === 'music') {
     if (g.roundStatus === 'ready') return 'Neste sang';
     if (g.roundStatus === 'answering') return 'Sjekk svar';
+    if (g.roundStatus === 'scoring') return 'Vis fasit';
     if (g.roundStatus === 'revealed') return (g.currentRound || 0) < 15 ? 'Neste sang' : 'Start ekstraoppgave';
   }
   if (g.phase === 'timeline') return 'Avslutt spill';
@@ -462,6 +493,7 @@ function advanceAction(g) {
   if (g.phase === 'music') {
     if (g.roundStatus === 'ready') return 'startRound';
     if (g.roundStatus === 'answering') return 'check';
+    if (g.roundStatus === 'scoring') return 'publish';
     if (g.roundStatus === 'revealed') return (g.currentRound || 0) < 15 ? 'next' : 'startTimeline';
   }
   if (g.phase === 'timeline') return 'endGame';
@@ -475,6 +507,22 @@ function bindMain(g, song, teams) {
   const advBtn = document.querySelector('#advanceBtn');
   if (advBtn) advBtn.onclick = () => handleMainAction(advanceAction(g), g, song, teams);
   document.querySelectorAll('[data-sp]').forEach(b => b.onclick = () => handleSpotifyAction(b.dataset.sp, song));
+  document.querySelectorAll('[data-ov]').forEach(b => b.onclick = () => {
+    const [teamUid, field] = b.dataset.ov.split(':');
+    const key = field === 'artist' ? 'artistCorrect' : 'titleCorrect';
+    if (!mainState.draft) mainState.draft = buildDraft(g, song, teams);
+    mainState.draft[teamUid][key] = !mainState.draft[teamUid][key];
+    redrawMain();
+  });
+}
+
+// Best-effort stopp av eventuell Spotify-avspilling — kalles hver gang
+// verten går videre fra en runde, siden hen ofte trykker før klippet er
+// ferdig av seg selv.
+async function stopClipAudio() {
+  if (mainState.spotify && mainState.spotify.isConnected()) {
+    try { await mainState.spotify.pause(); } catch (e) { /* beste innsats — skal aldri blokkere spillflyten */ }
+  }
 }
 
 async function handleSpotifyAction(action, song) {
@@ -518,10 +566,12 @@ async function handleSpotifyAction(action, song) {
 async function handleMainAction(act, g, song, teams) {
   if (act === 'stop') {
     if (!confirm('Stoppe dette spillet? Alt som er spilt så langt blir borte, og lagene mister tilgangen.')) return;
+    await stopClipAudio();
     try { await FB.remove(gameRef()); mainState.actionError = ''; } catch (e) { mainState.actionError = e && e.message ? e.message : 'Kunne ikke stoppe spillet.'; redrawMain(); }
     return;
   }
   if (act === 'newGame') {
+    await stopClipAudio();
     try { await FB.remove(gameRef()); mainState.actionError = ''; } catch (e) { mainState.actionError = e && e.message ? e.message : 'Kunne ikke starte nytt spill.'; redrawMain(); }
     return;
   }
@@ -539,18 +589,24 @@ async function handleMainAction(act, g, song, teams) {
       return;
     }
     if (act === 'check') {
-      const { scoreAnswer } = mainState.quiz;
+      await stopClipAudio();
+      mainState.draft = buildDraft(g, song, teams);
+      await FB.update(gameRef(), { roundStatus: 'scoring', playback: null });
+      return;
+    }
+    if (act === 'publish') {
+      const draft = mainState.draft || buildDraft(g, song, teams);
       const perTeam = {};
       for (const t of teams) {
-        const ans = (g.answers && g.answers[t.uid] && g.answers[t.uid][g.currentRound]) || {};
-        const d = scoreAnswer(song, ans);
+        const d = draft[t.uid] || { artistCorrect: false, titleCorrect: false };
         perTeam[t.uid] = { artistCorrect: !!d.artistCorrect, titleCorrect: !!d.titleCorrect, points: (d.artistCorrect ? 1 : 0) + (d.titleCorrect ? 1 : 0) };
       }
       await FB.update(gameChild(`results/${g.currentRound}`), { songId: song.id, artist: song.artist, title: song.title, perTeam });
-      await FB.update(gameRef(), { roundStatus: 'revealed', playback: null });
+      await FB.update(gameRef(), { roundStatus: 'revealed' });
+      mainState.draft = null;
       return;
     }
-    if (act === 'next') { await FB.update(gameRef(), { currentRound: (g.currentRound || 0) + 1, roundStatus: 'ready', playback: null }); return; }
+    if (act === 'next') { await stopClipAudio(); await FB.update(gameRef(), { currentRound: (g.currentRound || 0) + 1, roundStatus: 'ready', playback: null }); return; }
     if (act === 'startTimeline') { await FB.update(gameRef(), { phase: 'timeline', finaleDeadline: Date.now() + 5 * 60 * 1000 }); return; }
     if (act === 'endGame') { await endGame(g, teams); return; }
     if (act === 'podiumNext') { await FB.update(gameRef(), { podiumStep: Math.min(4, (g.podiumStep || 0) + 1) }); return; }
