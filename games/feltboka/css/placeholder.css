@@ -1,0 +1,210 @@
+/* =========================================================
+   PLASSHOLDER-STIL — SKAL ERSTATTES
+   ---------------------------------------------------------
+   Dette er ikke spillets design. Det er nøytral, funksjonell
+   stil som gjør flyten testbar mens den visuelle retningen
+   avgjøres i en egen prosess (se DESIGNINSTRUKS.md).
+
+   To ting er bevisst holdt slik:
+   - Ingen Chewy/lekent uttrykk. Målgruppen er 13–16 år, og
+     den visuelle retningen er ikke bestemt ennå.
+   - Illustrasjonene har stiplet ramme, så en plassholder aldri
+     kan forveksles med ferdig grafikk i en test.
+
+   Klassenavnene er kontrakten mot js/main.js. Bytt gjerne ut
+   HELE denne fila, men behold klassenavnene — eller endre dem
+   samlet begge steder.
+   ========================================================= */
+
+:root {
+  --flate: #ffffff;
+  --bakgrunn: #f4f5f7;
+  --blekk: #1c1d20;
+  --dempet: #6b7280;
+  --linje: #d8dade;
+  --aksent: #2f5d50;
+  --riktig: #1a7f4b;
+  --feil: #b4432c;
+  --radius: 10px;
+
+  /* Variantfarger — plassholdere. Den ekte variantpaletten er en
+     designleveranse; her handler det bare om å kunne se forskjell. */
+  --ill-flate: #9aa3ab;
+  --ill-strek: #5b636b;
+  --ill-glans: transparent;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--bakgrunn);
+  color: var(--blekk);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+}
+
+.app { max-width: 720px; margin: 0 auto; padding: 0 16px 48px; }
+
+/* --- Topplinje og faner --- */
+
+/* Toppmargen holder av plass til den flytende «← LRNify»-knappen som
+   /nav/lrnify-tilbake.js legger på alle sider uten egen logo-lenke.
+   Får den endelige toppteksten en <a class="logo"> hjem, forsvinner den
+   flytende knappen av seg selv, og marginen kan fjernes. */
+.topplinje {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  padding: 52px 0 14px; border-bottom: 1px solid var(--linje);
+}
+.merke { font-weight: 700; letter-spacing: .01em; }
+.faner { display: flex; gap: 4px; }
+.fane {
+  font: inherit; font-size: .9rem; color: var(--dempet);
+  background: none; border: 1px solid transparent; border-radius: var(--radius);
+  padding: 6px 12px; cursor: pointer; min-height: 40px;
+}
+.fane:hover { color: var(--blekk); }
+.fane.er-valgt { color: var(--blekk); border-color: var(--linje); background: var(--flate); }
+
+/* --- Generelt --- */
+
+.skjerm { padding: 20px 0; }
+h1 { font-size: 1.6rem; margin: 0 0 4px; }
+h2 { font-size: 1.05rem; margin: 24px 0 10px; }
+h3 { font-size: .95rem; margin: 22px 0 8px; }
+.ingress { color: var(--dempet); margin: 0 0 8px; }
+.hjelp { color: var(--dempet); font-size: .85rem; margin: 8px 0 0; }
+
+.knapp {
+  font: inherit; font-weight: 600; min-height: 44px;
+  padding: 10px 18px; border-radius: var(--radius); cursor: pointer;
+  background: var(--aksent); color: #fff; border: 1px solid var(--aksent);
+}
+.knapp:disabled { opacity: .45; cursor: default; }
+.knapp--stor { width: 100%; margin-top: 20px; }
+.knapp--flat { background: none; color: var(--dempet); border-color: transparent; padding: 8px 10px; }
+.knapp--fare { background: none; color: var(--feil); border-color: var(--feil); }
+
+/* --- Valg av tema og nivå --- */
+
+.valg { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.valg--niva { grid-template-columns: repeat(3, 1fr); }
+.valgkort {
+  font: inherit; text-align: left; cursor: pointer; min-height: 56px;
+  background: var(--flate); border: 1px solid var(--linje);
+  border-radius: var(--radius); padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.valgkort--niva { text-align: center; align-items: center; justify-content: center; min-height: 48px; }
+.valgkort.er-valgt { border-color: var(--aksent); box-shadow: inset 0 0 0 1px var(--aksent); }
+.valgkort-navn { font-weight: 600; }
+.valgkort-eksempel { color: var(--dempet); font-size: .85rem; }
+
+/* --- Oppgaveskjermen --- */
+
+.oppgavetopp { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.merkelapp { color: var(--dempet); font-size: .85rem; }
+.oppgavetopp .merkelapp:last-child { margin-left: auto; }
+
+.framgang { height: 6px; background: var(--linje); border-radius: 999px; overflow: hidden; margin-top: 14px; }
+.framgang-fyll { height: 100%; width: 0; background: var(--aksent); transition: width .18s ease-out; }
+.framgang-tekst { color: var(--dempet); font-size: .85rem; margin: 6px 0 0; }
+
+.sporsmal {
+  font-size: clamp(1.6rem, 7vw, 2.4rem); font-weight: 600;
+  margin: 32px 0; text-align: center; font-variant-numeric: tabular-nums;
+}
+
+.svarrad { display: flex; gap: 8px; }
+.svarfelt {
+  flex: 1; min-width: 0; font: inherit; font-size: 1.2rem; min-height: 44px;
+  padding: 10px 14px; border: 1px solid var(--linje); border-radius: var(--radius);
+  background: var(--flate); color: var(--blekk);
+}
+.svarfelt:focus { outline: 2px solid var(--aksent); outline-offset: 1px; }
+
+.tilbakemelding { min-height: 1.5em; margin: 12px 0 0; font-weight: 600; }
+.tilbakemelding.er-riktig { color: var(--riktig); }
+.tilbakemelding.er-feil { color: var(--feil); }
+
+/* --- Funnskjermen --- */
+
+.skjerm--funn { text-align: center; }
+.funn-stikk { letter-spacing: .18em; text-transform: uppercase; color: var(--dempet); font-size: .8rem; }
+.funn-kort {
+  background: var(--flate); border: 1px solid var(--linje); border-radius: var(--radius);
+  padding: 24px 16px; max-width: 340px; margin: 0 auto;
+}
+.funn-bilde { display: block; margin: 0 auto 12px; }
+.funn-variant { letter-spacing: .12em; font-size: .8rem; color: var(--dempet); margin: 0; }
+.funn-navn { margin: 4px 0 2px; font-size: 1.4rem; }
+.funn-vitenskapelig { font-style: italic; color: var(--dempet); margin: 0 0 12px; }
+.funn-status { font-weight: 600; margin: 0; }
+.funn-samling { color: var(--dempet); font-size: .9rem; margin: 4px 0 0; }
+.skjerm--funn .knapp--stor { max-width: 340px; margin-left: auto; margin-right: auto; }
+
+/* --- Samlingen --- */
+
+.rutenett { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.rute {
+  font: inherit; cursor: pointer; background: var(--flate);
+  border: 1px solid var(--linje); border-radius: var(--radius);
+  padding: 10px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.rute--last { color: var(--dempet); }
+.rute-navn { font-size: .85rem; font-weight: 600; text-align: center; }
+.rute-tall { font-size: .78rem; color: var(--dempet); }
+
+/* --- Artssiden --- */
+
+.art-bilde { display: block; margin: 8px auto 16px; }
+.art-navn { text-align: center; margin: 0; }
+.art-vitenskapelig { text-align: center; font-style: italic; color: var(--dempet); margin: 2px 0 0; }
+.art-status { text-align: center; color: var(--dempet); font-size: .9rem; }
+.art-fakta { color: var(--blekk); padding-left: 20px; }
+.art-fakta li { margin-bottom: 6px; }
+
+.variantrad { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; }
+.variantbrikke {
+  font: inherit; font-size: .85rem; cursor: pointer; min-height: 52px;
+  background: var(--flate); border: 1px solid var(--linje); border-radius: var(--radius);
+  padding: 8px 6px; display: flex; flex-direction: column; align-items: center;
+}
+.variantbrikke--last { color: var(--dempet); cursor: default; }
+.variantbrikke.er-valgt { border-color: var(--aksent); box-shadow: inset 0 0 0 1px var(--aksent); }
+.variantbrikke-navn { font-weight: 600; }
+.variantbrikke-tall { color: var(--dempet); }
+
+/* --- Statistikk --- */
+
+.tall { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; margin: 0 0 24px; }
+.tall dt { color: var(--dempet); }
+.tall dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+/* --- Illustrasjonene (plassholder, se js/art.js) --- */
+
+.ill {
+  width: 92px; height: 104px; display: block;
+  border: 1px dashed var(--linje);   /* MARKØR: ikke ferdig grafikk */
+  border-radius: 8px; background: #fff;
+}
+.funn-bilde .ill, .art-bilde .ill { width: 132px; height: 148px; }
+.ill-form { fill: var(--ill-flate); stroke: var(--ill-strek); stroke-width: 2.5;
+            stroke-linecap: round; stroke-linejoin: round; }
+.ill-merke { fill: var(--dempet); font-size: 9px; font-family: inherit; letter-spacing: .08em; }
+.ill--silhuett { color: var(--dempet); }
+
+/* Variantene skiller seg fra hverandre, men er ikke designet.
+   Hver variant setter bare de tre variablene js/art.js leser. */
+.variant--vanlig      { --ill-flate: #9aa3ab; --ill-strek: #5b636b; }
+.variant--gyllen      { --ill-flate: #d9b45a; --ill-strek: #8a6b1f; }
+.variant--albino      { --ill-flate: #f2f2f0; --ill-strek: #b9b4ad; }
+.variant--melanistisk { --ill-flate: #4a4d55; --ill-strek: #23252a; }
+.variant--nordlys     { --ill-flate: #6fc3a5; --ill-strek: #2f6f7d; }
+.variant--krystall    { --ill-flate: #b7c9e6; --ill-strek: #5470a3; }
+
+@media (max-width: 420px) {
+  .valg { grid-template-columns: 1fr; }
+  .sporsmal { margin: 24px 0; }
+}
