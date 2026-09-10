@@ -15,6 +15,11 @@ teste selve spillhypotesen, lite nok til at illustrasjonsjobben under
 er overkommelig i én runde. Flere arter senere er en ren datautvidelse
 i `js/data/species.js`, og denne instruksen gjelder likt for dem.
 
+Skal illustrasjonene ut til en ekstern tegner uten kjennskap til
+prosjektet, bruk `DESIGNBRIEF-TEGNER.md` i stedet for denne fila — den
+er selvstendig og fri for kodereferanser. Denne fila er for den som
+kobler de ferdige illustrasjonene inn i spillet.
+
 ---
 
 ## 1. Målgruppe og tone
