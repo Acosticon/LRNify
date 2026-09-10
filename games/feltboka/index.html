@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<!-- ARBEIDSTITTEL. Tittel, ingress og delingsbilder settes i designprosessen. -->
+<title>Feltboka</title>
+<link rel="canonical" href="https://lrnify.no/games/feltboka/index.html">
+<meta name="description" content="Mengdetrening i matematikk der riktige svar gir funn av arter fra norsk natur.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Feltboka – LRNify">
+<meta property="og:description" content="Mengdetrening i matematikk der riktige svar gir funn av arter fra norsk natur.">
+<meta property="og:url" content="https://lrnify.no/games/feltboka/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Feltboka – LRNify">
+<meta name="twitter:description" content="Mengdetrening i matematikk der riktige svar gir funn av arter fra norsk natur.">
+<link rel="stylesheet" href="css/placeholder.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="topplinje">
+    <span class="merke" id="merke">[TITTEL]</span>
+    <nav class="faner">
+      <button class="fane" type="button" data-fane="spill">Spill</button>
+      <button class="fane" type="button" data-fane="samling">Samling</button>
+      <button class="fane" type="button" data-fane="statistikk">Statistikk</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Steg 1: velg trening (GDD pkt. 4) -->
+    <section class="skjerm" data-skjerm="velg">
+      <h1 id="tittel"></h1>
+      <p class="ingress" id="ingress"></p>
+
+      <h2>Velg tema</h2>
+      <div class="valg" id="temaliste"></div>
+
+      <h2>Velg nivå</h2>
+      <div class="valg valg--niva" id="nivaliste"></div>
+
+      <button class="knapp knapp--stor" type="button" id="start">Start trening</button>
+    </section>
+
+    <!-- Steg 2 og 3: løs oppgaver, tjen progresjon -->
+    <section class="skjerm" data-skjerm="oppgave" hidden>
+      <div class="oppgavetopp">
+        <button class="knapp knapp--flat" type="button" id="avslutt">← Bytt tema</button>
+        <span class="merkelapp" id="oppgavetema"></span>
+        <span class="merkelapp" id="streak"></span>
+      </div>
+
+      <div class="framgang" role="presentation"><div class="framgang-fyll" id="framgangfyll"></div></div>
+      <p class="framgang-tekst" id="framgangtekst"></p>
+
+      <p class="sporsmal" id="sporsmal"></p>
+
+      <form class="svarrad" id="svarform" autocomplete="off">
+        <input class="svarfelt" id="svar" type="text" enterkeyhint="send"
+               autocomplete="off" autocorrect="off" spellcheck="false"
+               aria-label="Svaret ditt">
+        <button class="knapp" type="submit">Svar</button>
+      </form>
+      <p class="hjelp" id="svarhjelp"></p>
+      <p class="tilbakemelding" id="tilbakemelding" role="status" aria-live="polite"></p>
+    </section>
+
+    <!-- Steg 4 og 5: funnet (GDD pkt. 19) -->
+    <section class="skjerm skjerm--funn" data-skjerm="funn" hidden>
+      <p class="funn-stikk" id="funnstikk"></p>
+      <div class="funn-kort" id="funnkort"></div>
+      <button class="knapp knapp--stor" type="button" id="funnlukk">Legg til i samlingen</button>
+    </section>
+
+    <!-- Samlingssiden (GDD pkt. 12) -->
+    <section class="skjerm" data-skjerm="samling" hidden>
+      <h2>Samling</h2>
+      <p class="ingress" id="samlingsammendrag"></p>
+      <div class="rutenett" id="samlingrutenett"></div>
+    </section>
+
+    <!-- Artssiden (GDD pkt. 13) -->
+    <section class="skjerm" data-skjerm="art" hidden>
+      <button class="knapp knapp--flat" type="button" id="arttilbake">← Samling</button>
+      <div id="artinnhold"></div>
+    </section>
+
+    <!-- Statistikk (GDD pkt. 24) -->
+    <section class="skjerm" data-skjerm="statistikk" hidden>
+      <h2>Statistikk</h2>
+      <dl class="tall" id="statistikkliste"></dl>
+      <button class="knapp knapp--fare" type="button" id="nullstill">Nullstill alt</button>
+      <p class="hjelp">
+        Samlingen ligger bare i denne nettleseren. Bytter du maskin eller sletter
+        nettleserdata, starter samlingen på nytt.
+      </p>
+    </section>
+  </main>
+</div>
+
+<script type="module" src="js/main.js"></script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
