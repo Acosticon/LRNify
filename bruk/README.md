@@ -113,10 +113,18 @@ LRNifyBruk.tell('runde-fullfort');
 ```
 
 Nye navn dukker opp som egne kolonner i tabellen på `/bruk/` av seg selv.
-To naturlige neste steg:
 
-* **Fullføringsgrad** — `tell('runde-start')` og `tell('runde-fullfort')` i
-  spillene viser hvor mange som spiller ferdig, ikke bare åpner sida.
+**Fullføringsgrad** er i gang i `games/geografi/kartografen/index.html`, som
+mal for de andre spillene: `tell('runde-start')` når en runde starter,
+`tell('runde-fullfort')` når den spilles til slutt (kun ved faktisk
+fullføring, ikke ved avbrutt/forlatt runde), og `tell('riktig-svar')` /
+`tell('feil-svar')` per forsøk — svarer på «hvor mange spiller ferdig» og
+«hvor mye blir de enkelte elementene i spillet brukt». Kallene er samlet i
+en liten `bruk()`-hjelper øverst i skriptet som sjekker at `LRNifyBruk`
+finnes, slik at spillet aldri knekker om telleskriptet mangler.
+
+Naturlig neste steg:
+
 * **Varighet** — krever en økt-id i minnet og et `sendBeacon`-kall ved
   `visibilitychange`. Merk at en økt-id i `sessionStorage` ville vært
   lagring på brukerens maskin, og dermed en annen personvernvurdering enn
