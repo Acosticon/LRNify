@@ -1,11 +1,15 @@
-# Innholdsinstruks — de 60 artsfaktaene
+# Innholdsinstruks — de 12 artsfaktaene
 
-60 plassholdere (2 per art × 30 arter) i `js/data/species.js`, merket
+12 plassholdere (2 per art × 6 arter) i `js/data/species.js`, merket
 `[FAKTA n – skrives i innholdsrunden]`. Denne fila er spesifikasjonen for
 å fylle dem — skriv du selv, be ChatGPT, eller gi den til en fagperson.
 Leveres tilbake som tabell (se format under), ikke som kodeendring —
 jeg merger dem inn i `species.js` selv, det unngår at en manuell
 JS-redigering knekker syntaksen QA-en sjekker.
+
+(Var 60 fakta for 30 arter — tonet ned samtidig med artstallet, se
+`DESIGN.md`. Flere arter er en ren datautvidelse senere, og da gjelder
+akkurat denne instruksen igjen for de nye.)
 
 ## Hvor de vises
 
@@ -33,77 +37,41 @@ setning per punkt, lesbar på et par sekunder på en mobilskjerm.
   Artsdatabanken eller Store norske leksikon — les kilden, skriv om.
   Foretrukne kilder: Artsdatabanken, Miljødirektoratet, Store norske
   leksikon, Norsk Ornitologisk Forening (fugler), Skogkurs/NIBIO
-  (trær). Ett faktum bør tåle et kjapt kildesøk hvis noen sjekker det.
-- **Ingen `melanistisk`-/`albino`-fakta.** Faktaene handler om ARTEN,
-  ikke om spillvariantene. Ikke skriv noe om at «denne kan finnes i en
-  mørk utgave» — det er spillmekanikk, ikke biologi.
-
-## De fire som trenger ekstra kontroll
-
-GDD-en oppga disse på gruppenivå; koden har valgt én konkret art. Sjekk
-at valget er det naturlige før du skriver fakta til dem — eller foreslå
-et bedre artsvalg, så bytter jeg det i `species.js` (bare id/navn/
-vitenskapelig endres, resten av spillet påvirkes ikke):
-
-| GDD sa | Kode har valgt | Vitenskapelig |
-|---|---|---|
-| ugle | Kattugle | *Strix aluco* |
-| frosk | Buttsnutefrosk | *Rana temporaria* |
-| humle | Mørk jordhumle | *Bombus terrestris* |
-| øyenstikker | (uspesifisert art) | *Aeshna juncea* |
-
-Disse fire er trolig de tryggeste standardvalgene (vanligst i Norge),
-men er ikke faglig kvalitetssikret utover det.
+  (trær/planter). Ett faktum bør tåle et kjapt kildesøk hvis noen
+  sjekker det.
+- **Ingen `nordlys`-/`krystall`-fakta.** Faktaene handler om ARTEN, ikke
+  om spillvariantene. Ikke skriv noe om at «denne kan finnes dekket av
+  krystall» — det er spillmekanikk, ikke biologi.
 
 ## Leveranseformat
 
 Én rad per art, i denne rekkefølgen (samme som i `species.js`):
 
 ```
-ulv          | Fakta 1 | Fakta 2
-gaupe        | Fakta 1 | Fakta 2
-rodrev       | Fakta 1 | Fakta 2
-...
+ulv       | Fakta 1 | Fakta 2
+rodrev    | Fakta 1 | Fakta 2
+ekorn     | Fakta 1 | Fakta 2
+kongeorn  | Fakta 1 | Fakta 2
+hoggorm   | Fakta 1 | Fakta 2
+blabar    | Fakta 1 | Fakta 2
 ```
 
-Bruk id-en i venstre kolonne (ikke det norske navnet) — den er
-entydig og matcher direkte mot koden, uten fare for at «Kongeørn»
-og «Havørn» blandes sammen i overføringen.
+Bruk id-en i venstre kolonne (ikke det norske navnet) — entydig, og
+matcher direkte mot koden.
 
-## De 30 artene
+## De 6 artene
 
 | id | Norsk navn | Vitenskapelig | Kategori |
 |---|---|---|---|
 | ulv | Ulv | *Canis lupus* | Pattedyr |
-| gaupe | Gaupe | *Lynx lynx* | Pattedyr |
 | rodrev | Rødrev | *Vulpes vulpes* | Pattedyr |
-| elg | Elg | *Alces alces* | Pattedyr |
-| radyr | Rådyr | *Capreolus capreolus* | Pattedyr |
-| rein | Rein | *Rangifer tarandus* | Pattedyr |
-| jerv | Jerv | *Gulo gulo* | Pattedyr |
-| grevling | Grevling | *Meles meles* | Pattedyr |
 | ekorn | Ekorn | *Sciurus vulgaris* | Pattedyr |
-| hare | Hare | *Lepus timidus* | Pattedyr |
 | kongeorn | Kongeørn | *Aquila chrysaetos* | Fugl |
-| havorn | Havørn | *Haliaeetus albicilla* | Fugl |
-| ravn | Ravn | *Corvus corax* | Fugl |
-| kattugle | Kattugle | *Strix aluco* | Fugl — presisert fra «ugle» |
-| flaggspett | Flaggspett | *Dendrocopos major* | Fugl |
-| dompap | Dompap | *Pyrrhula pyrrhula* | Fugl |
 | hoggorm | Hoggorm | *Vipera berus* | Andre dyr |
-| frosk | Buttsnutefrosk | *Rana temporaria* | Andre dyr — presisert fra «frosk» |
-| humle | Mørk jordhumle | *Bombus terrestris* | Andre dyr — presisert fra «humle» |
-| oyenstikker | Øyenstikker | *Aeshna juncea* | Andre dyr — presisert fra «øyenstikker» |
-| eik | Eik | *Quercus robur* | Plante |
-| bjork | Bjørk | *Betula pubescens* | Plante |
-| gran | Gran | *Picea abies* | Plante |
-| furu | Furu | *Pinus sylvestris* | Plante |
-| rogn | Rogn | *Sorbus aucuparia* | Plante |
 | blabar | Blåbær | *Vaccinium myrtillus* | Plante |
-| tyttebar | Tyttebær | *Vaccinium vitis-idaea* | Plante |
-| rosslyng | Røsslyng | *Calluna vulgaris* | Plante |
-| kantarell | Kantarell | *Cantharellus cibarius* | Sopp |
-| fluesopp | Rød fluesopp | *Amanita muscaria* | Sopp |
+
+Alle seks er entydige arter — ingen er presisert fra et gruppenavn i
+GDD-en, så det er ingen artsvalg å bekrefte denne runden.
 
 ## To eksempler på riktig kalibrering
 
@@ -121,4 +89,4 @@ og «Havørn» blandes sammen i overføringen.
 Send tabellen tilbake. Jeg setter dem inn i `js/data/species.js`
 (erstatter `fakta: [F(1), F(2)]` med de faktiske tekstene) og kjører
 `node games/feltboka/qa/check.mjs`, som da skal rapportere
-**0 plassholder-fakta** i stedet for 60.
+**0 plassholder-fakta** i stedet for 12.

@@ -222,7 +222,8 @@ for (const a of ARTER) {
   }
   if (varianterFor(a).length < 2) klag(`${a.id}: for få varianter igjen`);
 }
-if (ARTER.length !== 30) klag(`MVP-rammen er 30 arter, her er det ${ARTER.length}`);
+const ANTALL_ARTER_MVP = 6;
+if (ARTER.length !== ANTALL_ARTER_MVP) klag(`MVP-rammen er ${ANTALL_ARTER_MVP} arter, her er det ${ARTER.length}`);
 
 const muligeKombinasjoner = ARTER.reduce((s, a) => s + varianterFor(a).length, 0);
 console.log(`  ${ARTER.length} arter · ${muligeKombinasjoner} mulige samleobjekter`);

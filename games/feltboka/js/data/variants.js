@@ -1,23 +1,24 @@
 /* =========================================================
    VARIANTER (GDD pkt. 7 og 8)
-   Seks varianter med hver sin andel. Andelene er relative vekter,
-   ikke prosent — de normaliseres ved trekning. Det betyr at en art
-   som ikke tillater en variant (se `species.js` → `utenVarianter`)
-   automatisk fordeler den variantens andel på resten, uten at noen
-   tall må regnes om for hånd.
 
-   `navnPlante` finnes fordi GDD pkt. 7.4 er tydelig: melanisme er
-   ikke et biologisk fenomen hos planter og sopp, så varianten skal
-   presenteres som «mørk variant» der — ikke feilaktig som melanisme.
+   TONET NED FOR MVP: tre varianter, ikke seks. Vanlig er
+   grunnfunnet; Nordlys og Krystall er de to GDD selv kaller
+   «karakteristiske» (pkt. 7.5–7.6), og ingen av dem bærer en
+   biologisk påstand — begge gjelder derfor likt for dyr og
+   planter, uten unntak. Det er det som gjorde kuttet enkelt:
+   Gyllen, Albino og Melanistisk er de tre som enten er mindre
+   særpregede eller (Albino/Melanistisk) krever art-for-art-unntak
+   for å ikke bli biologisk feil på planter. Se DESIGN.md.
+
+   Andelene er hentet direkte fra GDD-ens egne tall for Nordlys og
+   Krystall (3 % og 1 %); Vanlig tar resten. Vektene er relative,
+   ikke prosent — de normaliseres ved trekning.
    ========================================================= */
 
 export const VARIANTER = [
-  { id: 'vanlig',      navn: 'Vanlig',      andel: 70 },
-  { id: 'gyllen',      navn: 'Gyllen',      andel: 15 },
-  { id: 'albino',      navn: 'Albino',      andel: 6, navnPlante: 'Hvit' },
-  { id: 'melanistisk', navn: 'Melanistisk', andel: 5, navnPlante: 'Mørk' },
-  { id: 'nordlys',     navn: 'Nordlys',     andel: 3 },
-  { id: 'krystall',    navn: 'Krystall',    andel: 1 }
+  { id: 'vanlig',   navn: 'Vanlig',   andel: 96 },
+  { id: 'nordlys',  navn: 'Nordlys',  andel: 3 },
+  { id: 'krystall', navn: 'Krystall', andel: 1 }
 ];
 
 export const VARIANT_IDER = VARIANTER.map(v => v.id);
@@ -28,15 +29,13 @@ export function variant(id) {
   return ETTER_ID.get(id) || null;
 }
 
-/** Visningsnavnet varianten skal ha for akkurat denne arten. */
-export function variantNavn(variantId, art) {
-  const v = ETTER_ID.get(variantId);
-  if (!v) return '';
-  const erVekst = art && (art.kategori === 'plante' || art.kategori === 'sopp');
-  return erVekst && v.navnPlante ? v.navnPlante : v.navn;
+export function variantNavn(variantId, _art) {
+  return ETTER_ID.get(variantId)?.navn || '';
 }
 
-/** Variantene denne arten faktisk kan opptre i (GDD pkt. 7.3). */
+/** Variantene denne arten faktisk kan opptre i. Ingen av de tre har
+    unntak i dag, men arten kan sette `utenVarianter` for å utelukke
+    en variant den ikke passer visuelt til. */
 export function varianterFor(art) {
   const utelatt = new Set(art?.utenVarianter || []);
   return VARIANTER.filter(v => !utelatt.has(v.id));
