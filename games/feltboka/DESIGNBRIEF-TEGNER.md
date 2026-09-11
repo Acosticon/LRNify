@@ -68,20 +68,14 @@ neon eller overdrevent mettede tegnefilmfarger.
 | **Hoggorm** | *Vipera berus* | Kveilet i en S-form, hodet lett hevet. | Det karakteristiske sikksakk-mønsteret langs ryggen — dette er artens tydeligste kjennetegn. | Gapende munn med synlige hoggtenner — dramatisk, men ikke det faktiske kjennetegnet. |
 | **Blåbær** | *Vaccinium myrtillus* | En liten kvist med 2–4 bær og noen få blad. | Bærets mørke blåfiolette farge, med det lille stjerneformede «kronmerket» i bunnen av hvert bær. | Ansikt eller uttrykk på bæret. |
 
-## Om spesialversjoner (bakgrunnsinfo, ikke en del av dette oppdraget)
+## Om spesialversjoner
 
-Senere lages det sjeldnere «funn»-versjoner av samme dyr/plante, laget
-ved å digitalt farge om illustrasjonen din — for eksempel en kjølig,
-nordlysaktig fargebehandling og en frostet/krystallaktig versjon. Du
-trenger ikke tegne disse. Grunnen til at fargeflatene i denne
-instruksen skal være rene og atskilte (se «Tekniske krav»), er nettopp
-for at denne fargeleggingen skal kunne gjøres pent etterpå uten å måtte
-tegne om illustrasjonen.
-
-**Valgfritt tillegg, hvis det er ønskelig:** lag én av de seks artene
-(f.eks. rødreven) som en ekstra studie i disse to fargebehandlingene, så
-vi har en visuell referanse å style etter. Dette er ikke en del av
-kjerneleveransen.
+Senere lages det sjeldnere «funn»-versjoner av samme dyr/plante — en
+egen, oppfølgende brief (`DESIGNBRIEF-TEGNER-VARIANTER.md`) dekker
+disse i detalj når grunntegningene er ferdige. Grunnen til at
+fargeflatene i denne instruksen skal være rene og atskilte (se
+«Tekniske krav»), er at det gjør spesialversjonene enklere å style
+konsekvent etterpå.
 
 ## Leveranse
 

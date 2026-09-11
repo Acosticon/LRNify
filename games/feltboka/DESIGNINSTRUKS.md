@@ -16,9 +16,14 @@ er overkommelig i én runde. Flere arter senere er en ren datautvidelse
 i `js/data/species.js`, og denne instruksen gjelder likt for dem.
 
 Skal illustrasjonene ut til en ekstern tegner uten kjennskap til
-prosjektet, bruk `DESIGNBRIEF-TEGNER.md` i stedet for denne fila — den
-er selvstendig og fri for kodereferanser. Denne fila er for den som
-kobler de ferdige illustrasjonene inn i spillet.
+prosjektet, bruk `DESIGNBRIEF-TEGNER.md` (grunntegninger) og
+`DESIGNBRIEF-TEGNER-VARIANTER.md` (Nordlys/Krystall) i stedet for denne
+fila — de er selvstendige og fri for kodereferanser. Denne fila er for
+den som kobler de ferdige illustrasjonene inn i spillet.
+
+**Status:** de 6 grunntegningene («Vanlig») er levert. Variantene er
+bestilt som ferdig håndtegnede illustrasjoner (Vei B under), ikke som
+et CSS-fargelag — se hvorfor i avsnitt 3.
 
 ---
 
@@ -102,13 +107,15 @@ i denne størrelsen, og gir mest kontroll: en krystallulv kan se
 grunnleggende annerledes ut enn en vanlig ulv, ikke bare omfarget. Koster
 mer hver gang en ny art legges til (tre filer, ikke én).
 
-**Anbefaling: Vei A.** Tre varianter som skal virke konsekvent på tvers
-av arter (se fargespec under) egner seg godt som et lag, og listen over
-arter kommer mest sannsynlig til å vokse igjen etter denne runden — da
-er det A som holder produksjonskostnaden nede. Vei B er det riktige
-valget bare hvis nordlys/krystall skal se kvalitativt forskjellig ut fra
-art til art (f.eks. at krystall-hoggormen har helt andre fasetter enn
-krystall-ulven), ikke bare omfarget.
+**Valgt: Vei B.** Tegneren leverer alle 18 som ferdige illustrasjoner —
+se `DESIGNBRIEF-TEGNER-VARIANTER.md` for den fulle spesifikasjonen som
+ble sendt. Prisen (tre filer i stedet for én per ny art senere) ble
+vurdert som verdt det for å få variantene håndtegnet i samme kvalitet
+som grunntegningene, i stedet for en programmatisk fargebehandling.
+`js/art.js` må derfor utvides til å hente inn 18 faktiske filer per
+art+variant, ikke lenger tegne formen selv og la CSS-variantklassen
+style den — det er en kodejobb som gjøres når filene er levert, ikke en
+del av selve designarbeidet.
 
 Uansett vei:
 
