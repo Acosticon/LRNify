@@ -96,6 +96,14 @@
   }
   .lenkeknapp:active{ transform:none; }
 
+  .sidelenke{
+    background:none; border:none; box-shadow:none; padding:0; margin:0;
+    font:inherit; font-weight:800; color:var(--ink); text-decoration:underline;
+    text-decoration-color:transparent; cursor:pointer; text-align:left;
+  }
+  .sidelenke:hover, .sidelenke:focus-visible{ text-decoration-color:currentColor; }
+  .sidelenke:active{ transform:none; }
+
   #dagTabell{ max-height:340px; overflow:auto; margin-top:12px; border-top:2px solid #efe7d8; padding-top:10px; }
 
   .graf-avkryss{ display:flex; }
@@ -197,6 +205,28 @@
     </div>
   </div>
 
+  <div id="sideDetalj" class="skjult">
+    <button type="button" class="lenkeknapp" id="tilbakeKnapp" style="margin:0 0 14px;">← Tilbake til oversikten</button>
+    <h1 id="sideDetaljTittel" style="margin-bottom:18px;"></h1>
+
+    <div class="tall-rad" id="sideDetaljTall"></div>
+
+    <div class="kort">
+      <h2>Utvikling over tid</h2>
+      <div class="graf-boks" id="sideDetaljGrafBoks">
+        <svg id="sideDetaljGraf" viewBox="0 0 800 260" preserveAspectRatio="none" role="img" aria-label="Utvikling over tid for siden"></svg>
+        <div id="sideDetaljTooltip" class="tooltip skjult" role="status" aria-live="polite"></div>
+      </div>
+      <div class="dag-akse"><span id="sideDetaljAkseFra"></span><span id="sideDetaljAkseTil"></span></div>
+      <div class="graf-legend" id="sideDetaljLegend"></div>
+    </div>
+
+    <div class="kort">
+      <h2>Tall per dag</h2>
+      <div id="sideDetaljTabell"></div>
+    </div>
+  </div>
+
   <p class="fotnote">
     Tallene er anonyme opptellinger — én strek per sidevisning, uten
     informasjonskapsler, uten IP-adresse og uten noe som kan spores tilbake
@@ -258,10 +288,50 @@ const norskDato=d=>new Date(d+'T12:00:00').toLocaleDateString('nb-NO',{day:'nume
 const FARGE_TOTALT='#2a78d6';
 const SIDEFARGER=['#eb6834','#1baf7a','#eda100','#e87ba4','#008300','#4a3aa7','#e34948'];
 
+/* Varighetsbøtter: konvensjonen et spill kan følge for å rapportere hvor
+   lenge sida var åpen, uten å lagre noe per besøkende (se
+   bruk/README.md — «Varighet»). Følger et spill navnene under, regner
+   dashbordet ut et anslått snitt (fra bøtte-midtpunkt) og en
+   median-bøtte helt automatisk. */
+const VARIGHET_BOLKER=[
+  { id:'varighet-under1',  navn:'Under 1 min', midt:30 },
+  { id:'varighet-1-5min',  navn:'1–5 min',      midt:165 },
+  { id:'varighet-5-15min', navn:'5–15 min',     midt:600 },
+  { id:'varighet-over15',  navn:'Over 15 min',  midt:1200 }
+];
+const VARIGHET_NAVN=new Map(VARIGHET_BOLKER.map(b=>[b.id,b.navn]));
+/* Pyntenavn for en hendelse — kjente varighetsbøtter får et lesbart navn,
+   alt annet vises som det er (samme hendelsesnavn som spillet sender). */
+const visningsnavn=h=>VARIGHET_NAVN.get(h)||h;
+
+function formatVarighet(sek){
+  const min=Math.floor(sek/60), s=Math.round(sek%60);
+  if(min<=0) return s+' s';
+  if(s===0) return min+' min';
+  return min+' min '+s+' s';
+}
+
+/* Snitt (fra bøtte-midtpunkt, derfor «anslag») og median-bøtte for
+   varighet, for én sides hendelser i valgt periode. Tomt uten data. */
+function varighetTallHtml(perHendelse){
+  const rader=VARIGHET_BOLKER.map(b=>({
+    ...b, antall: dagsliste.reduce((s,d)=>s+((perHendelse[b.id]&&perHendelse[b.id][d])||0),0)
+  }));
+  const totalt=rader.reduce((s,r)=>s+r.antall,0);
+  if(!totalt) return '';
+  const snittSek=rader.reduce((s,r)=>s+r.antall*r.midt,0)/totalt;
+  let kum=0, medianNavn=rader[rader.length-1].navn;
+  for(const r of rader){ kum+=r.antall; if(kum>=totalt/2){ medianNavn=r.navn; break; } }
+  return `
+    <div class="talle"><div class="verdi">${formatVarighet(snittSek)}</div><div class="navn">Snitt varighet (anslag)</div></div>
+    <div class="talle"><div class="verdi">${medianNavn}</div><div class="navn">Median varighet</div></div>`;
+}
+
 /* Tilstand som overlever et redraw av grafen — avkryssing i tabellen skal
    ikke kreve et nytt kall mot Firebase, bare en ny tegning. */
 let sisteData=null, sisteFra=null;
-let dagsliste=[], perDag={}, perDagSide={};
+let dagsliste=[], perDag={}, perDagSide={}, perDagSideHendelse={};
+let gjeldendeSide=null;
 let visTotalt=true;
 const valgtSider=new Set();
 const sidefarge=new Map(); // side -> indeks i SIDEFARGER
@@ -287,6 +357,65 @@ tabellKnapp.onclick=()=>{
   if(!vis) tegnDagTabell();
 };
 
+document.getElementById('tilbakeKnapp').onclick=visOversikt;
+
+/* Hvilket panel — oversikten eller én sides detaljer — som skal vises,
+   avhenger bare av gjeldendeSide. Kalles etter hvert redraw slik at et
+   periodebytte midt i en sidedetalj ikke hopper tilbake til oversikten. */
+function visRiktigPanel(){
+  document.getElementById('rapport').classList.toggle('skjult', !!gjeldendeSide);
+  document.getElementById('sideDetalj').classList.toggle('skjult', !gjeldendeSide);
+}
+function visSideDetalj(side){
+  gjeldendeSide=side;
+  visRiktigPanel();
+  tegnSideDetalj();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function visOversikt(){
+  gjeldendeSide=null;
+  visRiktigPanel();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* Alle hendelser for én side, som egne linjer i samme graf/tabell-oppsett
+   som dashbordet — «visning» får dashbordets blåfarge, resten deler
+   SIDEFARGER-paletten. Bruker sisteData via perDagSideHendelse, som
+   allerede er regnet ut av tegn() — ingen nytt kall mot Firebase. */
+function tegnSideDetalj(){
+  const perHendelse=perDagSideHendelse[gjeldendeSide]||{};
+  const navnHendelser=Object.keys(perHendelse).sort((a,b)=>
+    a==='visning' ? -1 : b==='visning' ? 1 : a.localeCompare(b,'nb'));
+
+  document.getElementById('sideDetaljTittel').textContent=gjeldendeSide;
+
+  const varighetHtml=varighetTallHtml(perHendelse);
+  const hendelseHtml=navnHendelser.map(h=>{
+    const verdi=dagsliste.reduce((sum,d)=>sum+(perHendelse[h][d]||0),0);
+    return `<div class="talle"><div class="verdi">${verdi.toLocaleString('nb-NO')}</div><div class="navn">${visningsnavn(h)}</div></div>`;
+  }).join('');
+  document.getElementById('sideDetaljTall').innerHTML =
+    (varighetHtml+hendelseHtml) || '<p class="tom">Ingen tall for denne siden i perioden.</p>';
+
+  const serier=navnHendelser.map((h,i)=>({
+    id:h, navn:visningsnavn(h),
+    farge: h==='visning' ? FARGE_TOTALT : SIDEFARGER[i%SIDEFARGER.length],
+    verdier: dagsliste.map(d=>perHendelse[h][d]||0)
+  }));
+
+  tegnLinjeGraf({
+    svg: document.getElementById('sideDetaljGraf'),
+    legend: document.getElementById('sideDetaljLegend'),
+    tooltip: document.getElementById('sideDetaljTooltip'),
+    boks: document.getElementById('sideDetaljGrafBoks'),
+    akseFra: document.getElementById('sideDetaljAkseFra'),
+    akseTil: document.getElementById('sideDetaljAkseTil')
+  }, serier);
+
+  document.getElementById('sideDetaljTabell').innerHTML =
+    tabellHtmlForSerier(serier, 'Ingen tall for denne siden i perioden.');
+}
+
 async function hentOgTegn(){
   const status=document.getElementById('status');
   const rapport=document.getElementById('rapport');
@@ -310,9 +439,10 @@ async function hentOgTegn(){
   }
 
   status.innerHTML='';
-  rapport.classList.remove('skjult');
   sisteData=data; sisteFra=fra;
   tegn(data, fra);
+  visRiktigPanel();
+  if(gjeldendeSide) tegnSideDetalj();
 }
 
 function tegn(data, fra){
@@ -323,7 +453,7 @@ function tegn(data, fra){
   dagsliste=[];
   for(let i=0;i<dagerValgt;i++) dagsliste.push(dato(new Date(fra.getTime()+i*86400000)));
 
-  perDag={}; perDagSide={};
+  perDag={}; perDagSide={}; perDagSideHendelse={};
   const perSide={}, hendelser=new Set();
   for(const [d,sider] of Object.entries(data)){
     for(const [side,tellere] of Object.entries(sider||{})){
@@ -337,6 +467,9 @@ function tegn(data, fra){
         }
         perSide[side]=perSide[side]||{};
         perSide[side][h]=(perSide[side][h]||0)+n;
+        perDagSideHendelse[side]=perDagSideHendelse[side]||{};
+        perDagSideHendelse[side][h]=perDagSideHendelse[side][h]||{};
+        perDagSideHendelse[side][h][d]=(perDagSideHendelse[side][h][d]||0)+n;
       }
     }
   }
@@ -363,7 +496,7 @@ function tegn(data, fra){
   const graffull=valgtSider.size>=SIDEFARGER.length;
   document.getElementById('tabell').innerHTML = sider.length ? `
     <table>
-      <thead><tr><th class="graf-th">Graf</th><th>Side</th><th class="tall">Visninger</th>${ekstra.map(h=>`<th class="tall">${h}</th>`).join('')}</tr></thead>
+      <thead><tr><th class="graf-th">Graf</th><th>Side</th><th class="tall">Visninger</th>${ekstra.map(h=>`<th class="tall">${visningsnavn(h)}</th>`).join('')}</tr></thead>
       <tbody>${sider.map(([side,t])=>{
         const valgt=valgtSider.has(side);
         const farge=valgt?fargeForSide(side):null;
@@ -373,7 +506,7 @@ function tegn(data, fra){
             <input type="checkbox" data-side="${side}" ${valgt?'checked':''} ${(!valgt&&graffull)?'disabled':''}>
           </label></td>
           <td class="navn">
-            ${side}
+            <button type="button" class="sidelenke" data-vis-side="${side}">${side}</button>
             <div class="stolpe" style="width:${Math.round((t.visning||0)/maksSide*100)}%${farge?`;background:${farge};border-color:${farge}`:''}"></div>
           </td>
           <td class="tall">${(t.visning||0).toLocaleString('nb-NO')}</td>
@@ -394,6 +527,9 @@ function tegn(data, fra){
       }
       tegn(sisteData, sisteFra);
     };
+  });
+  document.querySelectorAll('#tabell [data-vis-side]').forEach(b=>{
+    b.onclick=()=>visSideDetalj(b.dataset.visSide);
   });
 
   tegnGraf();
@@ -434,15 +570,15 @@ function penTrinn(maks, antallLinjer){
   return { steg, maks:Math.ceil(maks/steg)*steg };
 }
 
-function tegnGraf(){
-  const svg=document.getElementById('graf');
-  const legend=document.getElementById('grafLegend');
+/* Delt av dashbordgrafen og sidedetaljens graf: tegner et sett serier over
+   dagsliste inn i els.svg, med tooltip/krysshår via koblePeker(). */
+function tegnLinjeGraf(els, aktive){
+  const svg=els.svg;
   const {W,H,padL,padR,padT,padB}=GRAF;
   const plotW=W-padL-padR, plotH=H-padT-padB;
   const n=dagsliste.length;
   const xFor=i=> n<=1 ? padL+plotW/2 : padL+i/(n-1)*plotW;
 
-  const aktive=aktiveSerier();
   const maksRaatt=Math.max(1,...aktive.flatMap(s=>s.verdier));
   const {steg,maks:maksY}=penTrinn(maksRaatt,4);
   const yFor=v=> padT+plotH-(v/maksY*plotH);
@@ -505,28 +641,41 @@ function tegnGraf(){
 
   svg.innerHTML=inn;
 
-  legend.innerHTML = aktive.length>1
+  if(els.legend) els.legend.innerHTML = aktive.length>1
     ? aktive.map(s=>`<span class="rad"><span class="legend-strek" style="background:${s.farge}"></span>${s.navn}</span>`).join('')
     : '';
 
-  document.getElementById('akse-fra').textContent=dagsliste.length?norskDato(dagsliste[0]):'';
-  document.getElementById('akse-til').textContent=dagsliste.length?norskDato(dagsliste[dagsliste.length-1]):'';
+  if(els.akseFra) els.akseFra.textContent=dagsliste.length?norskDato(dagsliste[0]):'';
+  if(els.akseTil) els.akseTil.textContent=dagsliste.length?norskDato(dagsliste[dagsliste.length-1]):'';
 
-  koblePeker(svg, aktive, xFor, yFor, n);
+  koblePeker(els, aktive, xFor, yFor, n);
+}
 
+/* Dashbordets linjegraf: totalen (hvis avkrysset) og sidene som er huket av
+   i tabellen over. */
+function tegnGraf(){
+  tegnLinjeGraf({
+    svg: document.getElementById('graf'),
+    legend: document.getElementById('grafLegend'),
+    tooltip: document.getElementById('tooltip'),
+    boks: document.getElementById('grafBoks'),
+    akseFra: document.getElementById('akse-fra'),
+    akseTil: document.getElementById('akse-til')
+  }, aktiveSerier());
   if(!document.getElementById('dagTabell').classList.contains('skjult')) tegnDagTabell();
 }
 
 /* Peker- og tastaturstyrt krysshår: viser dato + verdi for hver aktive
    serie på én gang, slik at man kan lese tall per dag per side uten å
    måtte treffe akkurat på linja. */
-function koblePeker(svg, aktive, xFor, yFor, n){
+function koblePeker(els, aktive, xFor, yFor, n){
+  const svg=els.svg;
   const felt=svg.querySelector('#pekerfelt');
   const krysshar=svg.querySelector('#krysshar');
   const linje=svg.querySelector('#krysshar-linje');
   const punkter=[...svg.querySelectorAll('.krysshar-punkt')];
-  const tooltip=document.getElementById('tooltip');
-  const boks=document.getElementById('grafBoks');
+  const tooltip=els.tooltip;
+  const boks=els.boks;
   let gjeldendeIndeks=n-1;
 
   function visIndeks(i){
@@ -574,20 +723,24 @@ function koblePeker(svg, aktive, xFor, yFor, n){
 
 /* Tabellvisningen av grafen — de nøyaktige tallene per dag per side, uten
    å måtte peke på grafen for å lese dem av. */
-function tegnDagTabell(){
-  const aktive=aktiveSerier();
-  const mal=document.getElementById('dagTabell');
-  if(!aktive.length){ mal.innerHTML='<p class="tom">Velg totalen eller minst én side over for å se tabellen.</p>'; return; }
-  mal.innerHTML=`
+/* Delt av dagstabellen på dashbordet og «Tall per dag» i sidedetaljen. */
+function tabellHtmlForSerier(serier, tomMelding){
+  if(!serier.length) return `<p class="tom">${tomMelding}</p>`;
+  return `
     <table>
-      <thead><tr><th>Dato</th>${aktive.map(s=>`<th class="tall">${s.navn}</th>`).join('')}</tr></thead>
+      <thead><tr><th>Dato</th>${serier.map(s=>`<th class="tall">${s.navn}</th>`).join('')}</tr></thead>
       <tbody>${dagsliste.map((d,i)=>`
         <tr>
           <td class="navn">${norskDato(d)}</td>
-          ${aktive.map(s=>`<td class="tall">${(s.verdier[i]||0).toLocaleString('nb-NO')}</td>`).join('')}
+          ${serier.map(s=>`<td class="tall">${(s.verdier[i]||0).toLocaleString('nb-NO')}</td>`).join('')}
         </tr>`).join('')}
       </tbody>
     </table>`;
+}
+
+function tegnDagTabell(){
+  document.getElementById('dagTabell').innerHTML =
+    tabellHtmlForSerier(aktiveSerier(), 'Velg totalen eller minst én side over for å se tabellen.');
 }
 
 /* Søylediagram over topp 5 spill — i dag og siste 7 dager. Et «spill» er en

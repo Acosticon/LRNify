@@ -1650,6 +1650,23 @@ $('hubScreen').classList.remove('hidden');
   if(region && REGION_ORDER.includes(region)) openSetup(region);
 })();
 
+/* Varighet: hvor lenge sida var åpen, i grove bøtter (se bruk/README.md).
+   Målt fra sida lastet til den skjules – ikke ren spilletid (den løper
+   også i hub/oppsett), og ikke ett tall per bruker, bare én av fire
+   bøtter sendt anonymt via samme /bruk/-teller som resten av sida. Ingen
+   økt-id lagres noe sted, bare et tidspunkt i en vanlig JS-variabel. */
+(function(){
+  const lastet=Date.now();
+  let sendt=false;
+  function sendVarighet(){
+    if(sendt) return; sendt=true;
+    const sek=(Date.now()-lastet)/1000;
+    bruk(sek<60?'varighet-under1':sek<300?'varighet-1-5min':sek<900?'varighet-5-15min':'varighet-over15');
+  }
+  document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') sendVarighet(); });
+  addEventListener('pagehide', sendVarighet);
+})();
+
 /* ---------------- test-hooks ---------------- */
 window.__game={
   S, REGIONS, evaluate, start, openSetup, showStep2, toHub, quizForRound, LB, renderLB, printMap, passGet, medalFor,
