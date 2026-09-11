@@ -447,19 +447,19 @@ async function hentOgTegn(){
 
 function tegn(data, fra){
   /* data: { '2026-03-04': { 'games-3s1f': { visning: 12, ... } } }
-     Hendelsesnavn leses ut av dataene, ikke fra en fast liste — legger et
-     spill til «runde-fullfort» senere, dukker den opp som kolonne her av
-     seg selv. */
+     Forsiden viser bare visninger — andre hendelser (runde-fullfort,
+     riktig-svar osv.) gir ikke mening på tvers av alle sider, siden de
+     færreste spill sender dem. De vises i stedet i sidedetaljen
+     (tegnSideDetalj), som allerede leser dem ut av dataene automatisk. */
   dagsliste=[];
   for(let i=0;i<dagerValgt;i++) dagsliste.push(dato(new Date(fra.getTime()+i*86400000)));
 
   perDag={}; perDagSide={}; perDagSideHendelse={};
-  const perSide={}, hendelser=new Set();
+  const perSide={};
   for(const [d,sider] of Object.entries(data)){
     for(const [side,tellere] of Object.entries(sider||{})){
       for(const [h,n] of Object.entries(tellere||{})){
         if(typeof n!=='number') continue;
-        hendelser.add(h);
         if(h==='visning'){
           perDag[d]=(perDag[d]||0)+n;
           perDagSide[side]=perDagSide[side]||{};
@@ -491,12 +491,11 @@ function tegn(data, fra){
      skal ikke henge igjen som en flat, tom linje i grafen. */
   for(const side of [...valgtSider]) if(!perSide[side]){ valgtSider.delete(side); sidefarge.delete(side); }
 
-  const ekstra=[...hendelser].filter(h=>h!=='visning').sort();
   const maksSide=Math.max(1,...sider.map(([,t])=>t.visning||0));
   const graffull=valgtSider.size>=SIDEFARGER.length;
   document.getElementById('tabell').innerHTML = sider.length ? `
     <table>
-      <thead><tr><th class="graf-th">Graf</th><th>Side</th><th class="tall">Visninger</th>${ekstra.map(h=>`<th class="tall">${visningsnavn(h)}</th>`).join('')}</tr></thead>
+      <thead><tr><th class="graf-th">Graf</th><th>Side</th><th class="tall">Visninger</th></tr></thead>
       <tbody>${sider.map(([side,t])=>{
         const valgt=valgtSider.has(side);
         const farge=valgt?fargeForSide(side):null;
@@ -510,7 +509,6 @@ function tegn(data, fra){
             <div class="stolpe" style="width:${Math.round((t.visning||0)/maksSide*100)}%${farge?`;background:${farge};border-color:${farge}`:''}"></div>
           </td>
           <td class="tall">${(t.visning||0).toLocaleString('nb-NO')}</td>
-          ${ekstra.map(h=>`<td class="tall">${t[h]?t[h].toLocaleString('nb-NO'):'–'}</td>`).join('')}
         </tr>`;}).join('')}
       </tbody>
     </table>`
