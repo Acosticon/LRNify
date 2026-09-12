@@ -123,10 +123,14 @@ h3 { font-size: .95rem; margin: 22px 0 8px; }
   background: var(--flate); color: var(--blekk);
 }
 .svarfelt:focus { outline: 2px solid var(--aksent); outline-offset: 1px; }
+.svarfelt:disabled { opacity: .6; }
 
 .tilbakemelding { min-height: 1.5em; margin: 12px 0 0; font-weight: 600; }
 .tilbakemelding.er-riktig { color: var(--riktig); }
 .tilbakemelding.er-feil { color: var(--feil); }
+.tilbakemelding.er-fasit { color: var(--dempet); }
+
+#fasitknapp { margin-top: 4px; }
 
 /* --- Funnskjermen --- */
 

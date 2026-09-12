@@ -24,6 +24,7 @@ let valgtNiva = 'lett';
 let aktivOppgave = null;
 let autolukkTimer = null;
 let feilTimer = null;
+let fasitVises = false;
 
 /* ---------- Skjermbytte ---------- */
 
@@ -100,9 +101,33 @@ function nyOppgave() {
   $('svarhjelp').textContent = svarHjelp(aktivOppgave.svarform);
   const felt = $('svar');
   felt.value = '';
+  felt.disabled = false;
   felt.inputMode = aktivOppgave.tastatur === 'tekst' ? 'text' : 'decimal';
   felt.focus();
+  fasitVises = false;
+  $('fasitknapp').textContent = 'Vis fasit';
   tegnFramgang();
+}
+
+/**
+ * «Jeg står fast»-knappen (GDD-oppfølging, ikke i v0.1): viser fasiten
+ * og lar eleven gå videre uten at oppgaven telles som verken riktig
+ * eller feil. Ingen progresjon, ingen streak-endring, ingen registrering
+ * i det hele tatt — motoren spørres aldri om svaret var riktig.
+ */
+function fasitKlikk() {
+  if (!aktivOppgave) return;
+  if (!fasitVises) {
+    fasitVises = true;
+    $('svar').disabled = true;
+    $('tilbakemelding').textContent = `Fasit: ${aktivOppgave.fasitTekst}`;
+    $('tilbakemelding').className = 'tilbakemelding er-fasit';
+    $('fasitknapp').textContent = 'Neste oppgave';
+    return;
+  }
+  $('tilbakemelding').textContent = '';
+  $('tilbakemelding').className = 'tilbakemelding';
+  nyOppgave();
 }
 
 function tegnFramgang() {
@@ -116,6 +141,7 @@ function tegnFramgang() {
 
 function svar(e) {
   e.preventDefault();
+  if (fasitVises) return;
   const felt = $('svar');
   const resultat = sjekkSvar(aktivOppgave, felt.value);
   if (resultat.tomt) return;
@@ -294,6 +320,7 @@ document.title = CONFIG.tittel;
 
 $('start').addEventListener('click', startTrening);
 $('svarform').addEventListener('submit', svar);
+$('fasitknapp').addEventListener('click', fasitKlikk);
 $('avslutt').addEventListener('click', () => { aktivOppgave = null; visSkjerm('velg'); });
 $('funnlukk').addEventListener('click', lukkFunn);
 $('arttilbake').addEventListener('click', () => { tegnSamling(); visSkjerm('samling'); });

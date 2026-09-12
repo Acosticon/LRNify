@@ -99,6 +99,46 @@ først regnes som løst når den er riktig (GDD pkt. 17), lagres tallet én
 gang, og statistikksiden viser i stedet *oppgaver løst* og *svar sendt
 inn* — to tall som faktisk kan skille seg fra hverandre.
 
+## Nivåkalibrering
+
+Etter en gjennomgang viste det seg at Lett noen steder var like tungt
+tallmessig som Middels — i negative tall var Lett-området (2–15) til og
+med *videre* enn Middels sitt (2–12). Rettet i alle seks temaene, med
+et felles prinsipp: hvert nivå skal legge til enten et nytt strukturelt
+steg (parentes, fortegn, regel) *eller* et større tallområde — aldri
+begge samtidig på Lett→Middels-overgangen. Likninger var allerede
+kalibrert riktig (én invers operasjon → to → distribuering) og er
+malen resten er justert etter.
+
+**Potenser** fikk den grundigste gjennomgangen, siden temaets hensikt er
+forenkling og potensregler, ikke bare regning:
+
+- Lett: kvadrat/kubikk for grunntall 1–5, kvadrat for grunntall 6–10
+  (unngår store kubikktall som 7³), nullregelen (grunntall² 2–10 i 0 er
+  alltid 1), og tierpotenser.
+- Middels: produkt/kvotient av potenser med samme grunntall, med
+  kombinert eksponent begrenset per grunntall (`maksKombinert` i
+  `topics/potenser.js`) — grunntall 2 tåler mer enn grunntall 5, ellers
+  hadde svaret sprengt seg selv.
+- Vanskelig: en brøk av produkter, `(a^b · a^c) : (a^d · a^e)`, funnet
+  ved avvist-og-prøv-igjen-trekning innenfor samme eksponentgrense.
+
+Svaret er fortsatt alltid tallverdien, ikke potensform — bevisst valg
+(se samtalen som ledet fram til dette): tallene er valgt slik at det er
+tydelig lettere å slå sammen eksponentene først enn å regne ut hvert
+ledd for seg, så regelen testes indirekte uten at motoren trenger en
+egen svarform for potensuttrykk.
+
+## «Vis fasit»
+
+En knapp på oppgaveskjermen (ikke i GDD v0.1 — lagt til etter ønske om
+en vei ut når eleven står fast). Viser fasiten og lar eleven gå videre,
+uten at oppgaven noensinne sendes til `sjekkSvar` — den teller altså
+verken som riktig eller feil, og rører ingen progresjon eller streak.
+Svarfeltet låses mens fasiten vises, og knappen bytter til
+«Neste oppgave» til eleven selv velger å gå videre — ingen tidsstyrt
+autolukking, i tråd med at eleven skal lese fasiten i sitt eget tempo.
+
 ## QA
 
 ```

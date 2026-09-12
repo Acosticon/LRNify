@@ -3,7 +3,15 @@ import { heltall, velg } from './util.js';
 
 /* Regnerekkefølge (GDD pkt. 15 A). Ingen uttrykk evalueres — hver
    form regner ut sitt eget svar. Da finnes det ingen parser som kan
-   være uenig med fasiten, og ingen eval i en elevrettet nettside. */
+   være uenig med fasiten, og ingen eval i en elevrettet nettside.
+
+   Nivåene (satt etter en gjennomgang — se DESIGN.md, «Nivåkalibrering»):
+   Lett skal være ett multiplikasjonsledd og ett addisjons-/
+   subtraksjonsledd, ingen parentes, små faktorer (2–5). Middels
+   innfører parentes, med faktorer opp til 9 — samme tallområde som
+   før, bare med strukturen lagt til. Vanskelig legger et ekstra ledd
+   eller en divisjon oppå parentesen. Poenget er at hvert nivå skal
+   kreve ett nytt steg, ikke bare et større tall. */
 
 export default {
   id: 'regnerekkefolge',
@@ -12,11 +20,12 @@ export default {
   svarform: 'tall',
 
   lett(rand) {
-    const a = heltall(rand, 2, 12), b = heltall(rand, 2, 9), c = heltall(rand, 2, 9);
+    const b = heltall(rand, 2, 5), c = heltall(rand, 2, 5);
     if (velg(rand, [0, 1]) === 0) {
+      const a = heltall(rand, 2, 10);
       return { sporsmal: `${a} + ${b} · ${c}`, fasit: br(a + b * c) };
     }
-    const d = heltall(rand, 1, b * c - 1);
+    const d = heltall(rand, 1, Math.min(10, b * c - 1));
     return { sporsmal: `${b} · ${c} - ${d}`, fasit: br(b * c - d) };
   },
 
@@ -24,12 +33,12 @@ export default {
     const form = heltall(rand, 0, 2);
     if (form === 0) {
       const a = heltall(rand, 2, 9), b = heltall(rand, 2, 9), c = heltall(rand, 2, 6);
-      const d = heltall(rand, 1, 15);
+      const d = heltall(rand, 1, 12);
       return { sporsmal: `(${a} + ${b}) · ${c} - ${d}`, fasit: br((a + b) * c - d) };
     }
     if (form === 1) {
       const a = heltall(rand, 3, 9), b = heltall(rand, 2, 8), c = heltall(rand, 2, 8);
-      const d = heltall(rand, 1, a + b * c - 1);
+      const d = heltall(rand, 1, Math.min(12, a + b * c - 1));
       return { sporsmal: `${a} + ${b} · ${c} - ${d}`, fasit: br(a + b * c - d) };
     }
     const a = heltall(rand, 2, 9), b = heltall(rand, 2, 9);

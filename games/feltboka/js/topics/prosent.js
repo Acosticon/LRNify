@@ -8,9 +8,14 @@ import { heltall, velg } from './util.js';
    12 %, så et grunntall — gir «12 % av 240 = 28,8», som verken er et
    heltall eller noe en åttendeklassing skal møte på lett nivå. */
 
+/* Lett skal bare inneholde prosenter som løses med del-på-metoden
+   (10 %, 25 %, 50 %) — ingen ekte multiplikasjon trengs. 20 % og 75 %
+   lå i Lett før, men krever et reelt regnestykke, ikke bare et
+   gjenkjennelig triks; de er nå Middels sitt nivå sammen med de andre
+   «vanlige» prosentene. */
 const SATSER = {
-  lett: [10, 20, 25, 50, 75],
-  middels: [5, 12, 15, 30, 35, 40, 60, 80],
+  lett: [10, 25, 50],
+  middels: [5, 15, 20, 30, 40],
   vanskelig: [5, 15, 20, 25, 40, 60]
 };
 
@@ -36,12 +41,12 @@ export default {
   svarform: 'tall',
 
   lett(rand) {
-    const { n, p } = satsFor(rand, grunntall(rand, 2, 20), SATSER.lett);
+    const { n, p } = satsFor(rand, grunntall(rand, 1, 10), SATSER.lett);
     return { sporsmal: `Hva er ${p} % av ${n}?`, fasit: br((n * p) / 100) };
   },
 
   middels(rand) {
-    const { n, p } = satsFor(rand, grunntall(rand, 2, 24), SATSER.middels);
+    const { n, p } = satsFor(rand, grunntall(rand, 2, 25), SATSER.middels);
     return { sporsmal: `Hva er ${p} % av ${n}?`, fasit: br((n * p) / 100) };
   },
 
