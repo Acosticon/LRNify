@@ -25,7 +25,8 @@ const MEDIESTI = 'media/arter/';
 
 /** Legg til en art her når filene for den er levert og lagt i media/arter/. */
 const EKTE_BILDER = {
-  ulv: { vanlig: 'ulv-vanlig.png', nordlys: 'ulv-nordlys.png', krystall: 'ulv-krystall.png' }
+  ulv:    { vanlig: 'ulv-vanlig.png',    nordlys: 'ulv-nordlys.png',    krystall: 'ulv-krystall.png' },
+  rodrev: { vanlig: 'rodrev-vanlig.png', nordlys: 'rodrev-nordlys.png', krystall: 'rodrev-krystall.png' }
 };
 
 const FORMER = {
