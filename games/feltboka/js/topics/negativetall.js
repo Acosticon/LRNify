@@ -1,7 +1,14 @@
 import { br } from '../rational.js';
 import { heltall, velg, paren } from './util.js';
 
-/* Negative tall (GDD pkt. 15 B). */
+/* Negative tall (GDD pkt. 15 B).
+
+   Nivåene: Lett er ett fortegnsskifte i én operasjon, tall 2–10 —
+   tallområdet var tidligere 2–15, altså videre enn Middels sitt eget
+   2–12. Det var trolig hovedgrunnen til at Lett kunne føles tyngre
+   enn Middels; rettet her. Middels innfører dobbelt fortegn (trekke
+   fra et negativt tall, eller gange med fortegn). Vanskelig
+   kombinerer et produkt av to negative tall med addisjon/subtraksjon. */
 
 export default {
   id: 'negativetall',
@@ -12,7 +19,7 @@ export default {
 
   lett(rand) {
     const form = heltall(rand, 0, 2);
-    const a = heltall(rand, 2, 15), b = heltall(rand, 2, 15);
+    const a = heltall(rand, 2, 10), b = heltall(rand, 2, 10);
     if (form === 0) return { sporsmal: `-${a} + ${b}`, fasit: br(b - a) };
     if (form === 1) return { sporsmal: `${a} - ${a + b}`, fasit: br(-b) };
     return { sporsmal: `-${a} - ${b}`, fasit: br(-a - b) };

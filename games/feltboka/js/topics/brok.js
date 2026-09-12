@@ -13,8 +13,11 @@ export default {
   tastatur: 'tekst',        // svaret trenger «/»
 
   lett(rand) {
-    // Samme nevner. Svaret holder seg under 1 så det leses som en brøk.
-    const n = heltall(rand, 3, 10);
+    // Samme nevner, holdt lav (3–6) — nevnerne 7–10 hørte egentlig
+    // ikke hjemme her, siden selve poenget med Lett er at man slipper
+    // å tenke på fellesnevner i det hele tatt. Svaret holder seg under
+    // 1 så det leses som en brøk.
+    const n = heltall(rand, 3, 6);
     const a = heltall(rand, 1, n - 2);
     const b = heltall(rand, 1, n - 1 - a);
     if (velg(rand, [0, 1]) === 0) {
