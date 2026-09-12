@@ -21,9 +21,10 @@ prosjektet, bruk `DESIGNBRIEF-TEGNER.md` (grunntegninger) og
 fila — de er selvstendige og fri for kodereferanser. Denne fila er for
 den som kobler de ferdige illustrasjonene inn i spillet.
 
-**Status:** de 6 grunntegningene («Vanlig») er levert. Variantene er
-bestilt som ferdig håndtegnede illustrasjoner (Vei B under), ikke som
-et CSS-fargelag — se hvorfor i avsnitt 3.
+**Status: ferdig.** Alle 18 illustrasjoner (6 arter × Vanlig/Nordlys/
+Krystall) er levert, kontrollert mot kravene under og koblet inn i
+`js/art.js` → `EKTE_BILDER`. Plassholderformene i denne fila brukes nå
+bare som mal hvis arts-utvalget utvides senere.
 
 ---
 
@@ -217,10 +218,15 @@ Respekter `prefers-reduced-motion` — spillet vises for hele klasser.
 
 ## 8. Sjekkliste før det er ferdig
 
-- [ ] `css/placeholder.css` erstattet (og fila døpt om)
-- [ ] `js/art.js` returnerer ekte illustrasjoner
-- [ ] Alle tre variantene er visuelt skilt, og sjeldenheten leses raskt
-- [ ] Silhuett-tilstanden røper ikke arten
+- [ ] `css/placeholder.css` erstattet (og fila døpt om) — resten av
+      grensesnittet (topplinje, kort, knapper, typografi) er fortsatt
+      nøytral plassholder-stil, bare illustrasjonene er ferdige
+- [x] `js/art.js` returnerer ekte illustrasjoner — alle 6 arter
+- [x] Alle tre variantene er visuelt skilt, og sjeldenheten leses raskt
+- [x] Silhuett-tilstanden røper ikke arten (avledet fra alfakanal,
+      testet på alle 6)
 - [ ] 390 px uten vannrett rulling, trykkflater ≥ 44 px, AA-kontrast
+      (gjelder resten av grensesnittet — illustrasjonene selv er testet
+      på 390 px)
 - [ ] Funnet tar 3–5 sekunder, og `prefers-reduced-motion` er håndtert
-- [ ] `node games/feltboka/qa/check.mjs` er fortsatt grønn
+- [x] `node games/feltboka/qa/check.mjs` er fortsatt grønn

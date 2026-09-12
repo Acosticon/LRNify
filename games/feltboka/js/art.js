@@ -29,7 +29,8 @@ const EKTE_BILDER = {
   rodrev: { vanlig: 'rodrev-vanlig.png', nordlys: 'rodrev-nordlys.png', krystall: 'rodrev-krystall.png' },
   ekorn:  { vanlig: 'ekorn-vanlig.png',  nordlys: 'ekorn-nordlys.png',  krystall: 'ekorn-krystall.png' },
   kongeorn: { vanlig: 'kongeorn-vanlig.png', nordlys: 'kongeorn-nordlys.png', krystall: 'kongeorn-krystall.png' },
-  hoggorm: { vanlig: 'hoggorm-vanlig.png', nordlys: 'hoggorm-nordlys.png', krystall: 'hoggorm-krystall.png' }
+  hoggorm: { vanlig: 'hoggorm-vanlig.png', nordlys: 'hoggorm-nordlys.png', krystall: 'hoggorm-krystall.png' },
+  blabar: { vanlig: 'blabar-vanlig.png', nordlys: 'blabar-nordlys.png', krystall: 'blabar-krystall.png' }
 };
 
 const FORMER = {
