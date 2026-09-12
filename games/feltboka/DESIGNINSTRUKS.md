@@ -6,8 +6,25 @@ hva som allerede er låst av logikken.
 
 Kort om spillet: eleven velger et matematikktema, løser oppgaver
 fortløpende, og får etter ti riktige svar et tilfeldig funn — en art i
-en av seks varianter — som legges i en samling. Se `DESIGN.md` for
+en av tre varianter — som legges i en samling. Se `DESIGN.md` for
 motoren og GDD v0.1 for produktbeslutningene.
+
+**MVP-tonet ned:** 6 arter (ikke 30), 3 varianter (ikke 6) — altså 18
+mulige samleobjekter, ikke 180. Kuttet er bevisst: nok innhold til å
+teste selve spillhypotesen, lite nok til at illustrasjonsjobben under
+er overkommelig i én runde. Flere arter senere er en ren datautvidelse
+i `js/data/species.js`, og denne instruksen gjelder likt for dem.
+
+Skal illustrasjonene ut til en ekstern tegner uten kjennskap til
+prosjektet, bruk `DESIGNBRIEF-TEGNER.md` (grunntegninger) og
+`DESIGNBRIEF-TEGNER-VARIANTER.md` (Nordlys/Krystall) i stedet for denne
+fila — de er selvstendige og fri for kodereferanser. Denne fila er for
+den som kobler de ferdige illustrasjonene inn i spillet.
+
+**Status: ferdig.** Alle 18 illustrasjoner (6 arter × Vanlig/Nordlys/
+Krystall) er levert, kontrollert mot kravene under og koblet inn i
+`js/art.js` → `EKTE_BILDER`. Plassholderformene i denne fila brukes nå
+bare som mal hvis arts-utvalget utvides senere.
 
 ---
 
@@ -49,8 +66,7 @@ dem samlet begge steder. Disse finnes:
 | Felles | `.knapp` `.knapp--stor` `.knapp--flat` `.knapp--fare` `.skjerm` `.ingress` |
 
 Hver art og variant får klassen `variant--<id>` på et element rundt
-illustrasjonen: `variant--vanlig`, `--gyllen`, `--albino`,
-`--melanistisk`, `--nordlys`, `--krystall`.
+illustrasjonen: `variant--vanlig`, `--nordlys`, `--krystall`.
 
 ### `js/art.js` — én funksjon
 
@@ -68,15 +84,14 @@ så alle pattedyr ser like ut nå. Det er med vilje: en plassholder skal
 ikke kunne forveksles med ferdig grafikk. Den har også stiplet ramme av
 samme grunn.
 
-## 3. Illustrasjonene — det største valget
+## 3. Illustrasjonene
 
-**30 arter × 6 varianter = 180 mulige samleobjekter.** Hvordan de
-produseres er den avgjørelsen som koster mest, og den er ikke tatt.
+**6 arter × 3 varianter = 18 mulige samleobjekter.** Med 180 var dette
+en produksjonsrisiko; med 18 er begge veiene under faktisk realistiske.
 
-**Vei A — én grunnform per art, varianten som lag (anbefalt).**
-30 illustrasjoner. Varianten legges på i CSS: farge, tekstur, glød.
-Plassholderen er bygget slik allerede — SVG-en henter fargene fra tre
-variabler som variantklassen setter:
+**Vei A — 6 grunnformer + CSS-variantlag.** Varianten legges på i CSS:
+farge, tekstur, glød. Plassholderen er bygget slik allerede — SVG-en
+henter fargene fra tre variabler som variantklassen setter:
 
 ```css
 --ill-flate    /* flatefarge */
@@ -84,39 +99,59 @@ variabler som variantklassen setter:
 --ill-glans    /* aksent, lyseffekt */
 ```
 
-Dette er samme økonomi som Ordtoget valgte (vognene er tegnet i CSS
-nettopp for å slippe et bildebibliotek). Prisen er at «krystall» og
-«nordlys» må kunne uttrykkes som et lag som virker på alle 30 formene.
+Billigst, og det som skalerer best om flere arter kommer senere (én ny
+illustrasjon per art, ikke tre). Samme økonomi som Ordtoget (vognene er
+tegnet i CSS nettopp for å slippe et bildebibliotek).
 
-**Vei B — egen illustrasjon per art og variant.** Opptil 180 filer.
-Gir full kontroll per kombinasjon, men er en produksjonsjobb i en helt
-annen størrelsesorden, og hver ny art koster seks nye filer i stedet for
-én.
+**Vei B — 18 unike illustrasjoner.** Én per art og variant. Realistisk
+i denne størrelsen, og gir mest kontroll: en krystallulv kan se
+grunnleggende annerledes ut enn en vanlig ulv, ikke bare omfarget. Koster
+mer hver gang en ny art legges til (tre filer, ikke én).
+
+**Valgt: Vei B.** Tegneren leverer alle 18 som ferdige illustrasjoner —
+se `DESIGNBRIEF-TEGNER-VARIANTER.md` for den fulle spesifikasjonen som
+ble sendt. Prisen (tre filer i stedet for én per ny art senere) ble
+vurdert som verdt det for å få variantene håndtegnet i samme kvalitet
+som grunntegningene, i stedet for en programmatisk fargebehandling.
+`js/art.js` må derfor utvides til å hente inn 18 faktiske filer per
+art+variant, ikke lenger tegne formen selv og la CSS-variantklassen
+style den — det er en kodejobb som gjøres når filene er levert, ikke en
+del av selve designarbeidet.
 
 Uansett vei:
 
-- Én konsekvent stil. Alle 30 skal oppleves som del av samme samling.
-- Sjeldenheten bør kunne leses på et halvt sekund. En krystallulv skal
-  se sjelden ut før eleven rekker å lese ordet «krystall».
+- Én konsekvent stil på tvers av alle 6.
+- Sjeldenheten bør kunne leses på et halvt sekund, før eleven rekker å
+  lese variantnavnet.
 - Filstørrelse teller. Dette kjøres på skolenett og Chromebooks. SVG
   eller optimaliserte PNG-er; ingen eksterne CDN-er (LRNify laster ikke
   ressurser fra tredjepart).
 
-**Variantene, og hva hver må formidle** (GDD pkt. 7):
+### Variantene — fargespec
 
-| Variant | Andel | Uttrykk |
-|---|---|---|
-| Vanlig | 70 % | Naturtro eller stilisert grunnform. |
-| Gyllen | 15 % | Gullpreg. Tydelig sjeldnere enn vanlig. |
-| Albino | 6 % | Lys variant. **Brukes ikke på planter og sopp** — der heter den «Hvit» og er slått av i dataene. |
-| Melanistisk | 5 % | Mørk variant. Heter «Mørk» på planter og sopp, som ikke har melanisme. |
-| Nordlys | 3 % | Nordlysfarger og lysfenomen. En av spillets kjennetegn. |
-| Krystall | 1 % | Arten ser ut som den består av krystall. Den sjeldneste. |
+| Variant | Andel | Uttrykk | Forslag til palett |
+|---|---|---|---|
+| Vanlig | 96 % | Naturtro eller stilisert grunnform. Dette ER arten, udekorert. | Artens egne, naturlige farger. |
+| Nordlys | 3 % | Et kjølig, flerfarget lysskjær langs silhuetten — ikke full omfarging av kroppen, men en glødende kant/gradient som antyder nordlys. Grunnfargen skal fortsatt kunne kjennes igjen som arten. | Kant/gradient i grønn→turkis→fiolett, f.eks. `#3fae7f → #3f8fae → #8f6fcf`. Gjerne en svak, mørk bakgrunn bak selve figuren på funn- og artssiden (ikke i det lille samlingsrutenettet) som antyder nattehimmel. |
+| Krystall | 1 % | Overflaten brytes opp i fasetter — arten ser ut som den består av eller er dekket av krystall. Skarpe høylys, ikke myke skygger. Den sjeldneste, og bør se dyrebar ut. | Iskald blå/hvit med skarpe glanspunkter, f.eks. `#cfe3f5` flate, `#5470a3` kontur, `#ffffff` skarpe høylys. Gjerne en svak facettert linjetekstur oppå grunnformen. |
 
-Hvilke arter som *ikke* skal ha albino er foreløpig satt i
-`js/data/species.js` (alle planter og sopp). Den lista hører hjemme hos
-den som ser illustrasjonene — endre den fritt, QA-en fanger opp
-skrivefeil.
+Alle tre skal virke på samtlige 6 arter uten unntak — det var
+nettopp derfor disse tre ble valgt (se `DESIGN.md`). Ingen art har
+`utenVarianter` satt i dag.
+
+### Per-art-brief
+
+Konsis retning for hver av de 6 — pose og kjennetegn, ikke stil (stilen
+er felles og bestemmes én gang, se over).
+
+| Art | Pose / vinkel | Kjennetegn å ta med | Unngå |
+|---|---|---|---|
+| **Ulv** (*Canis lupus*) | Stående, 3/4-vinkel, rolig og årvåken — ikke snerrende, ikke fryktsom. | Spisse ører rett opp, tett bringepels, bushy hale i normal høyde (verken senket eller løftet aggressivt). | Ulvehyl-klisjeen (hodet bakoverbøyd mot en måne) — overbrukt, og sier ingenting om arten selv. |
+| **Rødrev** (*Vulpes vulpes*) | Sittende eller midt i et skritt, sett fra siden. | Den karakteristiske store, buskete halen — skal være tydelig lesbar i silhuett alene. Spisse ører, smalt snuteparti. | Halen kuttet av eller skjult — den ER artens gjenkjennelsesmerke. |
+| **Ekorn** (*Sciurus vulgaris*) | Klatrende på en grenstubb, eller sittende med halen krummet oppover bak ryggen. | Krum hale over ryggen (signaturform), buskete ørepensler. | Den klassiske «ekorn med nøtt i labbene»-posen — søtt, men slitent, og trekker mot barnslig. |
+| **Kongeørn** (*Aquila chrysaetos*) | Enten i flukt med vingene ute (bred silhuett), eller sittende med sammenslåtte vinger og skarpt profilblikk. | Kraftig, kroket nebb. Hvis flukt: fingrete vingespisser (adskilte fjær). | En generisk «ørn»-logo-silhuett (som f.eks. et idrettsmerke) — skal lese som fugl, ikke som emblem. |
+| **Hoggorm** (*Vipera berus*) | Kveilet i en S-form, hodet lett hevet. | Det karakteristiske sikksakk-mønsteret langs ryggen — dette ER hva som skiller den fra en hvilken som helst slange. | Åpen gapende munn/hoggtenner — dramatisk, men ikke det som faktisk kjennetegner arten i felt. |
+| **Blåbær** (*Vaccinium myrtillus*) | En liten kvist med 2–4 bær og noen få blad, botanisk oppstilt. | Bærets dype blåfiolette farge med det lille «kron»-merket i bunnen (kjennetegnet ved nærbilde). | Et ansikt eller smilefjes på bæret — bryter rett med «ikke barnslig»-kravet i pkt. 1. |
 
 ## 4. Skjermene som finnes
 
@@ -128,12 +163,15 @@ skrivefeil.
 3. **Funn** — stikkord («Funn!»), kort med illustrasjon, variantnavn,
    artsnavn, vitenskapelig navn, «Nytt funn» / «Duplikat ×4», og
    «Ulv 3/6». Én knapp tilbake til oppgavene.
-4. **Samling** — rutenett med alle 30 artene. Funne arter viser den
+4. **Samling** — rutenett med alle 6 artene. Funne arter viser den
    sjeldneste varianten eleven har. Ikke-funne viser silhuett og «???».
-   Hver rute har «3/6».
-5. **Artsside** — stor illustrasjon, navn, vitenskapelig navn, 1–3
-   fakta, og variantbrikkene. Brikker eleven ikke har er låst; klikk på
-   en eid brikke bytter den store illustrasjonen.
+   Hver rute har «2/3». Med bare 6 arter kan rutenettet virke tomt/lite
+   på en full skjerm — vurder om det trenger et tomromsdesign (f.eks.
+   plass satt av til «flere arter kommer») i stedet for å strekke seks
+   ruter over hele bredden.
+5. **Artsside** — stor illustrasjon, navn, vitenskapelig navn, 1–2
+   fakta, og variantbrikkene (tre stykker). Brikker eleven ikke har er
+   låst; klikk på en eid brikke bytter den store illustrasjonen.
 6. **Statistikk** — sju tall og en «nullstill alt»-knapp.
 
 Tre faner binder det sammen: Spill, Samling, Statistikk.
@@ -173,20 +211,22 @@ Respekter `prefers-reduced-motion` — spillet vises for hele klasser.
 - **Navnet.** «Feltboka» er en arbeidstittel. Står i `js/config.js`,
   `index.html` (`<title>` + meta) og i `GAMES`-lista på forsiden.
   Unngå «PokéMath»/Pokémon i alt brukervendt.
-- **Artsfaktaene.** 60 plassholdere merket `[FAKTA n – …]` i
-  `js/data/species.js`. 1–3 korte fakta per art, faktasjekket.
-- **Fire arter er presisert fra gruppenavn** («ugle» → kattugle, «humle»
-  → mørk jordhumle, «frosk» → buttsnutefrosk, «øyenstikker» → *Aeshna
-  juncea*). Bekreft eller bytt.
+- **Artsfaktaene.** 12 plassholdere merket `[FAKTA n – …]` i
+  `js/data/species.js` — se `INNHOLDSINSTRUKS-FAKTA.md` for spesifikasjonen.
 - **Kortbilde til forsiden**: `media/cards/<navn>.png`, og `og:image` i
   `index.html` når bildet finnes.
 
 ## 8. Sjekkliste før det er ferdig
 
-- [ ] `css/placeholder.css` erstattet (og fila døpt om)
-- [ ] `js/art.js` returnerer ekte illustrasjoner
-- [ ] Alle seks variantene er visuelt skilt, og sjeldenheten leses raskt
-- [ ] Silhuett-tilstanden røper ikke arten
+- [ ] `css/placeholder.css` erstattet (og fila døpt om) — resten av
+      grensesnittet (topplinje, kort, knapper, typografi) er fortsatt
+      nøytral plassholder-stil, bare illustrasjonene er ferdige
+- [x] `js/art.js` returnerer ekte illustrasjoner — alle 6 arter
+- [x] Alle tre variantene er visuelt skilt, og sjeldenheten leses raskt
+- [x] Silhuett-tilstanden røper ikke arten (avledet fra alfakanal,
+      testet på alle 6)
 - [ ] 390 px uten vannrett rulling, trykkflater ≥ 44 px, AA-kontrast
+      (gjelder resten av grensesnittet — illustrasjonene selv er testet
+      på 390 px)
 - [ ] Funnet tar 3–5 sekunder, og `prefers-reduced-motion` er håndtert
-- [ ] `node games/feltboka/qa/check.mjs` er fortsatt grønn
+- [x] `node games/feltboka/qa/check.mjs` er fortsatt grønn

@@ -23,8 +23,8 @@ velg tema  →  løs oppgaver  →  progresjon  →  funn  →  tilbake til oppg
 | `js/topics/*.js` | Én fil per oppgavetype. Hver eier sine tre vanskelighetsgrader. |
 | `js/topics/index.js` | Registeret. Å legge til en syvende oppgavetype er én fil og én linje. |
 | `js/engine.js` | Lager én oppgave, retter ett svar. Kjenner ingen temaer ved navn. |
-| `js/data/species.js` | De 30 artene. Rene data. |
-| `js/data/variants.js` | De seks variantene og andelene deres. |
+| `js/data/species.js` | De 6 artene (MVP-tonet ned fra 30). Rene data. |
+| `js/data/variants.js` | De 3 variantene (MVP-tonet ned fra 6) og andelene deres. |
 | `js/draw.js` | Vektet trekning: først art, så variant. |
 | `js/progress.js` | Framgang, samling og statistikk i localStorage. Ingen DOM. |
 | `js/art.js` | **Plassholder-illustrasjoner.** Erstattes i designprosessen. |
@@ -58,12 +58,13 @@ samme tall for `rational.js`. Skal brøkoppgaver kreve forkortet brøk, er
 det funksjonen `sammenlign` i `js/rational.js` som må strammes inn — ett
 sted, ikke seks generatorer.
 
-**Variantandelene normaliseres per art.** Ti av artene (planter og sopp)
-har ikke albino-variant. I stedet for å regne om tabellen for dem,
-fordeler trekningen den utelatte andelen på resten. Konsekvensen er at
-albino utgjør ca. 3,6 % av alle funn, ikke 6 % — QA-en skriver ut begge
-tallene, så avviket ikke kan bli en overraskelse. Samlingen teller
-dessuten mot artens egne varianter, så en plante viser `0/5`, ikke `0/6`.
+**Variantandelene normaliseres per art.** Ingen av de 6 artene har
+`utenVarianter` satt i dag — mekanismen er der (en art kan utelukke en
+variant den ikke passer visuelt til), men ubrukt siden Nordlys og
+Krystall ikke bærer noen biologisk påstand som Albino/Melanistisk
+gjorde. Bruker en art det likevel, fordeler trekningen den utelatte
+andelen på resten automatisk, og samlingen teller mot artens egne
+varianter — en art med ett unntak ville vist `0/2`, ikke `0/3`.
 
 ## Lagring, og hvorfor det ikke er innlogging
 
@@ -116,7 +117,7 @@ Tre kontroller:
    størrelsesorden som tallene i teksten.
 2. **Trekningen.** 120 000 trekninger. Artsfordelingen må ligge innenfor
    15 % av vektene, og hver variant må faktisk forekomme.
-3. **Dataene.** 30 arter, unike id-er, gyldige vekter og varianter — og
+3. **Dataene.** 6 arter, unike id-er, gyldige vekter og varianter — og
    en opptelling av hvor mange plassholder-fakta som gjenstår.
 
 Siste linje sier `Alt OK.` eller antall feil, og exit-koden følger.
@@ -127,8 +128,8 @@ Siste linje sier `Alt OK.` eller antall feil, og exit-koden følger.
 |---|---|---|
 | Pkt. 24/25: brukerinnlogging og profilside | Ingen innlogging. Lokal lagring, og en «nullstill»-knapp på statistikksiden. | Avklart i gjennomgangen: FEIDE er målet på sikt, og fram til da er lokal lagring nok for suksesskriteriet i pkt. 32. |
 | Pkt. 24: fire hovedflater | Tre faner (Spill, Samling, Statistikk). | «Profil» hadde ikke noe innhold uten innlogging. |
-| Pkt. 7: seks varianter for alle arter | Planter og sopp har fem. | Pkt. 7.3 sier selv at albino bare skal brukes der den gir visuell mening. Hvilke arter det gjelder er en designavgjørelse — lista i `species.js` er logikkens førsteutkast. |
-| Pkt. 7.4: «melanistisk» | Heter «Mørk» på planter og sopp. | GDD-ens eget krav om å ikke beskrive planter biologisk feil. |
+| Pkt. 6: 30 arter | 6 arter i MVP. | Bevisst scope-kutt: 30 × 6 = 180 mulige samleobjekter var mer illustrasjon enn en uprøvd MVP burde binde seg til. Flere arter er en ren datautvidelse i `species.js` når hypotesen er bekreftet. |
+| Pkt. 7: seks varianter | 3 varianter i MVP (Vanlig, Nordlys, Krystall). | Samme kutt. Nordlys og Krystall er GDD-ens egne «karakteristiske» varianter (pkt. 7.5–7.6) og krever ingen art-for-art-unntak, ulikt Albino/Melanistisk. Se DESIGNINSTRUKS.md for begrunnelsen i sin helhet. |
 
 ## Ikke bygget ennå
 
@@ -136,5 +137,5 @@ Illustrasjoner, farger, typografi, animasjon og lyd. Funnskjermen har
 ingen animasjon i det hele tatt nå — den viser kortet, venter, og går
 tilbake. Se `DESIGNINSTRUKS.md`.
 
-Artsfaktaene er plassholdere, og fire arter er presisert fra gruppenavn
-(«ugle» → kattugle) og trenger faglig kontroll. QA-en teller begge deler.
+Artsfaktaene er plassholdere — se `INNHOLDSINSTRUKS-FAKTA.md`. QA-en
+teller hvor mange som gjenstår.

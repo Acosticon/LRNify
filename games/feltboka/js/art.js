@@ -1,32 +1,37 @@
 /* =========================================================
-   ILLUSTRASJONER — PLASSHOLDER
+   ILLUSTRASJONER
    ---------------------------------------------------------
-   DETTE ER ETT AV TO STEDER DESIGNPROSESSEN SKAL ERSTATTE.
+   DETTE ER ETT AV TO STEDER DESIGNPROSESSEN ERSTATTER.
    (Det andre er css/placeholder.css.)
 
    Kontrakten resten av spillet forholder seg til er én funksjon:
 
-       illustrasjon(art, variantId, { silhuett })  →  SVG-streng
+       illustrasjon(art, variantId, { silhuett })  →  HTML-streng
 
-   Alt annet i denne fila er midlertidig fyll: enkle geometriske
-   former per kategori, ikke per art. Alle 30 artene i samme
-   kategori ser derfor like ut nå, med vilje — det gjør det umulig å
-   forveksle plassholderen med et ferdig uttrykk.
+   `EKTE_BILDER` er registeret over hvilke arter som har ferdig
+   leverte bilder i media/arter/. En art som ikke står der (ennå)
+   faller tilbake på den geometriske plassholderen — samme kategori-
+   form som før, med stiplet ramme, så resten av samlingen ikke kan
+   forveksles med ferdig grafikk mens den fylles på art for art.
 
-   Fargene settes IKKE her. SVG-en arver dem fra CSS-variabler som
-   variantklassen på foreldre-elementet definerer, slik at en variant
-   kan endres uten å røre denne fila:
-
-       --ill-flate    flatefarge
-       --ill-strek    konturfarge
-       --ill-glans    aksent/lyseffekt
-
-   Når ekte illustrasjoner kommer, er det to lovlige veier:
-   1) behold funksjonen og returner <img>/<svg> per art og variant, eller
-   2) behold én grunnform per art og la varianten være et CSS-lag oppå.
-   Se DESIGNINSTRUKS.md — valget har konsekvenser for hvor mange
-   filer som må produseres (30 mot 180).
+   Silhuett-tilstanden (GDD pkt. 12: låst plass for arter eleven ikke
+   har funnet) trenger ingen egen fil for ekte bilder — den er avledet
+   fra bildets eget alfakanal ved å kjøre det gjennom
+   `filter: brightness(0)`, som gjør alle synlige piksler solid sorte
+   og lar gjennomsiktigheten stå urørt.
    ========================================================= */
+
+const MEDIESTI = 'media/arter/';
+
+/** Legg til en art her når filene for den er levert og lagt i media/arter/. */
+const EKTE_BILDER = {
+  ulv:    { vanlig: 'ulv-vanlig.png',    nordlys: 'ulv-nordlys.png',    krystall: 'ulv-krystall.png' },
+  rodrev: { vanlig: 'rodrev-vanlig.png', nordlys: 'rodrev-nordlys.png', krystall: 'rodrev-krystall.png' },
+  ekorn:  { vanlig: 'ekorn-vanlig.png',  nordlys: 'ekorn-nordlys.png',  krystall: 'ekorn-krystall.png' },
+  kongeorn: { vanlig: 'kongeorn-vanlig.png', nordlys: 'kongeorn-nordlys.png', krystall: 'kongeorn-krystall.png' },
+  hoggorm: { vanlig: 'hoggorm-vanlig.png', nordlys: 'hoggorm-nordlys.png', krystall: 'hoggorm-krystall.png' },
+  blabar: { vanlig: 'blabar-vanlig.png', nordlys: 'blabar-nordlys.png', krystall: 'blabar-krystall.png' }
+};
 
 const FORMER = {
   pattedyr: '<path d="M18 62c0-14 10-24 22-24s22 10 22 24c0 10-9 16-22 16S18 72 18 62Z"/>'
@@ -42,14 +47,18 @@ const escape = (s) => String(s).replace(/[&<>"]/g, c => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]
 ));
 
-/**
- * @param {object} art        art-objektet fra data/species.js
- * @param {string} variantId  f.eks. 'gyllen'
- * @param {object} [valg]
- * @param {boolean} [valg.silhuett]  låst plass i samlingen (GDD pkt. 12)
- * @returns {string} SVG som kan settes inn med innerHTML
- */
-export function illustrasjon(art, variantId, { silhuett = false } = {}) {
+function ektBilde(art, variantId, silhuett) {
+  const fil = EKTE_BILDER[art?.id]?.[variantId];
+  if (!fil) return null;
+  const src = MEDIESTI + fil;
+  if (silhuett) {
+    return `<img class="ill-ekte ill-ekte--silhuett" src="${src}" alt="Ikke funnet ennå">`;
+  }
+  return `<img class="ill-ekte" src="${src}" alt="${escape(art?.navn || '')}"
+    data-art="${escape(art?.id || '')}" data-variant="${escape(variantId)}">`;
+}
+
+function plassholder(art, variantId, silhuett) {
   const form = FORMER[art?.kategori] || FORMER.annet;
   const merke = escape((art?.navn || '?').slice(0, 2).toUpperCase());
 
@@ -67,4 +76,15 @@ export function illustrasjon(art, variantId, { silhuett = false } = {}) {
     <g class="ill-form">${form}</g>
     <text class="ill-merke" x="40" y="86" text-anchor="middle">${merke}</text>
   </svg>`;
+}
+
+/**
+ * @param {object} art        art-objektet fra data/species.js
+ * @param {string} variantId  f.eks. 'krystall'
+ * @param {object} [valg]
+ * @param {boolean} [valg.silhuett]  låst plass i samlingen (GDD pkt. 12)
+ * @returns {string} HTML (img eller svg) som kan settes inn med innerHTML
+ */
+export function illustrasjon(art, variantId, { silhuett = false } = {}) {
+  return ektBilde(art, variantId, silhuett) || plassholder(art, variantId, silhuett);
 }

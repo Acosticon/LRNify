@@ -195,6 +195,17 @@ h3 { font-size: .95rem; margin: 22px 0 8px; }
 .ill-merke { fill: var(--dempet); font-size: 9px; font-family: inherit; letter-spacing: .08em; }
 .ill--silhuett { color: var(--dempet); }
 
+/* Ekte, leverte illustrasjoner (js/art.js → EKTE_BILDER). Ingen
+   stiplet ramme — dette ER ferdig grafikk, ikke plassholder. */
+.ill-ekte {
+  width: 92px; height: 104px; object-fit: contain; display: block;
+}
+.funn-bilde .ill-ekte, .art-bilde .ill-ekte { width: 132px; height: 148px; }
+/* Silhuetten er avledet av bildets egen alfakanal, ikke en egen fil:
+   brightness(0) gjør alle synlige piksler solid sorte og lar
+   gjennomsiktigheten stå urørt. */
+.ill-ekte--silhuett { filter: brightness(0) opacity(.35); }
+
 /* Variantene skiller seg fra hverandre, men er ikke designet.
    Hver variant setter bare de tre variablene js/art.js leser. */
 .variant--vanlig      { --ill-flate: #9aa3ab; --ill-strek: #5b636b; }

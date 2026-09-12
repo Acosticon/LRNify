@@ -1,66 +1,43 @@
 /* =========================================================
    ARTER — STARTKOLLEKSJONEN «NORSK NATUR» (GDD pkt. 6 og 9)
-   30 arter. Hver art har én numerisk vekt som styrer hvor ofte
-   den trekkes. Høy vekt = vanlig funn.
 
-   INNHOLD SOM IKKE ER FERDIG:
-   - `fakta` er PLASSHOLDERE. De skal skrives (og faktasjekkes) i
-     en egen innholdsrunde — se DESIGNINSTRUKS.md. De er med vilje
-     merket [FAKTA …] slik at ingen plassholder kan gå i produksjon
-     ubemerket; qa/check.mjs teller dem og rapporterer.
-   - `vitenskapelig` er satt, men skal gjennom faglig kontroll i
-     samme runde. Der arten i GDD-en er oppgitt på gruppenivå
-     («ugle», «humle», «øyenstikker») er det valgt én konkret art,
-     og valget er markert med `presisert: true`.
+   TONET NED FOR MVP: 6 arter, ikke 30. Avgjort etter at
+   30 arter × 6 varianter (180 samleobjekter) ble vurdert som for
+   mye å produsere illustrasjoner til før hypotesen er testet — se
+   DESIGN.md, «Avvik fra GDD v0.1». Flere arter er en ren
+   datautvidelse siden (legg til et objekt her), ikke en omskriving.
 
-   `utenVarianter` er artens unntak fra variantlista (GDD pkt. 7.3:
-   albino skal bare brukes der den gir visuell mening). Lista her er
-   et førsteutkast fra logikkens side; den endelige avgjørelsen hører
-   hjemme i designprosessen, som ser illustrasjonene.
+   Fire kategorier er representert (pattedyr, fugl, andre dyr,
+   plante) med en spredning i vekt, så trekningen har noe å vise
+   fram fra første økt: ekorn og blåbær er nesten alltid et funn,
+   ulv er sjelden.
+
+   Fakta er levert og faktasjekket for alle 6 — se
+   INNHOLDSINSTRUKS-FAKTA.md for rammene faktaene ble skrevet etter.
+   Fakta for de 24 artene fra den opprinnelige (før-nedskalerte) listen
+   er tatt vare på i BACKLOG-ARTER-FAKTA.md, klare til å limes inn her
+   den dagen arts-utvalget utvides.
    ========================================================= */
 
-const F = (n) => `[FAKTA ${n} – skrives i innholdsrunden]`;
-
 export const ARTER = [
-  /* --- Pattedyr --- */
-  { id: 'ulv',        navn: 'Ulv',        vitenskapelig: 'Canis lupus',            kategori: 'pattedyr', vekt: 3,  fakta: [F(1), F(2)] },
-  { id: 'gaupe',      navn: 'Gaupe',      vitenskapelig: 'Lynx lynx',              kategori: 'pattedyr', vekt: 3,  fakta: [F(1), F(2)] },
-  { id: 'rodrev',     navn: 'Rødrev',     vitenskapelig: 'Vulpes vulpes',          kategori: 'pattedyr', vekt: 8,  fakta: [F(1), F(2)] },
-  { id: 'elg',        navn: 'Elg',        vitenskapelig: 'Alces alces',            kategori: 'pattedyr', vekt: 5,  fakta: [F(1), F(2)] },
-  { id: 'radyr',      navn: 'Rådyr',      vitenskapelig: 'Capreolus capreolus',    kategori: 'pattedyr', vekt: 8,  fakta: [F(1), F(2)] },
-  { id: 'rein',       navn: 'Rein',       vitenskapelig: 'Rangifer tarandus',      kategori: 'pattedyr', vekt: 4,  fakta: [F(1), F(2)] },
-  { id: 'jerv',       navn: 'Jerv',       vitenskapelig: 'Gulo gulo',              kategori: 'pattedyr', vekt: 1,  fakta: [F(1), F(2)] },
-  { id: 'grevling',   navn: 'Grevling',   vitenskapelig: 'Meles meles',            kategori: 'pattedyr', vekt: 6,  fakta: [F(1), F(2)] },
-  { id: 'ekorn',      navn: 'Ekorn',      vitenskapelig: 'Sciurus vulgaris',       kategori: 'pattedyr', vekt: 10, fakta: [F(1), F(2)] },
-  { id: 'hare',       navn: 'Hare',       vitenskapelig: 'Lepus timidus',          kategori: 'pattedyr', vekt: 9,  fakta: [F(1), F(2)] },
-
-  /* --- Fugler --- */
-  { id: 'kongeorn',   navn: 'Kongeørn',   vitenskapelig: 'Aquila chrysaetos',      kategori: 'fugl', vekt: 2,  fakta: [F(1), F(2)] },
-  { id: 'havorn',     navn: 'Havørn',     vitenskapelig: 'Haliaeetus albicilla',   kategori: 'fugl', vekt: 3,  fakta: [F(1), F(2)] },
-  { id: 'ravn',       navn: 'Ravn',       vitenskapelig: 'Corvus corax',           kategori: 'fugl', vekt: 7,  fakta: [F(1), F(2)] },
-  { id: 'kattugle',   navn: 'Kattugle',   vitenskapelig: 'Strix aluco',            kategori: 'fugl', vekt: 5,  fakta: [F(1), F(2)], presisert: true },
-  { id: 'flaggspett', navn: 'Flaggspett', vitenskapelig: 'Dendrocopos major',      kategori: 'fugl', vekt: 7,  fakta: [F(1), F(2)] },
-  { id: 'dompap',     navn: 'Dompap',     vitenskapelig: 'Pyrrhula pyrrhula',      kategori: 'fugl', vekt: 8,  fakta: [F(1), F(2)] },
-
-  /* --- Andre dyr --- */
-  { id: 'hoggorm',    navn: 'Hoggorm',    vitenskapelig: 'Vipera berus',           kategori: 'annet', vekt: 5, fakta: [F(1), F(2)] },
-  { id: 'frosk',      navn: 'Buttsnutefrosk', vitenskapelig: 'Rana temporaria',    kategori: 'annet', vekt: 9, fakta: [F(1), F(2)], presisert: true },
-  { id: 'humle',      navn: 'Mørk jordhumle', vitenskapelig: 'Bombus terrestris',  kategori: 'annet', vekt: 10, fakta: [F(1), F(2)], presisert: true },
-  { id: 'oyenstikker', navn: 'Øyenstikker', vitenskapelig: 'Aeshna juncea',        kategori: 'annet', vekt: 7, fakta: [F(1), F(2)], presisert: true },
-
-  /* --- Planter --- */
-  { id: 'eik',        navn: 'Eik',        vitenskapelig: 'Quercus robur',          kategori: 'plante', vekt: 6,  fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-  { id: 'bjork',      navn: 'Bjørk',      vitenskapelig: 'Betula pubescens',       kategori: 'plante', vekt: 10, fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-  { id: 'gran',       navn: 'Gran',       vitenskapelig: 'Picea abies',            kategori: 'plante', vekt: 10, fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-  { id: 'furu',       navn: 'Furu',       vitenskapelig: 'Pinus sylvestris',       kategori: 'plante', vekt: 9,  fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-  { id: 'rogn',       navn: 'Rogn',       vitenskapelig: 'Sorbus aucuparia',       kategori: 'plante', vekt: 8,  fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-  { id: 'blabar',     navn: 'Blåbær',     vitenskapelig: 'Vaccinium myrtillus',    kategori: 'plante', vekt: 10, fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-  { id: 'tyttebar',   navn: 'Tyttebær',   vitenskapelig: 'Vaccinium vitis-idaea',  kategori: 'plante', vekt: 9,  fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-  { id: 'rosslyng',   navn: 'Røsslyng',   vitenskapelig: 'Calluna vulgaris',       kategori: 'plante', vekt: 8,  fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-
-  /* --- Sopp --- */
-  { id: 'kantarell',  navn: 'Kantarell',  vitenskapelig: 'Cantharellus cibarius',  kategori: 'sopp', vekt: 5, fakta: [F(1), F(2)], utenVarianter: ['albino'] },
-  { id: 'fluesopp',   navn: 'Rød fluesopp', vitenskapelig: 'Amanita muscaria',     kategori: 'sopp', vekt: 6, fakta: [F(1), F(2)], utenVarianter: ['albino'] }
+  { id: 'ulv',      navn: 'Ulv',      vitenskapelig: 'Canis lupus',      kategori: 'pattedyr', vekt: 3,
+    fakta: ['Ulver lever ofte i familiegrupper der foreldre og unger samarbeider om jakt og valpepass.',
+            'Unge ulver kan vandre over tusen kilometer før de finner et område og en partner.'] },
+  { id: 'rodrev',   navn: 'Rødrev',   vitenskapelig: 'Vulpes vulpes',    kategori: 'pattedyr', vekt: 8,
+    fakta: ['Rødreven jakter mest i skumringen og kan høre smågnagere bevege seg under snøen.',
+            'Den finnes over hele landet, fra kysten til høyfjellet.'] },
+  { id: 'ekorn',    navn: 'Ekorn',    vitenskapelig: 'Sciurus vulgaris', kategori: 'pattedyr', vekt: 10,
+    fakta: ['Ekorn lagrer frø og nøtter i mange små gjemmesteder og finner igjen en del av dem senere.',
+            'Den lange halen hjelper ekornet med balanse når det hopper mellom greiner.'] },
+  { id: 'kongeorn', navn: 'Kongeørn', vitenskapelig: 'Aquila chrysaetos', kategori: 'fugl',     vekt: 2,
+    fakta: ['Kongeørna kan se små byttedyr på lang avstand mens den kretser høyt over bakken.',
+            'Et kongeørnpar kan bruke det samme territoriet og de samme reirplassene i mange år.'] },
+  { id: 'hoggorm',  navn: 'Hoggorm',  vitenskapelig: 'Vipera berus',     kategori: 'annet',    vekt: 5,
+    fakta: ['Hoggormen bruker gift til å fange bytte, men bitt på mennesker er sjelden livstruende.',
+            'Den er verdens nordligst utbredte slange og finnes også nord for polarsirkelen.'] },
+  { id: 'blabar',   navn: 'Blåbær',   vitenskapelig: 'Vaccinium myrtillus', kategori: 'plante', vekt: 10,
+    fakta: ['Blåbærplanten sprer seg med underjordiske stengler og kan danne store sammenhengende tepper.',
+            'Det blå fargestoffet sitter også i fruktkjøttet, i motsetning til hos hageblåbær.'] }
 ];
 
 export const KATEGORIER = {
