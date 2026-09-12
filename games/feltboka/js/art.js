@@ -27,7 +27,8 @@ const MEDIESTI = 'media/arter/';
 const EKTE_BILDER = {
   ulv:    { vanlig: 'ulv-vanlig.png',    nordlys: 'ulv-nordlys.png',    krystall: 'ulv-krystall.png' },
   rodrev: { vanlig: 'rodrev-vanlig.png', nordlys: 'rodrev-nordlys.png', krystall: 'rodrev-krystall.png' },
-  ekorn:  { vanlig: 'ekorn-vanlig.png',  nordlys: 'ekorn-nordlys.png',  krystall: 'ekorn-krystall.png' }
+  ekorn:  { vanlig: 'ekorn-vanlig.png',  nordlys: 'ekorn-nordlys.png',  krystall: 'ekorn-krystall.png' },
+  kongeorn: { vanlig: 'kongeorn-vanlig.png', nordlys: 'kongeorn-nordlys.png', krystall: 'kongeorn-krystall.png' }
 };
 
 const FORMER = {
