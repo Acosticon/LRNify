@@ -18,10 +18,15 @@ import { CONFIG } from './config.js';
 import { ARTER } from './data/species.js';
 import { varianterFor } from './data/variants.js';
 import { trekkFunn } from './draw.js';
+import { lagAnonymId } from './stats.js';
 
 const tomt = () => ({
   v: 1,
   bruker: { kilde: 'lokal', id: null },
+  // Tilfeldig id for det anonyme statistikk-dashbordet (bruk-feltboka/,
+  // se stats.js) — IKKE det samme som bruker.id over, som er reservert
+  // til en ekte FEIDE-identitet senere. Genereres første gang den trengs.
+  statistikkId: null,
   samling: {},                                    // artId → variantId → { antall, forste }
   progresjon: { riktigeSidenFunn: 0, ventendeFunn: 0 },
   // «Oppgaver løst» og «riktige svar» er samme tall så lenge en oppgave
@@ -162,6 +167,17 @@ export class Framgang {
   }
 
   sisteValg() { return { ...this.data.valg }; }
+
+  /* --- Anonym id til statistikk-dashbordet --- */
+
+  /** Genereres én gang og lagres, slik at samme elev/enhet gir samme id igjen. */
+  anonymId() {
+    if (!this.data.statistikkId) {
+      this.data.statistikkId = lagAnonymId();
+      this.lagre();
+    }
+    return this.data.statistikkId;
+  }
 
   /* --- FEIDE-forberedelsen --- */
 
