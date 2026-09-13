@@ -8,7 +8,9 @@ tredjepart og uten å lagre noe som kan knyttes til en enkelt person.
 | --- | --- |
 | `lrnify-bruk.js` | Telleren. Én linje i hver side, ingen konfigurasjon. |
 | `index.html` | Dashbord på `/bruk/` — krever pålogging med admin-flagg. |
-| `../firebase/database.rules.json` | Reglene for `bruk/`-treet. |
+| `feltboka.html` | Utvidet, per-bruker dashbord for Feltboka — se «Feltboka» under. |
+| `../games/feltboka/js/stats.js` | Feltbokas egen teller, mot `bruk-feltboka/`. |
+| `../firebase/database.rules.json` | Reglene for `bruk/`- og `bruk-feltboka/`-trærne. |
 | `../firebase/rules.test.js` | Tester som viser at telleren ikke kan misbrukes. |
 
 ## Hvorfor ikke Google Analytics
@@ -130,9 +132,39 @@ Naturlig neste steg:
   lagring på brukerens maskin, og dermed en annen personvernvurdering enn
   dagens oppsett. Hold den i en variabel.
 
+## Feltboka — utvidet statistikk, per bruker
+
+`games/feltboka` (mengdetreningsspillet med samleobjekter) sender ikke til
+`bruk/`, men til et eget tre, `bruk-feltboka/<dato>/<brukerId>/<hendelse>`,
+via `games/feltboka/js/stats.js`. Dashbordet for dette er en egen side,
+`feltboka.html`, ikke `index.html`.
+
+**Hvorfor et eget tre, og hvorfor et unntak fra prinsippet over.** Læreren
+ønsket å se oppgaver løst, median tid per oppgave, figurer funnet osv.
+*per elev*, ikke bare totalt — noe den flate `dato/side/hendelse`-strukturen
+i `bruk/` ikke kan uttrykke, siden den bevisst mangler enhver
+bruker-dimensjon (se «Hvorfor ikke Google Analytics» over). Løsningen er en
+tilfeldig, lokalt generert id (`lagAnonymId()` i `stats.js`), lagret i
+Feltbokas egen `localStorage`-nøkkel sammen med resten av samlingen
+(`progress.js`), og sendt med hver hendelse. Den er ikke knyttet til navn,
+e-post eller IP — bare et kjennemerke som lar dashbordet skille to elever
+fra hverandre, samme prinsipp som den anonyme påloggingen rom-verktøyene
+allerede bruker (se `personvern/index.html`). Det gjør likevel ett besøk
+mulig å kjenne igjen fra et annet over tid, i denne ene aktiviteten — derfor
+er det dokumentert her og i personvernerklæringen, i stedet for lagt stille
+inn i den generelle telleren alle andre sider bruker.
+
+**Hendelser som sendes** (per bruker-id, per dag): `riktig`/`feil` (totalt),
+`riktig-tema-<id>`/`feil-tema-<id>` og `riktig-niva-<id>`/`feil-niva-<id>`
+(seks temaer, tre nivåer — se `js/topics/index.js`), `tid-under10s` /
+`tid-10-30s` / `tid-30-60s` / `tid-over60s` (tid brukt på oppgaven som ble
+løst, samme bøtte-prinsipp som `varighet-*` men skalert til én oppgave), og
+`funn` / `funn-art-<id>` (figurer låst opp, seks arter — se
+`js/data/species.js`).
+
 ## Grenser
 
-* **Ikke unike besøkende.** 100 visninger kan være 100 lærere eller én lærer
+* **Ikke unike besøkende (utenom Feltboka, se over).** 100 visninger kan være 100 lærere eller én lærer
   med 100 omlastinger. Trengs unike tall, referanse-URL eller varighet, er
   riktig verktøy en cookieless EU-tjeneste (Plausible, Simple Analytics,
   eller Umami selvhostet) ved siden av denne.

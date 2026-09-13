@@ -587,6 +587,39 @@ check('vanlig lærer leser én enkelt teller', false, db(medAdmin, LARER).read(P
 check('admin leser statistikken', true, db(medAdmin, ADMIN).read('/bruk'));
 check('lærer kan ikke gjøre seg selv til admin', false, db(medAdmin, LARER).write('/users/' + LARER.uid + '/admin', true));
 
+/* ── /bruk-feltboka/: utvidet, per-bruker statistikk (games/feltboka/js/stats.js)
+   Samme oppskrift som /bruk/, med én ekstra nøkkel (en anonym bruker-id)
+   mellom dato og hendelse — se database.rules.json for begrunnelsen. */
+console.log('--- bruk-feltboka: telling (uinnlogget elev) ---');
+const ANON_ID = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
+const FP = '/bruk-feltboka/' + IDAG + '/' + ANON_ID + '/riktig';
+const tomFeltbokaStat = {};
+const feltbokaStatMed3 = { 'bruk-feltboka': { [IDAG]: { [ANON_ID]: { riktig: 3 } } } };
+const medAdminFeltboka = Object.assign({ users: { [ADMIN.uid]: { admin: true } } }, feltbokaStatMed3);
+
+check('første riktige svar oppretter telleren på 1', true, db(tomFeltbokaStat, null).write(FP, 1));
+check('neste riktige svar teller opp med 1', true, db(feltbokaStatMed3, null).write(FP, 4));
+check('en ny hendelsestype (tema/nivå/tid/funn) kan tas i bruk uten regelendring', true,
+  db(feltbokaStatMed3, null).write('/bruk-feltboka/' + IDAG + '/' + ANON_ID + '/riktig-tema-brok', 1));
+check('en annen bruker-id gir sin egen teller', true,
+  db(feltbokaStatMed3, null).write('/bruk-feltboka/' + IDAG + '/ff00ff00ff00ff00ff00ff00ff00ff00/riktig', 1));
+
+console.log('--- bruk-feltboka: telleren kan ikke misbrukes ---');
+check('oppretter telleren på et vilkårlig tall', false, db(tomFeltbokaStat, null).write(FP, 5000));
+check('hopper over flere tall om gangen', false, db(feltbokaStatMed3, null).write(FP, 100));
+check('teller nedover', false, db(feltbokaStatMed3, null).write(FP, 2));
+check('sletter en dags statistikk', false, db(feltbokaStatMed3, null).write('/bruk-feltboka/' + IDAG, null));
+check('sletter én brukers tellere', false, db(feltbokaStatMed3, null).write('/bruk-feltboka/' + IDAG + '/' + ANON_ID, null));
+check('overskriver hele bruk-feltboka-treet', false, db(feltbokaStatMed3, null).write('/bruk-feltboka', { x: 1 }));
+check('for kort bruker-id', false, db(tomFeltbokaStat, null).write('/bruk-feltboka/' + IDAG + '/abc/riktig', 1));
+check('bruker-id med store bokstaver', false, db(tomFeltbokaStat, null).write('/bruk-feltboka/' + IDAG + '/ABC12345/riktig', 1));
+check('ugyldig hendelsesnøkkel', false, db(tomFeltbokaStat, null).write('/bruk-feltboka/' + IDAG + '/' + ANON_ID + '/riktig!', 1));
+
+console.log('--- bruk-feltboka: lesing er forbeholdt admin ---');
+check('uinnlogget leser statistikken', false, db(feltbokaStatMed3, null).read('/bruk-feltboka'));
+check('vanlig innlogget lærer leser statistikken', false, db(medAdminFeltboka, LARER).read('/bruk-feltboka'));
+check('admin leser statistikken', true, db(medAdminFeltboka, ADMIN).read('/bruk-feltboka'));
+
 // ---------------------------------------------------------------------------
 // Ledertavle (games/geografi/kartografen/). Verdensåpen: hvem som helst kan
 // lese, og hvem som helst kan legge til én tid. Reglene kan derfor ikke stole

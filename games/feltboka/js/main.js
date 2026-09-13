@@ -15,9 +15,29 @@ import { ARTER, KATEGORIER, art as finnArt } from './data/species.js';
 import { varianterFor, variantNavn } from './data/variants.js';
 import { illustrasjon } from './art.js';
 import { Framgang } from './progress.js';
+import { tell } from './stats.js';
 
 const $ = (id) => document.getElementById(id);
 const framgang = new Framgang();
+
+/** Én hendelse til /bruk-feltboka/ (admin-dashbordet) for denne eleven. */
+function bruk(hendelse) { tell(framgang.anonymId(), hendelse); }
+
+/* Tidspunktet gjeldende oppgave ble vist — grunnlaget for «tid brukt per
+   oppgave» i dashbordet. Løper videre gjennom feilforsøk (det er tiden
+   fram til oppgaven faktisk løses vi måler), og nullstilles i nyOppgave(). */
+let oppgaveVistVed = null;
+
+/** Grov bøtte for tid brukt på én oppgave — samme prinsipp som Kartografens
+    varighetsbøtter (bruk/README.md), men skalert til én oppgave i stedet
+    for en hel økt. */
+function bukkForOppgavetid(ms) {
+  const sek = ms / 1000;
+  if (sek < 10) return 'tid-under10s';
+  if (sek < 30) return 'tid-10-30s';
+  if (sek < 60) return 'tid-30-60s';
+  return 'tid-over60s';
+}
 
 let valgtTema = null;
 let valgtNiva = 'lett';
@@ -97,6 +117,7 @@ function startTrening() {
 
 function nyOppgave() {
   aktivOppgave = lagOppgave(valgtTema, valgtNiva);
+  oppgaveVistVed = Date.now();
   $('sporsmal').textContent = aktivOppgave.sporsmal;
   $('svarhjelp').textContent = svarHjelp(aktivOppgave.svarform);
   const felt = $('svar');
@@ -153,6 +174,12 @@ function svar(e) {
     $('tilbakemelding').textContent = 'Riktig';
     $('tilbakemelding').className = 'tilbakemelding er-riktig';
     feilTimer = setTimeout(() => { $('tilbakemelding').textContent = ''; }, 700);
+
+    bruk('riktig');
+    bruk('riktig-tema-' + valgtTema);
+    bruk('riktig-niva-' + valgtNiva);
+    if (oppgaveVistVed) bruk(bukkForOppgavetid(Date.now() - oppgaveVistVed));
+
     if (utlosteFunn) visFunn();
     else nyOppgave();
     return;
@@ -165,6 +192,10 @@ function svar(e) {
   $('tilbakemelding').className = 'tilbakemelding er-feil';
   felt.select();
   feilTimer = setTimeout(() => { $('tilbakemelding').textContent = ''; }, CONFIG.feilmeldingMs);
+
+  bruk('feil');
+  bruk('feil-tema-' + valgtTema);
+  bruk('feil-niva-' + valgtNiva);
 }
 
 /* ---------- Steg 4 og 5: funnet ---------- */
@@ -172,6 +203,9 @@ function svar(e) {
 function visFunn() {
   const funn = framgang.apneFunn();
   if (!funn) { nyOppgave(); return; }
+
+  bruk('funn');
+  bruk('funn-art-' + funn.artId);
 
   const art = finnArt(funn.artId);
   const status = framgang.variantStatus(art);
