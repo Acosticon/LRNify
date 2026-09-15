@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Ordkryss — LRNify</title>
+<meta name="description" content="Ordkryss: sett sammen bokstavbrikker til et minikryssord med to fagord som deler en bokstav, og koble ordene til riktig definisjon.">
+<link rel="canonical" href="https://lrnify.no/games/ordkryss/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Ordkryss – LRNify">
+<meta property="og:description" content="Sett sammen bokstavbrikker til et minikryssord med to fagord, og koble dem til riktig definisjon.">
+<meta property="og:url" content="https://lrnify.no/games/ordkryss/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ordkryss – LRNify">
+<meta name="twitter:description" content="Sett sammen bokstavbrikker til et minikryssord med to fagord, og koble dem til riktig definisjon.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f6f8fb;
+    --ink:   #1c2530;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #5b6472;
+    --green: #16a34a;
+    --red:   #dc2626;
+    --amber: #d97706;
+    --blue:  #2563eb;
+    --gridline:#e3e8f0;
+    --tile:  #fdf3d9;
+    --cell: clamp(28px, 7.6vw, 44px);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  .screen { display: none; }
+  .screen.active { display: flex; }
+  main { padding: 0 20px 60px; display: flex; flex-direction: column; align-items: center; }
+
+  #screen-start { flex-direction: column; align-items: center; text-align: center; gap: 22px; max-width: 640px; margin: 0 auto; width: 100%; }
+  .hero-title {
+    font-family: 'Chewy', cursive; font-size: clamp(2.2rem,8vw,3.6rem);
+    transform: rotate(-1.5deg); line-height: 1;
+  }
+  .hero-title .accent { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); }
+  .hero-sub { color: var(--muted); font-weight: 700; font-size: 1.02rem; max-width: 480px; }
+
+  .card-panel {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 22px; width: 100%;
+  }
+  .field-label {
+    font-weight: 900; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--muted); display: block; margin-bottom: 8px; text-align: left;
+  }
+
+  .theme-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .theme-chip {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .95rem;
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  .theme-chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .theme-chip.selected { background: var(--yellow); }
+  .theme-chip[disabled] { opacity: .45; cursor: not-allowed; }
+
+  .btn-primary {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.05rem;
+    background: var(--green); color: #fff; border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 14px 26px; cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-primary[disabled] { opacity: .5; cursor: not-allowed; }
+
+  .btn-secondary {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .85rem;
+    background: var(--card); color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 9px 14px; cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-secondary[disabled] { opacity: .5; cursor: not-allowed; }
+
+  .placeholder-note {
+    font-size: .75rem; color: var(--muted); font-weight: 700; border: 2px dashed var(--gridline);
+    padding: 8px 12px;
+  }
+
+  /* ══ GAME SCREEN ══ */
+  #screen-game, #screen-match { flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 640px; margin: 0 auto; }
+
+  .game-topbar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 10px; width: 100%;
+  }
+  .theme-badge {
+    font-weight: 900; background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 8px 14px; display: flex; align-items: center; gap: 8px; font-size: .9rem;
+  }
+  .hint-pill {
+    background: var(--ink); color: #fff; font-weight: 900; font-size: .78rem;
+    padding: 8px 12px;
+  }
+  .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .hint-row { width: 100%; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .hint-btn { background: #fff7e6; border-color: var(--amber); }
+  .hint-btn[disabled] { background: var(--card); border-color: var(--ink); }
+
+  .def-panel {
+    display: none; width: 100%; flex-direction: column; gap: 8px;
+    background: #fff7e6; border: 2px solid var(--amber); padding: 12px 14px;
+  }
+  .def-panel.shown { display: flex; }
+  .def-line { font-weight: 700; font-size: .9rem; }
+  .def-line b { text-transform: uppercase; font-size: .72rem; color: var(--amber); display: block; letter-spacing: .04em; }
+
+  .toast {
+    font-weight: 900; background: var(--ink); color: #fff; padding: 8px 16px;
+    opacity: 0; transform: translateY(-6px); transition: opacity .15s, transform .15s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  #grid { display: grid; gap: 5px; }
+  .cellslot {
+    width: var(--cell); height: var(--cell);
+    border: 2px dashed var(--gridline);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .cellslot.blank { border: none; }
+  .cellslot.cross { background: #fff7e6; border-color: var(--amber); }
+  .cellslot .tile { width: 100%; height: 100%; }
+
+  .pool-wrap { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .pool-piles { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; width: 100%; }
+  .pool-pile { flex: 1 1 140px; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  .pool-pile-label { font-weight: 900; font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  #pool, .pool-pile-tiles { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; min-height: var(--cell); }
+
+  .tile {
+    width: var(--cell); height: var(--cell);
+    background: var(--tile); border: 3px solid var(--ink); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: clamp(.95rem, 3.2vw, 1.3rem); text-transform: uppercase;
+    color: var(--ink); cursor: pointer; box-shadow: 0 3px 0 var(--ink);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .tile:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .tile.selected { background: var(--yellow); transform: translateY(-4px); box-shadow: 0 6px 0 var(--ink); }
+  .cellslot.target-hint { border: 2px solid var(--blue); box-shadow: 0 0 0 4px rgba(37,99,235,.18); }
+
+  /* ══ OVERLAY ══ */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(28,37,48,.72);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 20;
+  }
+  .overlay.active { display: flex; }
+  .overlay-card {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 8px 0 var(--ink);
+    padding: 26px; max-width: 440px; width: 100%; text-align: center; display: flex; flex-direction: column; gap: 14px;
+  }
+  .overlay-card h2 { font-family: 'Chewy', cursive; font-size: 1.8rem; color: var(--green); }
+  .overlay-words { font-weight: 900; font-size: 1.15rem; letter-spacing: .03em; }
+  .overlay-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  /* ══ MATCH SCREEN ══ */
+  .match-words { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; width: 100%; }
+  .word-chip {
+    font-weight: 900; font-size: 1rem; background: var(--card); border: 3px solid var(--ink);
+    box-shadow: 0 4px 0 var(--ink); padding: 12px 18px; cursor: pointer; letter-spacing: .02em;
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  .word-chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .word-chip.selected { background: var(--yellow); }
+  .word-chip.matched { background: var(--green); color: #fff; cursor: default; }
+
+  .def-grid { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .def-card {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 12px 16px; cursor: pointer; font-weight: 700; font-size: .92rem; text-align: left;
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  .def-card:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .def-card.matched { background: var(--green); color: #fff; cursor: default; }
+  .def-card.shake { animation: shakeIt .35s; border-color: var(--red); }
+  @keyframes shakeIt {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  footer { text-align: center; padding: 20px; color: var(--muted); font-size: .75rem; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html#grid">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<main>
+
+  <!-- ══ START SCREEN ══ -->
+  <section id="screen-start" class="screen active">
+    <div class="hero-title">Ord<span class="accent">kryss</span></div>
+    <p class="hero-sub">Sett sammen bokstavbrikkene til et minikryssord med to fagord som deler én bokstav. Løs krysset, og koble deretter ordene til riktig definisjon.</p>
+
+    <div class="card-panel">
+      <span class="field-label">Velg tema</span>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+
+    <div class="card-panel" style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span class="field-label" style="text-align:center;">Klar til å starte?</span>
+      <button class="btn-primary" id="startBtn">Start kryss →</button>
+    </div>
+
+    <p class="placeholder-note">🖼️ All grafikk i dette spillet er placeholder (farger, form og emoji) — visuell utforming kommer senere.</p>
+  </section>
+
+  <!-- ══ GAME SCREEN ══ -->
+  <section id="screen-game" class="screen">
+    <div class="game-topbar">
+      <div class="theme-badge" id="themeBadge">🔬 Celler</div>
+      <div class="hint-pill" id="hintCount">0 hint brukt</div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" id="newCrossBtn">🔀 Nytt kryss</button>
+        <button class="btn-secondary" id="quitBtn">Avslutt</button>
+      </div>
+    </div>
+
+    <div class="hint-row">
+      <button class="btn-secondary hint-btn" id="hintCrossBtn">📍 Plasser bokstaven i krysset</button>
+      <button class="btn-secondary hint-btn" id="hintPickBtn">👉 Velg en bokstav som skal plasseres</button>
+      <button class="btn-secondary hint-btn" id="hintSortBtn">🗂️ Sorter i to bunker</button>
+      <button class="btn-secondary hint-btn" id="hintDefBtn">💡 Få en definisjon</button>
+    </div>
+
+    <div class="def-panel" id="defPanel"></div>
+
+    <div class="toast" id="toast"></div>
+
+    <div id="grid" aria-live="polite"></div>
+
+    <div class="pool-wrap">
+      <div id="pool"></div>
+      <div class="pool-piles" id="poolPiles" style="display:none;">
+        <div class="pool-pile">
+          <span class="pool-pile-label">Bunke 1</span>
+          <div class="pool-pile-tiles" id="pileH"></div>
+        </div>
+        <div class="pool-pile">
+          <span class="pool-pile-label">Bunke 2</span>
+          <div class="pool-pile-tiles" id="pileV"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MATCH SCREEN ══ -->
+  <section id="screen-match" class="screen">
+    <div class="hero-title" style="font-size:clamp(1.6rem,6vw,2.4rem);">Koble ord og <span class="accent">definisjon</span></div>
+    <p class="hero-sub">Velg et ord, og klikk deretter på definisjonen som passer.</p>
+    <div class="match-words" id="matchWords"></div>
+    <div class="def-grid" id="defCards"></div>
+    <div class="overlay-actions" id="matchDoneActions" style="display:none;">
+      <button class="btn-primary" id="matchNewBtn">Nytt kryss →</button>
+      <button class="btn-secondary" id="matchQuitBtn">Avslutt</button>
+    </div>
+  </section>
+
+  <footer>Ordkryss er en del av LRNify — MVP-versjon (kun lærervisning).</footer>
+</main>
+
+<!-- ══ SOLVED OVERLAY ══ -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <h2>Riktig! 🎉</h2>
+    <div class="overlay-words" id="overlayWords"></div>
+    <div class="overlay-actions">
+      <button class="btn-primary" id="toMatchBtn">Koble ord og definisjon →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ══════════ TEMA / ORDBANK ══════════
+     Samme ordbank som timestarteren Begrepsjakt (games/begrepsjakt), tema
+     "Celler". Legg til flere tema ved å legge en ny nøkkel i THEMES med
+     { name, icon, terms: [{ word, def }, ...] }. */
+  var THEMES = {
+    celler: {
+      name: "Celler",
+      icon: "🔬",
+      terms: [
+        { word: "CELLEMEMBRAN", def: "Den tynne «huden» rundt cellen som bestemmer hva som slipper inn og ut." },
+        { word: "CELLEKJERNE", def: "Styringssenteret i cellen som inneholder arvestoffet." },
+        { word: "CYTOPLASMA", def: "Den geléaktige væsken inne i cellen der organellene ligger." },
+        { word: "MITOKONDRIE", def: "Organellen som lager energi til cellen — ofte kalt «kraftverket»." },
+        { word: "KLOROPLAST", def: "Organellen i planteceller der fotosyntesen skjer." },
+        { word: "CELLEVEGG", def: "Den stive, ekstra beskyttelsen utenfor cellemembranen hos planter." },
+        { word: "VAKUOLE", def: "Rom i cellen som lagrer vann, næringsstoffer eller avfall." },
+        { word: "RIBOSOM", def: "Liten struktur i cellen som produserer proteiner." },
+        { word: "KROMOSOM", def: "Tettpakket streng av arvestoff (DNA) i cellekjernen." },
+        { word: "ARVESTOFF", def: "Informasjonen (DNA) som bestemmer egenskapene til en organisme." },
+        { word: "CELLEDELING", def: "Prosessen der én celle blir til to nye celler." },
+        { word: "STAMCELLE", def: "En udifferensiert celle som kan utvikle seg til mange ulike celletyper." },
+        { word: "EUKARYOT", def: "Celletype som har en cellekjerne omsluttet av membran." },
+        { word: "PROKARYOT", def: "Enkel celletype uten cellekjerne, for eksempel bakterier." },
+        { word: "FLERCELLET", def: "En organisme bygd opp av mange celler, for eksempel mennesker." },
+        { word: "ENCELLET", def: "En organisme som bare består av én eneste celle." },
+        { word: "FOTOSYNTESE", def: "Prosessen der planter lager sukker og oksygen av sollys, vann og CO2." },
+        { word: "CELLEÅNDING", def: "Prosessen der celler frigjør energi fra sukker ved hjelp av oksygen." },
+        { word: "DIFFUSJON", def: "Bevegelse av stoffer fra høy til lav konsentrasjon." },
+        { word: "OSMOSE", def: "Bevegelse av vann gjennom en membran, fra lav til høy konsentrasjon av oppløst stoff." },
+        { word: "ENZYM", def: "Et protein som gjør at kjemiske reaksjoner i cellen går raskere." },
+        { word: "BAKTERIE", def: "En encellet, prokaryot mikroorganisme." },
+        { word: "MIKROSKOP", def: "Verktøyet vi bruker for å se celler som er for små for det blotte øyet." },
+        { word: "VEV", def: "En gruppe like celler som jobber sammen om en oppgave." },
+        { word: "ORGANELL", def: "En liten «ministruktur» inne i cellen med en bestemt oppgave." },
+        { word: "LYSOSOM", def: "Organellen som bryter ned avfall og gamle deler i cellen." },
+        { word: "GOLGIAPPARAT", def: "Organellen som pakker og sender proteiner videre i cellen." }
+      ]
+    }
+  };
+
+  var state = {
+    themeKey: "celler",
+    lastPairKey: null,
+    H: null, V: null,      // { word, def }
+    ai: 0, bj: 0,           // posisjon i H / V der bokstaven er felles
+    rows: 0, cols: 0,
+    tiles: [],              // { id, letter, origin:'h'|'v', cell:{row,col}|null }
+    selectedTileId: null,
+    hintTargetCell: null,
+    piled: false,
+    defStage: 0,
+    hintsUsed: 0
+  };
+
+  var el = {};
+  ["themeGrid","startBtn","screenStart","screenGame","screenMatch","themeBadge",
+   "hintCount","newCrossBtn","quitBtn","hintCrossBtn","hintPickBtn","hintSortBtn","hintDefBtn",
+   "defPanel","toast","grid","pool","poolPiles","pileH","pileV",
+   "overlay","overlayWords","toMatchBtn",
+   "matchWords","defCards","matchDoneActions","matchNewBtn","matchQuitBtn"].forEach(function (id) {
+    el[id] = document.getElementById(id);
+  });
+  el.screenStart = document.getElementById("screen-start");
+  el.screenGame = document.getElementById("screen-game");
+  el.screenMatch = document.getElementById("screen-match");
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  function buildThemeGrid() {
+    el.themeGrid.innerHTML = "";
+    Object.keys(THEMES).forEach(function (key) {
+      var t = THEMES[key];
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "theme-chip" + (key === state.themeKey ? " selected" : "");
+      chip.textContent = t.icon + " " + t.name;
+      chip.addEventListener("click", function () {
+        state.themeKey = key;
+        buildThemeGrid();
+      });
+      el.themeGrid.appendChild(chip);
+    });
+  }
+
+  /* Finn alle par av ord i tema som deler minst én bokstav i samme posisjon,
+     og velg et tilfeldig par (ikke samme par som forrige runde om mulig). */
+  function findCrossPair(themeKey) {
+    var terms = THEMES[themeKey].terms;
+    var candidates = [];
+    for (var i = 0; i < terms.length; i++) {
+      for (var j = 0; j < terms.length; j++) {
+        if (i === j) continue;
+        var a = terms[i].word, b = terms[j].word;
+        for (var ai = 0; ai < a.length; ai++) {
+          for (var bj = 0; bj < b.length; bj++) {
+            if (a[ai] === b[bj]) candidates.push({ hIdx: i, vIdx: j, ai: ai, bj: bj });
+          }
+        }
+      }
+    }
+    var pool = candidates.filter(function (c) {
+      var key = [c.hIdx, c.vIdx].sort().join("-");
+      return key !== state.lastPairKey;
+    });
+    if (pool.length === 0) pool = candidates;
+    var pick = pool[Math.floor(Math.random() * pool.length)];
+    state.lastPairKey = [pick.hIdx, pick.vIdx].sort().join("-");
+    return {
+      H: terms[pick.hIdx],
+      V: terms[pick.vIdx],
+      ai: pick.ai,
+      bj: pick.bj
+    };
+  }
+
+  function getTile(id) {
+    for (var i = 0; i < state.tiles.length; i++) if (state.tiles[i].id === id) return state.tiles[i];
+    return null;
+  }
+  function getTileAt(row, col) {
+    for (var i = 0; i < state.tiles.length; i++) {
+      var t = state.tiles[i];
+      if (t.cell && t.cell.row === row && t.cell.col === col) return t;
+    }
+    return null;
+  }
+
+  function cellType(row, col) {
+    var inH = row === state.bj;
+    var inV = col === state.ai;
+    if (inH && inV) return "cross";
+    if (inH) return "h";
+    if (inV) return "v";
+    return "blank";
+  }
+
+  function newRound() {
+    var pair = findCrossPair(state.themeKey);
+    state.H = pair.H;
+    state.V = pair.V;
+    state.ai = pair.ai;
+    state.bj = pair.bj;
+    state.rows = state.V.word.length;
+    state.cols = state.H.word.length;
+    state.selectedTileId = null;
+    state.hintTargetCell = null;
+    state.piled = false;
+    state.defStage = 0;
+    state.hintsUsed = 0;
+
+    var tiles = [];
+    var tid = 0;
+    for (var c = 0; c < state.cols; c++) {
+      tiles.push({ id: tid++, letter: state.H.word[c], origin: "h", cell: null });
+    }
+    for (var r = 0; r < state.rows; r++) {
+      if (r === state.bj) continue;
+      tiles.push({ id: tid++, letter: state.V.word[r], origin: "v", cell: null });
+    }
+    state.tiles = shuffle(tiles);
+
+    el.poolPiles.style.display = "none";
+    el.pool.style.display = "flex";
+    el.defPanel.classList.remove("shown");
+    el.defPanel.innerHTML = "";
+    el.hintDefBtn.disabled = false;
+    el.hintDefBtn.textContent = "💡 Få en definisjon";
+    updateHintCount();
+    render();
+  }
+
+  function updateHintCount() {
+    el.hintCount.textContent = state.hintsUsed + " hint brukt";
+  }
+
+  var toastTimer = null;
+  function showToast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.toast.classList.remove("show"); }, 1600);
+  }
+
+  function buildTileEl(t) {
+    var b = document.createElement("button");
+    b.type = "button";
+    b.className = "tile" + (state.selectedTileId === t.id ? " selected" : "");
+    b.textContent = t.letter;
+    b.addEventListener("click", function () { tileClicked(t.id); });
+    return b;
+  }
+
+  function renderGrid() {
+    el.grid.innerHTML = "";
+    el.grid.style.gridTemplateColumns = "repeat(" + state.cols + ", var(--cell))";
+    el.grid.style.gridTemplateRows = "repeat(" + state.rows + ", var(--cell))";
+    for (var r = 0; r < state.rows; r++) {
+      for (var c = 0; c < state.cols; c++) {
+        var type = cellType(r, c);
+        var div = document.createElement("div");
+        if (type === "blank") {
+          div.className = "cellslot blank";
+          el.grid.appendChild(div);
+          continue;
+        }
+        div.className = "cellslot" + (type === "cross" ? " cross" : "");
+        if (state.hintTargetCell && state.hintTargetCell.row === r && state.hintTargetCell.col === c) {
+          div.className += " target-hint";
+        }
+        var occ = getTileAt(r, c);
+        if (occ) {
+          div.appendChild(buildTileEl(occ));
+        } else {
+          (function (rr, cc) {
+            div.addEventListener("click", function () { emptyCellClicked(rr, cc); });
+          })(r, c);
+        }
+        el.grid.appendChild(div);
+      }
+    }
+  }
+
+  function renderPool() {
+    var unplaced = state.tiles.filter(function (t) { return t.cell === null; });
+    if (!state.piled) {
+      el.pool.innerHTML = "";
+      unplaced.forEach(function (t) { el.pool.appendChild(buildTileEl(t)); });
+    } else {
+      el.pileH.innerHTML = "";
+      el.pileV.innerHTML = "";
+      unplaced.forEach(function (t) {
+        (t.origin === "h" ? el.pileH : el.pileV).appendChild(buildTileEl(t));
+      });
+    }
+  }
+
+  function render() {
+    renderGrid();
+    renderPool();
+  }
+
+  function tileClicked(id) {
+    if (state.selectedTileId === id) {
+      state.selectedTileId = null;
+      render();
+      return;
+    }
+    if (state.selectedTileId === null) {
+      state.selectedTileId = id;
+      render();
+      return;
+    }
+    var a = getTile(state.selectedTileId);
+    var b = getTile(id);
+    var tmp = a.cell;
+    a.cell = b.cell;
+    b.cell = tmp;
+    state.selectedTileId = null;
+    state.hintTargetCell = null;
+    render();
+    checkSolved();
+  }
+
+  function emptyCellClicked(row, col) {
+    if (state.selectedTileId === null) return;
+    var a = getTile(state.selectedTileId);
+    a.cell = { row: row, col: col };
+    state.selectedTileId = null;
+    state.hintTargetCell = null;
+    render();
+    checkSolved();
+  }
+
+  function checkSolved() {
+    var h = "";
+    for (var c = 0; c < state.cols; c++) {
+      var t = getTileAt(state.bj, c);
+      h += t ? t.letter : "";
+    }
+    var v = "";
+    for (var r = 0; r < state.rows; r++) {
+      var t2 = getTileAt(r, state.ai);
+      v += t2 ? t2.letter : "";
+    }
+    if (h === state.H.word && v === state.V.word) {
+      el.overlayWords.textContent = state.H.word + "  ×  " + state.V.word;
+      el.overlay.classList.add("active");
+    }
+  }
+
+  /* ══ HINTS ══ */
+  function hintPlaceCross() {
+    var crossLetter = state.H.word[state.ai];
+    var occupant = getTileAt(state.bj, state.ai);
+    if (occupant && occupant.letter === crossLetter) {
+      showToast("Krysset er allerede riktig!");
+      return;
+    }
+    var candidate = state.tiles.find(function (t) {
+      return t.letter === crossLetter && !(t.cell && t.cell.row === state.bj && t.cell.col === state.ai);
+    });
+    if (!candidate) return;
+    var prevCell = candidate.cell;
+    candidate.cell = { row: state.bj, col: state.ai };
+    if (occupant) occupant.cell = prevCell;
+    state.selectedTileId = null;
+    state.hintsUsed++;
+    updateHintCount();
+    render();
+    checkSolved();
+  }
+
+  function hintPickLetter() {
+    var target = null;
+    for (var c = 0; c < state.cols; c++) {
+      var occ = getTileAt(state.bj, c);
+      var need = state.H.word[c];
+      if (!occ || occ.letter !== need) { target = { row: state.bj, col: c }; break; }
+    }
+    if (!target) {
+      for (var r = 0; r < state.rows; r++) {
+        if (r === state.bj) continue;
+        var occ2 = getTileAt(r, state.ai);
+        var need2 = state.V.word[r];
+        if (!occ2 || occ2.letter !== need2) { target = { row: r, col: state.ai }; break; }
+      }
+    }
+    if (!target) {
+      showToast("Alt er allerede riktig plassert!");
+      return;
+    }
+    var neededLetter = target.row === state.bj ? state.H.word[target.col] : state.V.word[target.row];
+    var candidate = state.tiles.find(function (t) { return t.letter === neededLetter && t.cell === null; });
+    if (!candidate) {
+      candidate = state.tiles.find(function (t) {
+        return t.letter === neededLetter && !(t.cell && t.cell.row === target.row && t.cell.col === target.col);
+      });
+    }
+    if (!candidate) return;
+    state.selectedTileId = candidate.id;
+    state.hintTargetCell = target;
+    state.hintsUsed++;
+    updateHintCount();
+    render();
+    setTimeout(function () {
+      if (state.hintTargetCell === target) {
+        state.hintTargetCell = null;
+        render();
+      }
+    }, 3000);
+  }
+
+  function hintSortPiles() {
+    if (state.piled) return;
+    state.piled = true;
+    el.pool.style.display = "none";
+    el.poolPiles.style.display = "flex";
+    state.hintsUsed++;
+    updateHintCount();
+    render();
+  }
+
+  function hintDefinition() {
+    if (state.defStage >= 2) return;
+    state.defStage++;
+    state.hintsUsed++;
+    updateHintCount();
+    el.defPanel.classList.add("shown");
+    if (state.defStage === 1) {
+      el.defPanel.innerHTML = "<div class='def-line'><b>Vannrett</b>" + state.H.def + "</div>";
+      el.hintDefBtn.textContent = "💡 Vis neste definisjon";
+    } else {
+      el.defPanel.innerHTML =
+        "<div class='def-line'><b>Vannrett</b>" + state.H.def + "</div>" +
+        "<div class='def-line'><b>Loddrett</b>" + state.V.def + "</div>";
+      el.hintDefBtn.textContent = "Alle definisjoner vist";
+      el.hintDefBtn.disabled = true;
+    }
+  }
+
+  /* ══ MATCH-SKJERM ══ */
+  var matchState = { words: [], defs: [], selectedWord: null };
+
+  function startMatch() {
+    el.overlay.classList.remove("active");
+    el.screenGame.classList.remove("active");
+    el.screenMatch.classList.add("active");
+
+    matchState.selectedWord = null;
+    matchState.words = [
+      { word: state.H.word, def: state.H.def, matched: false },
+      { word: state.V.word, def: state.V.def, matched: false }
+    ];
+
+    var otherTerms = THEMES[state.themeKey].terms.filter(function (t) {
+      return t.word !== state.H.word && t.word !== state.V.word;
+    });
+    var distractors = shuffle(otherTerms).slice(0, 4);
+    matchState.defs = shuffle(
+      matchState.words.map(function (w) { return { text: w.def, answer: w.word }; })
+        .concat(distractors.map(function (t) { return { text: t.def, answer: t.word }; }))
+    );
+
+    el.matchDoneActions.style.display = "none";
+    renderMatch();
+  }
+
+  function renderMatch() {
+    el.matchWords.innerHTML = "";
+    matchState.words.forEach(function (w) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "word-chip" +
+        (w.matched ? " matched" : (matchState.selectedWord === w.word ? " selected" : ""));
+      chip.textContent = w.word;
+      if (!w.matched) {
+        chip.addEventListener("click", function () {
+          matchState.selectedWord = matchState.selectedWord === w.word ? null : w.word;
+          renderMatch();
+        });
+      }
+      el.matchWords.appendChild(chip);
+    });
+
+    el.defCards.innerHTML = "";
+    matchState.defs.forEach(function (d) {
+      var card = document.createElement("div");
+      card.className = "def-card" + (d.matched ? " matched" : "");
+      card.textContent = d.text;
+      if (!d.matched) {
+        card.addEventListener("click", function () { defCardClicked(d, card); });
+      }
+      el.defCards.appendChild(card);
+    });
+  }
+
+  function defCardClicked(d, cardEl) {
+    if (!matchState.selectedWord) {
+      showToast("Velg et ord først");
+      return;
+    }
+    if (d.answer === matchState.selectedWord) {
+      d.matched = true;
+      matchState.words.forEach(function (w) {
+        if (w.word === matchState.selectedWord) w.matched = true;
+      });
+      matchState.selectedWord = null;
+      renderMatch();
+      if (matchState.words.every(function (w) { return w.matched; })) {
+        el.matchDoneActions.style.display = "flex";
+      }
+    } else {
+      cardEl.classList.remove("shake");
+      void cardEl.offsetWidth;
+      cardEl.classList.add("shake");
+    }
+  }
+
+  function quitToStart() {
+    el.overlay.classList.remove("active");
+    el.screenGame.classList.remove("active");
+    el.screenMatch.classList.remove("active");
+    el.screenStart.classList.add("active");
+  }
+
+  el.startBtn.addEventListener("click", function () {
+    el.screenStart.classList.remove("active");
+    el.screenGame.classList.add("active");
+    var t = THEMES[state.themeKey];
+    el.themeBadge.textContent = t.icon + " " + t.name;
+    newRound();
+  });
+  el.newCrossBtn.addEventListener("click", newRound);
+  el.quitBtn.addEventListener("click", quitToStart);
+  el.hintCrossBtn.addEventListener("click", hintPlaceCross);
+  el.hintPickBtn.addEventListener("click", hintPickLetter);
+  el.hintSortBtn.addEventListener("click", hintSortPiles);
+  el.hintDefBtn.addEventListener("click", hintDefinition);
+  el.toMatchBtn.addEventListener("click", startMatch);
+  el.matchNewBtn.addEventListener("click", function () {
+    el.screenMatch.classList.remove("active");
+    el.screenGame.classList.add("active");
+    newRound();
+  });
+  el.matchQuitBtn.addEventListener("click", quitToStart);
+
+  buildThemeGrid();
+})();
+</script>
+
+</body>
+</html>
