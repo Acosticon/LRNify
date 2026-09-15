@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Begrepsjakt A — LRNify</title>
+<meta name="description" content="Versjon A av Begrepsjakt: Wordle med fagbegreper. Gjett dagens fagbegrep bokstav for bokstav — en oppvarming for hele klassen.">
+<link rel="canonical" href="https://lrnify.no/games/begrepsjakt/A.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Begrepsjakt A – LRNify">
+<meta property="og:description" content="Versjon A av Begrepsjakt: Wordle med fagbegreper. Gjett dagens fagbegrep bokstav for bokstav — en oppvarming for hele klassen.">
+<meta property="og:url" content="https://lrnify.no/games/begrepsjakt/A.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Begrepsjakt A – LRNify">
+<meta name="twitter:description" content="Versjon A av Begrepsjakt: Wordle med fagbegreper. Gjett dagens fagbegrep bokstav for bokstav — en oppvarming for hele klassen.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f6f8fb;
+    --ink:   #1c2530;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #5b6472;
+    --green: #16a34a;
+    --gridline:#e3e8f0;
+
+    --blue: #2563eb;
+    --blue-dark: #1d4ed8;
+    --red: #dc2626;
+    --red-dark:#991b1b;
+    --purple:#7c3aed;
+    --purple-dark:#5b21b6;
+    --amber:#d97706;
+    --amber-dark:#92400e;
+    --teal:#0d9488;
+    --teal-dark:#0f766e;
+
+    --absent: #8892a0;
+    --absent-dark: #6b7280;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+  }
+
+  /* ══ HEADER ══ */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ══ SCREENS ══ */
+  .screen { display: none; }
+  .screen.active { display: flex; }
+  main { padding: 0 20px 60px; display: flex; flex-direction: column; align-items: center; }
+
+  /* ══ START SCREEN ══ */
+  #screen-start { flex-direction: column; align-items: center; text-align: center; gap: 22px; max-width: 640px; margin: 0 auto; width: 100%; }
+  .hero-title {
+    font-family: 'Chewy', cursive; font-size: clamp(2.2rem,8vw,3.6rem);
+    transform: rotate(-1.5deg); line-height: 1;
+  }
+  .hero-title .accent { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); }
+  .hero-sub { color: var(--muted); font-weight: 700; font-size: 1.02rem; max-width: 480px; }
+
+  .card-panel {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 22px; width: 100%;
+  }
+
+  .field-label {
+    font-weight: 900; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--muted); display: block; margin-bottom: 8px; text-align: left;
+  }
+
+  .theme-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .theme-chip {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .95rem;
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  .theme-chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .theme-chip.selected { background: var(--yellow); }
+  .theme-chip[disabled] { opacity: .45; cursor: not-allowed; }
+
+  .btn-primary {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.05rem;
+    background: var(--green); color: #fff; border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 14px 26px; cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-primary[disabled] { opacity: .5; cursor: not-allowed; }
+
+  .btn-secondary {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .9rem;
+    background: var(--card); color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 9px 16px; cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  .placeholder-note {
+    font-size: .75rem; color: var(--muted); font-weight: 700; border: 2px dashed var(--gridline);
+    padding: 8px 12px;
+  }
+
+  /* ══ GAME SCREEN ══ */
+  #screen-game { flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 620px; margin: 0 auto; }
+
+  .game-topbar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 10px; width: 100%;
+  }
+  .theme-badge {
+    font-weight: 900; background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 8px 14px; display: flex; align-items: center; gap: 8px; font-size: .9rem;
+  }
+  .stat-group { display: flex; gap: 8px; }
+  .stat-pill {
+    background: var(--ink); color: #fff; font-weight: 900; font-size: .8rem;
+    padding: 8px 12px; display: flex; flex-direction: column; align-items: center; min-width: 72px;
+  }
+  .stat-pill span.num { font-size: 1.15rem; }
+  .stat-pill span.label { font-size: .62rem; opacity: .8; text-transform: uppercase; letter-spacing: .05em; }
+
+  .topbar-actions { display: flex; gap: 8px; }
+
+  .hint-row { width: 100%; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+  #hintBtn {
+    background: var(--amber); color: #fff;
+  }
+  #hintBtn[disabled] { background: var(--card); color: var(--muted); }
+  .hint-text {
+    display: none; font-weight: 700; font-size: .95rem; background: #fff7e6;
+    border: 2px solid var(--amber); padding: 10px 14px; text-align: center; max-width: 520px;
+  }
+  .hint-text.shown { display: block; }
+
+  .toast {
+    font-weight: 900; background: var(--ink); color: #fff; padding: 8px 16px;
+    opacity: 0; transform: translateY(-6px); transition: opacity .15s, transform .15s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.shake { animation: shakeIt .35s; }
+  @keyframes shakeIt {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+
+  #grid { display: flex; flex-direction: column; gap: 6px; }
+  .grid-row { display: flex; gap: 6px; justify-content: center; }
+  .tile {
+    width: clamp(30px, 8vw, 46px); height: clamp(30px, 8vw, 46px);
+    border: 3px solid var(--gridline); background: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: clamp(1rem, 3.5vw, 1.35rem); text-transform: uppercase;
+    color: var(--ink); transition: transform .15s;
+  }
+  .tile.filled { border-color: var(--muted); transform: scale(1.03); }
+  .tile.correct { background: var(--green); border-color: var(--green); color: #fff; }
+  .tile.present { background: var(--amber); border-color: var(--amber); color: #fff; }
+  .tile.absent  { background: var(--absent); border-color: var(--absent); color: #fff; }
+  .tile.pop { animation: popTile .12s ease; }
+  @keyframes popTile { 0% { transform: scale(1); } 50% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+  #keyboard { display: flex; flex-direction: column; gap: 7px; width: 100%; align-items: center; margin-top: 6px; }
+  .kbd-row { display: flex; gap: 5px; justify-content: center; width: 100%; }
+  .key {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .78rem;
+    background: #e3e8f0; color: var(--ink); border: none; border-radius: 4px;
+    padding: 12px 0; min-width: 28px; flex: 1; max-width: 42px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; text-transform: uppercase;
+    transition: background .15s, transform .1s;
+  }
+  .key:active { transform: translateY(2px); }
+  .key.wide { max-width: 62px; font-size: .68rem; }
+  .key.correct { background: var(--green); color: #fff; }
+  .key.present { background: var(--amber); color: #fff; }
+  .key.absent  { background: var(--absent-dark); color: #fff; }
+
+  /* ══ OVERLAY ══ */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(28,37,48,.72);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 20;
+  }
+  .overlay.active { display: flex; }
+  .overlay-card {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 8px 0 var(--ink);
+    padding: 26px; max-width: 420px; width: 100%; text-align: center; display: flex; flex-direction: column; gap: 14px;
+  }
+  .overlay-card h2 { font-family: 'Chewy', cursive; font-size: 1.8rem; }
+  .overlay-card h2.win { color: var(--green); }
+  .overlay-card h2.lose { color: var(--red); }
+  .overlay-word { font-weight: 900; font-size: 1.3rem; letter-spacing: .04em; }
+  .overlay-def { color: var(--muted); font-weight: 700; font-size: .95rem; }
+  .overlay-score { font-weight: 900; font-size: 1.05rem; }
+  .overlay-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  footer { text-align: center; padding: 20px; color: var(--muted); font-size: .75rem; font-weight: 700; }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html#grid">LRN<b>ify</b></a>
+  <a class="back-btn" href="index.html">← Velg versjon</a>
+</header>
+
+<main>
+
+  <!-- ══ START SCREEN ══ -->
+  <section id="screen-start" class="screen active">
+    <div class="hero-title">Begreps<span class="accent">jakt</span> A</div>
+    <p class="hero-sub">Wordle med fagbegreper. Velg tema, gjett bokstav for bokstav sammen med klassen — perfekt oppstart på timen.</p>
+
+    <div class="card-panel">
+      <span class="field-label">Velg tema</span>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+
+    <div class="card-panel" style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span class="field-label" style="text-align:center;">Klar til å starte?</span>
+      <button class="btn-primary" id="startBtn">Start time →</button>
+      <button class="btn-secondary" id="resetScoreBtn">Nullstill poengsum</button>
+    </div>
+
+    <p class="placeholder-note">🖼️ All grafikk i dette spillet er placeholder (farger, form og emoji) — visuell utforming kommer senere.</p>
+  </section>
+
+  <!-- ══ GAME SCREEN ══ -->
+  <section id="screen-game" class="screen">
+    <div class="game-topbar">
+      <div class="theme-badge" id="themeBadge">🔬 Celler</div>
+      <div class="stat-group">
+        <div class="stat-pill"><span class="num" id="scoreNum">0</span><span class="label">Poeng</span></div>
+        <div class="stat-pill"><span class="num" id="roundNum">0</span><span class="label">Runde</span></div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" id="newTermBtn">🎲 Nytt begrep</button>
+        <button class="btn-secondary" id="quitBtn">Avslutt time</button>
+      </div>
+    </div>
+
+    <div class="hint-row">
+      <button class="btn-secondary" id="hintBtn">💡 Vis hint (−30 p)</button>
+      <div class="hint-text" id="hintText"></div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div id="grid" aria-live="polite"></div>
+
+    <div id="keyboard"></div>
+  </section>
+
+  <footer>Begrepsjakt (versjon A) er en del av LRNify — MVP-versjon (kun lærervisning).</footer>
+</main>
+
+<!-- ══ ROUND-END OVERLAY ══ -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <h2 id="overlayTitle">Riktig!</h2>
+    <div class="overlay-word" id="overlayWord"></div>
+    <div class="overlay-def" id="overlayDef"></div>
+    <div class="overlay-score" id="overlayScore"></div>
+    <div class="overlay-actions">
+      <button class="btn-primary" id="nextTermBtn">Neste begrep →</button>
+      <button class="btn-secondary" id="overlayQuitBtn">Avslutt time</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ══════════ TEMA / ORDBANK ══════════
+     For å legge til et nytt tema: legg til en ny nøkkel i THEMES med
+     { name, icon, terms: [{ word, def }, ...] }. Ord skrives med store
+     bokstaver, uten mellomrom. Selektoren på startskjermen bygges
+     automatisk ut fra denne strukturen. */
+  var THEMES = {
+    celler: {
+      name: "Celler",
+      icon: "🔬",
+      terms: [
+        { word: "CELLEMEMBRAN", def: "Den tynne «huden» rundt cellen som bestemmer hva som slipper inn og ut." },
+        { word: "CELLEKJERNE", def: "Styringssenteret i cellen som inneholder arvestoffet." },
+        { word: "CYTOPLASMA", def: "Den geléaktige væsken inne i cellen der organellene ligger." },
+        { word: "MITOKONDRIE", def: "Organellen som lager energi til cellen — ofte kalt «kraftverket»." },
+        { word: "KLOROPLAST", def: "Organellen i planteceller der fotosyntesen skjer." },
+        { word: "CELLEVEGG", def: "Den stive, ekstra beskyttelsen utenfor cellemembranen hos planter." },
+        { word: "VAKUOLE", def: "Rom i cellen som lagrer vann, næringsstoffer eller avfall." },
+        { word: "RIBOSOM", def: "Liten struktur i cellen som produserer proteiner." },
+        { word: "KROMOSOM", def: "Tettpakket streng av arvestoff (DNA) i cellekjernen." },
+        { word: "ARVESTOFF", def: "Informasjonen (DNA) som bestemmer egenskapene til en organisme." },
+        { word: "CELLEDELING", def: "Prosessen der én celle blir til to nye celler." },
+        { word: "STAMCELLE", def: "En udifferensiert celle som kan utvikle seg til mange ulike celletyper." },
+        { word: "EUKARYOT", def: "Celletype som har en cellekjerne omsluttet av membran." },
+        { word: "PROKARYOT", def: "Enkel celletype uten cellekjerne, for eksempel bakterier." },
+        { word: "FLERCELLET", def: "En organisme bygd opp av mange celler, for eksempel mennesker." },
+        { word: "ENCELLET", def: "En organisme som bare består av én eneste celle." },
+        { word: "FOTOSYNTESE", def: "Prosessen der planter lager sukker og oksygen av sollys, vann og CO2." },
+        { word: "CELLEÅNDING", def: "Prosessen der celler frigjør energi fra sukker ved hjelp av oksygen." },
+        { word: "DIFFUSJON", def: "Bevegelse av stoffer fra høy til lav konsentrasjon." },
+        { word: "OSMOSE", def: "Bevegelse av vann gjennom en membran, fra lav til høy konsentrasjon av oppløst stoff." },
+        { word: "ENZYM", def: "Et protein som gjør at kjemiske reaksjoner i cellen går raskere." },
+        { word: "BAKTERIE", def: "En encellet, prokaryot mikroorganisme." },
+        { word: "MIKROSKOP", def: "Verktøyet vi bruker for å se celler som er for små for det blotte øyet." },
+        { word: "VEV", def: "En gruppe like celler som jobber sammen om en oppgave." },
+        { word: "ORGANELL", def: "En liten «ministruktur» inne i cellen med en bestemt oppgave." },
+        { word: "LYSOSOM", def: "Organellen som bryter ned avfall og gamle deler i cellen." },
+        { word: "GOLGIAPPARAT", def: "Organellen som pakker og sender proteiner videre i cellen." }
+      ]
+    }
+  };
+
+  var MAX_ATTEMPTS = 6;
+  var HINT_SOLVE_POINTS = 10; // fast poengsum hvis runden løses etter bruk av hint
+  var POINTS_BY_ATTEMPT = [100, 85, 70, 55, 40, 25];
+  var NORDIC_KEY_ROWS = [
+    ["Q","W","E","R","T","Y","U","I","O","P","Å"],
+    ["A","S","D","F","G","H","J","K","L","Ø","Æ"],
+    ["ENTER","Z","X","C","V","B","N","M","⌫"]
+  ];
+
+  var state = {
+    themeKey: "celler",
+    usedIndexes: {},
+    currentTerm: null,
+    guess: "",
+    guesses: [],
+    attemptsUsed: 0,
+    hintUsed: false,
+    roundOver: false,
+    score: 0,
+    rounds: 0,
+    keyStatus: {}
+  };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem("begrepsjakt_a_score") || "null");
+    if (saved && typeof saved.score === "number") {
+      state.score = saved.score;
+      state.rounds = saved.rounds || 0;
+    }
+  } catch (e) { /* localStorage utilgjengelig — fortsett med score 0 */ }
+
+  function saveScore() {
+    try {
+      localStorage.setItem("begrepsjakt_a_score", JSON.stringify({ score: state.score, rounds: state.rounds }));
+    } catch (e) { /* ignorer */ }
+  }
+
+  var el = {};
+  ["themeGrid","startBtn","resetScoreBtn","screenStart","screenGame","themeBadge",
+   "scoreNum","roundNum","newTermBtn","quitBtn","hintBtn","hintText","toast",
+   "grid","keyboard","overlay","overlayTitle","overlayWord","overlayDef",
+   "overlayScore","nextTermBtn","overlayQuitBtn"].forEach(function (id) {
+    el[id] = document.getElementById(id);
+  });
+  el.screenStart = document.getElementById("screen-start");
+  el.screenGame = document.getElementById("screen-game");
+
+  function buildThemeGrid() {
+    el.themeGrid.innerHTML = "";
+    Object.keys(THEMES).forEach(function (key) {
+      var t = THEMES[key];
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "theme-chip" + (key === state.themeKey ? " selected" : "");
+      chip.textContent = t.icon + " " + t.name;
+      chip.addEventListener("click", function () {
+        state.themeKey = key;
+        buildThemeGrid();
+      });
+      el.themeGrid.appendChild(chip);
+    });
+  }
+
+  function pickRandomTerm(themeKey) {
+    var terms = THEMES[themeKey].terms;
+    if (!state.usedIndexes[themeKey]) state.usedIndexes[themeKey] = [];
+    var used = state.usedIndexes[themeKey];
+    if (used.length >= terms.length) used = state.usedIndexes[themeKey] = [];
+    var available = terms.map(function (_, i) { return i; }).filter(function (i) { return used.indexOf(i) === -1; });
+    var idx = available[Math.floor(Math.random() * available.length)];
+    used.push(idx);
+    return terms[idx];
+  }
+
+  function startSession() {
+    el.screenStart.classList.remove("active");
+    el.screenGame.classList.add("active");
+    var t = THEMES[state.themeKey];
+    el.themeBadge.textContent = t.icon + " " + t.name;
+    newRound();
+  }
+
+  function newRound() {
+    var term = pickRandomTerm(state.themeKey);
+    state.currentTerm = term;
+    state.guess = "";
+    state.guesses = [];
+    state.attemptsUsed = 0;
+    state.hintUsed = false;
+    state.roundOver = false;
+    state.keyStatus = {};
+    el.hintText.classList.remove("shown");
+    el.hintText.textContent = "";
+    el.hintBtn.disabled = false;
+    el.hintBtn.textContent = "💡 Vis hint (gir " + HINT_SOLVE_POINTS + " p ved løsning)";
+    el.overlay.classList.remove("active");
+    buildGrid();
+    buildKeyboard();
+    updateStatBar();
+  }
+
+  function buildGrid() {
+    el.grid.innerHTML = "";
+    var len = state.currentTerm.word.length;
+    for (var r = 0; r < MAX_ATTEMPTS; r++) {
+      var row = document.createElement("div");
+      row.className = "grid-row";
+      row.dataset.row = r;
+      for (var c = 0; c < len; c++) {
+        var tile = document.createElement("div");
+        tile.className = "tile";
+        row.appendChild(tile);
+      }
+      el.grid.appendChild(row);
+    }
+  }
+
+  function buildKeyboard() {
+    el.keyboard.innerHTML = "";
+    NORDIC_KEY_ROWS.forEach(function (rowKeys) {
+      var row = document.createElement("div");
+      row.className = "kbd-row";
+      rowKeys.forEach(function (k) {
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "key" + (k === "ENTER" || k === "⌫" ? " wide" : "");
+        btn.textContent = k === "ENTER" ? "Enter" : k;
+        btn.dataset.key = k;
+        btn.addEventListener("click", function () { handleKey(k); });
+        row.appendChild(btn);
+      });
+      el.keyboard.appendChild(row);
+    });
+  }
+
+  function updateStatBar() {
+    el.scoreNum.textContent = state.score;
+    el.roundNum.textContent = state.rounds;
+  }
+
+  var toastTimer = null;
+  function showToast(msg, shake) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    if (shake) {
+      el.toast.classList.remove("shake");
+      void el.toast.offsetWidth;
+      el.toast.classList.add("shake");
+    }
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.toast.classList.remove("show"); }, 1600);
+  }
+
+  function currentRowEl() {
+    return el.grid.children[state.attemptsUsed];
+  }
+
+  function renderCurrentGuess() {
+    var row = currentRowEl();
+    if (!row) return;
+    var len = state.currentTerm.word.length;
+    for (var i = 0; i < len; i++) {
+      var tile = row.children[i];
+      var ch = state.guess[i] || "";
+      tile.textContent = ch;
+      tile.classList.toggle("filled", !!ch);
+    }
+  }
+
+  function handleKey(key) {
+    if (state.roundOver) return;
+    var len = state.currentTerm.word.length;
+    if (key === "ENTER") {
+      submitGuess();
+    } else if (key === "⌫") {
+      state.guess = state.guess.slice(0, -1);
+      renderCurrentGuess();
+    } else if (/^[A-ZÆØÅ]$/.test(key)) {
+      if (state.guess.length < len) {
+        state.guess += key;
+        renderCurrentGuess();
+      }
+    }
+  }
+
+  function evaluateGuess(guess, answer) {
+    var len = answer.length;
+    var result = new Array(len).fill("absent");
+    var pool = {};
+    var i;
+    for (i = 0; i < len; i++) {
+      if (guess[i] === answer[i]) {
+        result[i] = "correct";
+      } else {
+        pool[answer[i]] = (pool[answer[i]] || 0) + 1;
+      }
+    }
+    for (i = 0; i < len; i++) {
+      if (result[i] === "correct") continue;
+      var ch = guess[i];
+      if (pool[ch] > 0) {
+        result[i] = "present";
+        pool[ch]--;
+      }
+    }
+    return result;
+  }
+
+  var STATUS_PRIORITY = { absent: 0, present: 1, correct: 2 };
+  function updateKeyboardStatuses(guess, result) {
+    for (var i = 0; i < guess.length; i++) {
+      var ch = guess[i];
+      var prev = state.keyStatus[ch];
+      if (!prev || STATUS_PRIORITY[result[i]] > STATUS_PRIORITY[prev]) {
+        state.keyStatus[ch] = result[i];
+      }
+    }
+    var keyEls = el.keyboard.querySelectorAll(".key");
+    keyEls.forEach(function (btn) {
+      var k = btn.dataset.key;
+      var st = state.keyStatus[k];
+      btn.classList.remove("correct", "present", "absent");
+      if (st) btn.classList.add(st);
+    });
+  }
+
+  function submitGuess() {
+    var len = state.currentTerm.word.length;
+    if (state.guess.length < len) {
+      showToast("For få bokstaver", true);
+      return;
+    }
+    var answer = state.currentTerm.word;
+    var result = evaluateGuess(state.guess, answer);
+    var row = currentRowEl();
+    for (var i = 0; i < len; i++) {
+      (function (i) {
+        var tile = row.children[i];
+        setTimeout(function () {
+          tile.classList.add(result[i]);
+          tile.classList.add("pop");
+        }, i * 90);
+      })(i);
+    }
+    updateKeyboardStatuses(state.guess, result);
+    state.guesses.push(state.guess);
+    var won = state.guess === answer;
+    state.attemptsUsed++;
+
+    var thisGuess = state.guess;
+    state.guess = "";
+
+    setTimeout(function () {
+      if (won) {
+        endRound(true);
+      } else if (state.attemptsUsed >= MAX_ATTEMPTS) {
+        endRound(false);
+      }
+    }, len * 90 + 250);
+  }
+
+  function useHint() {
+    if (state.roundOver || state.hintUsed) return;
+    state.hintUsed = true;
+    el.hintText.textContent = state.currentTerm.def;
+    el.hintText.classList.add("shown");
+    el.hintBtn.disabled = true;
+    el.hintBtn.textContent = "Hint brukt (gir " + HINT_SOLVE_POINTS + " p ved løsning)";
+  }
+
+  function endRound(won) {
+    state.roundOver = true;
+    state.rounds++;
+    var pts = 0;
+    if (won) {
+      if (state.hintUsed) {
+        pts = HINT_SOLVE_POINTS;
+      } else {
+        pts = POINTS_BY_ATTEMPT[Math.min(state.attemptsUsed, POINTS_BY_ATTEMPT.length) - 1] || 0;
+      }
+    }
+    state.score += pts;
+    updateStatBar();
+    saveScore();
+
+    el.overlayTitle.textContent = won ? "Riktig! 🎉" : "Ikke denne gangen";
+    el.overlayTitle.className = won ? "win" : "lose";
+    el.overlayWord.textContent = state.currentTerm.word;
+    el.overlayDef.textContent = state.currentTerm.def;
+    el.overlayScore.textContent = won
+      ? "+" + pts + " poeng (totalt " + state.score + ")"
+      : "0 poeng denne runden — totalt " + state.score;
+    el.overlay.classList.add("active");
+  }
+
+  document.addEventListener("keydown", function (e) {
+    if (!el.screenGame.classList.contains("active")) return;
+    if (el.overlay.classList.contains("active")) return;
+    var k = e.key.toUpperCase();
+    if (k === "ENTER") { handleKey("ENTER"); return; }
+    if (k === "BACKSPACE") { handleKey("⌫"); return; }
+    if (/^[A-ZÆØÅ]$/.test(k)) handleKey(k);
+  });
+
+  el.startBtn.addEventListener("click", startSession);
+  el.resetScoreBtn.addEventListener("click", function () {
+    state.score = 0;
+    state.rounds = 0;
+    saveScore();
+    updateStatBar();
+    showToast("Poengsum nullstilt");
+  });
+  el.newTermBtn.addEventListener("click", newRound);
+  el.nextTermBtn.addEventListener("click", newRound);
+  el.hintBtn.addEventListener("click", useHint);
+  el.quitBtn.addEventListener("click", quitSession);
+  el.overlayQuitBtn.addEventListener("click", quitSession);
+
+  function quitSession() {
+    el.overlay.classList.remove("active");
+    el.screenGame.classList.remove("active");
+    el.screenStart.classList.add("active");
+  }
+
+  buildThemeGrid();
+  updateStatBar();
+})();
+</script>
+
+</body>
+</html>
