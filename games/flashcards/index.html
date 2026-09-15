@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcards — LRNify</title>
+<meta name="description" content="Øv på begreper med flashcards – se definisjon, se begrep, koble par eller ta en quiz. Start med cellelære i naturfag.">
+<link rel="canonical" href="https://lrnify.no/games/flashcards/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Flashcards – LRNify">
+<meta property="og:description" content="Øv på begreper med flashcards – se definisjon, se begrep, koble par eller ta en quiz. Start med cellelære i naturfag.">
+<meta property="og:image" content="https://lrnify.no/media/cards/flashcards.png">
+<meta property="og:url" content="https://lrnify.no/games/flashcards/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Flashcards – LRNify">
+<meta name="twitter:description" content="Øv på begreper med flashcards – se definisjon, se begrep, koble par eller ta en quiz. Start med cellelære i naturfag.">
+<meta name="twitter:image" content="https://lrnify.no/media/cards/flashcards.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header" aria-label="Flashcards">
+      <button class="back-link is-hidden" id="global-back" type="button">← Tilbake</button>
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">🃏</div>
+        <div>
+          <h1>Flashcards</h1>
+          <p id="header-context">Velg øvingsmåte</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-button" id="bevknapp" aria-pressed="true" title="Bevegelse på/av" aria-label="Reduser bevegelse">🎬</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- SKJERM 1: velg øvingsmåte -->
+      <section id="skjerm-modus" class="screen">
+        <div class="screen-intro">
+          <p class="eyebrow" id="tema-fag">Naturfag</p>
+          <h2 id="tema-tittel">Cellen</h2>
+          <p class="tema-beskrivelse" id="tema-beskrivelse"></p>
+        </div>
+        <div class="subject-grid" id="modusrutenett"></div>
+      </section>
+
+      <!-- SKJERM 2: se definisjon / se begrep (snu-kort) -->
+      <section id="skjerm-kort" class="screen game-screen is-hidden">
+        <div class="game-card">
+          <div class="game-topline">
+            <div>
+              <p class="eyebrow" id="kort-eyebrow">Se definisjon</p>
+              <h2 id="kort-tittel">Cellen</h2>
+            </div>
+            <div class="attempt-card" aria-label="Fremdrift">
+              <span>Kort</span>
+              <strong id="kort-fremdrift">1 / 10</strong>
+            </div>
+          </div>
+
+          <div class="tip-box" id="kort-tip"><strong>Tips:</strong> Trykk på kortet for å snu det.</div>
+
+          <div class="flip-scene">
+            <div class="flip-card" id="flipCard" role="button" tabindex="0" aria-pressed="false" aria-label="Trykk for å snu kortet">
+              <div class="flip-face flip-front">
+                <p class="eyebrow" id="frontLabel">Definisjon</p>
+                <p class="flip-text" id="frontText"></p>
+                <p class="flip-hint">Trykk for å snu →</p>
+              </div>
+              <div class="flip-face flip-back">
+                <p class="eyebrow" id="backLabel">Begrep</p>
+                <p class="flip-text" id="backText"></p>
+                <p class="flip-hint">Trykk for å snu tilbake</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="button secondary" id="kort-forrige" type="button">← Forrige</button>
+            <button class="button ghost" id="kort-stokk" type="button">Stokk om</button>
+            <button class="button primary" id="kort-neste" type="button">Neste →</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SKJERM 3: koble par -->
+      <section id="skjerm-par" class="screen game-screen is-hidden">
+        <div class="game-card">
+          <div class="game-topline">
+            <div>
+              <p class="eyebrow">Koble par</p>
+              <h2>Finn begrep og definisjon som hører sammen</h2>
+              <div class="progress-row" aria-label="Fremdrift">
+                <span id="par-fremdrift">0 av 10 par funnet</span>
+              </div>
+            </div>
+            <div class="attempt-card" aria-label="Antall bom">
+              <span>Bom</span>
+              <strong id="par-bom">0</strong>
+            </div>
+          </div>
+
+          <div class="tip-box"><strong>Tips:</strong> Trykk på et begrep og en definisjon du tror hører sammen.</div>
+
+          <div class="board-wrap">
+            <div class="tile-grid par-grid" id="par-rutenett"></div>
+          </div>
+
+          <div class="feedback" id="par-feedback" role="status" aria-live="polite">
+            <div class="feedback-icon" aria-hidden="true">•</div>
+            <div>
+              <strong id="par-feedback-tittel">Velg to kort</strong>
+              <p id="par-feedback-tekst">Match hvert begrep med riktig definisjon.</p>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="button ghost" id="par-stokk" type="button">Stokk om</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- SKJERM 4: test (multiple choice) -->
+      <section id="skjerm-test" class="screen game-screen is-hidden">
+        <div class="game-card">
+          <div class="game-topline">
+            <div>
+              <p class="eyebrow">Test deg selv</p>
+              <h2 id="test-fremdrift">Spørsmål 1 / 10</h2>
+            </div>
+            <div class="attempt-card" aria-label="Poeng">
+              <span>Riktige</span>
+              <strong id="test-poeng">0</strong>
+            </div>
+          </div>
+
+          <div class="test-question" id="test-sporsmal"></div>
+
+          <div class="test-options" id="test-alternativer"></div>
+
+          <div class="feedback is-hidden" id="test-feedback" role="status" aria-live="polite">
+            <div class="feedback-icon" aria-hidden="true">•</div>
+            <div>
+              <strong id="test-feedback-tittel"></strong>
+              <p id="test-feedback-tekst"></p>
+            </div>
+          </div>
+
+          <div class="controls">
+            <button class="button primary is-hidden" id="test-neste" type="button">Neste spørsmål →</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="overlegg" class="overlay is-hidden" role="dialog" aria-modal="true" aria-labelledby="panel-tittel">
+    <div class="result-panel">
+      <div class="result-emoji" id="panel-emoji">🎉</div>
+      <p class="eyebrow" id="panel-eyebrow">Fullført</p>
+      <h2 id="panel-tittel">Bra jobba!</h2>
+      <p id="panel-tekst"></p>
+      <div class="score-card" aria-label="Resultat" id="panel-score">
+        <div>
+          <span class="score-label" id="panel-score1-label">Resultat</span>
+          <strong id="panel-score1">★★★</strong>
+        </div>
+        <div>
+          <span class="score-label" id="panel-score2-label">Bom</span>
+          <strong id="panel-score2">0</strong>
+        </div>
+      </div>
+      <div class="panel-actions">
+        <button class="button primary" id="igjen-knapp" type="button">Prøv igjen</button>
+        <button class="button secondary" id="bytt-knapp" type="button">Velg annen øvingsmåte</button>
+      </div>
+    </div>
+  </div>
+  <script src="content.js"></script>
+  <script src="app.js"></script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
