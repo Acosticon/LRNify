@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-<title>Timestarter — LRNify</title>
+<title>Begrepsjakt — LRNify</title>
 <meta name="description" content="Wordle med fagbegreper. Gjett dagens fagbegrep bokstav for bokstav — en oppvarming for hele klassen.">
-<link rel="canonical" href="https://lrnify.no/games/timestarter/index.html">
+<link rel="canonical" href="https://lrnify.no/games/begrepsjakt/index.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="LRNify">
-<meta property="og:title" content="Timestarter – LRNify">
+<meta property="og:title" content="Begrepsjakt – LRNify">
 <meta property="og:description" content="Wordle med fagbegreper. Gjett dagens fagbegrep bokstav for bokstav — en oppvarming for hele klassen.">
-<meta property="og:url" content="https://lrnify.no/games/timestarter/index.html">
+<meta property="og:url" content="https://lrnify.no/games/begrepsjakt/index.html">
 <meta property="og:locale" content="nb_NO">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Timestarter – LRNify">
+<meta name="twitter:title" content="Begrepsjakt – LRNify">
 <meta name="twitter:description" content="Wordle med fagbegreper. Gjett dagens fagbegrep bokstav for bokstav — en oppvarming for hele klassen.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -242,7 +242,7 @@
 
   <!-- ══ START SCREEN ══ -->
   <section id="screen-start" class="screen active">
-    <div class="hero-title">Time<span class="accent">starter</span></div>
+    <div class="hero-title">Begreps<span class="accent">jakt</span></div>
     <p class="hero-sub">Wordle med fagbegreper. Velg tema, gjett bokstav for bokstav sammen med klassen — perfekt oppstart på timen.</p>
 
     <div class="card-panel">
@@ -285,7 +285,7 @@
     <div id="keyboard"></div>
   </section>
 
-  <footer>Timestarter er en del av LRNify — MVP-versjon (kun lærervisning).</footer>
+  <footer>Begrepsjakt er en del av LRNify — MVP-versjon (kun lærervisning).</footer>
 </main>
 
 <!-- ══ ROUND-END OVERLAY ══ -->
@@ -371,7 +371,7 @@
   };
 
   try {
-    var saved = JSON.parse(localStorage.getItem("timestarter_score") || "null");
+    var saved = JSON.parse(localStorage.getItem("begrepsjakt_score") || "null");
     if (saved && typeof saved.score === "number") {
       state.score = saved.score;
       state.rounds = saved.rounds || 0;
@@ -380,7 +380,7 @@
 
   function saveScore() {
     try {
-      localStorage.setItem("timestarter_score", JSON.stringify({ score: state.score, rounds: state.rounds }));
+      localStorage.setItem("begrepsjakt_score", JSON.stringify({ score: state.score, rounds: state.rounds }));
     } catch (e) { /* ignorer */ }
   }
 
