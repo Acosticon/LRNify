@@ -245,6 +245,20 @@
   .overlay-score { font-weight: 900; font-size: 1.05rem; }
   .overlay-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 
+  .bonus-box { display: none; flex-direction: column; gap: 8px; align-items: stretch; text-align: left; }
+  .bonus-prompt { font-weight: 800; font-size: .85rem; color: var(--muted); text-align: center; }
+  .bonus-choice {
+    font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .85rem;
+    background: var(--card); color: var(--ink); border: 2px solid var(--gridline);
+    padding: 9px 12px; cursor: pointer; width: 100%; text-align: left;
+    transition: background .15s, border-color .15s;
+  }
+  .bonus-choice:hover:not(:disabled) { border-color: var(--ink); }
+  .bonus-choice:disabled { cursor: default; }
+  .bonus-choice.bonus-correct { background: #dcfce7; border-color: var(--green); }
+  .bonus-choice.bonus-wrong { background: #fee2e2; border-color: var(--red); }
+  .bonus-result { font-weight: 800; font-size: .85rem; text-align: center; }
+
   footer { text-align: center; padding: 20px; color: var(--muted); font-size: .75rem; font-weight: 700; }
 </style>
 </head>
@@ -322,6 +336,7 @@
     <h2 id="overlayTitle">Riktig!</h2>
     <div class="overlay-word" id="overlayWord"></div>
     <div class="overlay-def" id="overlayDef"></div>
+    <div class="bonus-box" id="bonusBox"></div>
     <div class="overlay-score" id="overlayScore"></div>
     <div class="overlay-actions">
       <button class="btn-primary" id="nextTermBtn">Neste begrep →</button>
@@ -378,6 +393,7 @@
   var MAX_ATTEMPTS = 6;
   var HINT_PENALTY = 30;
   var POINTS_BY_ATTEMPT = [100, 85, 70, 55, 40, 25];
+  var BONUS_POINTS = 15; // poeng for å velge riktig definisjon i bonusrunden etter seier
   var NORDIC_KEY_ROWS = [
     ["Q","W","E","R","T","Y","U","I","O","P","Å"],
     ["A","S","D","F","G","H","J","K","L","Ø","Æ"],
@@ -423,7 +439,7 @@
   var el = {};
   ["themeGrid","startBtn","resetScoreBtn","screenStart","screenGame","themeBadge",
    "scoreNum","roundNum","newTermBtn","quitBtn","hintBtn","hintText","toast",
-   "grid","keyboard","wordbankList","overlay","overlayTitle","overlayWord","overlayDef",
+   "grid","keyboard","wordbankList","overlay","overlayTitle","overlayWord","overlayDef","bonusBox",
    "overlayScore","nextTermBtn","overlayQuitBtn"].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
@@ -683,11 +699,96 @@
     el.overlayTitle.textContent = won ? "Riktig! 🎉" : "Ikke denne gangen";
     el.overlayTitle.className = won ? "win" : "lose";
     el.overlayWord.textContent = state.currentTerm.word;
-    el.overlayDef.textContent = state.currentTerm.def;
     el.overlayScore.textContent = won
       ? "+" + pts + " poeng (totalt " + state.score + ")"
       : "0 poeng denne runden — totalt " + state.score;
+
+    if (won) {
+      offerBonus();
+    } else {
+      el.bonusBox.style.display = "none";
+      el.bonusBox.innerHTML = "";
+      el.overlayDef.style.display = "";
+      el.overlayDef.textContent = state.currentTerm.def;
+    }
+
     el.overlay.classList.add("active");
+  }
+
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
+  }
+
+  /* Ved seier: i stedet for å vise definisjonen med en gang, tilbys
+     en bonus — velg riktig definisjon blant tre alternativer (samme
+     definisjonstekster som brukes i hintene). Krever minst 3 begreper
+     i temaet; ellers vises definisjonen direkte som før. */
+  function offerBonus() {
+    var others = THEMES[state.themeKey].terms.filter(function (t) { return t.word !== state.currentTerm.word; });
+    if (others.length < 2) {
+      el.bonusBox.style.display = "none";
+      el.bonusBox.innerHTML = "";
+      el.overlayDef.style.display = "";
+      el.overlayDef.textContent = state.currentTerm.def;
+      return;
+    }
+    el.overlayDef.style.display = "none";
+    el.overlayDef.textContent = "";
+    el.bonusBox.innerHTML = "";
+    el.bonusBox.style.display = "flex";
+
+    var startBtn = document.createElement("button");
+    startBtn.type = "button";
+    startBtn.className = "btn-secondary";
+    startBtn.textContent = "🎁 Bonus: Velg riktig definisjon (+" + BONUS_POINTS + " p)";
+    startBtn.addEventListener("click", function () { showBonusChoices(others); });
+    el.bonusBox.appendChild(startBtn);
+  }
+
+  function showBonusChoices(others) {
+    el.bonusBox.innerHTML = "";
+    var wrongDefs = shuffle(others.slice()).slice(0, 2).map(function (t) { return t.def; });
+    var options = shuffle(wrongDefs.concat([state.currentTerm.def]));
+
+    var prompt = document.createElement("p");
+    prompt.className = "bonus-prompt";
+    prompt.textContent = "Hvilken definisjon passer til " + state.currentTerm.word + "?";
+    el.bonusBox.appendChild(prompt);
+
+    options.forEach(function (def) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "bonus-choice";
+      btn.textContent = def;
+      btn.addEventListener("click", function () { resolveBonus(def, btn); });
+      el.bonusBox.appendChild(btn);
+    });
+  }
+
+  function resolveBonus(chosenDef, chosenBtn) {
+    var buttons = el.bonusBox.querySelectorAll(".bonus-choice");
+    var correct = chosenDef === state.currentTerm.def;
+    buttons.forEach(function (b) {
+      b.disabled = true;
+      if (b.textContent === state.currentTerm.def) b.classList.add("bonus-correct");
+    });
+    if (!correct) chosenBtn.classList.add("bonus-wrong");
+
+    var result = document.createElement("p");
+    result.className = "bonus-result";
+    if (correct) {
+      state.score += BONUS_POINTS;
+      updateStatBar();
+      saveScore();
+      result.textContent = "Riktig! +" + BONUS_POINTS + " bonuspoeng (totalt " + state.score + ").";
+    } else {
+      result.textContent = "Ikke helt — men nå vet du det til neste gang!";
+    }
+    el.bonusBox.appendChild(result);
   }
 
   document.addEventListener("keydown", function (e) {
