@@ -790,15 +790,8 @@
     }
     el.overlayDef.style.display = "none";
     el.overlayDef.textContent = "";
-    el.bonusBox.innerHTML = "";
     el.bonusBox.style.display = "flex";
-
-    var startBtn = document.createElement("button");
-    startBtn.type = "button";
-    startBtn.className = "btn-secondary";
-    startBtn.textContent = "🎁 Bonus: Velg riktig definisjon (+" + BONUS_POINTS + " p)";
-    startBtn.addEventListener("click", function () { showBonusChoices(others); });
-    el.bonusBox.appendChild(startBtn);
+    showBonusChoices(others);
   }
 
   function showBonusChoices(others) {
@@ -808,7 +801,7 @@
 
     var prompt = document.createElement("p");
     prompt.className = "bonus-prompt";
-    prompt.textContent = "Hvilken definisjon passer til " + state.currentTerm.word + "?";
+    prompt.textContent = "🎁 Bonus (+" + BONUS_POINTS + " p): Hvilken definisjon passer til " + state.currentTerm.word + "?";
     el.bonusBox.appendChild(prompt);
 
     options.forEach(function (def) {
