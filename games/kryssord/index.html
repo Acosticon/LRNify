@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Kryssord — LRNify</title>
+<meta name="description" content="Kryssord: fyll inn fagord vannrett og loddrett ut fra definisjoner. Velg egne ord eller løs et ferdig generert kryssord for hele temaet.">
+<link rel="canonical" href="https://lrnify.no/games/kryssord/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Kryssord – LRNify">
+<meta property="og:description" content="Fyll inn fagord vannrett og loddrett ut fra definisjoner du kjenner fra før.">
+<meta property="og:url" content="https://lrnify.no/games/kryssord/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kryssord – LRNify">
+<meta name="twitter:description" content="Fyll inn fagord vannrett og loddrett ut fra definisjoner du kjenner fra før.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f6f8fb;
+    --ink:   #1c2530;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #5b6472;
+    --green: #16a34a;
+    --red:   #dc2626;
+    --amber: #d97706;
+    --blue:  #2563eb;
+    --gridline:#e3e8f0;
+    --tile:  #fdf3d9;
+    --cell: clamp(20px, 5.6vw, 32px);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream); color: var(--ink);
+    min-height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem,5vw,2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .back-btn {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .85rem;
+    color: var(--ink); text-decoration: none; background: var(--card);
+    border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 7px 14px; display: flex; align-items: center; gap: 5px;
+    cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .back-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  .screen { display: none; }
+  .screen.active { display: flex; }
+  main { padding: 0 20px 60px; display: flex; flex-direction: column; align-items: center; }
+
+  #screen-start { flex-direction: column; align-items: center; text-align: center; gap: 22px; max-width: 640px; margin: 0 auto; width: 100%; }
+  .hero-title {
+    font-family: 'Chewy', cursive; font-size: clamp(2.2rem,8vw,3.6rem);
+    transform: rotate(-1.5deg); line-height: 1;
+  }
+  .hero-title .accent { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); }
+  .hero-sub { color: var(--muted); font-weight: 700; font-size: 1.02rem; max-width: 480px; }
+
+  .card-panel {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+    padding: 22px; width: 100%; text-align: left;
+  }
+  .field-label {
+    font-weight: 900; font-size: .8rem; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--muted); display: block; margin-bottom: 8px; text-align: left;
+  }
+
+  .theme-grid, .mode-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .theme-chip {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .95rem;
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 10px 16px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  .theme-chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .theme-chip.selected { background: var(--yellow); }
+  .theme-chip[disabled] { opacity: .45; cursor: not-allowed; }
+
+  .mode-chip {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .92rem;
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 14px 16px; cursor: pointer; text-align: left; flex: 1 1 220px;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  .mode-chip:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .mode-chip.selected { background: var(--yellow); }
+  .mode-chip b { font-size: 1rem; }
+  .mode-chip span { font-weight: 700; font-size: .8rem; color: var(--muted); }
+  .mode-chip.selected span { color: var(--ink); }
+
+  .btn-primary {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 1.05rem;
+    background: var(--green); color: #fff; border: 3px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+    padding: 14px 26px; cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .btn-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-primary[disabled] { opacity: .5; cursor: not-allowed; }
+
+  .btn-secondary {
+    font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .85rem;
+    background: var(--card); color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 9px 14px; cursor: pointer; transition: transform .1s, box-shadow .1s;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn-secondary:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .btn-secondary[disabled] { opacity: .5; cursor: not-allowed; }
+
+  .btn-check {
+    font-family: 'Nunito', sans-serif; font-weight: 900; font-size: .95rem;
+    background: var(--blue); color: #fff; border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 11px 18px; cursor: pointer; transition: transform .1s, box-shadow .1s;
+  }
+  .btn-check:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  .placeholder-note {
+    font-size: .75rem; color: var(--muted); font-weight: 700; border: 2px dashed var(--gridline);
+    padding: 8px 12px;
+  }
+
+  /* ══ CHECKLIST ══ */
+  .checklist-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; justify-content: space-between; }
+  .checklist-count { font-weight: 900; font-size: .8rem; color: var(--muted); }
+  .checklist {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(190px,1fr)); gap: 6px;
+    max-height: 320px; overflow-y: auto; padding: 4px 2px;
+  }
+  .check-item {
+    display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px;
+    border: 2px solid var(--gridline); cursor: pointer; font-weight: 700; font-size: .85rem;
+  }
+  .check-item:has(input:checked) { border-color: var(--ink); background: #fff7e6; }
+  .check-item input { margin-top: 3px; flex-shrink: 0; width: 16px; height: 16px; accent-color: var(--green); }
+  .check-item .ci-def { display: block; font-weight: 600; color: var(--muted); font-size: .74rem; margin-top: 2px; }
+
+  /* ══ GAME SCREEN ══ */
+  #screen-game { flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 760px; margin: 0 auto; }
+
+  .game-topbar {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 10px; width: 100%;
+  }
+  .theme-badge {
+    font-weight: 900; background: var(--card); border: 3px solid var(--ink); box-shadow: 0 4px 0 var(--ink);
+    padding: 8px 14px; display: flex; align-items: center; gap: 8px; font-size: .9rem;
+  }
+  .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .toast {
+    font-weight: 900; background: var(--ink); color: #fff; padding: 8px 16px;
+    opacity: 0; transform: translateY(-6px); transition: opacity .15s, transform .15s;
+    pointer-events: none; position: fixed; top: 14px; left: 50%; translate: -50% 0; z-index: 30;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  .check-row { width: 100%; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+  /* ══ KART (pan/zoom) ══ */
+  .map-shell { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .map-hint {
+    background: var(--ink); color: #fff; padding: 10px 14px;
+    display: flex; flex-direction: column; gap: 4px; min-height: 2.4em; justify-content: center;
+  }
+  .map-hint .hint-placeholder { font-weight: 700; font-size: .82rem; opacity: .8; }
+  .hint-line { font-weight: 700; font-size: .78rem; opacity: .75; line-height: 1.3; }
+  .hint-line.primary { font-size: .92rem; opacity: 1; }
+  .hint-num { font-weight: 900; color: var(--yellow); }
+  .hint-tag { font-size: .68rem; font-weight: 900; padding: 1px 6px; margin-left: 4px; border-radius: 2px; }
+  .hint-tag.done { background: var(--green); }
+  .hint-tag.wrong { background: var(--red); }
+
+  .map-viewport {
+    width: 100%; height: clamp(340px, 55vh, 540px); position: relative; overflow: hidden;
+    border: 2px solid var(--gridline); background: var(--card); cursor: grab; touch-action: none;
+  }
+  .map-viewport.dragging { cursor: grabbing; }
+  .map-canvas { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+  #grid { display: grid; gap: 2px; position: relative; }
+  .cellslot {
+    width: var(--cell); height: var(--cell);
+    border: 1.5px solid var(--gridline);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; background: #fff;
+  }
+  .cellslot.blank { border: none; cursor: default; background: transparent; }
+  .cellslot.focused { border: 2px solid var(--blue); box-shadow: inset 0 0 0 2px rgba(37,99,235,.18); z-index: 1; }
+  .cellslot .num {
+    position: absolute; top: 1px; left: 2px; font-size: clamp(.5rem, 1.6vw, .62rem);
+    font-weight: 900; color: var(--amber); line-height: 1; pointer-events: none; user-select: none;
+  }
+  .cellslot .tile { width: 100%; height: 100%; cursor: pointer; border-radius: 2px; }
+
+  .tile {
+    width: var(--cell); height: var(--cell);
+    background: var(--tile); border: 2px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: clamp(.8rem, 2.6vw, 1.05rem); text-transform: uppercase;
+    color: var(--ink);
+  }
+  .tile.correct { background: #dcfce7; border-color: var(--green); }
+  .tile.incorrect { background: #fee2e2; border-color: var(--red); }
+
+  #cellInput {
+    position: absolute; opacity: 0; border: none; padding: 0; margin: 0;
+    pointer-events: none; z-index: -1; background: transparent;
+  }
+
+  .map-toolbar {
+    position: absolute; top: 8px; right: 8px; z-index: 5;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .map-btn {
+    width: 34px; height: 34px; padding: 0; font-size: 1rem; line-height: 1;
+    background: rgba(255,255,255,.95); border: 2px solid var(--ink); box-shadow: 0 3px 0 var(--ink);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .map-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .map-btn.full-btn { width: auto; padding: 0 10px; font-size: .78rem; font-weight: 900; gap: 4px; }
+
+  .map-shell.map-fullscreen {
+    position: fixed; inset: 0; z-index: 60; background: var(--cream);
+    padding: 12px; margin: 0; max-width: none;
+  }
+  .map-shell.map-fullscreen .map-viewport { flex: 1 1 auto; height: auto; }
+
+  /* ══ CLUE LISTS ══ */
+  .clue-columns { width: 100%; display: flex; gap: 16px; flex-wrap: wrap; }
+  .clue-col { flex: 1 1 280px; display: flex; flex-direction: column; gap: 8px; }
+  .clue-col-title {
+    font-family: 'Chewy', cursive; font-size: 1.15rem; transform: rotate(-1deg);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .clue-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .clue-item {
+    display: flex; gap: 8px; align-items: baseline; padding: 8px 10px;
+    background: var(--card); border: 2px solid var(--gridline); cursor: pointer;
+    font-weight: 700; font-size: .85rem; transition: background .15s, border-color .15s;
+  }
+  .clue-item:active { transform: translateY(1px); }
+  .clue-item .cn { font-weight: 900; color: var(--amber); flex-shrink: 0; min-width: 1.4em; }
+  .clue-item.active { background: #fff7e6; border-color: var(--amber); }
+  .clue-item.done { background: #dcfce7; border-color: var(--green); }
+  .clue-item.wrong { border-color: var(--red); }
+
+  /* ══ OVERLAY ══ */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(28,37,48,.72);
+    display: none; align-items: center; justify-content: center; padding: 20px; z-index: 20;
+  }
+  .overlay.active { display: flex; }
+  .overlay-card {
+    background: var(--card); border: 3px solid var(--ink); box-shadow: 0 8px 0 var(--ink);
+    padding: 26px; max-width: 440px; width: 100%; text-align: center; display: flex; flex-direction: column; gap: 14px;
+  }
+  .overlay-card h2 { font-family: 'Chewy', cursive; font-size: 1.8rem; color: var(--green); }
+  .overlay-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+  footer { text-align: center; padding: 20px; color: var(--muted); font-size: .75rem; font-weight: 700; }
+
+  @media print {
+    header, footer, .game-topbar .topbar-actions, .check-row, .toast, .overlay,
+    #screen-start, .checklist-actions, .map-hint, .map-toolbar { display: none !important; }
+    body { background: #fff; }
+    .map-viewport { height: auto; overflow: visible; border: none; }
+    .map-canvas { position: static !important; transform: none !important; }
+    .cellslot .tile { background: transparent !important; border: none !important; }
+    .cellslot .tile .letter { display: none !important; }
+    .cellslot.focused { border-color: var(--gridline) !important; box-shadow: none !important; }
+    .clue-item { border-color: #999; cursor: default; }
+    .clue-item.active, .clue-item.done, .clue-item.wrong { background: var(--card) !important; border-color: #999 !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html#grid">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<main>
+
+  <!-- ══ START SCREEN ══ -->
+  <section id="screen-start" class="screen active">
+    <div class="hero-title">Kryss<span class="accent">ord</span></div>
+    <p class="hero-sub">Fyll inn fagord vannrett og loddrett ut fra definisjonene. Brikkene skrives inn med tastaturet — trykk på et vannrett ord for å skrive bortover, eller et loddrett ord for å skrive nedover.</p>
+
+    <div class="card-panel">
+      <span class="field-label">Fag og tema</span>
+      <div class="theme-grid" id="themeGrid"></div>
+    </div>
+
+    <div class="card-panel">
+      <span class="field-label">Velg versjon</span>
+      <div class="mode-grid" id="modeGrid"></div>
+    </div>
+
+    <div class="card-panel" id="checklistPanel">
+      <div class="checklist-actions">
+        <span class="field-label" style="margin:0;">Velg hvilke ord som skal være med</span>
+      </div>
+      <div class="checklist-actions">
+        <span class="checklist-count" id="checklistCount">0 av 0 valgt</span>
+        <div style="display:flex; gap:8px;">
+          <button class="btn-secondary" id="selectAllBtn" type="button">Velg alle</button>
+          <button class="btn-secondary" id="selectNoneBtn" type="button">Nullstill</button>
+        </div>
+      </div>
+      <div class="checklist" id="checklist"></div>
+    </div>
+
+    <div class="card-panel" id="fullInfoPanel" style="display:none; text-align:center;">
+      <p style="font-weight:700;">📚 Denne versjonen bruker alle ordene i temaet, og genererer ett fast kryssord som er likt hver gang.</p>
+    </div>
+
+    <div class="card-panel" style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+      <span class="field-label" style="text-align:center;">Klar til å starte?</span>
+      <button class="btn-primary" id="startBtn">Lag kryssord →</button>
+      <p class="placeholder-note" id="startNote" style="display:none;">Velg minst 4 ord for å lage et kryssord.</p>
+    </div>
+
+    <p class="placeholder-note">🖼️ All grafikk i dette spillet er placeholder (farger og form) — visuell utforming kommer senere. Flere fag og tema kommer.</p>
+  </section>
+
+  <!-- ══ GAME SCREEN ══ -->
+  <section id="screen-game" class="screen">
+    <div class="game-topbar">
+      <div class="theme-badge" id="themeBadge">🔬 Celler</div>
+      <div class="topbar-actions">
+        <button class="btn-secondary" id="printBtn">🖨️ Skriv ut</button>
+        <button class="btn-secondary" id="shareBtn">📤 Del</button>
+        <button class="btn-secondary" id="backBtn">◀ Bytt ord</button>
+      </div>
+    </div>
+
+    <div class="map-shell" id="mapShell">
+      <div class="map-hint" id="mapHint">
+        <span class="hint-placeholder">👉 Trykk på et ord i kryssordet for å se hintet her.</span>
+      </div>
+
+      <div class="check-row">
+        <button class="btn-check" id="checkBtn">✅ Sjekk svar</button>
+        <button class="btn-secondary" id="clearBtn">🧹 Tøm svarene</button>
+      </div>
+
+      <div class="map-viewport" id="gridViewport">
+        <div class="map-canvas" id="gridCanvas">
+          <div id="grid" aria-live="polite"></div>
+          <input id="cellInput" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="1" />
+        </div>
+        <div class="map-toolbar">
+          <button class="map-btn" id="zoomInBtn" type="button" title="Zoom inn">➕</button>
+          <button class="map-btn" id="zoomOutBtn" type="button" title="Zoom ut">➖</button>
+          <button class="map-btn" id="zoomFitBtn" type="button" title="Tilpass hele kryssordet">⤢</button>
+          <button class="map-btn full-btn" id="fullscreenBtn" type="button" title="Fullskjerm">⛶</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="clue-columns">
+      <div class="clue-col">
+        <div class="clue-col-title">➡️ Vannrett</div>
+        <ol class="clue-list" id="clueH"></ol>
+      </div>
+      <div class="clue-col">
+        <div class="clue-col-title">⬇️ Loddrett</div>
+        <ol class="clue-list" id="clueV"></ol>
+      </div>
+    </div>
+  </section>
+
+  <footer>Kryssord er en del av LRNify — MVP-versjon (kun lærervisning).</footer>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══ SOLVED OVERLAY ══ -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <h2>Alt riktig! 🎉</h2>
+    <p style="font-weight:700;">Du har fylt ut hele kryssordet riktig.</p>
+    <div class="overlay-actions">
+      <button class="btn-primary" id="overlayCloseBtn">Fortsett</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ══════════ TEMA / ORDBANK ══════════
+     Samme ordbank (med samme definisjoner) som Ordkryss og Begrepsjakt,
+     tema "Celler". Legg til flere fag/tema ved å legge til flere nøkler i
+     THEMES: { name, icon, terms: [{ word, def }, ...] }. */
+  var THEMES = {
+    celler: {
+      name: "Celler",
+      icon: "🔬",
+      terms: [
+        { word: "CELLEMEMBRAN", def: "Den tynne «huden» rundt cellen som bestemmer hva som slipper inn og ut." },
+        { word: "CELLEKJERNE", def: "Styringssenteret i cellen som inneholder arvestoffet." },
+        { word: "CYTOPLASMA", def: "Den geléaktige væsken inne i cellen der organellene ligger." },
+        { word: "MITOKONDRIE", def: "Organellen som lager energi til cellen — ofte kalt «kraftverket»." },
+        { word: "KLOROPLAST", def: "Organellen i planteceller der fotosyntesen skjer." },
+        { word: "CELLEVEGG", def: "Den stive, ekstra beskyttelsen utenfor cellemembranen hos planter." },
+        { word: "VAKUOLE", def: "Rom i cellen som lagrer vann, næringsstoffer eller avfall." },
+        { word: "RIBOSOM", def: "Liten struktur i cellen som produserer proteiner." },
+        { word: "KROMOSOM", def: "Tettpakket streng av arvestoff (DNA) i cellekjernen." },
+        { word: "ARVESTOFF", def: "Informasjonen (DNA) som bestemmer egenskapene til en organisme." },
+        { word: "CELLEDELING", def: "Prosessen der én celle blir til to nye celler." },
+        { word: "STAMCELLE", def: "En udifferensiert celle som kan utvikle seg til mange ulike celletyper." },
+        { word: "EUKARYOT", def: "Celletype som har en cellekjerne omsluttet av membran." },
+        { word: "PROKARYOT", def: "Enkel celletype uten cellekjerne, for eksempel bakterier." },
+        { word: "FLERCELLET", def: "En organisme bygd opp av mange celler, for eksempel mennesker." },
+        { word: "ENCELLET", def: "En organisme som bare består av én eneste celle." },
+        { word: "FOTOSYNTESE", def: "Prosessen der planter lager sukker og oksygen av sollys, vann og CO2." },
+        { word: "CELLEÅNDING", def: "Prosessen der celler frigjør energi fra sukker ved hjelp av oksygen." },
+        { word: "DIFFUSJON", def: "Bevegelse av stoffer fra høy til lav konsentrasjon." },
+        { word: "OSMOSE", def: "Bevegelse av vann gjennom en membran, fra lav til høy konsentrasjon av oppløst stoff." },
+        { word: "ENZYM", def: "Et protein som gjør at kjemiske reaksjoner i cellen går raskere." },
+        { word: "BAKTERIE", def: "En encellet, prokaryot mikroorganisme." },
+        { word: "MIKROSKOP", def: "Verktøyet vi bruker for å se celler som er for små for det blotte øyet." },
+        { word: "VEV", def: "En gruppe like celler som jobber sammen om en oppgave." },
+        { word: "ORGANELL", def: "En liten «ministruktur» inne i cellen med en bestemt oppgave." },
+        { word: "LYSOSOM", def: "Organellen som bryter ned avfall og gamle deler i cellen." },
+        { word: "GOLGIAPPARAT", def: "Organellen som pakker og sender proteiner videre i cellen." }
+      ]
+    }
+  };
+
+  var MIN_CUSTOM_WORDS = 4;
+
+  var state = {
+    themeKey: "celler",
+    mode: "full",           // "custom" | "full"
+    selected: {},            // word -> true, for "custom" mode
+    layout: null,            // { rows, cols, cellIndex, words, numbered }
+    userLetters: {},          // "r,c" -> letter
+    focusedCell: null,        // { row, col }
+    focusDir: "h",
+    activeWordKey: null,      // "h:3" — hvilket ord som sist ble aktivt fokusert
+    checked: false
+  };
+
+  var el = {};
+  ["themeGrid","modeGrid","checklistPanel","checklist","checklistCount","selectAllBtn","selectNoneBtn",
+   "fullInfoPanel","startBtn","startNote","themeBadge","printBtn","shareBtn","backBtn",
+   "checkBtn","clearBtn","mapShell","mapHint","gridViewport","gridCanvas","grid","cellInput",
+   "zoomInBtn","zoomOutBtn","zoomFitBtn","fullscreenBtn","clueH","clueV","toast",
+   "overlay","overlayCloseBtn"].forEach(function (id) {
+    el[id] = document.getElementById(id);
+  });
+  el.screenStart = document.getElementById("screen-start");
+  el.screenGame = document.getElementById("screen-game");
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ══════════ KARTET (klikk-og-dra, zoom, fullskjerm) ══════════
+     #gridCanvas flyttes/skaleres med CSS transform inne i den faste,
+     usynlig-avklipte boksen #gridViewport — akkurat som et kart. Alle
+     rute-koordinater regnes ut fra #grid sin plassering (før transform),
+     så samme tall brukes både til panorering og til å plassere det
+     usynlige tekstfeltet som fanger opp tastaturet. */
+  var view = { x: 0, y: 0, scale: 1 };
+  var MIN_SCALE = 0.25, MAX_SCALE = 2.5;
+  var isFullscreen = false;
+
+  function clampScale(s) { return Math.max(MIN_SCALE, Math.min(MAX_SCALE, s)); }
+
+  function applyView(animate) {
+    el.gridCanvas.style.transition = animate ? "transform .25s ease" : "none";
+    el.gridCanvas.style.transform = "translate(" + view.x + "px," + view.y + "px) scale(" + view.scale + ")";
+  }
+
+  function canvasPos(elm) {
+    return { x: el.grid.offsetLeft + elm.offsetLeft, y: el.grid.offsetTop + elm.offsetTop };
+  }
+
+  function fitToView(animate) {
+    var vw = el.gridViewport.clientWidth, vh = el.gridViewport.clientHeight;
+    var gw = el.grid.offsetWidth, gh = el.grid.offsetHeight;
+    if (!gw || !gh || !vw || !vh) return;
+    var scale = clampScale(Math.min(vw / gw, vh / gh, 1) * 0.96);
+    view.scale = scale;
+    view.x = (vw - gw * scale) / 2;
+    view.y = (vh - gh * scale) / 2;
+    applyView(animate);
+  }
+
+  function zoomAtPoint(localX, localY, newScale, animate) {
+    newScale = clampScale(newScale);
+    var factor = newScale / view.scale;
+    view.x = localX - (localX - view.x) * factor;
+    view.y = localY - (localY - view.y) * factor;
+    view.scale = newScale;
+    applyView(animate);
+  }
+
+  function centerAndZoomToWord(w, opts) {
+    if (!w) return;
+    var startEl = cellEl(w.row, w.col);
+    var endRow = w.dir === "h" ? w.row : w.row + w.len - 1;
+    var endCol = w.dir === "h" ? w.col + w.len - 1 : w.col;
+    var endEl = cellEl(endRow, endCol);
+    if (!startEl || !endEl) return;
+    var startP = canvasPos(startEl), endP = canvasPos(endEl);
+    var cx = (startP.x + endP.x + endEl.offsetWidth) / 2;
+    var cy = (startP.y + endP.y + endEl.offsetHeight) / 2;
+    var vw = el.gridViewport.clientWidth, vh = el.gridViewport.clientHeight;
+    var newScale = view.scale;
+    if (opts && opts.minScale && newScale < opts.minScale) newScale = opts.minScale;
+    newScale = clampScale(newScale);
+    view.scale = newScale;
+    view.x = vw / 2 - cx * newScale;
+    view.y = vh / 2 - cy * newScale;
+    applyView(true);
+  }
+
+  function ensureCellVisible(row, col) {
+    var target = cellEl(row, col);
+    if (!target) return;
+    var p = canvasPos(target);
+    var vw = el.gridViewport.clientWidth, vh = el.gridViewport.clientHeight;
+    var screenX = p.x * view.scale + view.x;
+    var screenY = p.y * view.scale + view.y;
+    var size = target.offsetWidth * view.scale;
+    var margin = Math.min(size * 1.5, Math.min(vw, vh) / 3);
+    var dx = 0, dy = 0;
+    if (screenX < margin) dx = margin - screenX;
+    else if (screenX + size > vw - margin) dx = (vw - margin) - (screenX + size);
+    if (screenY < margin) dy = margin - screenY;
+    else if (screenY + size > vh - margin) dy = (vh - margin) - (screenY + size);
+    if (dx || dy) { view.x += dx; view.y += dy; applyView(true); }
+  }
+
+  /* Klikk-og-dra panorering, med pekere spora slik at to fingre = klype-zoom. */
+  var activePointers = new Map();
+  var dragState = null;
+  var pinchState = null;
+  var suppressClickUntil = 0;
+
+  function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+  function midpoint(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+
+  el.gridViewport.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointers.size === 1) {
+      dragState = { id: e.pointerId, startX: e.clientX, startY: e.clientY, startViewX: view.x, startViewY: view.y, moved: false };
+      el.gridViewport.classList.add("dragging");
+    } else if (activePointers.size === 2) {
+      dragState = null;
+      var pts = Array.from(activePointers.values());
+      pinchState = { startDist: dist(pts[0], pts[1]), startScale: view.scale, startMid: midpoint(pts[0], pts[1]), startViewX: view.x, startViewY: view.y };
+    }
+  });
+
+  el.gridViewport.addEventListener("pointermove", function (e) {
+    if (!activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointers.size === 2 && pinchState) {
+      var pts = Array.from(activePointers.values());
+      var newDist = dist(pts[0], pts[1]);
+      var newScale = clampScale(pinchState.startScale * (newDist / pinchState.startDist));
+      var rect = el.gridViewport.getBoundingClientRect();
+      var localX = pinchState.startMid.x - rect.left, localY = pinchState.startMid.y - rect.top;
+      var factor = newScale / pinchState.startScale;
+      view.x = localX - (localX - pinchState.startViewX) * factor;
+      view.y = localY - (localY - pinchState.startViewY) * factor;
+      view.scale = newScale;
+      applyView(false);
+      return;
+    }
+    if (dragState && dragState.id === e.pointerId) {
+      var dx = e.clientX - dragState.startX, dy = e.clientY - dragState.startY;
+      if (!dragState.moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+        dragState.moved = true;
+        el.gridViewport.setPointerCapture(dragState.id);
+      }
+      view.x = dragState.startViewX + dx;
+      view.y = dragState.startViewY + dy;
+      applyView(false);
+    }
+  });
+
+  function endPointer(e) {
+    activePointers.delete(e.pointerId);
+    if (dragState && dragState.id === e.pointerId) {
+      if (dragState.moved) suppressClickUntil = Date.now() + 50;
+      dragState = null;
+      el.gridViewport.classList.remove("dragging");
+    }
+    if (activePointers.size < 2) pinchState = null;
+    if (activePointers.size === 1) {
+      var remaining = activePointers.entries().next().value;
+      if (remaining) {
+        dragState = { id: remaining[0], startX: remaining[1].x, startY: remaining[1].y, startViewX: view.x, startViewY: view.y, moved: true };
+        suppressClickUntil = Date.now() + 50;
+      }
+    }
+  }
+  el.gridViewport.addEventListener("pointerup", endPointer);
+  el.gridViewport.addEventListener("pointercancel", endPointer);
+
+  el.gridViewport.addEventListener("click", function (e) {
+    if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+
+  el.gridViewport.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    var rect = el.gridViewport.getBoundingClientRect();
+    var factor = Math.exp(-e.deltaY * 0.0015);
+    zoomAtPoint(e.clientX - rect.left, e.clientY - rect.top, view.scale * factor, false);
+  }, { passive: false });
+
+  el.zoomInBtn.addEventListener("click", function () {
+    zoomAtPoint(el.gridViewport.clientWidth / 2, el.gridViewport.clientHeight / 2, view.scale * 1.3, true);
+  });
+  el.zoomOutBtn.addEventListener("click", function () {
+    zoomAtPoint(el.gridViewport.clientWidth / 2, el.gridViewport.clientHeight / 2, view.scale * 0.75, true);
+  });
+  el.zoomFitBtn.addEventListener("click", function () { fitToView(true); });
+
+  function toggleFullscreen() {
+    isFullscreen = !isFullscreen;
+    el.mapShell.classList.toggle("map-fullscreen", isFullscreen);
+    el.fullscreenBtn.textContent = isFullscreen ? "✕ Lukk" : "⛶";
+    document.body.style.overflow = isFullscreen ? "hidden" : "";
+    requestAnimationFrame(function () { fitToView(false); });
+  }
+  el.fullscreenBtn.addEventListener("click", toggleFullscreen);
+  document.addEventListener("keydown", function (e) {
+    if (isFullscreen && e.key === "Escape") toggleFullscreen();
+  });
+
+  /* ══════════ KRYSSORDGENERATOR ══════════
+     Deterministisk (ingen tilfeldighet): samme ordvalg gir alltid samme
+     kryssord. Bygger krysset stykke for stykke — i hvert steg plasseres
+     det gjenværende ordet som akkurat nå gir best kryssing mot brettet.
+     Flere ulike startord prøves, og resultatet med flest krysningspunkter
+     og jevnest fordeling mellom vannrett/loddrett vinner. Kan ikke et ord
+     krysse noe, settes det ned som en egen rad under brettet, slik at
+     alle valgte ord alltid er med. */
+
+  function cellKey(r, c) { return r + "," + c; }
+
+  function checkPlacement(grid, word, dir, r0, c0) {
+    var len = word.length;
+    for (var i = 0; i < len; i++) {
+      var r = dir === "h" ? r0 : r0 + i;
+      var c = dir === "h" ? c0 + i : c0;
+      var cell = grid.get(cellKey(r, c));
+      if (cell) {
+        if (cell.letter !== word[i]) return false;
+        if (dir === "h" && cell.h) return false;
+        if (dir === "v" && cell.v) return false;
+      } else {
+        if (dir === "h") {
+          if (grid.has(cellKey(r - 1, c))) return false;
+          if (grid.has(cellKey(r + 1, c))) return false;
+        } else {
+          if (grid.has(cellKey(r, c - 1))) return false;
+          if (grid.has(cellKey(r, c + 1))) return false;
+        }
+      }
+    }
+    if (dir === "h") {
+      if (grid.has(cellKey(r0, c0 - 1))) return false;
+      if (grid.has(cellKey(r0, c0 + len))) return false;
+    } else {
+      if (grid.has(cellKey(r0 - 1, c0))) return false;
+      if (grid.has(cellKey(r0 + len, c0))) return false;
+    }
+    return true;
+  }
+
+  function commitPlacement(grid, word, dir, r0, c0) {
+    for (var i = 0; i < word.length; i++) {
+      var r = dir === "h" ? r0 : r0 + i;
+      var c = dir === "h" ? c0 + i : c0;
+      var k = cellKey(r, c);
+      var cell = grid.get(k);
+      if (!cell) { cell = { letter: word[i], h: false, v: false }; grid.set(k, cell); }
+      if (dir === "h") cell.h = true; else cell.v = true;
+    }
+  }
+
+  function countCrossings(grid, word, dir, r0, c0) {
+    var n = 0;
+    for (var i = 0; i < word.length; i++) {
+      var r = dir === "h" ? r0 : r0 + i;
+      var c = dir === "h" ? c0 + i : c0;
+      if (grid.has(cellKey(r, c))) n++;
+    }
+    return n;
+  }
+
+  function bestPlacementFor(grid, word, countH, countV) {
+    var best = null;
+    function consider(dir, r0, c0, score) {
+      var bias = dir === "h" ? (countV - countH) : (countH - countV);
+      var rank = score * 10 + bias;
+      if (!best || rank > best.rank) best = { dir: dir, r0: r0, c0: c0, score: score, rank: rank };
+    }
+    grid.forEach(function (cell, k) {
+      var parts = k.split(",");
+      var r = parseInt(parts[0], 10), c = parseInt(parts[1], 10);
+      for (var i = 0; i < word.length; i++) {
+        if (word[i] !== cell.letter) continue;
+        if (!cell.h) {
+          var c0 = c - i;
+          if (checkPlacement(grid, word, "h", r, c0)) consider("h", r, c0, countCrossings(grid, word, "h", r, c0));
+        }
+        if (!cell.v) {
+          var r0 = r - i;
+          if (checkPlacement(grid, word, "v", r0, c)) consider("v", r0, c, countCrossings(grid, word, "v", r0, c));
+        }
+      }
+    });
+    return best;
+  }
+
+  function gridBounds(grid) {
+    var minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity;
+    grid.forEach(function (cell, k) {
+      var parts = k.split(",");
+      var r = parseInt(parts[0], 10), c = parseInt(parts[1], 10);
+      if (r < minR) minR = r; if (r > maxR) maxR = r;
+      if (c < minC) minC = c; if (c > maxC) maxC = c;
+    });
+    if (minR === Infinity) return null;
+    return { minR: minR, maxR: maxR, minC: minC, maxC: maxC };
+  }
+
+  function attempt(terms, seedIdx) {
+    var grid = new Map();
+    var placed = [];
+    var remaining = terms.slice();
+
+    var seed = remaining.splice(seedIdx, 1)[0];
+    commitPlacement(grid, seed.word, "h", 0, 0);
+    placed.push({ term: seed, dir: "h", r0: 0, c0: 0 });
+
+    var countH = 1, countV = 0;
+
+    while (remaining.length) {
+      var bestOverall = null;
+      for (var idx = 0; idx < remaining.length; idx++) {
+        var t = remaining[idx];
+        var p = bestPlacementFor(grid, t.word, countH, countV);
+        if (!p) continue;
+        if (!bestOverall || p.rank > bestOverall.p.rank) bestOverall = { idx: idx, p: p };
+      }
+      if (!bestOverall) {
+        var stuck = remaining.shift();
+        var bounds = gridBounds(grid);
+        var r0 = bounds ? bounds.maxR + 2 : 0;
+        commitPlacement(grid, stuck.word, "h", r0, 0);
+        placed.push({ term: stuck, dir: "h", r0: r0, c0: 0 });
+        countH++;
+        continue;
+      }
+      var term = remaining.splice(bestOverall.idx, 1)[0];
+      commitPlacement(grid, term.word, bestOverall.p.dir, bestOverall.p.r0, bestOverall.p.c0);
+      placed.push({ term: term, dir: bestOverall.p.dir, r0: bestOverall.p.r0, c0: bestOverall.p.c0 });
+      if (bestOverall.p.dir === "h") countH++; else countV++;
+    }
+
+    var crossings = 0;
+    grid.forEach(function (cell) { if (cell.h && cell.v) crossings++; });
+
+    return { grid: grid, placed: placed, countH: countH, countV: countV, crossings: crossings };
+  }
+
+  function generateLayout(terms) {
+    var seeds = terms
+      .map(function (t, i) { return i; })
+      .sort(function (a, b) { return terms[b].word.length - terms[a].word.length; })
+      .slice(0, 8);
+    var best = null;
+    seeds.forEach(function (seedIdx) {
+      var res = attempt(terms, seedIdx);
+      var isBetter = !best ||
+        res.crossings > best.crossings ||
+        (res.crossings === best.crossings && Math.abs(res.countH - res.countV) < Math.abs(best.countH - best.countV));
+      if (isBetter) best = res;
+    });
+
+    var bounds = gridBounds(best.grid);
+    var shiftR = -bounds.minR, shiftC = -bounds.minC;
+    var rows = bounds.maxR - bounds.minR + 1;
+    var cols = bounds.maxC - bounds.minC + 1;
+
+    var words = best.placed.map(function (p) {
+      return { term: p.term, dir: p.dir, row: p.r0 + shiftR, col: p.c0 + shiftC, len: p.term.word.length };
+    });
+
+    /* Nummerering: hver rute som er START på et ord (vannrett og/eller
+       loddrett) får ett tall, tildelt i lesevekst (rad for rad). */
+    var starts = {};
+    words.forEach(function (w) {
+      var k = cellKey(w.row, w.col);
+      if (!starts[k]) starts[k] = { row: w.row, col: w.col };
+    });
+    var startKeys = Object.keys(starts).sort(function (ka, kb) {
+      var a = starts[ka], b = starts[kb];
+      return a.row - b.row || a.col - b.col;
+    });
+    startKeys.forEach(function (k, i) { starts[k].number = i + 1; });
+    words.forEach(function (w) { w.number = starts[cellKey(w.row, w.col)].number; });
+
+    /* cellIndex: for hver rute i brettet — løsningsbokstav, hvilke(t) ord
+       som går gjennom den i hver retning, og evt. nummer. */
+    var cellIndex = {};
+    best.grid.forEach(function (cell, k) {
+      var parts = k.split(",");
+      var r = parseInt(parts[0], 10) + shiftR, c = parseInt(parts[1], 10) + shiftC;
+      cellIndex[cellKey(r, c)] = { letter: cell.letter, h: null, v: null, number: null };
+    });
+    words.forEach(function (w) {
+      for (var i = 0; i < w.len; i++) {
+        var r = w.dir === "h" ? w.row : w.row + i;
+        var c = w.dir === "h" ? w.col + i : w.col;
+        var k = cellKey(r, c);
+        var entry = cellIndex[k];
+        if (w.dir === "h") entry.h = w; else entry.v = w;
+      }
+    });
+    Object.keys(starts).forEach(function (k) { cellIndex[k].number = starts[k].number; });
+
+    return {
+      rows: rows, cols: cols, cellIndex: cellIndex,
+      words: words,
+      wordsH: words.filter(function (w) { return w.dir === "h"; }).sort(function (a, b) { return a.number - b.number; }),
+      wordsV: words.filter(function (w) { return w.dir === "v"; }).sort(function (a, b) { return a.number - b.number; })
+    };
+  }
+
+  /* ══════════ START SCREEN ══════════ */
+
+  function buildThemeGrid() {
+    el.themeGrid.innerHTML = "";
+    Object.keys(THEMES).forEach(function (key) {
+      var t = THEMES[key];
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "theme-chip" + (key === state.themeKey ? " selected" : "");
+      chip.textContent = t.icon + " Naturfag — " + t.name;
+      chip.addEventListener("click", function () {
+        state.themeKey = key;
+        state.selected = {};
+        THEMES[key].terms.forEach(function (term) { state.selected[term.word] = true; });
+        buildThemeGrid();
+        buildChecklist();
+      });
+      el.themeGrid.appendChild(chip);
+    });
+  }
+
+  var MODES = [
+    { key: "full", label: "📚 Alt om temaet", desc: "Bruker alle ordene i temaet. Samme kryssord hver gang." },
+    { key: "custom", label: "🧩 Velg egne ord", desc: "Huk av hvilke ord som skal være med, så genereres et kryssord." }
+  ];
+
+  function buildModeGrid() {
+    el.modeGrid.innerHTML = "";
+    MODES.forEach(function (m) {
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "mode-chip" + (state.mode === m.key ? " selected" : "");
+      chip.innerHTML = "<b>" + m.label + "</b><span>" + m.desc + "</span>";
+      chip.addEventListener("click", function () {
+        state.mode = m.key;
+        buildModeGrid();
+        updateModeVisibility();
+      });
+      el.modeGrid.appendChild(chip);
+    });
+  }
+
+  function updateModeVisibility() {
+    el.checklistPanel.style.display = state.mode === "custom" ? "block" : "none";
+    el.fullInfoPanel.style.display = state.mode === "full" ? "block" : "none";
+    updateStartBtn();
+  }
+
+  function buildChecklist() {
+    el.checklist.innerHTML = "";
+    var terms = THEMES[state.themeKey].terms;
+    terms.forEach(function (term) {
+      var label = document.createElement("label");
+      label.className = "check-item";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!state.selected[term.word];
+      cb.addEventListener("change", function () {
+        if (cb.checked) state.selected[term.word] = true; else delete state.selected[term.word];
+        updateChecklistCount();
+        updateStartBtn();
+      });
+      label.appendChild(cb);
+      var txt = document.createElement("span");
+      txt.innerHTML = term.word + "<span class='ci-def'>" + term.def + "</span>";
+      label.appendChild(txt);
+      el.checklist.appendChild(label);
+    });
+    updateChecklistCount();
+  }
+
+  function selectedCount() {
+    return Object.keys(state.selected).length;
+  }
+
+  function updateChecklistCount() {
+    el.checklistCount.textContent = selectedCount() + " av " + THEMES[state.themeKey].terms.length + " valgt";
+  }
+
+  function updateStartBtn() {
+    if (state.mode === "custom" && selectedCount() < MIN_CUSTOM_WORDS) {
+      el.startBtn.disabled = true;
+      el.startNote.style.display = "block";
+    } else {
+      el.startBtn.disabled = false;
+      el.startNote.style.display = "none";
+    }
+  }
+
+  el.selectAllBtn.addEventListener("click", function () {
+    THEMES[state.themeKey].terms.forEach(function (t) { state.selected[t.word] = true; });
+    buildChecklist();
+    updateStartBtn();
+  });
+  el.selectNoneBtn.addEventListener("click", function () {
+    state.selected = {};
+    buildChecklist();
+    updateStartBtn();
+  });
+
+  /* ══════════ SPILLSKJERM ══════════ */
+
+  var toastTimer = null;
+  function showToast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.toast.classList.remove("show"); }, 1800);
+  }
+
+  function startGame() {
+    var terms;
+    if (state.mode === "full") {
+      terms = THEMES[state.themeKey].terms;
+    } else {
+      terms = THEMES[state.themeKey].terms.filter(function (t) { return state.selected[t.word]; });
+    }
+    state.layout = generateLayout(terms);
+    state.userLetters = {};
+    state.focusedCell = null;
+    state.focusDir = "h";
+    state.activeWordKey = null;
+    state.checked = false;
+
+    var t = THEMES[state.themeKey];
+    el.themeBadge.textContent = t.icon + " " + t.name;
+
+    el.screenStart.classList.remove("active");
+    el.screenGame.classList.add("active");
+    renderGame();
+    fitToView(false);
+  }
+
+  function cellEl(row, col) {
+    return el.grid.querySelector('[data-r="' + row + '"][data-c="' + col + '"]');
+  }
+
+  function renderGame() {
+    var L = state.layout;
+    el.grid.innerHTML = "";
+    el.grid.style.gridTemplateColumns = "repeat(" + L.cols + ", var(--cell))";
+    el.grid.style.gridTemplateRows = "repeat(" + L.rows + ", var(--cell))";
+
+    for (var r = 0; r < L.rows; r++) {
+      for (var c = 0; c < L.cols; c++) {
+        var k = cellKey(r, c);
+        var entry = L.cellIndex[k];
+        var div = document.createElement("div");
+        if (!entry) {
+          div.className = "cellslot blank";
+          el.grid.appendChild(div);
+          continue;
+        }
+        div.dataset.r = r; div.dataset.c = c;
+        var isFocused = state.focusedCell && state.focusedCell.row === r && state.focusedCell.col === c;
+        div.className = "cellslot" + (isFocused ? " focused" : "");
+
+        if (entry.number) {
+          var num = document.createElement("span");
+          num.className = "num";
+          num.textContent = entry.number;
+          div.appendChild(num);
+        }
+
+        var letter = state.userLetters[k];
+        if (letter) {
+          var tile = document.createElement("div");
+          tile.className = "tile";
+          if (state.checked) {
+            tile.className += letter === entry.letter ? " correct" : " incorrect";
+          }
+          var span = document.createElement("span");
+          span.className = "letter";
+          span.textContent = letter;
+          tile.appendChild(span);
+          div.appendChild(tile);
+        }
+
+        (function (rr, cc) {
+          div.addEventListener("click", function () { cellClicked(rr, cc); });
+        })(r, c);
+        el.grid.appendChild(div);
+      }
+    }
+
+    renderClues();
+    renderHintBar();
+    positionInput();
+  }
+
+  function renderClues() {
+    var L = state.layout;
+    renderClueList(el.clueH, L.wordsH);
+    renderClueList(el.clueV, L.wordsV);
+  }
+
+  function wordKeyOf(w) { return w ? (w.dir + ":" + w.number) : null; }
+
+  function hintLineHtml(w, isPrimary) {
+    var icon = w.dir === "h" ? "➡️" : "⬇️";
+    var tag = "";
+    if (state.checked) {
+      var status = wordStatus(w);
+      if (status === "done") tag = ' <span class="hint-tag done">✓ Løst</span>';
+      else if (status === "wrong") tag = ' <span class="hint-tag wrong">Ikke riktig ennå</span>';
+    }
+    return '<div class="hint-line' + (isPrimary ? " primary" : "") + '">' +
+      '<span class="hint-num">' + icon + " " + w.number + ".</span> " + escapeHtml(w.term.def) + tag + "</div>";
+  }
+
+  function renderHintBar() {
+    var f = state.focusedCell;
+    if (!f) {
+      el.mapHint.innerHTML = '<span class="hint-placeholder">👉 Trykk på et ord i kryssordet for å se hintet her.</span>';
+      return;
+    }
+    var primary = wordAt(f.row, f.col, state.focusDir);
+    var other = wordAt(f.row, f.col, state.focusDir === "h" ? "v" : "h");
+    var html = "";
+    if (primary) html += hintLineHtml(primary, true);
+    if (other) html += hintLineHtml(other, false);
+    el.mapHint.innerHTML = html || '<span class="hint-placeholder">👉 Trykk på et ord i kryssordet for å se hintet her.</span>';
+  }
+
+  function renderClueList(ul, words) {
+    ul.innerHTML = "";
+    words.forEach(function (w) {
+      var li = document.createElement("li");
+      li.className = "clue-item";
+      if (state.focusedCell) {
+        var active = (w.dir === "h" ? state.focusDir === "h" : state.focusDir === "v") &&
+          wordAt(state.focusedCell.row, state.focusedCell.col, w.dir) === w;
+        if (active) li.className += " active";
+      }
+      if (state.checked) {
+        var status = wordStatus(w);
+        if (status === "done") li.className += " done";
+        else if (status === "wrong") li.className += " wrong";
+      }
+      var cn = document.createElement("span");
+      cn.className = "cn";
+      cn.textContent = w.number + ".";
+      li.appendChild(cn);
+      var txt = document.createElement("span");
+      txt.textContent = w.term.def;
+      li.appendChild(txt);
+      li.addEventListener("click", function () {
+        state.focusedCell = { row: w.row, col: w.col };
+        state.focusDir = w.dir;
+        state.activeWordKey = wordKeyOf(w);
+        renderGame();
+        centerAndZoomToWord(w, { minScale: 1 });
+        focusInput();
+      });
+      ul.appendChild(li);
+    });
+  }
+
+  function wordAt(row, col, dir) {
+    var entry = state.layout.cellIndex[cellKey(row, col)];
+    if (!entry) return null;
+    return dir === "h" ? entry.h : entry.v;
+  }
+
+  function wordStatus(w) {
+    var filled = 0, correct = 0;
+    for (var i = 0; i < w.len; i++) {
+      var r = w.dir === "h" ? w.row : w.row + i;
+      var c = w.dir === "h" ? w.col + i : w.col;
+      var k = cellKey(r, c);
+      var letter = state.userLetters[k];
+      if (letter) {
+        filled++;
+        if (letter === state.layout.cellIndex[k].letter) correct++;
+      }
+    }
+    if (filled < w.len) return correct === filled ? "partial" : "wrong";
+    return correct === w.len ? "done" : "wrong";
+  }
+
+  /* ══ Fokus / skriving ══ */
+
+  function cellClicked(row, col) {
+    var entry = state.layout.cellIndex[cellKey(row, col)];
+    if (!entry) return;
+    var isSame = state.focusedCell && state.focusedCell.row === row && state.focusedCell.col === col;
+    if (isSame && entry.h && entry.v) {
+      state.focusDir = state.focusDir === "h" ? "v" : "h";
+    } else {
+      state.focusedCell = { row: row, col: col };
+      if (state.focusDir === "h" && entry.h) { /* keep h */ }
+      else if (state.focusDir === "v" && entry.v) { /* keep v */ }
+      else state.focusDir = entry.h ? "h" : "v";
+    }
+    renderGame();
+    var w = wordAt(row, col, state.focusDir);
+    var key = wordKeyOf(w);
+    if (key !== state.activeWordKey) {
+      state.activeWordKey = key;
+      centerAndZoomToWord(w, { minScale: 0.9 });
+    } else {
+      ensureCellVisible(row, col);
+    }
+    focusInput();
+  }
+
+  function advanceFocus() {
+    var f = state.focusedCell;
+    if (!f) return;
+    var w = wordAt(f.row, f.col, state.focusDir);
+    if (!w) { state.focusedCell = null; return; }
+    var idx = state.focusDir === "h" ? f.col - w.col : f.row - w.row;
+    var nextIdx = idx + 1;
+    if (nextIdx < w.len) {
+      state.focusedCell = {
+        row: state.focusDir === "h" ? f.row : w.row + nextIdx,
+        col: state.focusDir === "h" ? w.col + nextIdx : f.col
+      };
+    } else {
+      state.focusedCell = null;
+    }
+  }
+
+  function retreatFocus() {
+    var f = state.focusedCell;
+    if (!f) return;
+    var w = wordAt(f.row, f.col, state.focusDir);
+    if (!w) return;
+    var idx = state.focusDir === "h" ? f.col - w.col : f.row - w.row;
+    var prevIdx = idx - 1;
+    if (prevIdx >= 0) {
+      state.focusedCell = {
+        row: state.focusDir === "h" ? f.row : w.row + prevIdx,
+        col: state.focusDir === "h" ? w.col + prevIdx : f.col
+      };
+    }
+  }
+
+  function handleTypedLetter(letter) {
+    if (!state.focusedCell) return;
+    state.userLetters[cellKey(state.focusedCell.row, state.focusedCell.col)] = letter;
+    state.checked = false;
+    advanceFocus();
+    if (!state.focusedCell) state.activeWordKey = null;
+    renderGame();
+    if (state.focusedCell) ensureCellVisible(state.focusedCell.row, state.focusedCell.col);
+    focusInput();
+  }
+
+  function handleBackspace() {
+    if (!state.focusedCell) return;
+    var k = cellKey(state.focusedCell.row, state.focusedCell.col);
+    if (state.userLetters[k]) {
+      delete state.userLetters[k];
+    } else {
+      retreatFocus();
+      var k2 = cellKey(state.focusedCell.row, state.focusedCell.col);
+      delete state.userLetters[k2];
+    }
+    state.checked = false;
+    renderGame();
+    if (state.focusedCell) ensureCellVisible(state.focusedCell.row, state.focusedCell.col);
+    focusInput();
+  }
+
+  function positionInput() {
+    if (!state.focusedCell) { el.cellInput.style.display = "none"; return; }
+    var target = cellEl(state.focusedCell.row, state.focusedCell.col);
+    if (!target) { el.cellInput.style.display = "none"; return; }
+    el.cellInput.style.display = "block";
+    el.cellInput.style.left = (el.grid.offsetLeft + target.offsetLeft) + "px";
+    el.cellInput.style.top = (el.grid.offsetTop + target.offsetTop) + "px";
+    el.cellInput.style.width = target.offsetWidth + "px";
+    el.cellInput.style.height = target.offsetHeight + "px";
+  }
+
+  function focusInput() {
+    if (!state.focusedCell) return;
+    positionInput();
+    el.cellInput.value = "";
+    el.cellInput.focus({ preventScroll: true });
+  }
+
+  el.cellInput.addEventListener("keydown", function (e) {
+    if (e.key === "Backspace" || e.key === "Delete") {
+      e.preventDefault();
+      handleBackspace();
+      return;
+    }
+    var k = e.key.toUpperCase();
+    if (/^[A-ZÆØÅ]$/.test(k)) {
+      e.preventDefault();
+      handleTypedLetter(k);
+    }
+  });
+  el.cellInput.addEventListener("input", function () {
+    var v = el.cellInput.value.toUpperCase();
+    var last = v.slice(-1);
+    el.cellInput.value = "";
+    if (/^[A-ZÆØÅ]$/.test(last)) handleTypedLetter(last);
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (!el.screenGame.classList.contains("active")) return;
+    if (document.activeElement === el.cellInput) return;
+    if (el.overlay.classList.contains("active")) return;
+    if (!state.focusedCell) return;
+    if (e.key === "Backspace" || e.key === "Delete") {
+      e.preventDefault();
+      handleBackspace();
+      return;
+    }
+    var k = e.key.toUpperCase();
+    if (/^[A-ZÆØÅ]$/.test(k)) {
+      e.preventDefault();
+      handleTypedLetter(k);
+    }
+  });
+
+  /* ══ Sjekk svar / tøm ══ */
+
+  function checkAnswers() {
+    state.checked = true;
+    var total = 0, filled = 0, correct = 0;
+    Object.keys(state.layout.cellIndex).forEach(function (k) {
+      total++;
+      var letter = state.userLetters[k];
+      if (letter) {
+        filled++;
+        if (letter === state.layout.cellIndex[k].letter) correct++;
+      }
+    });
+    renderGame();
+    if (correct === total) {
+      el.overlay.classList.add("active");
+    } else if (filled === 0) {
+      showToast("Skriv inn noen bokstaver først");
+    } else {
+      var empty = total - filled;
+      var msg = correct + " av " + filled + " utfylte bokstaver er riktige";
+      if (empty > 0) msg += " (" + empty + " ruter igjen)";
+      showToast(msg);
+    }
+  }
+
+  function clearAnswers() {
+    state.userLetters = {};
+    state.checked = false;
+    renderGame();
+  }
+
+  /* ══ Skriv ut / Del ══ */
+
+  function printPuzzle() { window.print(); }
+
+  function sharePuzzle() {
+    var t = THEMES[state.themeKey];
+    var text = "Jeg løser kryssordet «" + t.name + "» (Naturfag) på LRNify — prøv deg!";
+    if (navigator.share) {
+      navigator.share({ title: "Kryssord – LRNify", text: text, url: location.href }).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(text + " " + location.href).then(function () { showToast("Lenke kopiert!"); });
+    } else {
+      showToast("Deling er ikke støttet i denne nettleseren");
+    }
+  }
+
+  function backToStart() {
+    el.overlay.classList.remove("active");
+    el.screenGame.classList.remove("active");
+    el.screenStart.classList.add("active");
+  }
+
+  el.startBtn.addEventListener("click", startGame);
+  el.checkBtn.addEventListener("click", checkAnswers);
+  el.clearBtn.addEventListener("click", clearAnswers);
+  el.printBtn.addEventListener("click", printPuzzle);
+  el.shareBtn.addEventListener("click", sharePuzzle);
+  el.backBtn.addEventListener("click", backToStart);
+  el.overlayCloseBtn.addEventListener("click", function () { el.overlay.classList.remove("active"); });
+
+  /* ══ Init ══ */
+  THEMES[state.themeKey].terms.forEach(function (t) { state.selected[t.word] = true; });
+  buildThemeGrid();
+  buildModeGrid();
+  buildChecklist();
+  updateModeVisibility();
+})();
+</script>
+
+</body>
+</html>
