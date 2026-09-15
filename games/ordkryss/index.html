@@ -287,11 +287,11 @@
       <div id="pool"></div>
       <div class="pool-piles" id="poolPiles" style="display:none;">
         <div class="pool-pile">
-          <span class="pool-pile-label">Bunke 1</span>
+          <span class="pool-pile-label">Vannrett</span>
           <div class="pool-pile-tiles" id="pileH"></div>
         </div>
         <div class="pool-pile">
-          <span class="pool-pile-label">Bunke 2</span>
+          <span class="pool-pile-label">Loddrett</span>
           <div class="pool-pile-tiles" id="pileV"></div>
         </div>
       </div>
@@ -420,8 +420,14 @@
     });
   }
 
-  /* Finn alle par av ord i tema som deler minst én bokstav i samme posisjon,
-     og velg et tilfeldig par (ikke samme par som forrige runde om mulig). */
+  /* Avstand fra en bokstavposisjon til midten av ordet (0 = midt i ordet). */
+  function distFromMiddle(word, idx) {
+    return Math.abs(idx - (word.length - 1) / 2);
+  }
+
+  /* Finn alle par av ord i tema som deler minst én bokstav i samme posisjon.
+     Foretrekker kryss nær midten av begge ord, og velger tilfeldig blant de
+     mest sentrerte alternativene (ikke samme par som forrige runde om mulig). */
   function findCrossPair(themeKey) {
     var terms = THEMES[themeKey].terms;
     var candidates = [];
@@ -431,16 +437,24 @@
         var a = terms[i].word, b = terms[j].word;
         for (var ai = 0; ai < a.length; ai++) {
           for (var bj = 0; bj < b.length; bj++) {
-            if (a[ai] === b[bj]) candidates.push({ hIdx: i, vIdx: j, ai: ai, bj: bj });
+            if (a[ai] === b[bj]) {
+              candidates.push({
+                hIdx: i, vIdx: j, ai: ai, bj: bj,
+                centerScore: distFromMiddle(a, ai) + distFromMiddle(b, bj)
+              });
+            }
           }
         }
       }
     }
-    var pool = candidates.filter(function (c) {
+    candidates.sort(function (x, y) { return x.centerScore - y.centerScore; });
+    var bestScore = candidates[0].centerScore;
+    var central = candidates.filter(function (c) { return c.centerScore <= bestScore + 1.5; });
+    var pool = central.filter(function (c) {
       var key = [c.hIdx, c.vIdx].sort().join("-");
       return key !== state.lastPairKey;
     });
-    if (pool.length === 0) pool = candidates;
+    if (pool.length === 0) pool = central;
     var pick = pool[Math.floor(Math.random() * pool.length)];
     state.lastPairKey = [pick.hIdx, pick.vIdx].sort().join("-");
     return {
