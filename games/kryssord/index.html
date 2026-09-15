@@ -173,12 +173,27 @@
 
   .check-row { width: 100%; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
 
-  #gridWrap {
-    width: 100%; max-height: 62vh; overflow: auto; touch-action: pan-x pan-y;
-    display: flex; justify-content: center; border: 2px solid var(--gridline);
-    background: var(--card); padding: 10px; position: relative;
+  /* ══ KART (pan/zoom) ══ */
+  .map-shell { width: 100%; display: flex; flex-direction: column; gap: 10px; }
+  .map-hint {
+    background: var(--ink); color: #fff; padding: 10px 14px;
+    display: flex; flex-direction: column; gap: 4px; min-height: 2.4em; justify-content: center;
   }
-  #grid { display: grid; gap: 2px; position: relative; flex-shrink: 0; }
+  .map-hint .hint-placeholder { font-weight: 700; font-size: .82rem; opacity: .8; }
+  .hint-line { font-weight: 700; font-size: .78rem; opacity: .75; line-height: 1.3; }
+  .hint-line.primary { font-size: .92rem; opacity: 1; }
+  .hint-num { font-weight: 900; color: var(--yellow); }
+  .hint-tag { font-size: .68rem; font-weight: 900; padding: 1px 6px; margin-left: 4px; border-radius: 2px; }
+  .hint-tag.done { background: var(--green); }
+  .hint-tag.wrong { background: var(--red); }
+
+  .map-viewport {
+    width: 100%; height: clamp(340px, 55vh, 540px); position: relative; overflow: hidden;
+    border: 2px solid var(--gridline); background: var(--card); cursor: grab; touch-action: none;
+  }
+  .map-viewport.dragging { cursor: grabbing; }
+  .map-canvas { position: absolute; top: 0; left: 0; transform-origin: 0 0; will-change: transform; }
+  #grid { display: grid; gap: 2px; position: relative; }
   .cellslot {
     width: var(--cell); height: var(--cell);
     border: 1.5px solid var(--gridline);
@@ -207,6 +222,25 @@
     position: absolute; opacity: 0; border: none; padding: 0; margin: 0;
     pointer-events: none; z-index: -1; background: transparent;
   }
+
+  .map-toolbar {
+    position: absolute; top: 8px; right: 8px; z-index: 5;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .map-btn {
+    width: 34px; height: 34px; padding: 0; font-size: 1rem; line-height: 1;
+    background: rgba(255,255,255,.95); border: 2px solid var(--ink); box-shadow: 0 3px 0 var(--ink);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: transform .1s, box-shadow .1s;
+  }
+  .map-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink); }
+  .map-btn.full-btn { width: auto; padding: 0 10px; font-size: .78rem; font-weight: 900; gap: 4px; }
+
+  .map-shell.map-fullscreen {
+    position: fixed; inset: 0; z-index: 60; background: var(--cream);
+    padding: 12px; margin: 0; max-width: none;
+  }
+  .map-shell.map-fullscreen .map-viewport { flex: 1 1 auto; height: auto; }
 
   /* ══ CLUE LISTS ══ */
   .clue-columns { width: 100%; display: flex; gap: 16px; flex-wrap: wrap; }
@@ -244,9 +278,10 @@
 
   @media print {
     header, footer, .game-topbar .topbar-actions, .check-row, .toast, .overlay,
-    #screen-start, .checklist-actions { display: none !important; }
+    #screen-start, .checklist-actions, .map-hint, .map-toolbar { display: none !important; }
     body { background: #fff; }
-    #gridWrap { max-height: none; overflow: visible; border: none; }
+    .map-viewport { height: auto; overflow: visible; border: none; }
+    .map-canvas { position: static !important; transform: none !important; }
     .cellslot .tile { background: transparent !important; border: none !important; }
     .cellslot .tile .letter { display: none !important; }
     .cellslot.focused { border-color: var(--gridline) !important; box-shadow: none !important; }
@@ -317,14 +352,28 @@
       </div>
     </div>
 
-    <div class="check-row">
-      <button class="btn-check" id="checkBtn">✅ Sjekk svar</button>
-      <button class="btn-secondary" id="clearBtn">🧹 Tøm svarene</button>
-    </div>
+    <div class="map-shell" id="mapShell">
+      <div class="map-hint" id="mapHint">
+        <span class="hint-placeholder">👉 Trykk på et ord i kryssordet for å se hintet her.</span>
+      </div>
 
-    <div id="gridWrap">
-      <div id="grid" aria-live="polite"></div>
-      <input id="cellInput" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="1" />
+      <div class="check-row">
+        <button class="btn-check" id="checkBtn">✅ Sjekk svar</button>
+        <button class="btn-secondary" id="clearBtn">🧹 Tøm svarene</button>
+      </div>
+
+      <div class="map-viewport" id="gridViewport">
+        <div class="map-canvas" id="gridCanvas">
+          <div id="grid" aria-live="polite"></div>
+          <input id="cellInput" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" maxlength="1" />
+        </div>
+        <div class="map-toolbar">
+          <button class="map-btn" id="zoomInBtn" type="button" title="Zoom inn">➕</button>
+          <button class="map-btn" id="zoomOutBtn" type="button" title="Zoom ut">➖</button>
+          <button class="map-btn" id="zoomFitBtn" type="button" title="Tilpass hele kryssordet">⤢</button>
+          <button class="map-btn full-btn" id="fullscreenBtn" type="button" title="Fullskjerm">⛶</button>
+        </div>
+      </div>
     </div>
 
     <div class="clue-columns">
@@ -409,18 +458,204 @@
     userLetters: {},          // "r,c" -> letter
     focusedCell: null,        // { row, col }
     focusDir: "h",
+    activeWordKey: null,      // "h:3" — hvilket ord som sist ble aktivt fokusert
     checked: false
   };
 
   var el = {};
   ["themeGrid","modeGrid","checklistPanel","checklist","checklistCount","selectAllBtn","selectNoneBtn",
    "fullInfoPanel","startBtn","startNote","themeBadge","printBtn","shareBtn","backBtn",
-   "checkBtn","clearBtn","gridWrap","grid","cellInput","clueH","clueV","toast",
+   "checkBtn","clearBtn","mapShell","mapHint","gridViewport","gridCanvas","grid","cellInput",
+   "zoomInBtn","zoomOutBtn","zoomFitBtn","fullscreenBtn","clueH","clueV","toast",
    "overlay","overlayCloseBtn"].forEach(function (id) {
     el[id] = document.getElementById(id);
   });
   el.screenStart = document.getElementById("screen-start");
   el.screenGame = document.getElementById("screen-game");
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* ══════════ KARTET (klikk-og-dra, zoom, fullskjerm) ══════════
+     #gridCanvas flyttes/skaleres med CSS transform inne i den faste,
+     usynlig-avklipte boksen #gridViewport — akkurat som et kart. Alle
+     rute-koordinater regnes ut fra #grid sin plassering (før transform),
+     så samme tall brukes både til panorering og til å plassere det
+     usynlige tekstfeltet som fanger opp tastaturet. */
+  var view = { x: 0, y: 0, scale: 1 };
+  var MIN_SCALE = 0.25, MAX_SCALE = 2.5;
+  var isFullscreen = false;
+
+  function clampScale(s) { return Math.max(MIN_SCALE, Math.min(MAX_SCALE, s)); }
+
+  function applyView(animate) {
+    el.gridCanvas.style.transition = animate ? "transform .25s ease" : "none";
+    el.gridCanvas.style.transform = "translate(" + view.x + "px," + view.y + "px) scale(" + view.scale + ")";
+  }
+
+  function canvasPos(elm) {
+    return { x: el.grid.offsetLeft + elm.offsetLeft, y: el.grid.offsetTop + elm.offsetTop };
+  }
+
+  function fitToView(animate) {
+    var vw = el.gridViewport.clientWidth, vh = el.gridViewport.clientHeight;
+    var gw = el.grid.offsetWidth, gh = el.grid.offsetHeight;
+    if (!gw || !gh || !vw || !vh) return;
+    var scale = clampScale(Math.min(vw / gw, vh / gh, 1) * 0.96);
+    view.scale = scale;
+    view.x = (vw - gw * scale) / 2;
+    view.y = (vh - gh * scale) / 2;
+    applyView(animate);
+  }
+
+  function zoomAtPoint(localX, localY, newScale, animate) {
+    newScale = clampScale(newScale);
+    var factor = newScale / view.scale;
+    view.x = localX - (localX - view.x) * factor;
+    view.y = localY - (localY - view.y) * factor;
+    view.scale = newScale;
+    applyView(animate);
+  }
+
+  function centerAndZoomToWord(w, opts) {
+    if (!w) return;
+    var startEl = cellEl(w.row, w.col);
+    var endRow = w.dir === "h" ? w.row : w.row + w.len - 1;
+    var endCol = w.dir === "h" ? w.col + w.len - 1 : w.col;
+    var endEl = cellEl(endRow, endCol);
+    if (!startEl || !endEl) return;
+    var startP = canvasPos(startEl), endP = canvasPos(endEl);
+    var cx = (startP.x + endP.x + endEl.offsetWidth) / 2;
+    var cy = (startP.y + endP.y + endEl.offsetHeight) / 2;
+    var vw = el.gridViewport.clientWidth, vh = el.gridViewport.clientHeight;
+    var newScale = view.scale;
+    if (opts && opts.minScale && newScale < opts.minScale) newScale = opts.minScale;
+    newScale = clampScale(newScale);
+    view.scale = newScale;
+    view.x = vw / 2 - cx * newScale;
+    view.y = vh / 2 - cy * newScale;
+    applyView(true);
+  }
+
+  function ensureCellVisible(row, col) {
+    var target = cellEl(row, col);
+    if (!target) return;
+    var p = canvasPos(target);
+    var vw = el.gridViewport.clientWidth, vh = el.gridViewport.clientHeight;
+    var screenX = p.x * view.scale + view.x;
+    var screenY = p.y * view.scale + view.y;
+    var size = target.offsetWidth * view.scale;
+    var margin = Math.min(size * 1.5, Math.min(vw, vh) / 3);
+    var dx = 0, dy = 0;
+    if (screenX < margin) dx = margin - screenX;
+    else if (screenX + size > vw - margin) dx = (vw - margin) - (screenX + size);
+    if (screenY < margin) dy = margin - screenY;
+    else if (screenY + size > vh - margin) dy = (vh - margin) - (screenY + size);
+    if (dx || dy) { view.x += dx; view.y += dy; applyView(true); }
+  }
+
+  /* Klikk-og-dra panorering, med pekere spora slik at to fingre = klype-zoom. */
+  var activePointers = new Map();
+  var dragState = null;
+  var pinchState = null;
+  var suppressClickUntil = 0;
+
+  function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+  function midpoint(a, b) { return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }; }
+
+  el.gridViewport.addEventListener("pointerdown", function (e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointers.size === 1) {
+      dragState = { id: e.pointerId, startX: e.clientX, startY: e.clientY, startViewX: view.x, startViewY: view.y, moved: false };
+      el.gridViewport.classList.add("dragging");
+    } else if (activePointers.size === 2) {
+      dragState = null;
+      var pts = Array.from(activePointers.values());
+      pinchState = { startDist: dist(pts[0], pts[1]), startScale: view.scale, startMid: midpoint(pts[0], pts[1]), startViewX: view.x, startViewY: view.y };
+    }
+  });
+
+  el.gridViewport.addEventListener("pointermove", function (e) {
+    if (!activePointers.has(e.pointerId)) return;
+    activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (activePointers.size === 2 && pinchState) {
+      var pts = Array.from(activePointers.values());
+      var newDist = dist(pts[0], pts[1]);
+      var newScale = clampScale(pinchState.startScale * (newDist / pinchState.startDist));
+      var rect = el.gridViewport.getBoundingClientRect();
+      var localX = pinchState.startMid.x - rect.left, localY = pinchState.startMid.y - rect.top;
+      var factor = newScale / pinchState.startScale;
+      view.x = localX - (localX - pinchState.startViewX) * factor;
+      view.y = localY - (localY - pinchState.startViewY) * factor;
+      view.scale = newScale;
+      applyView(false);
+      return;
+    }
+    if (dragState && dragState.id === e.pointerId) {
+      var dx = e.clientX - dragState.startX, dy = e.clientY - dragState.startY;
+      if (!dragState.moved && (Math.abs(dx) > 4 || Math.abs(dy) > 4)) {
+        dragState.moved = true;
+        el.gridViewport.setPointerCapture(dragState.id);
+      }
+      view.x = dragState.startViewX + dx;
+      view.y = dragState.startViewY + dy;
+      applyView(false);
+    }
+  });
+
+  function endPointer(e) {
+    activePointers.delete(e.pointerId);
+    if (dragState && dragState.id === e.pointerId) {
+      if (dragState.moved) suppressClickUntil = Date.now() + 50;
+      dragState = null;
+      el.gridViewport.classList.remove("dragging");
+    }
+    if (activePointers.size < 2) pinchState = null;
+    if (activePointers.size === 1) {
+      var remaining = activePointers.entries().next().value;
+      if (remaining) {
+        dragState = { id: remaining[0], startX: remaining[1].x, startY: remaining[1].y, startViewX: view.x, startViewY: view.y, moved: true };
+        suppressClickUntil = Date.now() + 50;
+      }
+    }
+  }
+  el.gridViewport.addEventListener("pointerup", endPointer);
+  el.gridViewport.addEventListener("pointercancel", endPointer);
+
+  el.gridViewport.addEventListener("click", function (e) {
+    if (Date.now() < suppressClickUntil) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+
+  el.gridViewport.addEventListener("wheel", function (e) {
+    e.preventDefault();
+    var rect = el.gridViewport.getBoundingClientRect();
+    var factor = Math.exp(-e.deltaY * 0.0015);
+    zoomAtPoint(e.clientX - rect.left, e.clientY - rect.top, view.scale * factor, false);
+  }, { passive: false });
+
+  el.zoomInBtn.addEventListener("click", function () {
+    zoomAtPoint(el.gridViewport.clientWidth / 2, el.gridViewport.clientHeight / 2, view.scale * 1.3, true);
+  });
+  el.zoomOutBtn.addEventListener("click", function () {
+    zoomAtPoint(el.gridViewport.clientWidth / 2, el.gridViewport.clientHeight / 2, view.scale * 0.75, true);
+  });
+  el.zoomFitBtn.addEventListener("click", function () { fitToView(true); });
+
+  function toggleFullscreen() {
+    isFullscreen = !isFullscreen;
+    el.mapShell.classList.toggle("map-fullscreen", isFullscreen);
+    el.fullscreenBtn.textContent = isFullscreen ? "✕ Lukk" : "⛶";
+    document.body.style.overflow = isFullscreen ? "hidden" : "";
+    requestAnimationFrame(function () { fitToView(false); });
+  }
+  el.fullscreenBtn.addEventListener("click", toggleFullscreen);
+  document.addEventListener("keydown", function (e) {
+    if (isFullscreen && e.key === "Escape") toggleFullscreen();
+  });
 
   /* ══════════ KRYSSORDGENERATOR ══════════
      Deterministisk (ingen tilfeldighet): samme ordvalg gir alltid samme
@@ -746,6 +981,7 @@
     state.userLetters = {};
     state.focusedCell = null;
     state.focusDir = "h";
+    state.activeWordKey = null;
     state.checked = false;
 
     var t = THEMES[state.themeKey];
@@ -754,6 +990,7 @@
     el.screenStart.classList.remove("active");
     el.screenGame.classList.add("active");
     renderGame();
+    fitToView(false);
   }
 
   function cellEl(row, col) {
@@ -809,6 +1046,7 @@
     }
 
     renderClues();
+    renderHintBar();
     positionInput();
   }
 
@@ -816,6 +1054,34 @@
     var L = state.layout;
     renderClueList(el.clueH, L.wordsH);
     renderClueList(el.clueV, L.wordsV);
+  }
+
+  function wordKeyOf(w) { return w ? (w.dir + ":" + w.number) : null; }
+
+  function hintLineHtml(w, isPrimary) {
+    var icon = w.dir === "h" ? "➡️" : "⬇️";
+    var tag = "";
+    if (state.checked) {
+      var status = wordStatus(w);
+      if (status === "done") tag = ' <span class="hint-tag done">✓ Løst</span>';
+      else if (status === "wrong") tag = ' <span class="hint-tag wrong">Ikke riktig ennå</span>';
+    }
+    return '<div class="hint-line' + (isPrimary ? " primary" : "") + '">' +
+      '<span class="hint-num">' + icon + " " + w.number + ".</span> " + escapeHtml(w.term.def) + tag + "</div>";
+  }
+
+  function renderHintBar() {
+    var f = state.focusedCell;
+    if (!f) {
+      el.mapHint.innerHTML = '<span class="hint-placeholder">👉 Trykk på et ord i kryssordet for å se hintet her.</span>';
+      return;
+    }
+    var primary = wordAt(f.row, f.col, state.focusDir);
+    var other = wordAt(f.row, f.col, state.focusDir === "h" ? "v" : "h");
+    var html = "";
+    if (primary) html += hintLineHtml(primary, true);
+    if (other) html += hintLineHtml(other, false);
+    el.mapHint.innerHTML = html || '<span class="hint-placeholder">👉 Trykk på et ord i kryssordet for å se hintet her.</span>';
   }
 
   function renderClueList(ul, words) {
@@ -843,10 +1109,10 @@
       li.addEventListener("click", function () {
         state.focusedCell = { row: w.row, col: w.col };
         state.focusDir = w.dir;
+        state.activeWordKey = wordKeyOf(w);
         renderGame();
+        centerAndZoomToWord(w, { minScale: 1 });
         focusInput();
-        var target = cellEl(w.row, w.col);
-        if (target) target.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
       });
       ul.appendChild(li);
     });
@@ -889,6 +1155,14 @@
       else state.focusDir = entry.h ? "h" : "v";
     }
     renderGame();
+    var w = wordAt(row, col, state.focusDir);
+    var key = wordKeyOf(w);
+    if (key !== state.activeWordKey) {
+      state.activeWordKey = key;
+      centerAndZoomToWord(w, { minScale: 0.9 });
+    } else {
+      ensureCellVisible(row, col);
+    }
     focusInput();
   }
 
@@ -929,7 +1203,9 @@
     state.userLetters[cellKey(state.focusedCell.row, state.focusedCell.col)] = letter;
     state.checked = false;
     advanceFocus();
+    if (!state.focusedCell) state.activeWordKey = null;
     renderGame();
+    if (state.focusedCell) ensureCellVisible(state.focusedCell.row, state.focusedCell.col);
     focusInput();
   }
 
@@ -945,6 +1221,7 @@
     }
     state.checked = false;
     renderGame();
+    if (state.focusedCell) ensureCellVisible(state.focusedCell.row, state.focusedCell.col);
     focusInput();
   }
 
