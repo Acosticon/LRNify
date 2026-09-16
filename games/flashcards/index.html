@@ -34,6 +34,10 @@
         </div>
       </div>
       <div class="header-actions">
+        <div class="poeng-pill" id="poengPill" aria-label="Poeng totalt">
+          <span aria-hidden="true">⭐</span>
+          <strong id="poengTotal">0</strong>
+        </div>
         <button class="icon-button" id="bevknapp" aria-pressed="true" title="Bevegelse på/av" aria-label="Reduser bevegelse">🎬</button>
       </div>
     </header>
@@ -49,12 +53,21 @@
         <div class="subject-grid" id="modusrutenett"></div>
       </section>
 
-      <!-- SKJERM 2: se definisjon / se begrep (snu-kort) -->
+      <!-- SKJERM 2: begrepskort — velg hvilken side som skal vises først -->
+      <section id="skjerm-retning" class="screen is-hidden">
+        <div class="screen-intro compact">
+          <p class="eyebrow">Begrepskort</p>
+          <h2>Hva vil du se først?</h2>
+        </div>
+        <div class="subject-grid" id="retningrutenett"></div>
+      </section>
+
+      <!-- SKJERM 3: begrepskort (snu-kort) -->
       <section id="skjerm-kort" class="screen game-screen is-hidden">
         <div class="game-card">
           <div class="game-topline">
             <div>
-              <p class="eyebrow" id="kort-eyebrow">Se definisjon</p>
+              <p class="eyebrow" id="kort-eyebrow">Begrepskort</p>
               <h2 id="kort-tittel">Cellen</h2>
             </div>
             <div class="attempt-card" aria-label="Fremdrift">
@@ -65,17 +78,20 @@
 
           <div class="tip-box" id="kort-tip"><strong>Tips:</strong> Trykk på kortet for å snu det.</div>
 
-          <div class="flip-scene">
-            <div class="flip-card" id="flipCard" role="button" tabindex="0" aria-pressed="false" aria-label="Trykk for å snu kortet">
-              <div class="flip-face flip-front">
-                <p class="eyebrow" id="frontLabel">Definisjon</p>
-                <p class="flip-text" id="frontText"></p>
-                <p class="flip-hint">Trykk for å snu →</p>
-              </div>
-              <div class="flip-face flip-back">
-                <p class="eyebrow" id="backLabel">Begrep</p>
-                <p class="flip-text" id="backText"></p>
-                <p class="flip-hint">Trykk for å snu tilbake</p>
+          <div class="kort-arena">
+            <div class="kort-stack" id="kortStack" aria-hidden="true"></div>
+            <div class="flip-scene" id="flipScene">
+              <div class="flip-card" id="flipCard" role="button" tabindex="0" aria-pressed="false" aria-label="Trykk for å snu kortet">
+                <div class="flip-face flip-front">
+                  <p class="eyebrow" id="frontLabel">Definisjon</p>
+                  <p class="flip-text" id="frontText"></p>
+                  <p class="flip-hint">Trykk for å snu →</p>
+                </div>
+                <div class="flip-face flip-back">
+                  <p class="eyebrow" id="backLabel">Begrep</p>
+                  <p class="flip-text" id="backText"></p>
+                  <p class="flip-hint">Trykk for å snu tilbake</p>
+                </div>
               </div>
             </div>
           </div>
@@ -88,7 +104,7 @@
         </div>
       </section>
 
-      <!-- SKJERM 3: koble par -->
+      <!-- SKJERM 4: koble par -->
       <section id="skjerm-par" class="screen game-screen is-hidden">
         <div class="game-card">
           <div class="game-topline">
@@ -125,7 +141,7 @@
         </div>
       </section>
 
-      <!-- SKJERM 4: test (multiple choice) -->
+      <!-- SKJERM 5: test (multiple choice) -->
       <section id="skjerm-test" class="screen game-screen is-hidden">
         <div class="game-card">
           <div class="game-topline">
@@ -139,7 +155,10 @@
             </div>
           </div>
 
-          <div class="test-question" id="test-sporsmal"></div>
+          <div class="test-question">
+            <p class="eyebrow">Velg riktig definisjon</p>
+            <p class="test-term" id="test-sporsmal"></p>
+          </div>
 
           <div class="test-options" id="test-alternativer"></div>
 
@@ -175,6 +194,7 @@
           <strong id="panel-score2">0</strong>
         </div>
       </div>
+      <p class="poeng-linje is-hidden" id="panel-poeng"></p>
       <div class="panel-actions">
         <button class="button primary" id="igjen-knapp" type="button">Prøv igjen</button>
         <button class="button secondary" id="bytt-knapp" type="button">Velg annen øvingsmåte</button>
@@ -183,6 +203,7 @@
   </div>
   <script src="content.js"></script>
   <script src="app.js"></script>
+<script src="/poeng/lrnify-poeng.js" defer></script>
 <script src="/bruk/lrnify-bruk.js" defer></script>
 <script src="/deling/deling.js" defer></script>
 <script src="/nav/lrnify-tilbake.js" defer></script>

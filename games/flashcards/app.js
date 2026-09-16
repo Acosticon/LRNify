@@ -3,19 +3,20 @@
 
   const SETT = FLASHCARD_SETS[0];
   const ANTALL = SETT.kort.length;
+  const SPILL_ID = 'flashcards';
+  const POENG_BEGREPSKORT = 15;
 
   const el = (id) => document.getElementById(id);
-  const skjermer = ['skjerm-modus', 'skjerm-kort', 'skjerm-par', 'skjerm-test'];
-  let aktivSkjerm = 'skjerm-modus';
+  const skjermer = ['skjerm-modus', 'skjerm-retning', 'skjerm-kort', 'skjerm-par', 'skjerm-test'];
 
   function visSkjerm(id) {
-    aktivSkjerm = id;
     skjermer.forEach((s) => el(s).classList.toggle('is-hidden', s !== id));
     el('global-back').classList.toggle('is-hidden', id === 'skjerm-modus');
     el('overlegg').classList.add('is-hidden');
     const kontekst = {
       'skjerm-modus': 'Velg øvingsmåte',
-      'skjerm-kort': modusState.retning === 'begrep' ? 'Se begrep' : 'Se definisjon',
+      'skjerm-retning': 'Begrepskort',
+      'skjerm-kort': 'Begrepskort',
       'skjerm-par': 'Koble par',
       'skjerm-test': 'Test deg selv'
     };
@@ -31,10 +32,15 @@
     return kopi;
   }
 
+  function stjernerTilPoeng(stjerner) {
+    if (stjerner === '★★★') return 30;
+    if (stjerner === '★★☆') return 20;
+    return 10;
+  }
+
   /* ---------- Modusvalg ---------- */
   const MODUSER = [
-    { id: 'definisjon', emoji: '📖', tittel: 'Se definisjon', tekst: 'Du ser definisjonen. Trykk for å avsløre begrepet.', chip: 'Ett kort om gangen' },
-    { id: 'begrep', emoji: '🏷️', tittel: 'Se begrep', tekst: 'Du ser begrepet. Trykk for å avsløre definisjonen.', chip: 'Ett kort om gangen' },
+    { id: 'begrepskort', emoji: '🔄', tittel: 'Begrepskort', tekst: 'Snu kortet mellom begrep og definisjon, ett kort om gangen.', chip: 'Ett kort om gangen' },
     { id: 'par', emoji: '🔗', tittel: 'Koble par', tekst: 'Alle begreper og definisjoner ligger som kort. Match dem sammen.', chip: '10 par' },
     { id: 'test', emoji: '✅', tittel: 'Test deg selv', tekst: 'Enkel quiz med fire svaralternativer per spørsmål.', chip: '10 spørsmål' }
   ];
@@ -60,20 +66,43 @@
   }
 
   function startModus(id) {
-    if (id === 'definisjon' || id === 'begrep') startKortmodus(id);
+    if (id === 'begrepskort') visRetningvalg();
     else if (id === 'par') startParmodus();
     else if (id === 'test') startTestmodus();
   }
 
-  /* ---------- Modus a/b: snu-kort ---------- */
-  const modusState = { retning: 'definisjon', rekkefolge: [], indeks: 0, flippet: false };
+  /* ---------- Begrepskort: velg startside ---------- */
+  const RETNINGER = [
+    { id: 'begrep', emoji: '🏷️', tittel: 'Start med begrep', tekst: 'Du ser begrepet først. Trykk for å avsløre definisjonen.' },
+    { id: 'definisjon', emoji: '📖', tittel: 'Start med definisjon', tekst: 'Du ser definisjonen først. Trykk for å avsløre begrepet.' }
+  ];
+
+  function visRetningvalg() {
+    const rutenett = el('retningrutenett');
+    rutenett.innerHTML = '';
+    RETNINGER.forEach((r) => {
+      const knapp = document.createElement('button');
+      knapp.className = 'subject-card';
+      knapp.type = 'button';
+      knapp.innerHTML =
+        '<div class="emoji" aria-hidden="true">' + r.emoji + '</div>' +
+        '<div><h3>' + r.tittel + '</h3><p>' + r.tekst + '</p></div>';
+      knapp.addEventListener('click', () => startKortmodus(r.id));
+      rutenett.appendChild(knapp);
+    });
+    visSkjerm('skjerm-retning');
+  }
+
+  /* ---------- Begrepskort: snu-kort ---------- */
+  const modusState = { retning: 'begrep', rekkefolge: [], indeks: 0, flippet: false };
+  let kortAnimerer = false;
 
   function startKortmodus(retning) {
     modusState.retning = retning;
     modusState.rekkefolge = shuffle(SETT.kort.map((_, i) => i));
     modusState.indeks = 0;
     modusState.flippet = false;
-    el('kort-eyebrow').textContent = retning === 'begrep' ? 'Se begrep' : 'Se definisjon';
+    kortAnimerer = false;
     el('kort-tittel').textContent = SETT.tittel;
     visSkjerm('skjerm-kort');
     renderKort();
@@ -94,6 +123,26 @@
 
     el('kort-fremdrift').textContent = (modusState.indeks + 1) + ' / ' + ANTALL;
     el('kort-forrige').disabled = modusState.indeks === 0;
+    renderKortStack(modusState.indeks);
+  }
+
+  function renderKortStack(antall) {
+    const stack = el('kortStack');
+    stack.innerHTML = '';
+    const synlige = Math.min(antall, 4);
+    for (let i = 0; i < synlige; i++) {
+      const lag = document.createElement('div');
+      lag.className = 'kort-stack-lag';
+      stack.appendChild(lag);
+    }
+    stack.classList.toggle('has-kort', antall > 0);
+    stack.setAttribute('aria-label', antall + ' kort lagt til side');
+    if (antall > 0) {
+      const tall = document.createElement('span');
+      tall.className = 'kort-stack-tall';
+      tall.textContent = String(antall);
+      stack.appendChild(tall);
+    }
   }
 
   function snuKort() {
@@ -102,8 +151,44 @@
     el('flipCard').setAttribute('aria-pressed', String(modusState.flippet));
   }
 
+  function animerKortbytte(retning, oppdaterIndeks) {
+    const scene = el('flipScene');
+    if (prefersReduced()) { oppdaterIndeks(); renderKort(); return; }
+    if (kortAnimerer) return;
+    kortAnimerer = true;
+    const utKlasse = retning === 'frem' ? 'kort-ut-venstre' : 'kort-ut-hoyre';
+    const innKlasse = retning === 'frem' ? 'kort-inn-hoyre' : 'kort-inn-venstre';
+    scene.classList.add(utKlasse);
+    window.setTimeout(() => {
+      oppdaterIndeks();
+      renderKort();
+      scene.classList.remove(utKlasse);
+      scene.classList.add('notransition', innKlasse);
+      void scene.offsetWidth;
+      scene.classList.remove('notransition');
+      requestAnimationFrame(() => scene.classList.remove(innKlasse));
+      window.setTimeout(() => { kortAnimerer = false; }, 320);
+    }, 320);
+  }
+
   function nesteKort() {
+    if (kortAnimerer) return;
     if (modusState.indeks >= ANTALL - 1) {
+      fullforKortmodus();
+      return;
+    }
+    animerKortbytte('frem', () => { modusState.indeks++; });
+  }
+
+  function forrigeKort() {
+    if (kortAnimerer || modusState.indeks === 0) return;
+    animerKortbytte('tilbake', () => { modusState.indeks--; });
+  }
+
+  function fullforKortmodus() {
+    const scene = el('flipScene');
+    const visOverlegg = () => {
+      renderKortStack(ANTALL);
       visResultat({
         tittel: 'Du har sett gjennom alle kortene!',
         tekst: 'Bra jobba – du gikk gjennom alle ' + ANTALL + ' kortene i ' + SETT.tittel + '.',
@@ -112,21 +197,24 @@
         score1: ANTALL + ' / ' + ANTALL,
         score2Label: 'Retning',
         score2: modusState.retning === 'begrep' ? 'Begrep → def.' : 'Def. → begrep',
+        poeng: POENG_BEGREPSKORT,
         nesteAction: () => startKortmodus(modusState.retning)
       });
-      return;
-    }
-    modusState.indeks++;
-    renderKort();
+    };
+    if (prefersReduced() || kortAnimerer) { visOverlegg(); return; }
+    kortAnimerer = true;
+    scene.classList.add('kort-ut-venstre');
+    window.setTimeout(() => {
+      visOverlegg();
+      scene.classList.add('notransition');
+      scene.classList.remove('kort-ut-venstre');
+      void scene.offsetWidth;
+      scene.classList.remove('notransition');
+      kortAnimerer = false;
+    }, 320);
   }
 
-  function forrigeKort() {
-    if (modusState.indeks === 0) return;
-    modusState.indeks--;
-    renderKort();
-  }
-
-  /* ---------- Modus c: koble par ---------- */
+  /* ---------- Koble par ---------- */
   const parState = { fliser: [], valgte: [], funnet: 0, bom: 0, laast: false };
 
   function startParmodus() {
@@ -170,6 +258,8 @@
       if (flis.matchet) {
         knapp.classList.add('matched');
         knapp.disabled = true;
+      } else if (parState.valgte.includes(indeks)) {
+        knapp.classList.add('selected');
       }
       knapp.addEventListener('click', () => velgFlis(indeks));
       rutenett.appendChild(knapp);
@@ -183,7 +273,6 @@
 
     parState.valgte.push(indeks);
     renderPar();
-    document.querySelectorAll('.par-grid .tile')[indeks].classList.add('selected');
 
     if (parState.valgte.length < 2) return;
 
@@ -215,6 +304,7 @@
             score1: stjerner,
             score2Label: 'Bom',
             score2: String(parState.bom),
+            poeng: stjernerTilPoeng(stjerner),
             nesteAction: startParmodus
           });
         }
@@ -222,18 +312,18 @@
     } else {
       parState.bom++;
       el('par-bom').textContent = String(parState.bom);
-      fliser[iA].classList.add('shake');
-      fliser[iB].classList.add('shake');
+      fliser[iB].classList.remove('selected');
+      fliser[iB].classList.add('wrong', 'shake');
       settParFeedback('Ikke helt', 'Det paret hørte ikke sammen – prøv igjen.', 'bad');
       setTimeout(() => {
         parState.valgte = [];
         parState.laast = false;
         renderPar();
-      }, 550);
+      }, 750);
     }
   }
 
-  /* ---------- Modus d: test (multiple choice) ---------- */
+  /* ---------- Test (multiple choice) ---------- */
   const testState = { rekkefolge: [], indeks: 0, poeng: 0, besvart: false };
 
   function startTestmodus() {
@@ -253,7 +343,7 @@
 
     const kort = SETT.kort[testState.rekkefolge[testState.indeks]];
     el('test-fremdrift').textContent = 'Spørsmål ' + (testState.indeks + 1) + ' / ' + ANTALL;
-    el('test-sporsmal').textContent = 'Hva er definisjonen av «' + kort.begrep + '»?';
+    el('test-sporsmal').textContent = kort.begrep;
 
     const feilalternativer = shuffle(
       SETT.kort.filter((k) => k.id !== kort.id).map((k) => k.definisjon)
@@ -313,6 +403,7 @@
         score1: stjerner,
         score2Label: 'Riktige',
         score2: testState.poeng + ' / ' + ANTALL,
+        poeng: stjernerTilPoeng(stjerner),
         nesteAction: startTestmodus
       });
       return;
@@ -321,10 +412,21 @@
     renderTestSporsmal();
   }
 
+  /* ---------- Poeng ---------- */
+  function leggTilPoeng(poeng) {
+    const total = window.LRNifyPoeng ? window.LRNifyPoeng.leggTil(SPILL_ID, poeng) : poeng;
+    oppdaterPoengVisning();
+    return total;
+  }
+
+  function oppdaterPoengVisning() {
+    el('poengTotal').textContent = String(window.LRNifyPoeng ? window.LRNifyPoeng.hentTotal() : 0);
+  }
+
   /* ---------- Resultatoverlegg (delt av alle moduser) ---------- */
   let gjeldendeNesteAction = null;
 
-  function visResultat({ tittel, tekst, emoji, score1Label, score1, score2Label, score2, nesteAction }) {
+  function visResultat({ tittel, tekst, emoji, score1Label, score1, score2Label, score2, poeng, nesteAction }) {
     el('panel-emoji').textContent = emoji;
     el('panel-tittel').textContent = tittel;
     el('panel-tekst').textContent = tekst;
@@ -332,6 +434,16 @@
     el('panel-score1').textContent = score1;
     el('panel-score2-label').textContent = score2Label;
     el('panel-score2').textContent = score2;
+
+    const poengLinje = el('panel-poeng');
+    if (poeng > 0) {
+      const totalPoeng = leggTilPoeng(poeng);
+      poengLinje.textContent = '🏅 +' + poeng + ' poeng · ' + totalPoeng + ' poeng totalt';
+      poengLinje.classList.remove('is-hidden');
+    } else {
+      poengLinje.classList.add('is-hidden');
+    }
+
     gjeldendeNesteAction = nesteAction;
     el('overlegg').classList.remove('is-hidden');
   }
@@ -354,6 +466,7 @@
     renderModusvalg();
     visSkjerm('skjerm-modus');
     setMotion(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    oppdaterPoengVisning();
 
     el('bevknapp').addEventListener('click', () => setMotion(!prefersReduced()));
     el('global-back').addEventListener('click', goBack);
