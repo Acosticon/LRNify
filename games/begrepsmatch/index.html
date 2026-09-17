@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Begrepsmatch — LRNify</title>
+  <meta name="description" content="Match-3-spill med fagspørsmål. Match brikker, finn nummererte bonusbrikker og svar på spørsmål om celler for å få flere trekk.">
+  <link rel="canonical" href="https://lrnify.no/games/begrepsmatch/index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="LRNify">
+  <meta property="og:title" content="Begrepsmatch – LRNify">
+  <meta property="og:description" content="Match-3-spill med fagspørsmål. Match brikker, finn nummererte bonusbrikker og svar på spørsmål om celler for å få flere trekk.">
+  <meta property="og:url" content="https://lrnify.no/games/begrepsmatch/index.html">
+  <meta property="og:locale" content="nb_NO">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Begrepsmatch – LRNify">
+  <meta name="twitter:description" content="Match-3-spill med fagspørsmål om celler.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header" aria-label="Begrepsmatch">
+      <button class="back-link" id="global-back" type="button">← Tilbake</button>
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">🧫</div>
+        <div>
+          <p class="eyebrow" id="topic-subject">Naturfag</p>
+          <h1 id="topic-title">Celler</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="stat-pill" aria-label="Poeng">
+          <span aria-hidden="true">⭐</span>
+          <strong id="score-value">0</strong>
+        </div>
+        <div class="stat-pill" id="moves-pill" aria-label="Trekk igjen">
+          <span aria-hidden="true">♟️</span>
+          <strong id="moves-value">20</strong>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <p class="tip-line">Bytt to nabobrikker for å lage rekker på tre eller flere. Nummererte brikker gir et spørsmål om celler når de fjernes — svar riktig for flere trekk.</p>
+
+      <div class="board-wrap">
+        <div class="board" id="board" aria-label="Spillbrett"></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="question-overlay is-hidden" id="question-panel" role="dialog" aria-modal="true" aria-label="Fagspørsmål">
+    <div class="question-card">
+      <p class="bonus-badge" data-role="bonus">+5 TREKK</p>
+      <h2 class="question-title">Hvilket begrep passer til definisjonen?</h2>
+      <p class="question-definition" data-role="definition"></p>
+      <div class="options-grid" data-role="options"></div>
+      <div class="feedback is-hidden" data-role="feedback" role="status" aria-live="polite">
+        <strong data-role="feedback-title"></strong>
+        <p data-role="feedback-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay is-hidden" id="gameover-panel" role="dialog" aria-modal="true" aria-label="Runden er over">
+    <div class="result-panel">
+      <div class="result-emoji" aria-hidden="true">🎉</div>
+      <p class="eyebrow">Runden er over</p>
+      <h2>Bra jobba!</h2>
+      <div class="score-card">
+        <div><span class="score-label">Poeng</span><strong data-role="final-score">0</strong></div>
+        <div><span class="score-label">Riktige svar</span><strong data-role="final-correct">0</strong></div>
+        <div><span class="score-label">Feil svar</span><strong data-role="final-wrong">0</strong></div>
+        <div><span class="score-label">Matcher</span><strong data-role="final-matches">0</strong></div>
+      </div>
+      <div class="panel-actions">
+        <button class="button primary" data-role="restart" type="button">Spill igjen</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+  <script src="/bruk/lrnify-bruk.js" defer></script>
+  <script src="/deling/deling.js" defer></script>
+  <script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
