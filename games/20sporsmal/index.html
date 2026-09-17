@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>20 spørsmål — LRNify</title>
+<meta name="description" content="20 spørsmål som læringsspill. Naturfag → Celler: la spillet gjette begrepet du tenker på, eller gjett selv ved å stille spørsmål.">
+<link rel="canonical" href="https://lrnify.no/games/20sporsmal/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="20 spørsmål – LRNify">
+<meta property="og:description" content="20 spørsmål som læringsspill. Naturfag → Celler.">
+<meta property="og:url" content="https://lrnify.no/games/20sporsmal/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="20 spørsmål – LRNify">
+<meta name="twitter:description" content="20 spørsmål som læringsspill. Naturfag → Celler.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html#grid">LRN<b>ify</b></a>
+  <div class="header-right">
+    <label class="debug-toggle">
+      <input type="checkbox" id="debugToggle">
+      <span>🐛 Debug</span>
+    </label>
+    <a class="back-btn" href="." data-home-screen="screen-start">← Tilbake</a>
+  </div>
+</header>
+
+<main>
+
+  <!-- ════════ START ════════ -->
+  <section class="screen active" id="screen-start">
+    <div class="hero-title">20 <span class="accent">spørsmål</span></div>
+    <div class="breadcrumb" id="topicBreadcrumb">Naturfag → Celler</div>
+    <p class="hero-sub">Tenk på et begrep — eller la spillet tenke på ett. Svar ærlig, så finner vi det sammen.</p>
+
+    <div class="mode-grid">
+      <button class="mode-card mode-a" id="btnStartModeA">
+        <div class="mode-emoji">🤖</div>
+        <h2>Spillet gjetter</h2>
+        <p>Du tenker på et begrep. Spillet stiller spørsmål og prøver å gjette hva det er.</p>
+        <span class="mode-cta">Spill →</span>
+      </button>
+      <button class="mode-card mode-b" id="btnStartModeB">
+        <div class="mode-emoji">🕵️</div>
+        <h2>Jeg gjetter</h2>
+        <p>Spillet tenker på et begrep. Du velger spørsmål fra en liste for å finne ut hva det er.</p>
+        <span class="mode-cta">Spill →</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ════════ MODUS A: SPØRSMÅL ════════ -->
+  <section class="screen" id="screen-a-ask">
+    <div class="game-topbar">
+      <span class="pill">Spørsmål <strong id="aQuestionNumber">1</strong></span>
+      <button class="btn-ghost" id="btnAGiveUp">Avbryt runden</button>
+    </div>
+    <div class="card-panel question-panel">
+      <p class="question-text" id="aQuestionText">…</p>
+      <div class="answer-row">
+        <button class="btn-answer btn-yes" data-answer="yes">JA</button>
+        <button class="btn-answer btn-no" data-answer="no">NEI</button>
+        <button class="btn-answer btn-unknown" data-answer="unknown">VET IKKE</button>
+      </div>
+    </div>
+    <div class="debug-panel" id="debugPanelA" hidden></div>
+  </section>
+
+  <!-- ════════ MODUS A: GJETNING ════════ -->
+  <section class="screen" id="screen-a-guess">
+    <div class="card-panel guess-panel">
+      <p class="guess-lead">Etter <strong id="aGuessCount">0</strong> spørsmål tror jeg du tenker på:</p>
+      <div class="guess-word" id="aGuessWord">…</div>
+      <div class="answer-row">
+        <button class="btn-answer btn-yes" id="btnAGuessYes">JA!</button>
+        <button class="btn-answer btn-no" id="btnAGuessNo">NEI</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════ MODUS A: RIKTIG ════════ -->
+  <section class="screen" id="screen-a-correct">
+    <div class="result-hero">🎉</div>
+    <h1 id="aCorrectWord">…</h1>
+    <p class="definition" id="aCorrectDefinition">…</p>
+    <div class="card-panel">
+      <h3>Slik fant jeg det ut</h3>
+      <ul class="evidence-list" id="aEvidenceList"></ul>
+    </div>
+    <button class="btn-primary" id="btnAPlayAgain">Spill igjen</button>
+  </section>
+
+  <!-- ════════ MODUS A: HVA TENKTE DU PÅ? ════════ -->
+  <section class="screen" id="screen-a-reveal-ask">
+    <h1>Jeg gjettet feil!</h1>
+    <p class="hero-sub">Hva tenkte du på?</p>
+    <div class="concept-grid" id="aConceptPicker"></div>
+  </section>
+
+  <!-- ════════ MODUS A: SAMMENLIGNING ════════ -->
+  <section class="screen" id="screen-a-reveal-result">
+    <h1 id="aRevealWord">…</h1>
+    <p class="definition" id="aRevealDefinition">…</p>
+    <div class="card-panel" id="aRevealMismatchCard">
+      <h3>Her ble jeg lurt</h3>
+      <ul class="evidence-list" id="aRevealMismatchList"></ul>
+    </div>
+    <button class="btn-primary" id="btnARevealPlayAgain">Spill igjen</button>
+  </section>
+
+  <!-- ════════ MODUS B: SPØR ════════ -->
+  <section class="screen" id="screen-b-ask">
+    <div class="game-topbar">
+      <span class="pill">Spørsmål stilt: <strong id="bQuestionsAsked">0</strong></span>
+      <button class="btn-ghost" id="btnBToggleCandidates">Vis mulige begreper</button>
+      <button class="btn-ghost" id="btnBGiveUp">Avbryt runden</button>
+    </div>
+    <p class="hero-sub">Mulige begreper igjen: <strong id="bRemainingCount">27</strong></p>
+    <div class="candidate-list" id="bCandidateList" hidden></div>
+
+    <div class="feedback-line" id="bFeedbackLine" hidden></div>
+
+    <div class="card-panel">
+      <h3>Velg et spørsmål å stille</h3>
+      <div class="question-choice-list" id="bQuestionChoices"></div>
+    </div>
+
+    <div class="answer-log" id="bAnswerLog"></div>
+
+    <button class="btn-primary" id="btnBGuessNow">Jeg vil gjette begrepet</button>
+    <div class="debug-panel" id="debugPanelB" hidden></div>
+  </section>
+
+  <!-- ════════ MODUS B: VELG GJETNING ════════ -->
+  <section class="screen" id="screen-b-guess-picker">
+    <h1>Hva er det hemmelige begrepet?</h1>
+    <div class="concept-grid" id="bConceptPicker"></div>
+    <button class="btn-ghost" id="btnBCancelGuess">Tilbake til spørsmål</button>
+  </section>
+
+  <!-- ════════ MODUS B: RESULTAT ════════ -->
+  <section class="screen" id="screen-b-result">
+    <div class="result-hero" id="bResultEmoji">🎉</div>
+    <h1 id="bResultTitle">…</h1>
+    <div class="guess-word" id="bResultWord">…</div>
+    <p class="definition" id="bResultDefinition">…</p>
+    <p class="hero-sub" id="bResultMeta"></p>
+    <button class="btn-primary" id="btnBPlayAgain">Spill igjen</button>
+  </section>
+
+</main>
+
+<footer>20 spørsmål er en del av LRNify — generell spørremotor, første innholdspakke: Naturfag → Celler.</footer>
+
+<script type="module" src="js/main.js"></script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-spillhode.js" defer></script>
+</body>
+</html>
