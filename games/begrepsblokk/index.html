@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Begrepsblokk — LRNify</title>
+  <meta name="description" content="Block Blast-aktig klossespill med fagspørsmål. Legg klosser i rutenettet og rydd rader og kolonner — svar på spørsmål om celler i stedet for å se reklame.">
+  <link rel="canonical" href="https://lrnify.no/games/begrepsblokk/index.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="LRNify">
+  <meta property="og:title" content="Begrepsblokk – LRNify">
+  <meta property="og:description" content="Block Blast-aktig klossespill med fagspørsmål. Legg klosser i rutenettet og rydd rader og kolonner — svar på spørsmål om celler i stedet for å se reklame.">
+  <meta property="og:url" content="https://lrnify.no/games/begrepsblokk/index.html">
+  <meta property="og:locale" content="nb_NO">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Begrepsblokk – LRNify">
+  <meta name="twitter:description" content="Block Blast-aktig klossespill med fagspørsmål om celler.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header" aria-label="Begrepsblokk">
+      <button class="back-link" id="global-back" type="button">← Tilbake</button>
+      <div class="brand-block">
+        <div class="brand-mark" aria-hidden="true">🧱</div>
+        <div>
+          <p class="eyebrow" id="topic-subject">Naturfag</p>
+          <h1 id="topic-title">Celler</h1>
+        </div>
+      </div>
+      <div class="header-actions">
+        <div class="stat-pill" aria-label="Poeng">
+          <span aria-hidden="true">⭐</span>
+          <strong id="score-value">0</strong>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <p class="tip-line">Dra klosser fra hylla ned på brettet. Fyll en hel rad eller kolonne for å rydde den. Innimellom dukker det opp et spørsmål om celler i stedet for reklame — svar riktig og få en rad/kolonne ryddet gratis.</p>
+
+      <div class="board-wrap">
+        <div class="board" id="board" aria-label="Spillbrett"></div>
+      </div>
+
+      <div class="tray-wrap">
+        <div class="tray" id="tray" aria-label="Klosser å plassere"></div>
+      </div>
+    </main>
+  </div>
+
+  <div class="question-overlay is-hidden" id="question-panel" role="dialog" aria-modal="true" aria-label="Fagspørsmål">
+    <div class="question-card">
+      <p class="bonus-badge" data-role="bonus">🎁 RYDDER EN LINJE</p>
+      <h2 class="question-title">Hvilket begrep passer til definisjonen?</h2>
+      <p class="question-definition" data-role="definition"></p>
+      <div class="options-grid" data-role="options"></div>
+      <div class="feedback is-hidden" data-role="feedback" role="status" aria-live="polite">
+        <strong data-role="feedback-title"></strong>
+        <p data-role="feedback-text"></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay is-hidden" id="gameover-panel" role="dialog" aria-modal="true" aria-label="Runden er over">
+    <div class="result-panel">
+      <div class="result-emoji" aria-hidden="true">🧱</div>
+      <p class="eyebrow">Runden er over</p>
+      <h2>Ingen klosser passer lenger!</h2>
+      <div class="score-card">
+        <div><span class="score-label">Poeng</span><strong data-role="final-score">0</strong></div>
+        <div><span class="score-label">Riktige svar</span><strong data-role="final-correct">0</strong></div>
+        <div><span class="score-label">Feil svar</span><strong data-role="final-wrong">0</strong></div>
+        <div><span class="score-label">Linjer ryddet</span><strong data-role="final-lines">0</strong></div>
+      </div>
+      <div class="panel-actions">
+        <button class="button primary" data-role="restart" type="button">Spill igjen</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+  <script src="/bruk/lrnify-bruk.js" defer></script>
+  <script src="/deling/deling.js" defer></script>
+  <script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
