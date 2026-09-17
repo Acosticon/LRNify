@@ -17,13 +17,16 @@ const ANSWER_LABELS = {
 
 const state = {
   content: null,
+  sortedConcepts: [],
   debugMode: false,
   sessionA: null,
   sessionB: null,
+  crossedInB: new Set(),
 };
 
 export function init(content) {
   state.content = content;
+  state.sortedConcepts = [...content.concepts].sort((a, b) => a.name.localeCompare(b.name, 'nb'));
 
   const breadcrumb = $('topicBreadcrumb');
   if (breadcrumb) breadcrumb.textContent = `${content.subjectName} → ${content.topicName}`;
@@ -52,6 +55,33 @@ function goHome() {
   state.sessionA = null;
   state.sessionB = null;
   showScreen('screen-start');
+}
+
+/**
+ * Tegner begrepslisten i en sidebar. Uten svar-alternativer må eleven
+ * vite hvilke begreper som faktisk er "lovlige" å tenke på/gjette på —
+ * derfor vises hele listen alltid, i begge moduser.
+ *
+ * options.crossed: Set med id-er som skal vises overstrøket.
+ * options.highlightId: id som skal utheves (f.eks. spillets gjetning).
+ * options.onClick(conceptId): hvis satt, gjøres hvert begrep klikkbart
+ *   (brukt i modus B, der eleven selv krysser ut begreper).
+ */
+function renderTermList(containerId, options = {}) {
+  const el = $(containerId);
+  if (!el) return;
+  const { crossed, highlightId, onClick } = options;
+  el.innerHTML = '';
+  for (const concept of state.sortedConcepts) {
+    const item = document.createElement(onClick ? 'button' : 'div');
+    item.className = 'term-item';
+    if (onClick) item.type = 'button';
+    if (crossed && crossed.has(concept.id)) item.classList.add('crossed');
+    if (highlightId && concept.id === highlightId) item.classList.add('highlight');
+    item.textContent = concept.name;
+    if (onClick) item.addEventListener('click', () => onClick(concept.id));
+    el.appendChild(item);
+  }
 }
 
 /* =========================================================
@@ -86,15 +116,19 @@ function wireModeA() {
 
 function renderModeA() {
   const session = state.sessionA;
+  const eliminated = new Set(ModeA.eliminatedConceptIds(session));
+
   if (session.phase === 'asking') {
     showScreen('screen-a-ask');
     $('aQuestionNumber').textContent = ModeA.questionsAskedCount(session) + 1;
     $('aQuestionText').textContent = session.currentQuestion.text;
     renderDebugPanelA(session);
+    renderTermList('aTermList', { crossed: eliminated });
   } else if (session.phase === 'guessing') {
     showScreen('screen-a-guess');
     $('aGuessCount').textContent = ModeA.questionsAskedCount(session);
     $('aGuessWord').textContent = session.lastGuess.concept.name;
+    renderTermList('aGuessTermList', { crossed: eliminated, highlightId: session.lastGuess.concept.id });
   }
 }
 
@@ -124,7 +158,7 @@ function renderModeARevealAsk() {
   const wrongGuessId = state.sessionA.lastGuess ? state.sessionA.lastGuess.concept.id : null;
   const grid = $('aConceptPicker');
   grid.innerHTML = '';
-  for (const concept of state.content.concepts) {
+  for (const concept of state.sortedConcepts) {
     if (concept.id === wrongGuessId) continue;
     const btn = document.createElement('button');
     btn.className = 'concept-btn';
@@ -186,8 +220,7 @@ function renderDebugPanelA(session) {
 
 function startModeB() {
   state.sessionB = ModeB.createModeB(state.content.concepts, state.content.questions);
-  $('bCandidateList').hidden = true;
-  $('btnBToggleCandidates').textContent = 'Vis mulige begreper';
+  state.crossedInB = new Set();
   $('bFeedbackLine').hidden = true;
   $('bAnswerLog').innerHTML = '';
   renderModeB();
@@ -195,12 +228,6 @@ function startModeB() {
 
 function wireModeB() {
   $('btnBGiveUp').addEventListener('click', goHome);
-  $('btnBToggleCandidates').addEventListener('click', () => {
-    const list = $('bCandidateList');
-    list.hidden = !list.hidden;
-    $('btnBToggleCandidates').textContent = list.hidden ? 'Vis mulige begreper' : 'Skjul mulige begreper';
-    if (!list.hidden) renderCandidateChips(ModeB.remainingCandidates(state.sessionB));
-  });
   $('btnBGuessNow').addEventListener('click', renderModeBGuessPicker);
   $('btnBCancelGuess').addEventListener('click', () => {
     showScreen('screen-b-ask');
@@ -208,16 +235,21 @@ function wireModeB() {
   $('btnBPlayAgain').addEventListener('click', goHome);
 }
 
+/** Eleven krysser selv ut et begrep den mener er utelukket (eller angrer). */
+function toggleCrossedInB(conceptId) {
+  if (state.crossedInB.has(conceptId)) state.crossedInB.delete(conceptId);
+  else state.crossedInB.add(conceptId);
+  renderTermList('bTermList', { crossed: state.crossedInB, onClick: toggleCrossedInB });
+}
+
 function renderModeB() {
   showScreen('screen-b-ask');
   const session = state.sessionB;
 
   $('bQuestionsAsked').textContent = ModeB.questionsAskedCount(session);
-  const remaining = ModeB.remainingCandidates(session);
-  $('bRemainingCount').textContent = remaining.length;
+  $('bRemainingCount').textContent = ModeB.remainingCandidates(session).length;
 
-  const candidateList = $('bCandidateList');
-  if (!candidateList.hidden) renderCandidateChips(remaining);
+  renderTermList('bTermList', { crossed: state.crossedInB, onClick: toggleCrossedInB });
 
   const choices = $('bQuestionChoices');
   choices.innerHTML = '';
@@ -235,11 +267,6 @@ function renderModeB() {
 
   renderAnswerLog(session);
   renderDebugPanelB(session, suggestions[0]);
-}
-
-function renderCandidateChips(remaining) {
-  const el = $('bCandidateList');
-  el.innerHTML = remaining.map((c) => `<span class="candidate-chip">${c.name}</span>`).join('');
 }
 
 function handleModeBQuestion(questionId) {
@@ -271,9 +298,10 @@ function renderModeBGuessPicker() {
   showScreen('screen-b-guess-picker');
   const grid = $('bConceptPicker');
   grid.innerHTML = '';
-  for (const concept of state.content.concepts) {
+  for (const concept of state.sortedConcepts) {
     const btn = document.createElement('button');
     btn.className = 'concept-btn';
+    if (state.crossedInB.has(concept.id)) btn.classList.add('crossed');
     btn.textContent = concept.name;
     btn.addEventListener('click', () => finishModeB(concept.id));
     grid.appendChild(btn);

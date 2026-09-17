@@ -58,31 +58,48 @@
   </section>
 
   <!-- ════════ MODUS A: SPØRSMÅL ════════ -->
-  <section class="screen" id="screen-a-ask">
-    <div class="game-topbar">
-      <span class="pill">Spørsmål <strong id="aQuestionNumber">1</strong></span>
-      <button class="btn-ghost" id="btnAGiveUp">Avbryt runden</button>
-    </div>
-    <div class="card-panel question-panel">
-      <p class="question-text" id="aQuestionText">…</p>
-      <div class="answer-row">
-        <button class="btn-answer btn-yes" data-answer="yes">JA</button>
-        <button class="btn-answer btn-no" data-answer="no">NEI</button>
-        <button class="btn-answer btn-unknown" data-answer="unknown">VET IKKE</button>
+  <section class="screen wide" id="screen-a-ask">
+    <div class="game-layout">
+      <div class="game-main">
+        <div class="game-topbar">
+          <span class="pill">Spørsmål <strong id="aQuestionNumber">1</strong></span>
+          <button class="btn-ghost" id="btnAGiveUp">Avbryt runden</button>
+        </div>
+        <div class="card-panel question-panel">
+          <p class="question-text" id="aQuestionText">…</p>
+          <div class="answer-row">
+            <button class="btn-answer btn-yes" data-answer="yes">JA</button>
+            <button class="btn-answer btn-no" data-answer="no">NEI</button>
+            <button class="btn-answer btn-unknown" data-answer="unknown">VET IKKE</button>
+          </div>
+        </div>
+        <div class="debug-panel" id="debugPanelA" hidden></div>
       </div>
+      <aside class="term-sidebar">
+        <h3>Begreper i spill</h3>
+        <p class="term-sidebar-hint">Spillet krysser ut begreper etter hvert som de blir usannsynlige.</p>
+        <div class="term-list" id="aTermList"></div>
+      </aside>
     </div>
-    <div class="debug-panel" id="debugPanelA" hidden></div>
   </section>
 
   <!-- ════════ MODUS A: GJETNING ════════ -->
-  <section class="screen" id="screen-a-guess">
-    <div class="card-panel guess-panel">
-      <p class="guess-lead">Etter <strong id="aGuessCount">0</strong> spørsmål tror jeg du tenker på:</p>
-      <div class="guess-word" id="aGuessWord">…</div>
-      <div class="answer-row">
-        <button class="btn-answer btn-yes" id="btnAGuessYes">JA!</button>
-        <button class="btn-answer btn-no" id="btnAGuessNo">NEI</button>
+  <section class="screen wide" id="screen-a-guess">
+    <div class="game-layout">
+      <div class="game-main">
+        <div class="card-panel guess-panel">
+          <p class="guess-lead">Etter <strong id="aGuessCount">0</strong> spørsmål tror jeg du tenker på:</p>
+          <div class="guess-word" id="aGuessWord">…</div>
+          <div class="answer-row">
+            <button class="btn-answer btn-yes" id="btnAGuessYes">JA!</button>
+            <button class="btn-answer btn-no" id="btnAGuessNo">NEI</button>
+          </div>
+        </div>
       </div>
+      <aside class="term-sidebar">
+        <h3>Begreper i spill</h3>
+        <div class="term-list" id="aGuessTermList"></div>
+      </aside>
     </div>
   </section>
 
@@ -117,26 +134,33 @@
   </section>
 
   <!-- ════════ MODUS B: SPØR ════════ -->
-  <section class="screen" id="screen-b-ask">
-    <div class="game-topbar">
-      <span class="pill">Spørsmål stilt: <strong id="bQuestionsAsked">0</strong></span>
-      <button class="btn-ghost" id="btnBToggleCandidates">Vis mulige begreper</button>
-      <button class="btn-ghost" id="btnBGiveUp">Avbryt runden</button>
+  <section class="screen wide" id="screen-b-ask">
+    <div class="game-layout">
+      <div class="game-main">
+        <div class="game-topbar">
+          <span class="pill">Spørsmål stilt: <strong id="bQuestionsAsked">0</strong></span>
+          <button class="btn-ghost" id="btnBGiveUp">Avbryt runden</button>
+        </div>
+        <p class="hero-sub">Mulige begreper igjen (fasit): <strong id="bRemainingCount">27</strong></p>
+
+        <div class="feedback-line" id="bFeedbackLine" hidden></div>
+
+        <div class="card-panel">
+          <h3>Velg et spørsmål å stille</h3>
+          <div class="question-choice-list" id="bQuestionChoices"></div>
+        </div>
+
+        <div class="answer-log" id="bAnswerLog"></div>
+
+        <button class="btn-primary" id="btnBGuessNow">Jeg vil gjette begrepet</button>
+        <div class="debug-panel" id="debugPanelB" hidden></div>
+      </div>
+      <aside class="term-sidebar">
+        <h3>Kryss av begreper</h3>
+        <p class="term-sidebar-hint">Klikk på et begrep for å krysse det ut når du er sikker på at det ikke er det.</p>
+        <div class="term-list" id="bTermList"></div>
+      </aside>
     </div>
-    <p class="hero-sub">Mulige begreper igjen: <strong id="bRemainingCount">27</strong></p>
-    <div class="candidate-list" id="bCandidateList" hidden></div>
-
-    <div class="feedback-line" id="bFeedbackLine" hidden></div>
-
-    <div class="card-panel">
-      <h3>Velg et spørsmål å stille</h3>
-      <div class="question-choice-list" id="bQuestionChoices"></div>
-    </div>
-
-    <div class="answer-log" id="bAnswerLog"></div>
-
-    <button class="btn-primary" id="btnBGuessNow">Jeg vil gjette begrepet</button>
-    <div class="debug-panel" id="debugPanelB" hidden></div>
   </section>
 
   <!-- ════════ MODUS B: VELG GJETNING ════════ -->
