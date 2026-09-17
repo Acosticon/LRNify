@@ -51,6 +51,10 @@ main { padding: 0 20px 60px; display: flex; flex-direction: column; align-items:
 
 .screen { display: none; flex-direction: column; align-items: center; gap: 18px; width: 100%; max-width: 640px; margin: 0 auto; text-align: center; }
 .screen.active { display: flex; }
+.screen.wide { max-width: 960px; }
+
+.game-layout { display: flex; gap: 24px; align-items: flex-start; width: 100%; }
+.game-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center; }
 
 .hero-title {
   font-family: 'Chewy', cursive; font-size: clamp(2.2rem,8vw,3.6rem);
@@ -142,14 +146,28 @@ main { padding: 0 20px 60px; display: flex; flex-direction: column; align-items:
 }
 .concept-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
 .concept-btn.correct { background: var(--green); color: #fff; }
+.concept-btn.crossed { color: var(--grey); text-decoration: line-through; opacity: .55; }
 
-.candidate-list {
-  display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; width: 100%;
+.term-sidebar {
+  flex: 0 0 230px; width: 230px; text-align: left;
+  background: var(--card); border: 3px solid var(--ink); box-shadow: 0 6px 0 var(--ink);
+  padding: 16px; position: sticky; top: 90px;
 }
-.candidate-chip {
-  background: var(--card); border: 2px solid var(--gridline); font-weight: 800;
-  font-size: .8rem; padding: 6px 12px;
+.term-sidebar h3 { font-size: .95rem; margin-bottom: 6px; }
+.term-sidebar-hint { color: var(--muted); font-weight: 700; font-size: .78rem; margin-bottom: 10px; }
+.term-list {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 60vh; overflow-y: auto;
 }
+.term-item {
+  font-family: inherit; font-weight: 800; font-size: .82rem; text-align: left;
+  background: transparent; border: none; color: var(--ink);
+  padding: 6px 8px; border-radius: 2px;
+}
+button.term-item { cursor: pointer; }
+button.term-item:hover { background: var(--cream); }
+.term-item.crossed { color: var(--grey); text-decoration: line-through; opacity: .6; }
+.term-item.highlight { background: var(--yellow); }
 
 .feedback-line {
   font-weight: 900; color: var(--green-dark); background: #ecfdf5;
@@ -187,4 +205,10 @@ footer { text-align: center; padding: 20px; color: var(--muted); font-size: .75r
 
 @media (max-width: 480px) {
   .mode-card { width: 100%; }
+}
+
+@media (max-width: 760px) {
+  .game-layout { flex-direction: column; }
+  .term-sidebar { flex: 1 1 auto; width: 100%; position: static; }
+  .term-list { max-height: 40vh; }
 }

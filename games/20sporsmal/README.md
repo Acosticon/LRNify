@@ -110,6 +110,28 @@ Simulerer at en elev tenker på hvert av de 27 begrepene og svarer 100 %
 Siste kjøring: 27/27 riktig, snitt ≈ 9 spørsmål per runde, 85 % av
 rundene endte likevel riktig med ett tidlig feilsvar.
 
+## Begrepslisten i sidepanelet
+
+Siden eleven må vite hvilke begreper som faktisk er "lovlige" å tenke på
+(modus A) eller gjette på (modus B), vises hele begrepslisten alltid i et
+sidepanel ved siden av spillet (stables under på smale skjermer):
+
+- **Modus A:** panelet er skrivebeskyttet og viser motorens egen
+  eliminering — et begrep strykes over når det faller utenfor
+  "i live"-marginen (`ModeA.eliminatedConceptIds`, samme beregning som
+  brukes til å velge neste spørsmål). Siden marginen er relativ til
+  toppscoren og oppdateres for hver runde, kan et begrep i sjeldne
+  tilfeller "hentes tilbake" fra overstreket til aktivt igjen — det er
+  forventet, ikke en bug, siden ingenting er endelig utelukket før
+  spillet gjetter.
+- **Modus B:** panelet er klikkbart — eleven krysser selv ut begreper de
+  har resonnert seg fram til at det ikke kan være. Dette er ren UI-tilstand
+  (`state.crossedInB` i `ui.js`) og påvirker verken spørsmålsforslagene
+  eller den automatiske "Mulige begreper igjen (fasit)"-telleren, som
+  fortsatt kommer fra `Engine.getConsistentCandidates`. De to tallene kan
+  altså avvike — det er meningen, siden det ene er elevens eget resonnement
+  og det andre er fasiten.
+
 ## Debug-panel
 
 Kryss av "🐛 Debug" øverst til høyre før du starter en runde. Viser

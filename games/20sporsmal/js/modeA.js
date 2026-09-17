@@ -69,3 +69,15 @@ export function questionsAskedCount(session) {
 export function debugRanking(session) {
   return Engine.rankCandidates(session.engineState);
 }
+
+/**
+ * Id-ene til begrepene spillet har krysset ut som usannsynlige så langt
+ * (utenfor "i live"-margin). Brukes til å synlig stryke dem i
+ * begrepslisten eleven ser — ikke bare i debug-panelet.
+ */
+export function eliminatedConceptIds(session) {
+  const aliveIds = new Set(
+    Engine.getAliveCandidates(session.engineState, session.options.margin).map((r) => r.concept.id)
+  );
+  return session.engineState.concepts.filter((c) => !aliveIds.has(c.id)).map((c) => c.id);
+}
