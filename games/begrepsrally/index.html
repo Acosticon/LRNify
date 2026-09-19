@@ -1,1 +1,179 @@
- 
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Begrepsrally — LRNify</title>
+<meta name="description" content="Kappløp om fagbegreper. Velg hvilken av fem fagpakker du vil spille.">
+<link rel="canonical" href="https://lrnify.no/games/begrepsrally/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Begrepsrally – LRNify">
+<meta property="og:description" content="Kappløp om fagbegreper. Velg hvilken av fem fagpakker du vil spille.">
+<meta property="og:url" content="https://lrnify.no/games/begrepsrally/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Begrepsrally – LRNify">
+<meta name="twitter:description" content="Kappløp om fagbegreper. Velg hvilken av fem fagpakker du vil spille.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --krem:#fff9f0;
+  --blekk:#2b2118;
+  --gul:#facc15;
+  --korall:#fa5c66;
+  --gronn:#2f6b3a;
+  --cyto:#f7efcf;
+  --muted:#6b6055;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:'Nunito',sans-serif;font-weight:700;color:var(--blekk);
+  background:
+    radial-gradient(circle at 15% 10%,#fffbe0 0,transparent 40%),
+    radial-gradient(circle at 88% 85%,#e6f7c8 0,transparent 45%),
+    var(--cyto);
+  min-height:100%;
+}
+
+header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;
+}
+.logo{
+  font-family:'Chewy',cursive;font-size:clamp(1.6rem,5vw,2.4rem);
+  transform:rotate(-2deg);line-height:1;text-decoration:none;color:var(--blekk);
+}
+.logo b{color:var(--gul);-webkit-text-stroke:2px var(--blekk);font-weight:400}
+.back-btn{
+  font-family:'Nunito',sans-serif;font-weight:900;font-size:.85rem;
+  color:var(--blekk);text-decoration:none;background:#fff;
+  border:3px solid var(--blekk);box-shadow:0 4px 0 var(--blekk);border-radius:12px;
+  padding:7px 14px;display:flex;align-items:center;gap:5px;
+  transition:transform .1s,box-shadow .1s;
+}
+.back-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--blekk)}
+
+main{padding:0 20px 60px;display:flex;flex-direction:column;align-items:center}
+
+.hero-title{
+  font-family:'Chewy',cursive;font-size:clamp(2.4rem,9vw,4rem);
+  transform:rotate(-1.5deg);line-height:1;text-align:center;margin-top:10px;
+  text-shadow:0 5px 0 var(--gul);
+}
+.hero-title em{font-style:normal;color:var(--korall);text-shadow:0 5px 0 var(--blekk)}
+.hero-sub{
+  color:var(--muted);font-weight:700;font-size:1.02rem;max-width:600px;
+  text-align:center;margin:16px auto 8px;
+}
+.hero-tag{
+  display:inline-block;background:var(--blekk);color:var(--krem);
+  padding:.3em .9em;border-radius:99px;font-size:.85rem;font-weight:800;
+  transform:rotate(-2deg);margin:6px auto 34px;
+}
+
+.version-grid{
+  display:flex;flex-wrap:wrap;gap:22px;justify-content:center;
+  max-width:1080px;width:100%;
+}
+.version-card{
+  background:#fff;border:4px solid var(--blekk);border-radius:22px;box-shadow:0 8px 0 var(--blekk);
+  padding:22px;width:260px;display:flex;flex-direction:column;gap:10px;
+  text-decoration:none;color:var(--blekk);transition:transform .1s,box-shadow .1s;
+}
+.version-card:active{transform:translateY(5px);box-shadow:0 3px 0 var(--blekk)}
+.version-badge{
+  font-size:1.9rem;line-height:1;width:52px;height:52px;border-radius:16px;
+  border:3px solid var(--blekk);display:flex;align-items:center;justify-content:center;
+  background:var(--f);box-shadow:0 4px 0 var(--blekk);
+}
+.version-card .fagnavn{
+  font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);
+}
+.version-card h2{font-family:'Chewy',cursive;font-size:1.5rem;line-height:1.05;transform:rotate(-.5deg)}
+.version-card .trinn{
+  display:inline-block;align-self:flex-start;background:var(--cyto);
+  border:2px solid var(--blekk);border-radius:8px;padding:1px 8px;
+  font-size:.7rem;font-weight:900;
+}
+.version-card p{color:var(--muted);font-weight:700;font-size:.86rem;line-height:1.45;flex-grow:1}
+.version-cta{
+  font-weight:900;font-size:.85rem;color:var(--blekk);
+  display:flex;align-items:center;gap:6px;
+}
+
+.placeholder-note{
+  font-size:.8rem;color:var(--muted);font-weight:700;border:2.5px dashed var(--blekk);
+  border-radius:14px;padding:10px 16px;margin-top:34px;max-width:640px;text-align:center;
+  background:rgba(255,255,255,.5);
+}
+
+footer{text-align:center;padding:20px;color:var(--muted);font-size:.75rem;font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html#grid">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<main>
+  <div class="hero-title">Begreps<em>rally</em></div>
+  <p class="hero-sub">Kappløp om fagbegreper — fem fagpakker, hver med eget tema og eget sett med ord. Velg en for å spille den med klassen.</p>
+  <span class="hero-tag">🏁 Spill alene mot boter, eller lag et rom og konkurrer sammen</span>
+
+  <div class="version-grid">
+    <a class="version-card" style="--f:#c084fc" href="engelsk_begrepsrally_space_5-7.html">
+      <div class="version-badge">🚀</div>
+      <span class="fagnavn">Engelsk · 5.–7. trinn</span>
+      <h2>Space</h2>
+      <span class="trinn">18 ord</span>
+      <p>Løp gjennom verdensrommet og lær engelske romord — fra sun og moon til astronaut og telescope.</p>
+      <span class="version-cta">Spill Space →</span>
+    </a>
+    <a class="version-card" style="--f:#fdba74" href="krle_begrepsrally_etikk-og-filosofi_5-7.html">
+      <div class="version-badge">💭</div>
+      <span class="fagnavn">KRLE · 5.–7. trinn</span>
+      <h2>Etikk og filosofi</h2>
+      <span class="trinn">18 ord</span>
+      <p>Utforsk Tenketorget og lær begreper om moral, verdier og filosofi — fra norm og etikk til Sokrates.</p>
+      <span class="version-cta">Spill Etikk og filosofi →</span>
+    </a>
+    <a class="version-card" style="--f:var(--gul)" href="matte_begrepsrally_gangetabellen_5-7.html">
+      <div class="version-badge">🔢</div>
+      <span class="fagnavn">Matte · 5.–7. trinn</span>
+      <h2>Gangetabellen</h2>
+      <span class="trinn">2–12</span>
+      <p>Gjennom Tallfabrikken øver du på hele gangetabellen fra 2 til 12 — raskt og på tid.</p>
+      <span class="version-cta">Spill Gangetabellen →</span>
+    </a>
+    <a class="version-card" style="--f:#86efac" href="naturfag_begrepsrally_celler_8-10.html">
+      <div class="version-badge">🧫</div>
+      <span class="fagnavn">Naturfag · 8.–10. trinn</span>
+      <h2>Celler</h2>
+      <span class="trinn">18 ord</span>
+      <p>En rally gjennom cellen — lær delene fra cellekjerne og mitokondrie til fotosyntese og celledeling.</p>
+      <span class="version-cta">Spill Celler →</span>
+    </a>
+    <a class="version-card" style="--f:#93c5fd" href="norsk_begrepsrally_grammatikk_8-10.html">
+      <div class="version-badge">✍️</div>
+      <span class="fagnavn">Norsk · 8.–10. trinn</span>
+      <h2>Grammatikk</h2>
+      <span class="trinn">18 ord</span>
+      <p>Skrivebordet venter — øv på ordklasser og setningsledd, fra subjekt og verbal til metafor.</p>
+      <span class="version-cta">Spill Grammatikk →</span>
+    </a>
+  </div>
+
+  <p class="placeholder-note">🖼️ Ingen egne bilder er lagt til ennå — kortene bruker emoji som plassholder. Send gjerne over illustrasjoner per fagpakke, så bytter vi dem inn.</p>
+</main>
+
+<footer>Begrepsrally er en del av LRNify.</footer>
+
+</body>
+</html>
