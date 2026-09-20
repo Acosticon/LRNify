@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tallsluker — LRNify</title>
+<meta name="description" content="Sluk tallene i gangetabellen og voks deg stor. Pass deg for dem som er større enn deg.">
+<link rel="canonical" href="https://lrnify.no/games/tallsluker/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Tallsluker – LRNify">
+<meta property="og:description" content="Sluk tallene i gangetabellen og voks deg stor. Pass deg for dem som er større enn deg.">
+<meta property="og:url" content="https://lrnify.no/games/tallsluker/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Tallsluker – LRNify">
+<meta name="twitter:description" content="Sluk tallene i gangetabellen og voks deg stor. Pass deg for dem som er større enn deg.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--krem:#fff9f0;--blekk:#2b2118;--gul:#facc15;--korall:#fa5c66;--cyto:#f7efcf;--muted:#6b6055}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Nunito',sans-serif;font-weight:700;color:var(--blekk);min-height:100%;
+  background:radial-gradient(circle at 15% 10%,#fffbe0 0,transparent 40%),radial-gradient(circle at 88% 85%,#e6f7c8 0,transparent 45%),var(--cyto)}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 24px}
+.logo{font-family:'Chewy',cursive;font-size:clamp(1.6rem,5vw,2.4rem);transform:rotate(-2deg);line-height:1;text-decoration:none;color:var(--blekk)}
+.logo b{color:var(--gul);-webkit-text-stroke:2px var(--blekk);font-weight:400}
+.back-btn{font-family:'Nunito',sans-serif;font-weight:900;font-size:.85rem;color:var(--blekk);text-decoration:none;background:#fff;
+  border:3px solid var(--blekk);box-shadow:0 4px 0 var(--blekk);border-radius:12px;padding:7px 14px;display:flex;align-items:center;gap:5px;transition:transform .1s,box-shadow .1s}
+.back-btn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--blekk)}
+main{padding:0 20px 60px;display:flex;flex-direction:column;align-items:center}
+.hero-title{font-family:'Chewy',cursive;font-size:clamp(2.4rem,9vw,4rem);transform:rotate(-1.5deg);line-height:1;text-align:center;margin-top:10px;text-shadow:0 5px 0 var(--gul)}
+.hero-title em{font-style:normal;color:var(--korall);text-shadow:0 5px 0 var(--blekk)}
+.hero-sub{color:var(--muted);font-weight:700;font-size:1.02rem;max-width:620px;text-align:center;margin:16px auto 8px}
+.hero-tag{display:inline-block;background:var(--blekk);color:var(--krem);padding:.3em .9em;border-radius:99px;font-size:.85rem;font-weight:800;transform:rotate(-2deg);margin:6px auto 34px}
+.version-grid{display:flex;flex-wrap:wrap;gap:22px;justify-content:center;max-width:1080px;width:100%}
+.version-card{background:#fff;border:4px solid var(--blekk);border-radius:22px;box-shadow:0 8px 0 var(--blekk);padding:22px;width:280px;
+  display:flex;flex-direction:column;gap:10px;text-decoration:none;color:var(--blekk);transition:transform .1s,box-shadow .1s}
+.version-card:active{transform:translateY(5px);box-shadow:0 3px 0 var(--blekk)}
+.version-badge{font-size:1.9rem;line-height:1;width:52px;height:52px;border-radius:16px;border:3px solid var(--blekk);
+  display:flex;align-items:center;justify-content:center;background:var(--f);box-shadow:0 4px 0 var(--blekk)}
+.version-card .fagnavn{font-size:.72rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.version-card h2{font-family:'Chewy',cursive;font-size:1.5rem;line-height:1.05;transform:rotate(-.5deg)}
+.version-card .trinn{display:inline-block;align-self:flex-start;background:var(--cyto);border:2px solid var(--blekk);border-radius:8px;padding:1px 8px;font-size:.7rem;font-weight:900}
+.version-card p{color:var(--muted);font-weight:700;font-size:.86rem;line-height:1.45;flex-grow:1}
+.version-cta{font-weight:900;font-size:.85rem;color:var(--blekk);display:flex;align-items:center;gap:6px}
+.regler{max-width:760px;margin-top:42px;background:rgba(255,255,255,.62);border:3px solid var(--blekk);border-radius:20px;padding:22px 26px}
+.regler h3{font-family:'Chewy',cursive;font-size:1.5rem;transform:rotate(-1deg);margin-bottom:12px}
+.regler ol{margin:0 0 0 1.1em;display:flex;flex-direction:column;gap:9px}
+.regler li{font-size:.92rem;line-height:1.5;color:var(--blekk)}
+.regler li b{background:var(--gul);border-radius:6px;padding:0 4px}
+.laerer{max-width:760px;margin-top:20px;font-size:.84rem;color:var(--muted);font-weight:700;border:2.5px dashed var(--blekk);
+  border-radius:14px;padding:12px 18px;background:rgba(255,255,255,.5);line-height:1.5}
+footer{text-align:center;padding:20px;color:var(--muted);font-size:.75rem;font-weight:700}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="../../index.html#grid">LRN<b>ify</b></a>
+  <a class="back-btn" href="../../index.html#grid">← Tilbake</a>
+</header>
+
+<main>
+  <div class="hero-title">Tall<em>sluker</em></div>
+  <p class="hero-sub">Du er en blob på en enorm bane full av tall. Sluk tallene som hører til gangetabellen du holder på med, så vokser du. Når alle ti er tatt, går du opp et nivå — og ser mer av banen.</p>
+  <span class="hero-tag">🫧 Spill alene mot datamotstandere · best på PC med mus</span>
+
+  <div class="version-grid">
+    <a class="version-card" style="--f:var(--gul)" href="matte_tallsluker_gangetabellen_5-7.html">
+      <div class="version-badge">🔢</div>
+      <span class="fagnavn">Matte · 5.–7. trinn</span>
+      <h2>Gangetabellen</h2>
+      <span class="trinn">1–12</span>
+      <p>Start i 1-gangen og jobb deg opp til 12-gangen. Tar du hele veien, får du krone og begynner på nytt.</p>
+      <span class="version-cta">Spill Gangetabellen →</span>
+    </a>
+  </div>
+
+  <div class="regler">
+    <h3>Slik spiller du</h3>
+    <ol>
+      <li>Blobben følger <b>musa</b>. Piltaster eller WASD funker også. <b>Mellomrom</b> bruker krafta du har plukket opp, <b>Esc</b> avslutter.</li>
+      <li>Bare tallene i gangetabellen din kan slukes. Alle andre tall er <b>nøytrale</b> — du kjører rett gjennom dem, og det er ingen straff for å prøve.</li>
+      <li>Ti riktige tall gir <b>nytt nivå</b>: du vokser, kameraet zoomer ut, og banen fylles med nye tall.</li>
+      <li>Du kan <b>sluke spillere</b> som er tydelig mindre enn deg. Det gir størrelse, ikke nivå — nivå må du regne deg til.</li>
+      <li>Blir du slukt, mister du størrelsen, men <b>beholder nivået</b>. Du dukker opp et annet sted og er usårbar i tre sekunder.</li>
+      <li>På banen ligger fire krefter: <b>magnet</b>, <b>fart</b>, <b>skjold</b> og <b>røntgen</b>, som lyser opp de riktige tallene i fire sekunder.</li>
+    </ol>
+  </div>
+
+  <p class="laerer"><b>For læreren:</b> i oppsettet velger du hvilke gangetabeller som skal være med (f.eks. bare 6-, 7- og 8-gangen), hvor mye hjelp elevene får, og hvor farlige motstanderne er. På <em>Lett</em> viser sjekklista tallene, på <em>Normal</em> viser den regnestykkene slik at eleven må regne ut svaret selv, og på <em>Vanskelig</em> er det ingen sjekkliste. <em>Snill</em> modus slår av all spising.</p>
+</main>
+
+<footer>Tallsluker er en del av LRNify.</footer>
+
+</body>
+</html>
