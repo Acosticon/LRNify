@@ -1134,10 +1134,11 @@ const Render = {
     // bokstavbrikker
     for (const b of G.brikker) {
       if (!b.levende) continue;
-      const har = fr && fr.ferdigT == null && erNoytral(fr, b.L), x = b.x + b.ox, y = b.y + b.oy + Math.sin(t * 2.4 + b.fase) * 5, sk = (b.ny > 0 ? 1 + b.ny : 1) * (1 + Math.sin(t * 3 + b.fase) * .03);
-      c.globalAlpha = har ? .2 : .25; c.fillStyle = INK; c.beginPath(); c.ellipse(b.x + b.ox, b.y + b.oy + 36, 30, 10, 0, 0, TAU); c.fill();
-      c.globalAlpha = har ? .35 : 1; this.asset('brikke_bokstav', x, y - 6, 0, sk);
-      if (G.hint[b.L] && !har) { c.strokeStyle = '#22c55e'; c.lineWidth = 5; c.setLineDash([10, 8]); c.lineDashOffset = -t * 40; c.beginPath(); c.arc(x, y - 6, 46, 0, TAU); c.stroke(); c.setLineDash([]); }
+      const har = fr && fr.ferdigT == null && erNoytral(fr, b.L); if (har) continue;   // TALL: svar til andre stykker vises ikke – kun gjeldende stykkes tall er synlig
+      const x = b.x + b.ox, y = b.y + b.oy + Math.sin(t * 2.4 + b.fase) * 5, sk = (b.ny > 0 ? 1 + b.ny : 1) * (1 + Math.sin(t * 3 + b.fase) * .03);
+      c.globalAlpha = .25; c.fillStyle = INK; c.beginPath(); c.ellipse(b.x + b.ox, b.y + b.oy + 36, 30, 10, 0, 0, TAU); c.fill();
+      c.globalAlpha = 1; this.asset('brikke_bokstav', x, y - 6, 0, sk);
+      if (G.hint[b.L]) { c.strokeStyle = '#22c55e'; c.lineWidth = 5; c.setLineDash([10, 8]); c.lineDashOffset = -t * 40; c.beginPath(); c.arc(x, y - 6, 46, 0, TAU); c.stroke(); c.setLineDash([]); }
       c.fillStyle = INK; c.font = (44 * sk) + 'px Chewy, "Arial Black", sans-serif'; c.fillText(b.L, x, y - 3); c.globalAlpha = 1;
     }
     // vandrende virus
