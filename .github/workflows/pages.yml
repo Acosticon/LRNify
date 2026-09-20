@@ -29,6 +29,10 @@ jobs:
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        with:
+          # Slår Pages på igjen automatisk hvis det har blitt skrudd av,
+          # f.eks. fordi repoet midlertidig ble satt til privat.
+          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
