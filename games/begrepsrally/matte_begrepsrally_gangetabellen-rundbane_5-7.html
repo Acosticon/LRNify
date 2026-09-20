@@ -243,6 +243,7 @@ input:focus{border-color:var(--korall)}
    Samme oppgavetype som «Lille gangetabellen»: ett gangestykke, ett svartall.
    Men banen er lukket: målet er å komme først. Bilen går sakte av seg selv,
    riktig svar gir fart i noen sekunder – kjører du på et feil svar, spinner du ut.
+   Banen (~28 800 px rundt, 1 000 px bred) tegnes av kode hver frame, bare der kameraet ser.
    Single-file, vanilla JS + canvas. Ingen rammeverk.
    ============================================================ */
 
@@ -264,8 +265,6 @@ const ASSETS = {
   veh_badeand:      { w: 94,  h: 136, ph: 1.3, anchor: [.5, .5], status: 'plassholder', src: '', note: 'Badeand ovenfra' },
   veh_ufo:          { w: 120, h: 120, ph: 1.3, anchor: [.5, .5], status: 'plassholder', src: '', note: 'UFO ovenfra' },
   veh_sparkesykkel: { w: 58,  h: 140, ph: 1.3, anchor: [.5, .5], status: 'plassholder', src: '', note: 'Sparkesykkel ovenfra' },
-  // Bane – hele rundbanen sett ovenfra. Uten bilde tegnes banen opp av kode (asfalt, kantstein, portfelt).
-  bane_bakgrunn:    { w: 4100, h: 2800, anchor: [0, 0], status: 'plassholder', src: '', note: 'Hele rundbanen ovenfra (4100×2800)' },
   // Svarbrikker og item-plater
   brikke_bokstav:   { w: 84,  h: 84,  anchor: [.5, .5], status: 'plassholder', src: '', note: 'Tom svarbrikke (tallet legges på i kode)' },
   pad_item:         { w: 96,  h: 96,  anchor: [.5, .5], status: 'plassholder', src: '', note: 'Plattform under item-ikon' },
@@ -317,8 +316,8 @@ const PAKKE = {
   verden: {
     gress: '#2f6b3a', asfalt: '#53585f', bakgrunn: '#24501f', tittelbg: '#5f6f86', sporfarge: 'rgba(20,16,10,.16)',
     items: { turbo: 'Nitro', magnet: 'Svarhjelp', skjold: 'Kraftfelt', virus: 'Klemmefelle', slim: 'Oljesøl', taake: 'Damp' },
-    banetekst: [{ tekst: 'GANGEBANEN', x: 2100, y: 1330, farge: 'rgba(255,249,240,.30)', st: 150 },
-    { tekst: 'kjør gjennom riktig svar', x: 2100, y: 1450, farge: 'rgba(255,249,240,.22)', st: 54 }]
+    banetekst: [{ tekst: 'GANGEBANEN', x: 5900, y: 3620, farge: 'rgba(255,249,240,.16)', st: 420 },
+    { tekst: 'kjør gjennom riktig svar', x: 5900, y: 3960, farge: 'rgba(255,249,240,.13)', st: 150 }]
   },
   /* Hele den lille gangetabellen: 1·1 … 9·9, ett stykke per faktorpar. */
   begreper: (() => { const ut = []; for (let a = 1; a <= 9; a++) for (let b = a; b <= 9; b++) ut.push({ ord: String(a * b), definisjon: a + ' · ' + b, a, b }); return ut; })()
@@ -330,11 +329,11 @@ const SVAR_ALLE = (() => { const s = new Set(); for (let a = 1; a <= 9; a++) for
 const NIVAA = {
   lett: { navn: 'Lett', lokk: 'fjern', hjelpEtter: 8, hinder: 0, botKunnskap: [.38, .60], botFart: .80, botSmett: .5 },
   normal: { navn: 'Normal', lokk: 'midt', hjelpEtter: 16, hinder: 0, botKunnskap: [.56, .80], botFart: .88, botSmett: .32 },
-  vanskelig: { navn: 'Vanskelig', lokk: 'naer', hjelpEtter: 0, hinder: 3, botKunnskap: [.72, .93], botFart: .94, botSmett: .18 }
+  vanskelig: { navn: 'Vanskelig', lokk: 'naer', hjelpEtter: 0, hinder: 10, botKunnskap: [.72, .93], botFart: .94, botSmett: .18 }
 };
-const FART_BASE = 225, FART_SVAR = 470, FART_TURBO = 580;   // px/s – sakte til du svarer riktig
-const SVARFART_SEK = 2.8, SLUTTSPURT_SEK = 30, POENG_PLASS = [10, 7, 5, 4, 3, 2, 1];
-const lopSek = () => 60 + (G.inn.lapper || 3) * 80;
+const FART_BASE = 260, FART_SVAR = 560, FART_TURBO = 700;   // px/s – sakte til du svarer riktig
+const SVARFART_SEK = 2.8, SLUTTSPURT_SEK = 55, POENG_PLASS = [10, 7, 5, 4, 3, 2, 1];
+const lopSek = () => 70 + (G.inn.lapper || 1) * 150;   // runden er ~28 800 px: 50 s i fart, ~110 s sakte
 const ITEMS = {
   turbo: { navn: 'Nitro', emoji: '⚡', type: 'boost', tekst: 'Full fart i 3 sek' },
   magnet: { navn: 'Svarhjelp', emoji: '🧲', type: 'boost', tekst: 'Riktig svar lyser i 12 sek' },
@@ -407,28 +406,79 @@ const Lyd = {
 };
 
 /* ---------- Banen: én lukket rundbane ----------
-   Midtlinja er en jevn, lukket kurve (ellipse + tre bølger). Alt annet – vegger, porter,
-   item-plater, kjegler og minikart – regnes ut fra buelengden s langs midtlinja.
-   Dermed er posisjon = (s, lat): s = hvor langt rundt, lat = hvor langt ut til siden. */
-const WORLD = { w: 4100, h: 2800 };
+   Midtlinja er en polygon med avrundede hjørner: rettstrekk + sirkelbuer. Da er minste
+   svingradius eksakt hjørneradiusen (958 px), som er godt over halve banebredden – buen
+   får aldri en innerkant som knekker sammen.
+   Alt annet – vegger, porter, item-plater, kjegler og minikart – regnes ut fra buelengden s
+   langs midtlinja. Posisjon = (s, lat): s = hvor langt rundt, lat = hvor langt ut til siden.
+   Runde ≈ 28 800 px, banebredde 1 000 px. Geometrien er målt: minste egenavstand 2 320 px,
+   så banen kommer aldri nær seg selv. ---------- */
+const WORLD = { w: 11624, h: 8002 };
 const BIL_R = 30;
-const BANE = { cx: 2100, cy: 1400, rx: 1320, ry: 840, halv: 250, N: 900, amp: [[.11, 2, .7], [.07, 3, -1.1], [.04, 5, 2.2]], pkt: [], L: 0 };
+const BANE = {
+  halv: 500, R: 958, pkt: [], N: 0, L: 0,
+  poly: [[1553, 876], [5383, 1355], [9000, 876], [10808, 2259], [9957, 3642], [10915, 5025],
+  [9638, 6834], [6234, 7100], [4319, 6143], [2404, 6940], [808, 5664], [1712, 4174], [808, 2685]]
+};
 (function () {
-  const B = BANE;
-  for (let i = 0; i < B.N; i++) {
-    const th = i / B.N * TAU; let r = 1;
-    for (const a of B.amp) r += a[0] * Math.sin(a[1] * th + a[2]);
-    B.pkt.push({ x: B.cx + B.rx * r * Math.cos(th), y: B.cy + B.ry * r * Math.sin(th) });
+  const B = BANE, poly = B.poly, n = poly.length;
+  const rr = [], tang = [], u1 = [], u2 = [], vink = [];
+  for (let i = 0; i < n; i++) {
+    const a = poly[(i - 1 + n) % n], b = poly[i], c = poly[(i + 1) % n];
+    let ax = a[0] - b[0], ay = a[1] - b[1], cx = c[0] - b[0], cy = c[1] - b[1];
+    const la = hyp(ax, ay), lc = hyp(cx, cy);
+    ax /= la; ay /= la; cx /= lc; cy /= lc;
+    u1.push([ax, ay]); u2.push([cx, cy]);
+    vink.push(Math.acos(clamp(ax * cx + ay * cy, -1, 1)));
+    rr.push(B.R); tang.push(B.R / Math.tan(vink[i] / 2));
   }
+  for (let k = 0; k < 60; k++) {          // kapp radien der to hjørner vil spise samme kant
+    let endret = false;
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n, kant = hyp(poly[j][0] - poly[i][0], poly[j][1] - poly[i][1]);
+      if (tang[i] + tang[j] > kant * .98) {
+        const f = kant * .98 / (tang[i] + tang[j]);
+        rr[i] *= f; rr[j] *= f; tang[i] *= f; tang[j] *= f; endret = true;
+      }
+    }
+    if (!endret) break;
+  }
+  const inn = [], ut = [], sen = [];
+  for (let i = 0; i < n; i++) {
+    const b = poly[i], t = tang[i];
+    inn.push([b[0] + u1[i][0] * t, b[1] + u1[i][1] * t]);
+    ut.push([b[0] + u2[i][0] * t, b[1] + u2[i][1] * t]);
+    const bx = u1[i][0] + u2[i][0], by = u1[i][1] + u2[i][1], lb = hyp(bx, by);
+    const d = rr[i] / Math.sin(vink[i] / 2);
+    sen.push(lb > 1e-9 ? [b[0] + bx / lb * d, b[1] + by / lb * d] : null);
+  }
+  const STEG = 9;                          // ca. 9 px mellom punktene → ~3 200 punkter
+  const leggRett = (x0, y0, x1, y1) => {
+    const L = hyp(x1 - x0, y1 - y0), m = Math.max(1, Math.round(L / STEG));
+    for (let k = 0; k < m; k++) { const t = k / m; B.pkt.push({ x: lerp(x0, x1, t), y: lerp(y0, y1, t) }); }
+  };
+  for (let i = 0; i < n; i++) {
+    if (sen[i]) {
+      const c = sen[i], a0 = Math.atan2(inn[i][1] - c[1], inn[i][0] - c[0]);
+      let d = (Math.atan2(ut[i][1] - c[1], ut[i][0] - c[0]) - a0) % TAU;
+      d = ((d % TAU) + TAU) % TAU; if (d > Math.PI) d -= TAU;
+      const L = Math.abs(d) * rr[i], m = Math.max(1, Math.round(L / STEG));
+      for (let k = 0; k < m; k++) { const a = a0 + d * k / m; B.pkt.push({ x: c[0] + Math.cos(a) * rr[i], y: c[1] + Math.sin(a) * rr[i] }); }
+    }
+    const j = (i + 1) % n;
+    leggRett(ut[i][0], ut[i][1], inn[j][0], inn[j][1]);
+  }
+  B.N = B.pkt.length;
   let s = 0;
   for (let i = 0; i < B.N; i++) {
-    const p = B.pkt[i], n = B.pkt[(i + 1) % B.N], f = B.pkt[(i - 1 + B.N) % B.N];
-    p.s = s; s += hyp(n.x - p.x, n.y - p.y);
-    p.a = Math.atan2(n.y - f.y, n.x - f.x); p.nx = -Math.sin(p.a); p.ny = Math.cos(p.a);
+    const p = B.pkt[i], nx = B.pkt[(i + 1) % B.N], fx = B.pkt[(i - 1 + B.N) % B.N];
+    p.s = s; s += hyp(nx.x - p.x, nx.y - p.y);
+    p.a = Math.atan2(nx.y - fx.y, nx.x - fx.x); p.nx = -Math.sin(p.a); p.ny = Math.cos(p.a);
   }
   B.L = s;
 })();
 const baneMod = s => ((s % BANE.L) + BANE.L) % BANE.L;
+const banePkt2 = i => BANE.pkt[((i % BANE.N) + BANE.N) % BANE.N];
 function baneIdx(s) { const B = BANE; s = baneMod(s); let lo = 0, hi = B.N - 1; while (lo < hi) { const m = (lo + hi + 1) >> 1; if (B.pkt[m].s <= s) lo = m; else hi = m - 1; } return lo; }
 function banePkt(s) {
   const B = BANE; s = baneMod(s); const i = baneIdx(s), p = B.pkt[i], n = B.pkt[(i + 1) % B.N];
@@ -448,27 +498,35 @@ function baneProj(x, y, hint) {
 /* Korteste signerte avstand fra a til b langs banen (positiv = b ligger foran a). */
 function frem(a, b) { const L = BANE.L; let d = baneMod(b - a); return d > L / 2 ? d - L : d; }
 
-/* Porter: NPORT jevnt fordelte svarporter med tre luker på tvers. */
-const NPORT = 13, PORT_LANE = [-140, 0, 140], PORT_AVST = BANE.L / NPORT;
+/* Porter: NPORT jevnt fordelte svarporter med tre luker på tvers (samme avstand som før: ~554 px). */
+const NPORT = 52, PORT_LANE = [-320, 0, 320], PORT_AVST = BANE.L / NPORT, PORT_SK = 1.9;
 const portS = gi => (((gi % NPORT) + NPORT) % NPORT + .5) * PORT_AVST;
 
-/* Item-plater: langs banen, men ikke oppi portene. */
+/* Item-plater: åtte stykker, plassert midt mellom to porter. */
 const PAD_POS = (() => {
-  const ut = [];
+  const ut = [], lat = [-300, 0, 300, -150, 150, 0, -300, 300];
   for (let i = 0; i < 8; i++) {
-    let s = (i + .35) * (BANE.L / 8);
-    for (let k = 0; k < NPORT; k++) if (Math.abs(frem(s, portS(k))) < 170) { s += 210; break; }
-    const lat = [-155, 0, 155, -80, 80, 0][i % 6], q = baneXY(s, lat);
-    ut.push({ s, lat, x: q.x, y: q.y });
+    const s = baneMod(portS(Math.round(i * NPORT / 8)) + PORT_AVST / 2), q = baneXY(s, lat[i]);
+    ut.push({ s, lat: lat[i], x: q.x, y: q.y });
   }
   return ut;
 })();
 /* Vandrende kjegler (kun Vanskelig). Ren funksjon av rundetid → synket uten nett. */
 function hinderPos(i, t, ant) {
-  const s = baneMod(i * BANE.L / ant + t * 115);
-  const lat = clamp([-130, 120, -40, 160][i % 4] + Math.sin(t * .6 + i * 1.7) * 70, -BANE.halv + 70, BANE.halv - 70);
+  const s = baneMod(i * BANE.L / ant + t * 130);
+  const lat = clamp([-260, 240, -80, 320][i % 4] + Math.sin(t * .6 + i * 1.7) * 140, -BANE.halv + 80, BANE.halv - 80);
   return baneXY(s, lat);
 }
+/* Pynt utenfor og inni banen: dekkstabler og busker. Tegnes view-culled hver frame. */
+const PYNT = (() => {
+  const r = mulberry(8821), ut = [];
+  for (let i = 0; i < 4000 && ut.length < 950; i++) {
+    const x = 70 + r() * (WORLD.w - 140), y = 70 + r() * (WORLD.h - 140);
+    if (Math.abs(baneProj(x, y, null).lat) < BANE.halv + 130) continue;     // aldri oppi banen
+    ut.push({ x, y, dekk: ut.length % 6 === 0, st: 22 + r() * 22, f: ut.length % 3 });
+  }
+  return ut;
+})();
 
 /* Kollisjon bil ↔ banekant. Oppdaterer p.s/p.lat/p.si og returnerer treffstyrke (0 = ingen). */
 function kolliderBane(p) {
@@ -562,7 +620,7 @@ const G = {
   fase: 'tittel',            // tittel | garasje | lobby | nedtelling | spill | rundeslutt | finale
   meg: { id: store('br_id') || ('p' + rid(8)), navn: store('br_navn') || '', figur: 'dovendyr', kjoretoy: 'bil' },
   erVert: false, kode: '', solo: false, deltar: true,
-  inn: { lapper: 3, runder: 1, nivaa: 'normal', boter: 5, vertSpiller: true },
+  inn: { lapper: 1, runder: 1, nivaa: 'normal', boter: 5, vertSpiller: true },
   spillere: {}, rekke: [],
   runde: null, pads: [], feller: [], frem: {}, poeng: {}, oppgRekke: [],
   partikler: [], tekster: [], rist: 0, kombo: 0,
@@ -587,7 +645,7 @@ function nokkelNavn(k) { const p = G.spillere[k]; return p ? p.navn : '?'; }
 function nokkelFarge(k) { const p = G.spillere[k]; return p ? p.farge : '#888'; }
 const nyFrem = () => ({ etg: 0, gi: 0, runde: 0, startet: false, s: 0, prog: -BANE.L, riktig: 0, feil: 0, ferdigT: null, bom: [], rundeT: [], vis: false, oppgT: 0 });
 function oppgFor(x) { const fr = typeof x === 'object' ? x : null, etg = fr ? fr.etg : x, o = G.runde.oppg; return o[((etg % o.length) + o.length) % o.length]; }
-const lapper = () => (G.runde ? G.runde.lapper : G.inn.lapper) || 3;
+const lapper = () => (G.runde ? G.runde.lapper : G.inn.lapper) || 1;
 /* Stilling: i mål først, ellers lengst rundt banen. */
 function stilling() {
   return Object.keys(G.frem).map(k => ({ k, f: G.frem[k] })).sort((a, b) => {
@@ -605,10 +663,10 @@ function brukRunde(r) {
   const oppg = r.wis.map(i => PAKKE.begreper[i]);
   G.pads = PAD_POS.map((p, i) => ({ i, s: p.s, lat: p.lat, x: p.x, y: p.y, gen: 0, levende: true, igjen: 0 }));
   G.feller = []; G.frem = {}; G.partikler = []; G.tekster = []; G.resultat = null; G.minPlass = 0; G.frys = 0; G.rist = 0;
-  G.runde = { n: r.n, total: r.total, seed: r.seed, wis: r.wis, oppg, lapper: r.lapper || G.inn.lapper || 3, t0: 0, goAt: now() + (r.startOm != null ? r.startOm : 3600), forste: null, sistPip: 4 };
+  G.runde = { n: r.n, total: r.total, seed: r.seed, wis: r.wis, oppg, lapper: r.lapper || G.inn.lapper || 1, t0: 0, goAt: now() + (r.startOm != null ? r.startOm : 3600), forste: null, sistPip: 4 };
   G.rekke.forEach((id, k) => {
-    const p = G.spillere[id], rad = Math.floor(k / 2), s = baneMod(BANE.L - (150 + rad * 175)), q = baneXY(s, (k % 2 ? 1 : -1) * 115);
-    Object.assign(p, { x: q.x, y: q.y, a: q.a, vx: 0, vy: 0, s, lat: (k % 2 ? 1 : -1) * 115, si: q.i, spinn: 0, fart: 0, turbo: 0, hjelp: 0, skjold: false, taake: 0, iSlim: false, immun: 0, item: null, pose: 'idle', poseT: 0, dunk: 0, kombo: 0, net: null, bt: null });
+    const p = G.spillere[id], rad = Math.floor(k / 3), lat = (k % 3 - 1) * 330, s = baneMod(BANE.L - (180 + rad * 210)), q = baneXY(s, lat);
+    Object.assign(p, { x: q.x, y: q.y, a: q.a, vx: 0, vy: 0, s, lat, si: q.i, spinn: 0, fart: 0, turbo: 0, hjelp: 0, skjold: false, taake: 0, iSlim: false, immun: 0, item: null, pose: 'idle', poseT: 0, dunk: 0, kombo: 0, net: null, bt: null });
     const fr = G.frem[id] = nyFrem(); fr.s = s; fr.prog = -BANE.L + s;
     if (G.poeng[id] == null) G.poeng[id] = 0;
   });
@@ -683,13 +741,13 @@ function sendProg(p, fr) {
 function sjekkPort(p, fr) {
   if (fr.ferdigT != null || G.fase !== 'spill') return;
   const gs = portS(fr.gi), d = frem(p.s, gs);
-  if (d > 200) return;                      // ikke framme ennå
-  if (d < -110) { fr.gi++; return; }        // kjørte mellom lukene – ingen straff, ingen fart
+  if (d > 240) return;                      // ikke framme ennå
+  if (d < -150) { fr.gi++; return; }        // kjørte mellom lukene – ingen straff, ingen fart
   const tall = portTall(fr.gi, fr.etg), rett = oppgFor(fr).ord;
   for (let l = 0; l < 3; l++) {
     const q = baneXY(gs, PORT_LANE[l]), riktig = tall[l] === rett;
     if (!riktig && p.immun > 0) continue;
-    if (hyp(q.x - p.x, q.y - p.y) < BIL_R + (riktig ? 34 : 8)) { svarPort(p, fr, tall[l], riktig, q); return; }
+    if (hyp(q.x - p.x, q.y - p.y) < BIL_R + (riktig ? 62 : 20)) { svarPort(p, fr, tall[l], riktig, q); return; }
   }
 }
 function svarPort(p, fr, tall, riktig, q) {
@@ -732,7 +790,7 @@ function sjekkPickups(p) {
   const fr = G.frem[nokkel(p)]; if (!fr) return;
   sjekkPort(p, fr);
   if (!p.item && fr.ferdigT == null) for (const pad of G.pads) {
-    if (!pad.levende || hyp(pad.x - p.x, pad.y - p.y) > BIL_R + 42) continue;
+    if (!pad.levende || hyp(pad.x - p.x, pad.y - p.y) > BIL_R + 60) continue;
     const m = { i: pad.i, gen: pad.gen, pid: p.id }; brukPad(m); Net.send('pad', m); break;
   }
   p.iSlim = false;
@@ -740,13 +798,13 @@ function sjekkPickups(p) {
   for (const f of G.feller) {
     if (f.ut < tn || f.pid === p.id) continue;
     const d = hyp(f.x - p.x, f.y - p.y);
-    if (f.type === 'slim') { const el = (ART.felle_flekk && ART.felle_flekk.ellipse) || [115, 62], ex = (f.x - p.x) / el[0], ey = (f.y - p.y) / el[1]; if (ex * ex + ey * ey < 1) p.iSlim = true; }
-    else if (d < BIL_R + 30 && p.immun <= 0) { const m = { id: f.id, pid: p.id }; brukFelleTreff(m); Net.send('thit', m); }
+    if (f.type === 'slim') { const el = (ART.felle_flekk && ART.felle_flekk.ellipse) || [115, 62], ex = (f.x - p.x) / (el[0] * 1.3), ey = (f.y - p.y) / (el[1] * 1.3); if (ex * ex + ey * ey < 1) p.iSlim = true; }
+    else if (d < BIL_R + 40 && p.immun <= 0) { const m = { id: f.id, pid: p.id }; brukFelleTreff(m); Net.send('thit', m); }
   }
   const nv = NIVAA[G.inn.nivaa];
   if (nv.hinder && p.immun <= 0 && G.fase === 'spill') for (let i = 0; i < nv.hinder; i++) {
     const h = hinderPos(i, rundetid(), nv.hinder);
-    if (hyp(h.x - p.x, h.y - p.y) < BIL_R + 34) { treffSpiller(p, 'hinder'); break; }
+    if (hyp(h.x - p.x, h.y - p.y) < BIL_R + 44) { treffSpiller(p, 'hinder'); break; }
   }
 }
 function padType(i, gen) { return ITEM_REKKE[(i * 7 + gen * 5) % 6]; }
@@ -870,35 +928,35 @@ function oppdaterKamera(dt) {
   if (me) {
     // zoom: like mye av banen i bredden uansett skjermform (og litt mer utsyn på storskjerm)
     const fart = hyp(me.vx, me.vy);
-    const base = clamp(Math.min(Math.max(vw, vh) / 1500, Math.min(vw, vh) / 820), .26, 1.2) / (lokal() ? 1 : 1.35);
+    const base = clamp(Math.min(Math.max(vw, vh) / 2300, Math.min(vw, vh) / 1350), .16, 1.2) / (lokal() ? 1 : 1.35);
     const maal = base * (1 - .12 * clamp(fart / FART_TURBO, 0, 1)), k = 1 - Math.exp(-5 * dt);
     const hw = vw / 2 / c.s, hh = vh / 2 / c.s, m = 120;
     const tx = hw * 2 >= WORLD.w + m * 2 ? WORLD.w / 2 : clamp(me.x + me.vx * .7, hw - m, WORLD.w - hw + m);
-    const ty = hh * 2 >= WORLD.h + m * 2 ? WORLD.h / 2 : clamp(me.y + me.vy * .7, hh - m, WORLD.h - hh + m);
+    const ty = hh * 2 >= WORLD.h + m * 2 ? WORLD.h / 2 : clamp(me.y + me.vy * .7 - 95 / c.s, hh - m, WORLD.h - hh + m);
     c.x = lerp(c.x, tx, k); c.y = lerp(c.y, ty, k); c.s = lerp(c.s, maal, 1 - Math.exp(-2.5 * dt));
   } else { c.s = Math.min(vw / (WORLD.w + 40), vh / (WORLD.h + 40)); c.x = WORLD.w / 2; c.y = WORLD.h / 2; }
 }
 
 /* ---------- Boter: følger kjørelinja og velger luke ut fra hvor godt de kan gangetabellen ---------- */
 function botStyr(p, dt) {
-  const bt = p.bt || (p.bt = { linje: (Math.random() * 2 - 1) * 95, smett: (Math.random() < .5 ? -1 : 1) * 70, lane: -1, gi: -1, etg: -1, fast: 0, rygg: 0, sving: 1, item: 2 + Math.random() * 4 });
+  const bt = p.bt || (p.bt = { linje: (Math.random() * 2 - 1) * 210, smett: 160, lane: -1, gi: -1, etg: -1, fast: 0, rygg: 0, sving: 1, item: 2 + Math.random() * 4 });
   const fr = G.frem[nokkel(p)];
   let lat = bt.linje;
   if (fr && fr.ferdigT == null && G.fase === 'spill') {
     const gs = portS(fr.gi), d = frem(p.s, gs);
-    if (d < 760) {
+    if (d < 1100) {
       if (bt.gi !== fr.gi || bt.etg !== fr.etg) {
         bt.gi = fr.gi; bt.etg = fr.etg;
         const tall = portTall(fr.gi, fr.etg), rett = tall.indexOf(oppgFor(fr).ord), nv = NIVAA[G.inn.nivaa];
         if (Math.random() < p.kunnskap) bt.lane = rett;
         else if (Math.random() < nv.botSmett) bt.lane = -1;                     // vet ikke → smetter mellom lukene
         else bt.lane = (rett + 1 + Math.floor(Math.random() * 2)) % 3;          // gjetter feil → spinner ut
-        bt.smett = (Math.random() < .5 ? -1 : 1) * 70;
+        bt.smett = [-430, -160, 160, 430][Math.floor(Math.random() * 4)];   // mellom lukene eller ytterst forbi
       }
       lat = bt.lane < 0 ? bt.smett : PORT_LANE[bt.lane];
     }
   }
-  const look = 210 + hyp(p.vx, p.vy) * .55;
+  const look = 260 + hyp(p.vx, p.vy) * .6;
   let sikte = p.s + look;
   if (fr && fr.ferdigT == null && G.fase === 'spill') { const d = frem(p.s, portS(fr.gi)); if (d > 0 && d < look) sikte = portS(fr.gi); }   // sikt rett på luka
   const q = baneXY(sikte, clamp(lat, -BANE.halv + 55, BANE.halv - 55));
@@ -1031,85 +1089,122 @@ const PH = {
 };
 
 const Render = {
-  cv: null, c: null, w: 0, h: 0, dpr: 1, bg: null, merker: null, mc: null, mini: null, slots: [],
+  cv: null, c: null, w: 0, h: 0, dpr: 1, mini: null, slots: [], spor: [],
+  syn: { x0: 0, y0: 0, x1: 0, y1: 0 },
   init() {
     this.cv = $('verden'); this.c = this.cv.getContext('2d'); this.mini = $('minikart');
-    this.merker = document.createElement('canvas'); this.merker.width = WORLD.w / 2; this.merker.height = WORLD.h / 2; this.mc = this.merker.getContext('2d');
-    this.lagBakgrunn(); this.storrelse(); window.addEventListener('resize', () => this.storrelse());
+    this.storrelse(); window.addEventListener('resize', () => this.storrelse());
   },
   storrelse() { this.dpr = Math.min(window.devicePixelRatio || 1, 2); this.w = window.innerWidth; this.h = window.innerHeight; this.cv.width = this.w * this.dpr; this.cv.height = this.h * this.dpr; },
-  nullstillMerker() { this.mc.clearRect(0, 0, this.merker.width, this.merker.height); },
-  merke(p) { const c = this.mc; c.fillStyle = V.sporfarge; const bx = -Math.cos(p.a) * 26, by = -Math.sin(p.a) * 26, sx = -Math.sin(p.a) * 18, sy = Math.cos(p.a) * 18; c.beginPath(); c.arc((p.x + bx + sx) / 2, (p.y + by + sy) / 2, 2.6, 0, TAU); c.arc((p.x + bx - sx) / 2, (p.y + by - sy) / 2, 2.6, 0, TAU); c.fill(); },
+  nullstillMerker() { this.spor.length = 0; },
+  merke(p) { if (this.spor.length > 600) this.spor.splice(0, 60); const bx = -Math.cos(p.a) * 26, by = -Math.sin(p.a) * 26, sx = -Math.sin(p.a) * 18, sy = Math.cos(p.a) * 18; this.spor.push([p.x + bx + sx, p.y + by + sy, p.x + bx - sx, p.y + by - sy]); },
   tilVerden(sx, sy) { const s = G.cam.s; return { x: (sx - this.w / 2) / s + G.cam.x, y: (sy - this.h / 2) / s + G.cam.y }; },
+  iSyn(x, y, m) { const s = this.syn; return x > s.x0 - m && x < s.x1 + m && y > s.y0 - m && y < s.y1 + m; },
 
-  /* Kantlinje som punktliste: lat = avstand fra midtlinja (positiv = utside). */
-  kantlinje(lat) { const ut = []; for (let i = 0; i < BANE.N; i++) { const p = BANE.pkt[i]; ut.push([p.x + p.nx * lat, p.y + p.ny * lat]); } return ut; },
-  sti(c, pkt, lukk) { pkt.forEach((q, i) => i ? c.lineTo(q[0], q[1]) : c.moveTo(q[0], q[1])); if (lukk) c.closePath(); },
-
-  /* Den statiske banen tegnes én gang til et offscreen-lerret (halv oppløsning). */
-  lagBakgrunn() {
-    const cv = document.createElement('canvas'); cv.width = WORLD.w / 2; cv.height = WORLD.h / 2;
-    const c = cv.getContext('2d'); c.scale(.5, .5);
-    if (Bilder.bane_bakgrunn && Bilder.bane_bakgrunn.complete && Bilder.bane_bakgrunn.naturalWidth) { this.bg = Bilder.bane_bakgrunn; return; }
-    const r = mulberry(8821);
-    // gress utenfor banen
-    c.fillStyle = V.bakgrunn; c.fillRect(0, 0, WORLD.w, WORLD.h);
-    for (let i = 0; i < 1100; i++) { c.fillStyle = i % 3 ? 'rgba(255,255,255,.045)' : 'rgba(0,0,0,.06)'; const x = r() * WORLD.w, y = r() * WORLD.h, s = 8 + r() * 26; c.beginPath(); c.ellipse(x, y, s, s * .6, r() * TAU, 0, TAU); c.fill(); }
-    const ytre = this.kantlinje(BANE.halv + 14), indre = this.kantlinje(-BANE.halv - 14);
-    // gressvoll rundt banen
-    c.beginPath(); this.sti(c, this.kantlinje(BANE.halv + 60), true); this.sti(c, this.kantlinje(-BANE.halv - 60).reverse(), true);
-    c.fillStyle = V.gress; c.fill('evenodd');
-    // asfalt
-    c.beginPath(); this.sti(c, ytre, true); this.sti(c, indre.slice().reverse(), true);
-    c.fillStyle = V.asfalt; c.fill('evenodd');
-    c.save(); c.beginPath(); this.sti(c, ytre, true); this.sti(c, indre.slice().reverse(), true); c.clip('evenodd');
-    for (let i = 0; i < 1600; i++) { c.fillStyle = i % 2 ? 'rgba(255,255,255,.035)' : 'rgba(0,0,0,.07)'; c.beginPath(); c.arc(r() * WORLD.w, r() * WORLD.h, 4 + r() * 13, 0, TAU); c.fill(); }
-    // portfelt: lys stripe på tvers der svarlukene står
-    for (let k = 0; k < NPORT; k++) {
-      const gs = portS(k), a = baneXY(gs, -BANE.halv), b = baneXY(gs, BANE.halv);
-      c.strokeStyle = 'rgba(255,249,240,.16)'; c.lineWidth = 46; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
-      c.strokeStyle = 'rgba(250,204,21,.45)'; c.lineWidth = 5; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+  /* Hvilke punkter på midtlinja er innenfor kameraet? Returnerer strekk [fra, til] i punktindekser
+     (kan gå forbi N – les punktene med banePkt2). Banen tegnes bare for disse strekkene. */
+  synligeStrekk() {
+    const B = BANE, m = B.halv + 240, s = this.syn, ut = [];
+    let start = -1;
+    for (let i = 0; i < B.N; i++) {
+      const p = B.pkt[i];
+      if (p.x > s.x0 - m && p.x < s.x1 + m && p.y > s.y0 - m && p.y < s.y1 + m) { if (start < 0) start = i; }
+      else if (start >= 0) { ut.push([Math.max(0, start - 1), i]); start = -1; }
+    }
+    if (start >= 0) {
+      if (ut.length && ut[0][0] === 0) ut[0][0] = start - B.N - 1;          // strekket går rundt s = 0
+      else ut.push([start - 1, B.N]);
+    }
+    return ut;
+  },
+  sti(a, b, lat) {
+    const c = this.c;
+    c.beginPath();
+    for (let i = a; i <= b; i++) { const p = banePkt2(i), x = p.x + p.nx * lat, y = p.y + p.ny * lat; i === a ? c.moveTo(x, y) : c.lineTo(x, y); }
+  },
+  /* Banen: gressvoll, mørk kant, asfalt, kantstein, midtstripe – bare der kameraet ser. */
+  tegnBane(strekk) {
+    const c = this.c, H = BANE.halv;
+    c.lineJoin = 'round'; c.lineCap = 'round';
+    for (const [a, b] of strekk) {
+      this.sti(a, b, 0); c.strokeStyle = V.gress; c.lineWidth = (H + 96) * 2; c.stroke();
+      this.sti(a, b, 0); c.strokeStyle = INK; c.lineWidth = (H + 13) * 2; c.stroke();
+      this.sti(a, b, 0); c.strokeStyle = V.asfalt; c.lineWidth = H * 2; c.stroke();
+    }
+    // kantstein i rødt og hvitt, i blokker på 90 px langs banen (stabile fra frame til frame)
+    c.lineCap = 'butt';
+    for (const [a, b] of strekk) for (const side of [1, -1]) {
+      let i = a;
+      while (i < b) {
+        const blokk = Math.floor(banePkt2(i).s / 90);
+        let j = i + 1;
+        while (j <= b && Math.floor(banePkt2(j).s / 90) === blokk) j++;
+        c.strokeStyle = blokk % 2 ? '#fa5c66' : '#fff9f0'; c.lineWidth = 26;
+        c.beginPath();
+        for (let k = i; k <= Math.min(j, b); k++) { const p = banePkt2(k), x = p.x + p.nx * side * (H - 13), y = p.y + p.ny * side * (H - 13); k === i ? c.moveTo(x, y) : c.lineTo(x, y); }
+        c.stroke();
+        i = j;
+      }
     }
     // midtstripe
-    c.strokeStyle = 'rgba(255,249,240,.5)'; c.lineWidth = 6; c.setLineDash([46, 54]); c.beginPath(); this.sti(c, this.kantlinje(0), true); c.stroke(); c.setLineDash([]);
-    // start/mål: to rader ruter
-    for (let rad = 0; rad < 2; rad++) for (let i = 0; i < 10; i++) {
-      const lat = -BANE.halv + (i + .5) * (BANE.halv * 2 / 10), q = baneXY(baneMod(-30 - rad * 34), lat);
-      c.save(); c.translate(q.x, q.y); c.rotate(q.a); c.fillStyle = (i + rad) % 2 ? '#fff9f0' : '#2b2118'; c.fillRect(-17, -25, 34, 50); c.restore();
+    c.lineCap = 'round'; c.strokeStyle = 'rgba(255,249,240,.45)'; c.lineWidth = 9;
+    for (const [a, b] of strekk) {
+      let i = a;
+      while (i < b) {
+        const blokk = Math.floor(banePkt2(i).s / 150);
+        let j = i + 1;
+        while (j <= b && Math.floor(banePkt2(j).s / 150) === blokk) j++;
+        if (blokk % 2 === 0) { this.sti(i, Math.min(j, b), 0); c.stroke(); }
+        i = j;
+      }
     }
-    c.restore();
-    // kantstein i rødt og hvitt
-    for (const [lat, fase] of [[BANE.halv + 7, 0], [-BANE.halv - 7, 0]]) {
-      const pkt = this.kantlinje(lat);
-      c.lineWidth = 16; c.setLineDash([58, 58]);
-      c.strokeStyle = '#fa5c66'; c.lineDashOffset = fase; c.beginPath(); this.sti(c, pkt, true); c.stroke();
-      c.strokeStyle = '#fff9f0'; c.lineDashOffset = fase + 58; c.beginPath(); this.sti(c, pkt, true); c.stroke();
-      c.setLineDash([]);
-      c.strokeStyle = INK; c.lineWidth = 4; c.beginPath(); this.sti(c, this.kantlinje(lat > 0 ? lat + 8 : lat - 8), true); c.stroke();
+    // dekkspor
+    if (this.spor.length) {
+      c.fillStyle = V.sporfarge; c.beginPath();
+      for (const s of this.spor) if (this.iSyn(s[0], s[1], 60)) { c.moveTo(s[0] + 3, s[1]); c.arc(s[0], s[1], 3, 0, TAU); c.moveTo(s[2] + 3, s[3]); c.arc(s[2], s[3], 3, 0, TAU); }
+      c.fill();
     }
-    // pynt: dekkstabler og busker utenfor og inni banen
-    for (let i = 0; i < 120; i++) {
-      const s = r() * BANE.L, side = r() < .5 ? 1 : -1, ut = BANE.halv + 95 + r() * (side > 0 ? 260 : 420);
-      const q = baneXY(s, side * ut);
-      if (q.x < 60 || q.y < 60 || q.x > WORLD.w - 60 || q.y > WORLD.h - 60) continue;
-      if (i % 5 === 0) {   // dekkstabel
+  },
+  /* Portfelt på tvers av banen + start/mål-ruter. */
+  tegnPortfelt() {
+    const c = this.c, H = BANE.halv;
+    for (let k = 0; k < NPORT; k++) {
+      const gs = portS(k), a = baneXY(gs, -H), b = baneXY(gs, H);
+      if (!this.iSyn((a.x + b.x) / 2, (a.y + b.y) / 2, H + 200)) continue;
+      c.strokeStyle = 'rgba(255,249,240,.13)'; c.lineWidth = 60; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+      c.strokeStyle = 'rgba(250,204,21,.4)'; c.lineWidth = 6; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+    }
+    const m = baneXY(baneMod(-50), 0);
+    if (this.iSyn(m.x, m.y, H + 300)) {
+      for (let rad = 0; rad < 2; rad++) for (let i = 0; i < 10; i++) {
+        const lat = -H + (i + .5) * (H * 2 / 10), q = baneXY(baneMod(-30 - rad * 60), lat);
+        c.save(); c.translate(q.x, q.y); c.rotate(q.a); c.fillStyle = (i + rad) % 2 ? '#fff9f0' : '#2b2118'; c.fillRect(-30, -50, 60, 100); c.restore();
+      }
+      const skilt = baneXY(baneMod(-60), -H - 190);
+      c.save(); c.translate(skilt.x, skilt.y); c.rotate(banePkt(baneMod(-60)).a + Math.PI / 2);
+      c.fillStyle = '#fff9f0'; c.strokeStyle = INK; c.lineWidth = 7; rr(c, -170, -44, 340, 88, 20); c.fill(); c.stroke();
+      c.fillStyle = INK; c.font = '400 58px Chewy, "Arial Black", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('START / MÅL', 0, 4); c.restore();
+    }
+  },
+  tegnPynt() {
+    const c = this.c;
+    for (const b of (V.banetekst || [])) {
+      if (!this.iSyn(b.x, b.y, 2000)) continue;
+      c.font = '400 ' + (b.st || 200) + 'px Chewy, "Arial Black", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillStyle = b.farge || 'rgba(255,249,240,.16)'; c.fillText(b.tekst, b.x, b.y);
+    }
+    for (const q of PYNT) {
+      if (!this.iSyn(q.x, q.y, 80)) continue;
+      if (q.dekk) {
         c.fillStyle = '#1f2937'; c.strokeStyle = INK; c.lineWidth = 4;
         for (let k = 2; k >= 0; k--) { c.beginPath(); c.arc(q.x, q.y - k * 9, 24, 0, TAU); c.fill(); c.stroke(); }
         c.fillStyle = '#4b5563'; c.beginPath(); c.arc(q.x, q.y - 18, 10, 0, TAU); c.fill();
-      } else {             // busk
-        c.fillStyle = i % 3 ? '#3f8f45' : '#57a35a'; c.strokeStyle = 'rgba(20,40,20,.5)'; c.lineWidth = 3;
-        c.beginPath(); c.arc(q.x, q.y, 22 + r() * 16, 0, TAU); c.arc(q.x + 20, q.y + 8, 16 + r() * 12, 0, TAU); c.arc(q.x - 18, q.y + 10, 14 + r() * 10, 0, TAU); c.fill(); c.stroke();
+      } else {
+        c.fillStyle = q.f ? '#3f8f45' : '#57a35a'; c.strokeStyle = 'rgba(20,40,20,.5)'; c.lineWidth = 3;
+        c.beginPath(); c.arc(q.x, q.y, q.st, 0, TAU); c.arc(q.x + q.st * .9, q.y + q.st * .4, q.st * .7, 0, TAU); c.arc(q.x - q.st * .8, q.y + q.st * .5, q.st * .6, 0, TAU); c.fill(); c.stroke();
       }
     }
-    // banetekst i midten
-    c.textAlign = 'center'; c.textBaseline = 'middle';
-    for (const b of (V.banetekst || [])) { c.font = '400 ' + (b.st || 60) + 'px Chewy, "Arial Black", sans-serif'; c.fillStyle = b.farge || 'rgba(255,249,240,.3)'; c.fillText(b.tekst, b.x, b.y); }
-    // START/MÅL-skilt
-    const sm = baneXY(baneMod(-60), -BANE.halv - 120);
-    c.save(); c.translate(sm.x, sm.y); c.rotate(banePkt(baneMod(-60)).a + Math.PI / 2);
-    c.fillStyle = '#fff9f0'; c.strokeStyle = INK; c.lineWidth = 6; rr(c, -130, -34, 260, 68, 16); c.fill(); c.stroke();
-    c.fillStyle = INK; c.font = '400 46px Chewy, "Arial Black", sans-serif'; c.fillText('START / MÅL', 0, 4); c.restore();
-    this.bg = cv;
   },
 
   /* Tegner en asset-slot: ekte bilde hvis det finnes, ellers plassholder. */
@@ -1123,43 +1218,38 @@ const Render = {
     if (G.debug) this.slots.push({ id, x, y, w: a.w * (sk || 1), h: a.h * (sk || 1), ax: a.anchor[0], ay: a.anchor[1], st: a.status });
   },
 
-  /* Blitter bare den delen av banelerretet som er innenfor kameraet. */
-  bakgrunnsbit(bilde) {
-    if (!bilde) return;
-    const c = this.c, cam = G.cam, m = 80;
-    const x0 = clamp(cam.x - this.w / 2 / cam.s - m, 0, WORLD.w), x1 = clamp(cam.x + this.w / 2 / cam.s + m, 0, WORLD.w);
-    const y0 = clamp(cam.y - this.h / 2 / cam.s - m, 0, WORLD.h), y1 = clamp(cam.y + this.h / 2 / cam.s + m, 0, WORLD.h);
-    if (x1 <= x0 || y1 <= y0) return;
-    const k = (bilde.width || WORLD.w) / WORLD.w;
-    c.drawImage(bilde, x0 * k, y0 * k, (x1 - x0) * k, (y1 - y0) * k, x0, y0, x1 - x0, y1 - y0);
-  },
-
   tegn() {
     const c = this.c, cam = G.cam; this.slots.length = 0;
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0); c.fillStyle = V.bakgrunn; c.fillRect(0, 0, this.w, this.h);
     const rx = (Math.random() - .5) * G.rist, ry = (Math.random() - .5) * G.rist;
     c.translate(this.w / 2 + rx, this.h / 2 + ry); c.scale(cam.s, cam.s); c.translate(-cam.x, -cam.y);
-    this.bakgrunnsbit(this.bg); this.bakgrunnsbit(this.merker);
+    this.syn = { x0: cam.x - this.w / 2 / cam.s, y0: cam.y - this.h / 2 / cam.s, x1: cam.x + this.w / 2 / cam.s, y1: cam.y + this.h / 2 / cam.s };
+    const strekk = this.synligeStrekk();
+    this.tegnBane(strekk);
+    this.tegnPortfelt();
+    this.tegnPynt();
     if (!G.runde) return;
     const t = now() / 1000;
     let me = lokal(); if (!me) { const st = stilling()[0]; me = st ? G.spillere[st.k] : null; }   // storskjerm følger lederen
     const fr = me ? G.frem[nokkel(me)] : null;
     c.textAlign = 'center'; c.textBaseline = 'middle';
     // oljesøl + item-plater
-    for (const f of G.feller) if (f.type === 'slim') this.asset('felle_flekk', f.x, f.y, 0, 1);
+    for (const f of G.feller) if (f.type === 'slim' && this.iSyn(f.x, f.y, 140)) this.asset('felle_flekk', f.x, f.y, 0, 1.3);
     for (const pad of G.pads) {
-      c.globalAlpha = pad.levende ? 1 : .3; this.asset('pad_item', pad.x, pad.y, 0, 1);
-      if (pad.levende) this.ikon(padType(pad.i, pad.gen), pad.x, pad.y - 4 + Math.sin(t * 3 + pad.i) * 4, 1 + Math.sin(t * 4 + pad.i) * .05); c.globalAlpha = 1;
+      if (!this.iSyn(pad.x, pad.y, 120)) continue;
+      c.globalAlpha = pad.levende ? 1 : .3; this.asset('pad_item', pad.x, pad.y, 0, 1.5);
+      if (pad.levende) this.ikon(padType(pad.i, pad.gen), pad.x, pad.y - 6 + Math.sin(t * 3 + pad.i) * 5, 1.5 + Math.sin(t * 4 + pad.i) * .06);
+      c.globalAlpha = 1;
     }
-    for (const f of G.feller) if (f.type === 'virus') this.asset('felle', f.x, f.y, Math.sin(t * 2 + f.x) * .3, 1 + Math.sin(t * 5) * .06);
+    for (const f of G.feller) if (f.type === 'virus' && this.iSyn(f.x, f.y, 100)) this.asset('felle', f.x, f.y, Math.sin(t * 2 + f.x) * .3, 1.3 + Math.sin(t * 5) * .06);
     // svarporter for den bilen kameraet følger
     if (fr) this.porter(me, fr, t);
     // vandrende kjegler
     const nv = NIVAA[G.inn.nivaa];
-    if (nv.hinder && G.fase !== 'nedtelling') for (let i = 0; i < nv.hinder; i++) { const h = hinderPos(i, rundetid(), nv.hinder); this.asset('fiende', h.x, h.y, Math.sin(t * 4 + i) * .2, 1 + Math.sin(t * 6 + i) * .05); }
+    if (nv.hinder && G.fase !== 'nedtelling') for (let i = 0; i < nv.hinder; i++) { const h = hinderPos(i, rundetid(), nv.hinder); if (this.iSyn(h.x, h.y, 120)) this.asset('fiende', h.x, h.y, Math.sin(t * 4 + i) * .2, 1.3 + Math.sin(t * 6 + i) * .05); }
     // biler
     const egen = lokal();
-    for (const p of G.rekke.map(id => G.spillere[id]).sort((a, b) => a.y - b.y)) this.bil(p, p === egen, t);
+    for (const p of G.rekke.map(id => G.spillere[id]).sort((a, b) => a.y - b.y)) if (this.iSyn(p.x, p.y, 160)) this.bil(p, p === egen, t);
     // partikler og tekster
     for (const q of G.partikler) {
       const k = q.liv / q.maks; c.globalAlpha = clamp(k * 1.5, 0, 1); c.fillStyle = q.col;
@@ -1176,7 +1266,7 @@ const Render = {
     if (egen && egen.taake > 0) {
       c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
       const sx = (egen.x - cam.x) * cam.s + this.w / 2, sy = (egen.y - cam.y) * cam.s + this.h / 2, k = clamp(egen.taake / .5, 0, 1) * clamp((4 - egen.taake) / .3, 0, 1);
-      const g = c.createRadialGradient(sx, sy, 60 * cam.s, sx, sy, 230 * cam.s); g.addColorStop(0, 'rgba(226,232,240,0)'); g.addColorStop(1, 'rgba(226,232,240,' + (.97 * k) + ')'); c.fillStyle = g; c.fillRect(0, 0, this.w, this.h);
+      const g = c.createRadialGradient(sx, sy, 60 * cam.s, sx, sy, 260 * cam.s); g.addColorStop(0, 'rgba(226,232,240,0)'); g.addColorStop(1, 'rgba(226,232,240,' + (.97 * k) + ')'); c.fillStyle = g; c.fillRect(0, 0, this.w, this.h);
     }
     this.minikart(egen || me);
   },
@@ -1184,23 +1274,25 @@ const Render = {
   /* De tre neste svarportene: tre tall på tvers av banen. Ett av dem er svaret på oppgaven din. */
   porter(p, fr, t) {
     if (fr.ferdigT != null) return;
-    const c = this.c, rett = oppgFor(fr).ord, hjelp = fr.vis || p.hjelp > 0;
+    const c = this.c, H = BANE.halv, rett = oppgFor(fr).ord, hjelp = fr.vis || p.hjelp > 0;
     for (let k = 0; k < 3; k++) {
       const gi = fr.gi + k, gs = portS(gi), d = frem(p.s, gs);
-      if (d < -140) continue;
+      if (d < -200) continue;
       const alfa = k === 0 ? 1 : k === 1 ? .8 : .42, tall = portTall(gi, fr.etg);
-      const a = baneXY(gs, -BANE.halv), b = baneXY(gs, BANE.halv);
+      const a = baneXY(gs, -H), b = baneXY(gs, H);
+      if (!this.iSyn((a.x + b.x) / 2, (a.y + b.y) / 2, H + 260)) continue;
       c.globalAlpha = alfa;
-      c.strokeStyle = k === 0 ? 'rgba(250,204,21,.85)' : 'rgba(255,249,240,.5)'; c.lineWidth = k === 0 ? 8 : 5;
-      c.setLineDash([26, 20]); c.lineDashOffset = -t * 40; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke(); c.setLineDash([]);
-      for (const q of [a, b]) { c.fillStyle = '#fa5c66'; c.strokeStyle = INK; c.lineWidth = 4; c.beginPath(); c.arc(q.x, q.y, 16, 0, TAU); c.fill(); c.stroke(); }
+      c.strokeStyle = k === 0 ? 'rgba(250,204,21,.85)' : 'rgba(255,249,240,.5)'; c.lineWidth = k === 0 ? 10 : 6;
+      c.setLineDash([34, 26]); c.lineDashOffset = -t * 40; c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke(); c.setLineDash([]);
+      for (const q of [a, b]) { c.fillStyle = '#fa5c66'; c.strokeStyle = INK; c.lineWidth = 5; c.beginPath(); c.arc(q.x, q.y, 26, 0, TAU); c.fill(); c.stroke(); }
       for (let l = 0; l < 3; l++) {
-        const q = baneXY(gs, PORT_LANE[l]), riktig = tall[l] === rett, sk = 1 + Math.sin(t * 3 + l + gi) * .04;
-        c.globalAlpha = alfa * .28; c.fillStyle = INK; c.beginPath(); c.ellipse(q.x, q.y + 34, 30, 10, 0, 0, TAU); c.fill();
+        const q = baneXY(gs, PORT_LANE[l]), riktig = tall[l] === rett, sk = PORT_SK * (1 + Math.sin(t * 3 + l + gi) * .04);
+        const yy = q.y - 14 + Math.sin(t * 2.4 + l) * 7;
+        c.globalAlpha = alfa * .28; c.fillStyle = INK; c.beginPath(); c.ellipse(q.x, q.y + 56, 52, 17, 0, 0, TAU); c.fill();
         c.globalAlpha = alfa;
-        if (hjelp && riktig) { c.strokeStyle = '#22c55e'; c.lineWidth = 6; c.setLineDash([12, 9]); c.lineDashOffset = -t * 50; c.beginPath(); c.arc(q.x, q.y - 8 + Math.sin(t * 2.4 + l) * 4, 50, 0, TAU); c.stroke(); c.setLineDash([]); }
-        this.asset('brikke_bokstav', q.x, q.y - 8 + Math.sin(t * 2.4 + l) * 4, 0, sk);
-        c.fillStyle = INK; c.font = (46 * sk) + 'px Chewy, "Arial Black", sans-serif'; c.fillText(tall[l], q.x, q.y - 5 + Math.sin(t * 2.4 + l) * 4);
+        if (hjelp && riktig) { c.strokeStyle = '#22c55e'; c.lineWidth = 9; c.setLineDash([18, 14]); c.lineDashOffset = -t * 50; c.beginPath(); c.arc(q.x, yy, 92, 0, TAU); c.stroke(); c.setLineDash([]); }
+        this.asset('brikke_bokstav', q.x, yy, 0, sk);
+        c.fillStyle = INK; c.font = (46 * sk) + 'px Chewy, "Arial Black", sans-serif'; c.fillText(tall[l], q.x, yy + 3);
       }
       c.globalAlpha = 1;
     }
@@ -1212,8 +1304,8 @@ const Render = {
   bil(p, erMeg, t) {
     const c = this.c, fart = hyp(p.vx, p.vy);
     c.fillStyle = 'rgba(43,33,24,.22)'; c.beginPath(); c.ellipse(p.x + 6, p.y + 14, 62, 50, 0, 0, TAU); c.fill();
-    c.strokeStyle = p.farge; c.lineWidth = erMeg ? 7 : 4; c.setLineDash(erMeg ? [] : [10, 8]); c.beginPath(); c.arc(p.x, p.y, 70 + (erMeg ? Math.sin(t * 5) * 2 : 0), 0, TAU); c.stroke(); c.setLineDash([]);
-    if (p.fart > 0 || p.turbo > 0) { c.strokeStyle = p.turbo > 0 ? 'rgba(250,204,21,.8)' : 'rgba(234,88,12,.6)'; c.lineWidth = 6; c.setLineDash([16, 11]); c.lineDashOffset = -t * 160; c.beginPath(); c.arc(p.x, p.y, 82, 0, TAU); c.stroke(); c.setLineDash([]); }
+    c.strokeStyle = p.farge; c.lineWidth = erMeg ? 8 : 5; c.setLineDash(erMeg ? [] : [10, 8]); c.beginPath(); c.arc(p.x, p.y, 74 + (erMeg ? Math.sin(t * 5) * 2 : 0), 0, TAU); c.stroke(); c.setLineDash([]);
+    if (p.fart > 0 || p.turbo > 0) { c.strokeStyle = p.turbo > 0 ? 'rgba(250,204,21,.8)' : 'rgba(234,88,12,.6)'; c.lineWidth = 7; c.setLineDash([16, 11]); c.lineDashOffset = -t * 160; c.beginPath(); c.arc(p.x, p.y, 88, 0, TAU); c.stroke(); c.setLineDash([]); }
     this.asset('veh_' + p.kjoretoy, p.x, p.y, p.a + Math.PI / 2, 1, p.farge);
     const id = 'rider_' + p.figur + '_' + p.pose, a = ASSETS[id] || ASSETS['rider_' + p.figur + '_idle'];
     if (a) {
@@ -1222,24 +1314,27 @@ const Render = {
       const im = Bilder[ASSETS[id] ? id : 'rider_' + p.figur + '_idle']; if (im && im.complete && im.naturalWidth) c.drawImage(im, -a.w / 2, -a.h, a.w, a.h); c.restore();
       if (G.debug) this.slots.push({ id, x: p.x, y: p.y + 14, w: a.w * sk, h: hoyde, ax: .5, ay: 1, st: a.status });
     }
-    if (p.skjold) { c.strokeStyle = 'rgba(56,189,248,.9)'; c.fillStyle = 'rgba(125,211,252,.22)'; c.lineWidth = 4; c.beginPath(); c.arc(p.x, p.y - 8, 78, 0, TAU); c.fill(); c.stroke(); }
-    if (p.taake > 0 && !erMeg) this.asset('ikon_taake', p.x, p.y - 96, 0, 1.2);
-    c.font = '800 18px Nunito, sans-serif'; const navn = erMeg ? 'DEG' : p.navn, w = c.measureText(navn).width + 14;
-    c.fillStyle = erMeg ? '#facc15' : p.farge; c.strokeStyle = INK; c.lineWidth = 2.5; rr(c, p.x - w / 2, p.y + 66, w, 24, 9); c.fill(); c.stroke(); c.fillStyle = INK; c.fillText(navn, p.x, p.y + 79);
+    if (p.skjold) { c.strokeStyle = 'rgba(56,189,248,.9)'; c.fillStyle = 'rgba(125,211,252,.22)'; c.lineWidth = 4; c.beginPath(); c.arc(p.x, p.y - 8, 80, 0, TAU); c.fill(); c.stroke(); }
+    if (p.taake > 0 && !erMeg) this.asset('ikon_taake', p.x, p.y - 100, 0, 1.4);
+    c.font = '800 22px Nunito, sans-serif'; const navn = erMeg ? 'DEG' : p.navn, w = c.measureText(navn).width + 16;
+    c.fillStyle = erMeg ? '#facc15' : p.farge; c.strokeStyle = INK; c.lineWidth = 3; rr(c, p.x - w / 2, p.y + 70, w, 28, 10); c.fill(); c.stroke(); c.fillStyle = INK; c.fillText(navn, p.x, p.y + 85);
   },
   minikart(me) {
     const cv = this.mini; if (cv.offsetParent === null) return;
-    const c = cv.getContext('2d'), W = cv.width, H = cv.height, s = Math.min(W / WORLD.w, H / WORLD.h), ox = (W - WORLD.w * s) / 2, oy = (H - WORLD.h * s) / 2;
-    c.clearRect(0, 0, W, H); c.fillStyle = 'rgba(47,107,58,.9)'; c.strokeStyle = INK; c.lineWidth = 3; rr(c, 2, 2, W - 4, H - 4, 18); c.fill(); c.stroke();
-    c.save(); c.translate(ox, oy); c.scale(s, s);
-    c.strokeStyle = '#53585f'; c.lineWidth = BANE.halv * 2; c.lineJoin = 'round'; c.beginPath(); this.sti(c, this.kantlinje(0), true); c.stroke();
-    c.strokeStyle = 'rgba(255,249,240,.6)'; c.lineWidth = 26; const st = baneXY(0, -BANE.halv), sb = baneXY(0, BANE.halv);
-    c.beginPath(); c.moveTo(st.x, st.y); c.lineTo(sb.x, sb.y); c.stroke();
+    const c = cv.getContext('2d'), W = cv.width, H = cv.height;
+    const s = Math.min((W - 14) / WORLD.w, (H - 14) / WORLD.h), ox = (W - WORLD.w * s) / 2, oy = (H - WORLD.h * s) / 2;
+    const px = x => ox + x * s, py = y => oy + y * s;
+    c.clearRect(0, 0, W, H); c.fillStyle = 'rgba(36,80,31,.92)'; c.strokeStyle = INK; c.lineWidth = 3; rr(c, 2, 2, W - 4, H - 4, 18); c.fill(); c.stroke();
+    c.strokeStyle = '#53585f'; c.lineWidth = Math.max(4, BANE.halv * 2 * s); c.lineJoin = 'round'; c.lineCap = 'round';
+    c.beginPath();
+    for (let i = 0; i <= BANE.N; i += 4) { const p = banePkt2(i); i ? c.lineTo(px(p.x), py(p.y)) : c.moveTo(px(p.x), py(p.y)); }
+    c.closePath(); c.stroke();
+    const st = baneXY(0, -BANE.halv), sb = baneXY(0, BANE.halv);
+    c.strokeStyle = '#fff9f0'; c.lineWidth = 3; c.beginPath(); c.moveTo(px(st.x), py(st.y)); c.lineTo(px(sb.x), py(sb.y)); c.stroke();
     const fr = me ? G.frem[nokkel(me)] : null;
-    if (fr && fr.ferdigT == null) { const q = baneXY(portS(fr.gi), 0); c.fillStyle = '#facc15'; c.beginPath(); c.arc(q.x, q.y, 52, 0, TAU); c.fill(); }
-    for (const id of G.rekke) { const p = G.spillere[id]; if (p === me) continue; c.fillStyle = p.farge; c.beginPath(); c.arc(p.x, p.y, 62, 0, TAU); c.fill(); }
-    if (me) { c.fillStyle = '#facc15'; c.strokeStyle = INK; c.lineWidth = 22; c.beginPath(); c.arc(me.x, me.y, 86, 0, TAU); c.fill(); c.stroke(); }
-    c.restore();
+    if (fr && fr.ferdigT == null) { const q = baneXY(portS(fr.gi), 0); c.fillStyle = '#facc15'; c.beginPath(); c.arc(px(q.x), py(q.y), 3.5, 0, TAU); c.fill(); }
+    for (const id of G.rekke) { const p = G.spillere[id]; if (p === me) continue; c.fillStyle = p.farge; c.beginPath(); c.arc(px(p.x), py(p.y), 3, 0, TAU); c.fill(); }
+    if (me) { c.fillStyle = '#facc15'; c.strokeStyle = INK; c.lineWidth = 1.5; c.beginPath(); c.arc(px(me.x), py(me.y), 4.5, 0, TAU); c.fill(); c.stroke(); }
   },
   /* G-tasten: viser alle grafikk-slots med ID, mål og status. */
   debugLag() {
@@ -1254,7 +1349,7 @@ const Render = {
 
 /* ---------- UI (DOM) ---------- */
 const UI = {
-  stillingEndret: true, valg: 'solo', autoNeste: null, sisteLeder: '',
+  stillingEndret: true, valg: 'solo', autoNeste: null, sisteLeder: '', sisteRunde: '',
   skjerm(id) { for (const s of document.querySelectorAll('.skjerm')) s.classList.toggle('paa', s.id === id); $('hud').classList.toggle('paa', id === 'hud' || id === 's-rundeslutt'); },
   /* Ledende emoji i meldinger byttes automatisk til tegnet ikon. */
   toast(txt) {
@@ -1288,7 +1383,7 @@ const UI = {
     const v = G.erVert, inn = G.inn;
     const gruppe = (navn, key, alt) => '<div class="rad"><label>' + navn + '</label><div class="seg">' + alt.map(a => '<button data-inn="' + key + '" data-v="' + a[0] + '" class="' + (String(inn[key]) === String(a[0]) ? 'valgt' : '') + '"' + (v ? '' : ' disabled') + '>' + a[1] + '</button>').join('') + '</div></div>';
     $('innstillinger').innerHTML =
-      gruppe('Runder', 'lapper', [[2, '2 runder'], [3, '3 runder'], [5, '5 runder']]) +
+      gruppe('Runder', 'lapper', [[1, '1 runde'], [2, '2 runder'], [3, '3 runder']]) +
       gruppe('Løp', 'runder', [[1, '1 løp'], [2, '2 løp'], [3, '3 løp']]) +
       gruppe('Nivå', 'nivaa', [['lett', 'Lett'], ['normal', 'Normal'], ['vanskelig', 'Vanskelig']]) +
       gruppe('Boter', 'boter', [[0, '0'], [3, '3'], [5, '5']]) +
@@ -1306,15 +1401,24 @@ const UI = {
     $('tilskuerkode').textContent = G.solo ? '' : 'Rom ' + G.kode; $('plass').textContent = ''; $('plass').className = '';
     this.visOppgave(); this.visItem(); this.stillingEndret = true; this.tid(0);
   },
-  /* Oppgavekortet: gangestykket du leter etter svaret på, og hvor mange runder du har kjørt. */
+  /* Oppgavekortet: gangestykket du leter etter svaret på. */
   visOppgave() {
+    const me = lokal();
+    let fr = me ? G.frem[nokkel(me)] : null;
+    if (!fr) { const st = stilling()[0]; if (st) fr = st.f; }                     // storskjerm følger lederen
+    if (!fr) { $('definisjon').textContent = 'Kjør gjennom riktig svar!'; $('defkort').classList.remove('tall'); }
+    else { $('defkort').classList.add('tall'); $('definisjon').textContent = fr.ferdigT != null ? 'I MÅL!' : oppgFor(fr).definisjon + ' = ?'; }
+    this.visRunde();
+  },
+  /* Linja over oppgaven: løp, leder og hvor langt du er kommet. Én runde → prosent i stedet for «1/1». */
+  visRunde() {
     const r = G.runde, me = lokal();
     let fr = me ? G.frem[nokkel(me)] : null, leder = '';
-    if (!fr) { const st = stilling()[0]; if (st) { fr = st.f; leder = 'Leder: ' + nokkelNavn(st.k) + ' · '; } }   // storskjerm følger lederen
-    $('rundenr').textContent = (r.total > 1 ? 'Løp ' + r.n + '/' + r.total + ' · ' : '') + leder + 'Runde ' + (fr ? Math.min(fr.runde + 1, lapper()) : 1) + '/' + lapper();
-    if (!fr) { $('definisjon').textContent = 'Kjør gjennom riktig svar!'; $('defkort').classList.remove('tall'); return; }
-    $('defkort').classList.add('tall');
-    $('definisjon').textContent = fr.ferdigT != null ? 'I MÅL!' : oppgFor(fr).definisjon + ' = ?';
+    if (!fr) { const st = stilling()[0]; if (st) { fr = st.f; leder = 'Leder: ' + nokkelNavn(st.k) + ' · '; } }
+    const del = lapper() > 1 ? 'Runde ' + (fr ? Math.min(fr.runde + 1, lapper()) : 1) + '/' + lapper()
+      : fr ? (fr.ferdigT != null ? 'I MÅL' : Math.min(99, Math.floor(lopProsent(fr) * 100)) + '% av runden') : 'Én runde';
+    const txt = (r.total > 1 ? 'Løp ' + r.n + '/' + r.total + ' · ' : '') + leder + del;
+    if (txt !== this.sisteRunde) { this.sisteRunde = txt; $('rundenr').textContent = txt; }
   },
   nyOppgave() { this.visOppgave(); const k = $('defkort'); k.classList.remove('bytt'); void k.offsetWidth; k.classList.add('bytt'); },
   ferdig(plass) { const m = $('ferdigmerke'); m.innerHTML = plass === 1 ? ik('pokal') + 'DU VANT LØPET!' : ik(plass <= 3 ? 'medalje' + plass : 'flagg') + 'I MÅL – ' + plass + '. plass'; this.visOppgave(); m.classList.add('vis'); },
@@ -1340,9 +1444,10 @@ const UI = {
       bar.dataset.tekst = me.spinn > 0 ? 'UTSPINN!' : sek > 0 ? (me.turbo > 0 ? 'NITRO' : 'FART' + (me.kombo > 1 ? ' x' + me.kombo : '')) : 'Sakte – finn riktig svar';
     } else {
       bar.style.display = 'none';
-      const st = stilling()[0], nk = st ? st.k + '|' + st.f.etg + '|' + st.f.runde : '';
+      const st = stilling()[0], nk = st ? st.k + '|' + st.f.etg : '';
       if (nk !== this.sisteLeder) { this.sisteLeder = nk; this.visOppgave(); }
     }
+    this.visRunde();
     if (this.stillingEndret) { this.stillingEndret = false; this.tegnStilling(); }
   },
   tegnStilling() {
@@ -1350,7 +1455,8 @@ const UI = {
     let vis = st.slice(0, me ? (Render.w < 700 ? 3 : 4) : 10); if (min && !vis.find(x => x.k === min)) vis.push(st.find(x => x.k === min));
     $('stilling').innerHTML = vis.filter(Boolean).map((x, i) => {
       const nr = st.findIndex(y => y.k === x.k) + 1, f = x.f;
-      const tekst = f.ferdigT != null ? ik('flagg') : 'R' + Math.min(f.runde + 1, lapper()) + ' · ' + Math.min(99, Math.floor(lopProsent(f) * 100)) + '%';
+      const pros = Math.min(99, Math.floor(lopProsent(f) * 100)) + '%';
+      const tekst = f.ferdigT != null ? ik('flagg') : lapper() > 1 ? 'R' + Math.min(f.runde + 1, lapper()) + ' · ' + pros : pros;
       return '<div class="st' + (x.k === min ? ' meg' : '') + '"><em>' + nr + '</em><i style="background:' + nokkelFarge(x.k) + '"></i><b>' + esc(nokkelNavn(x.k)) + '</b><span>' + tekst + '</span></div>';
     }).join('');
     if (min) {
@@ -1369,7 +1475,7 @@ const UI = {
     if (mx) {
       const iMaal = mx.ferdigT != null, vant = iMaal && mi === 0, kl = vant ? 'vant' : iMaal ? 'ok' : 'tapte';
       const tittel = vant ? 'DU VANT!' + ik('pokal') : iMaal ? (mi < 3 ? ik('medalje' + (mi + 1)) : '') + (mi + 1) + '. plass' : 'Ikke i mål';
-      const under = (iMaal ? lapper() + ' runder på ' + mx.ferdigT.toFixed(1).replace('.', ',') + ' s' : mx.pros + '% av løpet') + ' · ' + mx.riktig + ' riktige svar · ' + mx.feil + ' utspinn · +' + mx.pts + ' poeng';
+      const under = (iMaal ? lapper() + (lapper() > 1 ? ' runder på ' : ' runde på ') + mx.ferdigT.toFixed(1).replace('.', ',') + ' s' : mx.pros + '% av løpet') + ' · ' + mx.riktig + ' riktige svar · ' + mx.feil + ' utspinn · +' + mx.pts + ' poeng';
       boks.className = kl; boks.innerHTML = '<img alt="" src="' + SPRITES[me.figur + (vant ? '_vinn' : iMaal ? '_glad' : '_graat')].src + '"><div><b>' + tittel + '</b><small>' + under + '</small></div>';
       Lyd.spill(vant ? 'vinn' : iMaal ? 'ferdig' : 'tap');
     } else { boks.className = ''; boks.innerHTML = ''; }
@@ -1513,7 +1619,6 @@ Net.paa('_tapt', () => { UI.toast('Mistet kontakten med rommet'); });
   if (UIIK.tittel) $('s-tittel').style.setProperty('--tittelbilde', 'url(' + UIIK.tittel + ')');
   if (V.tittelbg) $('s-tittel').style.setProperty('--tittelbg', V.tittelbg);
   Render.init();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => Render.lagBakgrunn());
   UI.visTittel();
 
   document.addEventListener('click', e => {
