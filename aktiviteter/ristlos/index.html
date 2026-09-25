@@ -142,12 +142,20 @@
     background: #fff; border: 2px solid #b7ada0; border-radius: 999px; padding: 3px 10px; white-space: nowrap;
   }
 
-  /* ── VIDEOVISNING (tavla) ── */
+  /* ── VIDEOVISNING (tavla) ──
+     NRK sin egen embed-widget (static.nrk.no/ludo/.../video-embed.js) bygger
+     selv en iframe inni #video-nrk-container og justerer høyden dynamisk via
+     postMessage — derfor ingen fast aspect-ratio/overflow her, bare en
+     minstehøyde som plassholder til widgeten er ferdig lastet. */
   .video-ramme {
-    width: 100%; max-width: 1100px; aspect-ratio: 16/9; background: #000;
+    width: 100%; max-width: 1100px; min-height: 300px; background: #000;
     border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 8px 0 var(--ink); overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
   }
-  .video-ramme iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .video-ramme .nrk-video { width: 100%; }
+  .video-ramme .nrk-video iframe { width: 100%; border: 0; display: block; }
+  .video-laster, .video-feil { color: #fff; font-weight: 800; text-align: center; padding: 30px 20px; }
+  .video-feil a { color: var(--yellow); }
   .video-tittelrad { display: flex; flex-direction: column; align-items: center; gap: 2px; }
   .video-merke { font-weight: 800; font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
   .video-lenke { color: var(--muted); font-weight: 800; font-size: .85rem; text-decoration: underline; }
@@ -244,8 +252,8 @@
     <div class="video-merke" id="video-merke">Maur i rumpa</div>
     <h2 class="tittel" id="video-tittel">…</h2>
   </div>
-  <div class="video-ramme">
-    <iframe id="video-iframe" src="" title="Maur i rumpa" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>
+  <div class="video-ramme" id="video-ramme">
+    <div class="video-laster" id="video-laster">Laster video …</div>
   </div>
   <a class="video-lenke" id="video-nrk-lenke" href="#" target="_blank" rel="noopener">Åpne episoden på NRK TV ↗</a>
   <div class="knapperad">
@@ -333,7 +341,6 @@ const SESONGER = {
   }
 };
 function nrkSideUrl(sesongNr, ep){ return 'https://tv.nrk.no/serie/maur-i-rumpa/sesong/' + sesongNr + '/episode/' + ep.id; }
-function nrkEmbedUrl(ep){ return 'https://tv.nrk.no/se?v=' + ep.id; }
 function alleUtgitteEpisoder(){
   const ut = [];
   Object.keys(SESONGER).forEach(sesongNr => {
@@ -482,13 +489,39 @@ function tegnEpisodeliste(){
   });
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+   NRK sin offisielle embed-widget: en <div class="nrk-video" data-nrk-id>
+   pluss ett skript (static.nrk.no/ludo/.../video-embed.js) som selv bygger
+   en avspiller-iframe og justerer høyden dynamisk. En rå iframe rett mot
+   tv.nrk.no fungerer IKKE — den nekter innramming (X-Frame-Options), noe
+   som viser seg som «tv.nrk.no avviste tilkoblingsforsøket» i nettleseren.
+   Skriptet settes inn på nytt (som et helt nytt element) hver gang en ny
+   episode vises, siden nettleseren kjører et dynamisk innsatt <script>
+   igjen selv om samme URL alt er hentet fra cache — det finnes ingen kjent
+   «bytt video»-API å kalle på widgeten i stedet. */
+const NRK_EMBED_SCRIPT = 'https://static.nrk.no/ludo/latest/video-embed.js';
+
 function visVideo(sesongNr, ep){
   document.getElementById('video-merke').textContent = 'Maur i rumpa · ' + SESONGER[sesongNr].navn + ' · episode ' + ep.nr;
   document.getElementById('video-tittel').textContent = ep.tittel;
-  document.getElementById('video-iframe').src = nrkEmbedUrl(ep);
-  const lenke = document.getElementById('video-nrk-lenke');
-  lenke.href = nrkSideUrl(sesongNr, ep);
+  document.getElementById('video-nrk-lenke').href = nrkSideUrl(sesongNr, ep);
   visSkjerm('screen-nrk-video');
+
+  const ramme = document.getElementById('video-ramme');
+  ramme.innerHTML = '';
+
+  const nrkDiv = document.createElement('div');
+  nrkDiv.className = 'nrk-video';
+  nrkDiv.dataset.nrkId = ep.id;
+  ramme.appendChild(nrkDiv);
+
+  const skript = document.createElement('script');
+  skript.src = NRK_EMBED_SCRIPT + '?_=' + Date.now(); // unik URL: unngår at nettleseren dropper et «duplikat» skript
+  skript.onerror = () => {
+    ramme.innerHTML = '<div class="video-feil">Fikk ikke lastet avspilleren.<br>' +
+      '<a href="' + nrkSideUrl(sesongNr, ep) + '" target="_blank" rel="noopener">Åpne episoden på NRK TV ↗</a></div>';
+  };
+  ramme.appendChild(skript);
 }
 
 let sisteTilfeldigeId = null;
