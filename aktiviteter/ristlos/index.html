@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rist Løs — LRNify</title>
+<meta name="description" content="En samling bevegelsespauser: NRK-videoen Maur i rumpa (velg tilfeldig eller en bestemt episode), bevegelseskort og en ristetimer — kjapt å sette i gang på tavla.">
+<link rel="canonical" href="https://lrnify.no/aktiviteter/ristlos/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Rist Løs – LRNify">
+<meta property="og:description" content="En samling bevegelsespauser: NRK-videoen Maur i rumpa (velg tilfeldig eller en bestemt episode), bevegelseskort og en ristetimer — kjapt å sette i gang på tavla.">
+<meta property="og:image" content="https://lrnify.no/media/aktiviteter/ristlos.png">
+<meta property="og:url" content="https://lrnify.no/aktiviteter/ristlos/index.html">
+<meta property="og:locale" content="nb_NO">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Rist Løs – LRNify">
+<meta name="twitter:description" content="En samling bevegelsespauser: NRK-videoen Maur i rumpa (velg tilfeldig eller en bestemt episode), bevegelseskort og en ristetimer — kjapt å sette i gang på tavla.">
+<meta name="twitter:image" content="https://lrnify.no/media/aktiviteter/ristlos.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #2b2118;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #7a6f63;
+    --green: #16a34a;
+    --red:   #dc2626;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 16px 40px;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .skjult { display: none !important; }
+
+  /* ── HEADER ── */
+  .site-header {
+    width: 100%; max-width: 900px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 6px;
+  }
+  .logo {
+    font-family: 'Chewy', cursive; font-size: clamp(1.6rem, 5vw, 2.4rem);
+    transform: rotate(-2deg); line-height: 1; user-select: none;
+    text-decoration: none; color: var(--ink);
+  }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .logo-sub {
+    font-family: 'Chewy', cursive; font-size: clamp(1rem, 3vw, 1.3rem);
+    color: var(--muted); transform: rotate(1deg); align-self: flex-end; padding-bottom: 4px;
+  }
+  .undertittel {
+    width: 100%; max-width: 900px; color: var(--muted); font-weight: 800; font-size: .92rem;
+    margin-bottom: 18px;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; width: 100%; max-width: 900px; animation: fadeIn .25s ease; }
+  .screen.active { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .screen.bred { max-width: 1400px; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+
+  h2.tittel {
+    font-family: 'Chewy', cursive; font-weight: 400; font-size: clamp(1.3rem, 4vw, 1.9rem);
+    text-align: center; transform: rotate(-1deg);
+  }
+  .hjelpetekst { color: var(--muted); font-weight: 800; font-size: .88rem; text-align: center; max-width: 46ch; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--card); border: 4px solid var(--ink); box-shadow: 0 7px 0 var(--ink);
+    padding: 22px 24px; width: 100%;
+  }
+
+  /* ── BUTTONS ── */
+  button {
+    font-family: 'Nunito', sans-serif; font-weight: 900; cursor: pointer;
+    border: 4px solid var(--ink); transition: transform .12s ease, box-shadow .12s ease; color: var(--ink);
+  }
+  .btn-primary {
+    background: var(--yellow); width: 100%; padding: 16px; font-size: 1.1rem; box-shadow: 0 6px 0 var(--ink);
+  }
+  .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 8px 0 var(--ink); }
+  .btn-primary:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+  .btn-secondary { background: #fff; }
+  .btn-back { background: none; border: none; box-shadow: none; color: var(--muted); font-size: .9rem; padding: 6px 0; text-align: center; align-self: flex-start; }
+  .btn-back:hover { color: var(--ink); }
+  .knapperad { display: flex; gap: 12px; flex-wrap: wrap; width: 100%; max-width: 460px; }
+  .knapperad button { flex: 1 1 160px; }
+
+  /* ── FORSIDE: velg aktivitet ── */
+  .valg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; width: 100%; }
+  .valg-kort {
+    background: var(--card); border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 6px 0 var(--ink);
+    padding: 22px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center;
+  }
+  .valg-kort .emoji { font-size: 2.6rem; line-height: 1; }
+  .valg-kort .tittel2 { font-family: 'Chewy', cursive; font-weight: 400; font-size: 1.4rem; }
+  .valg-kort .beskrivelse { color: var(--muted); font-weight: 700; font-size: .85rem; }
+  .valg-kort:hover  { transform: translateY(-3px); box-shadow: 0 9px 0 var(--ink); }
+  .valg-kort:active { transform: translateY(4px);  box-shadow: 0 2px 0 var(--ink); }
+
+  /* ── SESONG-FANER ── */
+  .faner { display: flex; gap: 10px; }
+  .faner button {
+    border-radius: 999px; background: #fff; padding: 9px 20px; font-size: .95rem; box-shadow: 0 4px 0 var(--ink);
+  }
+  .faner button.pa { background: var(--yellow); }
+  .faner button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ── EPISODELISTE ── */
+  .episodeliste { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+  .episode-knapp {
+    display: flex; align-items: center; gap: 14px; text-align: left;
+    background: #fff; border-radius: 16px; padding: 12px 16px; box-shadow: 0 4px 0 var(--ink);
+  }
+  .episode-knapp:hover  { transform: translateY(-2px); box-shadow: 0 6px 0 var(--ink); }
+  .episode-knapp:active { transform: translateY(3px);  box-shadow: 0 1px 0 var(--ink); }
+  .episode-nr {
+    font-family: 'Chewy', cursive; font-size: 1.5rem; color: var(--muted); min-width: 1.6em; text-align: center; flex-shrink: 0;
+  }
+  .episode-tekst .episode-tittel { font-weight: 900; font-size: 1.02rem; }
+  .episode-tekst .episode-beskrivelse { color: var(--muted); font-weight: 700; font-size: .82rem; margin-top: 2px; }
+  .episode-knapp:disabled {
+    background: #ece7de; border-color: #b7ada0; box-shadow: 0 4px 0 #b7ada0; cursor: not-allowed; opacity: .8;
+  }
+  .episode-knapp:disabled:hover { transform: none; box-shadow: 0 4px 0 #b7ada0; }
+  .episode-snart {
+    margin-left: auto; font-size: .68rem; font-weight: 800; color: var(--muted);
+    background: #fff; border: 2px solid #b7ada0; border-radius: 999px; padding: 3px 10px; white-space: nowrap;
+  }
+
+  /* ── VIDEOVISNING (tavla) ── */
+  .video-ramme {
+    width: 100%; max-width: 1100px; aspect-ratio: 16/9; background: #000;
+    border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 8px 0 var(--ink); overflow: hidden;
+  }
+  .video-ramme iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .video-tittelrad { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .video-merke { font-weight: 800; font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .video-lenke { color: var(--muted); font-weight: 800; font-size: .85rem; text-decoration: underline; }
+  .video-lenke:hover { color: var(--ink); }
+
+  /* ── BEVEGELSESKORT ── */
+  .bevegelseskort {
+    width: 100%; max-width: 560px; min-height: 260px; background: #fff; border: 4px solid var(--ink);
+    border-radius: 22px; box-shadow: 0 8px 0 var(--ink); display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 30px 20px; gap: 14px;
+  }
+  .bevegelseskort .kort-emoji { font-size: 3rem; }
+  .bevegelseskort .kort-tekst {
+    font-family: 'Chewy', cursive; font-weight: 400; font-size: clamp(1.4rem, 5vw, 2.1rem); line-height: 1.2;
+  }
+  .bevegelseskort .kort-tekst.trukket { animation: klakk .32s cubic-bezier(.2,1.6,.4,1); }
+  @keyframes klakk { 0%{ transform: scale(1.15) rotate(-2deg); } 60%{ transform: scale(.97) rotate(.6deg); } 100%{ transform: scale(1) rotate(0); } }
+  @media (prefers-reduced-motion: reduce) { .bevegelseskort .kort-tekst.trukket { animation: none; } }
+
+  /* ── RISTETIMER ── */
+  .klokke {
+    font-family: 'Chewy', cursive; font-weight: 400; font-size: clamp(4rem, 20vw, 8rem); line-height: 1;
+    font-variant-numeric: tabular-nums; text-align: center;
+  }
+  .klokke.snart { color: var(--red); animation: puls 1s ease-in-out infinite; }
+  @keyframes puls { 0%,100%{ transform: scale(1); } 50%{ transform: scale(1.06); } }
+  @media (prefers-reduced-motion: reduce) { .klokke.snart { animation: none; } }
+  .rist-tekst {
+    font-family: 'Chewy', cursive; font-weight: 400; font-size: clamp(1.6rem, 6vw, 2.6rem); text-align: center;
+  }
+  .varighet-valg { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .varighet-valg button { border-radius: 14px; background: #fff; padding: 14px 22px; font-size: 1.05rem; box-shadow: 0 4px 0 var(--ink); }
+  .varighet-valg button.pa { background: var(--yellow); }
+
+  .lydknapp {
+    position: fixed; top: 10px; right: 10px; z-index: 50; border: 3px solid var(--ink); border-radius: 12px;
+    background: #fff; cursor: pointer; font-size: 1.1rem; padding: 7px 10px; box-shadow: 3px 3px 0 var(--ink); line-height: 1;
+  }
+
+  footer { margin-top: 30px; color: var(--muted); opacity: .7; font-size: .8rem; text-align: center; }
+
+  @media (max-width: 480px) {
+    .knapperad { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<button class="lydknapp" id="lyd-knapp" title="Skru lyd av eller på">🔊</button>
+
+<header class="site-header" id="siteHeader">
+  <a class="logo" href="/index.html">LRN<b>ify</b></a>
+  <div class="logo-sub">Rist Løs</div>
+</header>
+<div class="undertittel" id="undertittel">En samling bevegelsespauser — velg noe å riste løs med, så kjører du det på tavla.</div>
+
+<!-- ══════════ FORSIDE: velg aktivitet ══════════ -->
+<div class="screen active" id="screen-start">
+  <div class="valg-grid">
+    <button class="valg-kort" id="velg-nrk">
+      <span class="emoji">🐜</span>
+      <span class="tittel2">Maur i rumpa</span>
+      <span class="beskrivelse">Kort bevegelsesvideo fra NRK — tilfeldig eller en bestemt episode.</span>
+    </button>
+    <button class="valg-kort" id="velg-kort">
+      <span class="emoji">🎲</span>
+      <span class="tittel2">Bevegelseskort</span>
+      <span class="beskrivelse">Trekk et tilfeldig kort med en kjapp bevegelse hele klassen gjør sammen.</span>
+    </button>
+    <button class="valg-kort" id="velg-timer">
+      <span class="emoji">⏱️</span>
+      <span class="tittel2">Ristetimer</span>
+      <span class="beskrivelse">Sett en kort nedtelling og rist løs til tiden er ute.</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════ NRK: velg episode ══════════ -->
+<div class="screen" id="screen-nrk-meny">
+  <button class="btn-back" data-tilbake="screen-start">← Tilbake</button>
+  <h2 class="tittel">🐜 Maur i rumpa</h2>
+  <div style="max-width:460px;width:100%;">
+    <button class="btn-primary" id="nrk-tilfeldig">🎲 Trekk tilfeldig episode</button>
+  </div>
+  <div class="hjelpetekst">…eller velg en bestemt episode:</div>
+  <div class="faner" id="sesong-faner"></div>
+  <div class="episodeliste" id="episodeliste"></div>
+</div>
+
+<!-- ══════════ NRK: video (tavlevisning) ══════════ -->
+<div class="screen bred" id="screen-nrk-video">
+  <button class="btn-back" data-tilbake="screen-nrk-meny">← Velg annen episode</button>
+  <div class="video-tittelrad">
+    <div class="video-merke" id="video-merke">Maur i rumpa</div>
+    <h2 class="tittel" id="video-tittel">…</h2>
+  </div>
+  <div class="video-ramme">
+    <iframe id="video-iframe" src="" title="Maur i rumpa" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy"></iframe>
+  </div>
+  <a class="video-lenke" id="video-nrk-lenke" href="#" target="_blank" rel="noopener">Åpne episoden på NRK TV ↗</a>
+  <div class="knapperad">
+    <button class="btn-primary" id="video-tilfeldig-igjen">🎲 Ny tilfeldig episode</button>
+  </div>
+</div>
+
+<!-- ══════════ BEVEGELSESKORT ══════════ -->
+<div class="screen" id="screen-kort">
+  <button class="btn-back" data-tilbake="screen-start">← Tilbake</button>
+  <h2 class="tittel">🎲 Bevegelseskort</h2>
+  <div class="bevegelseskort">
+    <div class="kort-emoji" id="kort-emoji">🎲</div>
+    <div class="kort-tekst" id="kort-tekst">Trykk for å trekke et bevegelseskort</div>
+  </div>
+  <div style="max-width:460px;width:100%;">
+    <button class="btn-primary" id="kort-trekk">🎲 Trekk kort</button>
+  </div>
+</div>
+
+<!-- ══════════ RISTETIMER: velg tid ══════════ -->
+<div class="screen" id="screen-timer-oppsett">
+  <button class="btn-back" data-tilbake="screen-start">← Tilbake</button>
+  <h2 class="tittel">⏱️ Ristetimer</h2>
+  <div class="hjelpetekst">Velg hvor lenge dere skal riste løs</div>
+  <div class="varighet-valg" id="timer-varighet">
+    <button data-sek="30">30 sek</button>
+    <button data-sek="60" class="pa">60 sek</button>
+    <button data-sek="90">90 sek</button>
+    <button data-sek="120">2 min</button>
+  </div>
+  <div style="max-width:460px;width:100%;">
+    <button class="btn-primary" id="timer-start">▶ Start</button>
+  </div>
+</div>
+
+<!-- ══════════ RISTETIMER: kjører ══════════ -->
+<div class="screen" id="screen-timer-kjorer">
+  <div class="rist-tekst" id="timer-melding">RIST LØS! 🕺</div>
+  <div class="klokke" id="timer-klokke">01:00</div>
+  <div class="knapperad">
+    <button class="btn-secondary" id="timer-avbryt">Avbryt</button>
+  </div>
+</div>
+
+<footer>LRNify · Rist Løs</footer>
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════════════════════
+   MAUR I RUMPA — episodedata
+   ID-mønsteret NRK bruker for denne serien er «DNRR63000» + episodenummer
+   + en topåsifret sesongkode (25 for sesong 1, 26 for sesong 2). Sesong 1
+   er verifisert episode for episode. For sesong 2 er episode 1 og 2
+   bekreftet direkte; episode 3 og 4 følger nøyaktig samme mønster som de
+   bekreftede, men er ikke enkeltvis sjekket — verifiser gjerne lenkene
+   hvis NRK endrer noe, og fyll inn ID-en for episode 5–6 når de sendes.
+   ══════════════════════════════════════════════════════════════════════ */
+const SESONGER = {
+  1: {
+    navn: 'Sesong 1',
+    episoder: [
+      { nr: 1, id: 'DNRR63000125', tittel: 'Joggetur',            beskrivelse: 'Jogging med Mortens litt spesielle joggestil.' },
+      { nr: 2, id: 'DNRR63000225', tittel: 'Trolldans',           beskrivelse: 'Tramp og klapp som et troll til musikken fra Dovregubbens hall.' },
+      { nr: 3, id: 'DNRR63000325', tittel: 'Balansedans',         beskrivelse: 'Bli med Morten og prøv forskjellige balansebevegelser.' },
+      { nr: 4, id: 'DNRR63000425', tittel: 'Fortere og fortere',  beskrivelse: 'Bevegelser for hele kroppen som går raskere og raskere.' },
+      { nr: 5, id: 'DNRR63000525', tittel: 'Hiphop',              beskrivelse: 'Lær hiphop-trinn sammen med Morten og Noah.' },
+      { nr: 6, id: 'DNRR63000625', tittel: 'Monsterjakt',         beskrivelse: 'Klapp deg gjennom en monsterjakt sammen med Morten og Saft.' },
+      { nr: 7, id: 'DNRR63000725', tittel: 'Frysdans',            beskrivelse: 'Dans som forskjellige dyr — og frys helt når signalet kommer.' },
+      { nr: 8, id: 'DNRR63000825', tittel: 'Koppsang',            beskrivelse: 'Bruk en kopp og klapp rytmen til en gammel sjømannssang.' },
+      { nr: 9, id: 'DNRR63000925', tittel: '7 trinn',             beskrivelse: 'Følg en dans med sju trinn mens musikken går stadig fortere.' },
+    ]
+  },
+  2: {
+    navn: 'Sesong 2',
+    episoder: [
+      { nr: 1, id: 'DNRR63000126', tittel: 'Muren',                    beskrivelse: 'Hopp over eller krype under muren, sammen med Håkon og Virre.' },
+      { nr: 2, id: 'DNRR63000226', tittel: 'Ditt eller datt: idrett',  beskrivelse: 'Velg mellom idretter som fotball eller ski, sammen med Håkon.' },
+      { nr: 3, id: 'DNRR63000326', tittel: 'Emoji-gym',                beskrivelse: 'Lag grimaser på «emoji-gymmen» sammen med Håkon og Ane.' },
+      { nr: 4, id: 'DNRR63000426', tittel: 'Trafikklys',               beskrivelse: 'Jogg på grønt lys med Håkon og Virre — se opp når det blir rødt!' },
+      { nr: 5, id: null, tittel: 'Fotball',       beskrivelse: 'Kommer senere i sesongen.', kommer: true },
+      { nr: 6, id: null, tittel: 'Verden rundt',  beskrivelse: 'Kommer senere i sesongen.', kommer: true },
+    ]
+  }
+};
+function nrkSideUrl(sesongNr, ep){ return 'https://tv.nrk.no/serie/maur-i-rumpa/sesong/' + sesongNr + '/episode/' + ep.id; }
+function nrkEmbedUrl(ep){ return 'https://tv.nrk.no/se?v=' + ep.id; }
+function alleUtgitteEpisoder(){
+  const ut = [];
+  Object.keys(SESONGER).forEach(sesongNr => {
+    SESONGER[sesongNr].episoder.forEach(ep => { if(ep.id) ut.push({ sesongNr, ep }); });
+  });
+  return ut;
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   BEVEGELSESKORT — 30 korte, klasserom-vennlige riste-løs-øvelser
+   ══════════════════════════════════════════════════════════════════════ */
+const BEVEGELSER = [
+  'Hopp opp og ned 10 ganger',
+  'Rist hele kroppen i 5 sekunder',
+  'Strekk armene mot taket og gjesp høyt',
+  'Gjør 5 knebøy',
+  'Spinn rundt tre ganger — rolig!',
+  'Vift med hendene som om de er dryppende våte',
+  'Klapp i hendene 10 ganger så fort du kan',
+  'Berør tærne dine 5 ganger',
+  'Hink på ett bein i 5 sekunder, bytt bein',
+  'Marsjer på stedet og tell til 10',
+  'Lag den råeste dansen din i 5 sekunder',
+  'Fris som en statue i 3 sekunder',
+  'Gjør deg liten som en mus, så stor som en kjempe',
+  'Vift med armene som en fugl som flyr',
+  'Rist av deg all uroen, fra topp til tå',
+  'Strekk deg mot taket, så ned mot tærne',
+  'Løp på stedet i 10 sekunder',
+  'Gi high five til sidemannen din',
+  'Klem deg selv og pust rolig ut',
+  'Press hendene sammen foran brystet i 5 sekunder',
+  'Rull skuldrene bakover 5 ganger',
+  'Gå som en robot i 5 sekunder',
+  'Hopp som en kanin 5 ganger',
+  'Snurr med armene som en vindmølle',
+  'Vis den beste jonglering-uten-ball du har',
+  'Stå på tå og strekk deg så høyt du kan',
+  'Rist høyre hånd, så venstre hånd, så begge',
+  'Lag et rart ansikt og hold det i 3 sekunder',
+  'Ta tre dype pust og rist av deg spenningen',
+  'Klapp en rytme og la sidemannen gjenta den',
+];
+const KORT_EMOJIER = ['🤸','🕺','💃','🐇','🌪️','🤖','🐦','🦵','👏','😮‍💨'];
+
+/* Kortstokk uten repetisjon før alt er brukt — samme mønster som i
+   Temaspinner og Ville du heller. */
+let kortStokk = [];
+function fyllKortStokk(){
+  kortStokk = BEVEGELSER.map((_, i) => i);
+  for(let i = kortStokk.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [kortStokk[i], kortStokk[j]] = [kortStokk[j], kortStokk[i]];
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+   LYD — samme enkle WebAudio-tonegenerator som Temaspinner, ingen filer
+   ══════════════════════════════════════════════════════════════════════ */
+const LS_LYD = 'ristlos.lyd';
+let lydPa = localStorage.getItem(LS_LYD) !== 'av';
+let lydCtx = null;
+function laasOppLyd(){ if(lydCtx) return; try{ lydCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){} }
+function tone(frekvens, varighet, type, volum, glidTil){
+  if(!lydPa || !lydCtx) return;
+  try{
+    const t = lydCtx.currentTime;
+    const o = lydCtx.createOscillator(), g = lydCtx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(frekvens, t);
+    if(glidTil) o.frequency.exponentialRampToValueAtTime(glidTil, t + varighet);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(volum, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + varighet);
+    o.connect(g); g.connect(lydCtx.destination);
+    o.start(t); o.stop(t + varighet + 0.02);
+  }catch(e){}
+}
+function spillKlakk(){ tone(220, 0.09, 'square', 0.22, 90); }
+function spillStart(){ tone(440, 0.12, 'triangle', 0.2, 660); }
+function spillSlutt(){ tone(660, 0.22, 'triangle', 0.2); setTimeout(() => tone(440, 0.42, 'triangle', 0.2), 210); }
+function tegnLydknapp(){ document.getElementById('lyd-knapp').textContent = lydPa ? '🔊' : '🔇'; }
+document.getElementById('lyd-knapp').addEventListener('click', () => {
+  lydPa = !lydPa;
+  localStorage.setItem(LS_LYD, lydPa ? 'pa' : 'av');
+  tegnLydknapp();
+  if(lydPa){ laasOppLyd(); spillKlakk(); }
+});
+tegnLydknapp();
+
+/* ══════════════════════════════════════════════════════════════════════
+   SKJERMSTYRING
+   ══════════════════════════════════════════════════════════════════════ */
+function visSkjerm(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const bare = id === 'screen-nrk-video' || id === 'screen-timer-kjorer';
+  document.getElementById('siteHeader').classList.toggle('skjult', bare);
+  document.getElementById('undertittel').classList.toggle('skjult', bare);
+}
+document.querySelectorAll('[data-tilbake]').forEach(b => {
+  b.addEventListener('click', () => visSkjerm(b.dataset.tilbake));
+});
+document.getElementById('velg-nrk').addEventListener('click', () => { laasOppLyd(); visSkjerm('screen-nrk-meny'); });
+document.getElementById('velg-kort').addEventListener('click', () => { laasOppLyd(); visSkjerm('screen-kort'); });
+document.getElementById('velg-timer').addEventListener('click', () => { laasOppLyd(); visSkjerm('screen-timer-oppsett'); });
+
+/* ══════════════════════════════════════════════════════════════════════
+   MAUR I RUMPA — UI
+   ══════════════════════════════════════════════════════════════════════ */
+let valgtSesong = '1';
+
+function tegnSesongFaner(){
+  const container = document.getElementById('sesong-faner');
+  container.innerHTML = '';
+  Object.keys(SESONGER).forEach(sesongNr => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = SESONGER[sesongNr].navn;
+    b.classList.toggle('pa', sesongNr === valgtSesong);
+    b.addEventListener('click', () => { valgtSesong = sesongNr; tegnSesongFaner(); tegnEpisodeliste(); });
+    container.appendChild(b);
+  });
+}
+
+function tegnEpisodeliste(){
+  const container = document.getElementById('episodeliste');
+  container.innerHTML = '';
+  SESONGER[valgtSesong].episoder.forEach(ep => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'episode-knapp';
+    b.innerHTML =
+      '<span class="episode-nr">' + ep.nr + '</span>' +
+      '<span class="episode-tekst">' +
+        '<span class="episode-tittel">' + ep.tittel + '</span>' +
+        '<span class="episode-beskrivelse">' + ep.beskrivelse + '</span>' +
+      '</span>' +
+      (ep.kommer ? '<span class="episode-snart">Kommer</span>' : '');
+    if(ep.kommer){
+      b.disabled = true;
+    } else {
+      b.addEventListener('click', () => visVideo(valgtSesong, ep));
+    }
+    container.appendChild(b);
+  });
+}
+
+function visVideo(sesongNr, ep){
+  document.getElementById('video-merke').textContent = 'Maur i rumpa · ' + SESONGER[sesongNr].navn + ' · episode ' + ep.nr;
+  document.getElementById('video-tittel').textContent = ep.tittel;
+  document.getElementById('video-iframe').src = nrkEmbedUrl(ep);
+  const lenke = document.getElementById('video-nrk-lenke');
+  lenke.href = nrkSideUrl(sesongNr, ep);
+  visSkjerm('screen-nrk-video');
+}
+
+let sisteTilfeldigeId = null;
+function trekkTilfeldigEpisode(){
+  const utgitte = alleUtgitteEpisoder();
+  if(!utgitte.length) return;
+  let valg;
+  if(utgitte.length === 1){
+    valg = utgitte[0];
+  } else {
+    do { valg = utgitte[Math.floor(Math.random() * utgitte.length)]; }
+    while(valg.ep.id === sisteTilfeldigeId);
+  }
+  sisteTilfeldigeId = valg.ep.id;
+  visVideo(valg.sesongNr, valg.ep);
+}
+
+document.getElementById('nrk-tilfeldig').addEventListener('click', trekkTilfeldigEpisode);
+document.getElementById('video-tilfeldig-igjen').addEventListener('click', trekkTilfeldigEpisode);
+
+tegnSesongFaner();
+tegnEpisodeliste();
+
+/* ══════════════════════════════════════════════════════════════════════
+   BEVEGELSESKORT — UI
+   ══════════════════════════════════════════════════════════════════════ */
+document.getElementById('kort-trekk').addEventListener('click', () => {
+  laasOppLyd();
+  if(!kortStokk.length) fyllKortStokk();
+  const i = kortStokk.pop();
+  const tekstEl = document.getElementById('kort-tekst');
+  tekstEl.textContent = BEVEGELSER[i];
+  tekstEl.classList.remove('trukket'); void tekstEl.offsetWidth; tekstEl.classList.add('trukket');
+  document.getElementById('kort-emoji').textContent = KORT_EMOJIER[Math.floor(Math.random() * KORT_EMOJIER.length)];
+  document.getElementById('kort-trekk').textContent = '🎲 Trekk nytt kort';
+  spillKlakk();
+});
+
+/* ══════════════════════════════════════════════════════════════════════
+   RISTETIMER — UI
+   ══════════════════════════════════════════════════════════════════════ */
+let valgtVarighet = 60;
+document.getElementById('timer-varighet').addEventListener('click', e => {
+  const b = e.target.closest('button');
+  if(!b) return;
+  valgtVarighet = Number(b.dataset.sek);
+  document.querySelectorAll('#timer-varighet button').forEach(k => k.classList.toggle('pa', k === b));
+});
+
+let timerId = null;
+function formatTid(sekunder){
+  return String(Math.floor(sekunder / 60)).padStart(2, '0') + ':' + String(sekunder % 60).padStart(2, '0');
+}
+function startTimer(){
+  laasOppLyd();
+  visSkjerm('screen-timer-kjorer');
+  let igjen = valgtVarighet;
+  const klokkeEl = document.getElementById('timer-klokke');
+  const meldingEl = document.getElementById('timer-melding');
+  meldingEl.textContent = 'RIST LØS! 🕺';
+  klokkeEl.textContent = formatTid(igjen);
+  klokkeEl.classList.remove('snart');
+  spillStart();
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    igjen--;
+    if(igjen <= 0){
+      clearInterval(timerId);
+      klokkeEl.textContent = '00:00';
+      klokkeEl.classList.remove('snart');
+      meldingEl.textContent = 'Tiden er ute! Sett dere rolig ned 🙂';
+      spillSlutt();
+      return;
+    }
+    klokkeEl.textContent = formatTid(igjen);
+    klokkeEl.classList.toggle('snart', igjen <= 3);
+  }, 1000);
+}
+document.getElementById('timer-start').addEventListener('click', startTimer);
+document.getElementById('timer-avbryt').addEventListener('click', () => {
+  clearInterval(timerId);
+  visSkjerm('screen-timer-oppsett');
+});
+</script>
+<script src="/bruk/lrnify-bruk.js" defer></script>
+<script src="/deling/deling.js" defer></script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
