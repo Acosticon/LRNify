@@ -37,7 +37,7 @@
           regler: [{ type: 'kolonne', a: 'kloroplast', n: 3 }],
         },
         {
-          tekst: 'Mitokondriet står under kloroplasten.',
+          tekst: 'Mitokondriet står lenger ned enn kloroplasten.',
           hint2: 'Mitokondriet skal stå i en rad lenger ned enn kloroplasten.',
           regler: [{ type: 'under', a: 'mitokondrium', b: 'kloroplast' }],
         },
@@ -67,8 +67,8 @@
           regler: [{ type: 'kolonne', a: 'cellemembran', n: 5 }],
         },
         {
-          tekst: 'Cellemembranen står over cellekjernen.',
-          hint2: 'Cellekjernen står i rad 2. Hvilke rader ligger over rad 2?',
+          tekst: 'Cellemembranen står lenger opp enn cellekjernen.',
+          hint2: 'Cellekjernen står i rad 2. Hvilke rader ligger lenger opp enn rad 2?',
           regler: [{ type: 'over', a: 'cellemembran', b: 'cellekjerne' }],
         },
         {
@@ -88,12 +88,12 @@
           regler: [{ type: 'rad', a: 'vakuole', n: 6 }],
         },
         {
-          tekst: 'Mitokondriet står til venstre for vakuolen.',
+          tekst: 'Mitokondriet står lenger til venstre enn vakuolen.',
           hint2: 'Se hvilke kolonner som fortsatt er ledige. Mitokondriet må ha en kolonne lenger til venstre enn vakuolen.',
           regler: [{ type: 'venstre', a: 'mitokondrium', b: 'vakuole' }],
         },
         {
-          tekst: 'Organellen der celleåndingen skjer, står under ribosomet.',
+          tekst: 'Organellen der celleåndingen skjer, står lenger ned enn ribosomet.',
           hint1: 'Celleåndingen skjer i mitokondriene.',
           hint2: 'Mitokondriet skal stå i en rad lenger ned enn ribosomet.',
           regler: [{ type: 'under', a: 'mitokondrium', b: 'ribosom' }],
