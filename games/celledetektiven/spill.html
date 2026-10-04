@@ -12,6 +12,7 @@
   --brukt:rgba(43,33,24,.09);--celle:72px}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{min-height:100%}
+[hidden]{display:none!important}
 body{font-family:'Nunito',sans-serif;font-weight:700;color:var(--blekk);background:var(--cyto)}
 button{font:inherit;color:inherit;cursor:pointer}
 header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px}
@@ -42,9 +43,10 @@ main{max-width:1180px;margin:0 auto;padding:0 24px 50px}
 .akse-side{flex-direction:column}
 .akse-side span{height:var(--celle)}
 .brett{display:grid;background:var(--blekk);border:3px solid var(--blekk);border-radius:14px;gap:2px;overflow:hidden;box-shadow:0 6px 0 var(--blekk)}
-.rute{width:var(--celle);height:var(--celle);background:#fffdf8;border:0;display:flex;align-items:center;justify-content:center;position:relative;padding:0}
-.rute.brukt{background:#ebe3d0}
-.rute.brukt::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 7px,var(--brukt) 7px 9px);pointer-events:none}
+.rute{width:var(--celle);height:var(--celle);background:var(--rom,#fffdf8);border:0;display:flex;align-items:center;justify-content:center;position:relative;padding:0}
+.rute.brukt::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 7px,var(--brukt) 7px 9px),rgba(43,33,24,.1);pointer-events:none}
+.rute.stengt{background:#cfc6b4;cursor:not-allowed}
+.rute.stengt svg{width:62%;height:62%}
 .rute.ledig:hover,.rute.dra-over{background:#fff3b0}
 .rute.ledig:hover .forhand{opacity:.45}
 .forhand{opacity:0;pointer-events:none;transition:opacity .08s}
@@ -106,6 +108,10 @@ main{max-width:1180px;margin:0 auto;padding:0 24px 50px}
 .boks ul{margin:0 0 20px 1.2em;display:flex;flex-direction:column;gap:4px}
 .boks .knapper{display:flex;gap:12px;flex-wrap:wrap}
 
+.forklaring{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:.85rem;max-width:calc(var(--celle) * 6 + 60px)}
+.forklaring span{display:inline-flex;align-items:center;gap:6px}
+.forklaring i{display:inline-block;width:18px;height:18px;border-radius:5px;border:2px solid var(--blekk)}
+.forklaring svg{width:20px;height:20px}
 .utvikler{background:#dc2626;color:#fff;padding:8px 24px;font-weight:900}
 
 @media (max-width:900px){
@@ -139,6 +145,7 @@ main{max-width:1180px;margin:0 auto;padding:0 24px 50px}
         <div class="akse akse-side" id="akse-side"></div>
         <div class="brett" id="brett" role="grid" aria-label="Spillebrett"></div>
       </div>
+      <div class="forklaring" id="forklaring" hidden></div>
       <div class="skuff-tittel">Brikker – velg en og klikk på en rute (eller dra den dit)</div>
       <div class="skuff" id="skuff"></div>
       <div class="verktoy">
@@ -221,12 +228,41 @@ for (let i = 1; i <= N; i++) {
   $('akse-topp').insertAdjacentHTML('beforeend', `<span data-k="${i}">kol ${i}</span>`);
   $('akse-side').insertAdjacentHTML('beforeend', `<span data-r="${i}">rad ${i}</span>`);
 }
+const HINDER_IKON = {
+  stivelse: '<svg viewBox="0 0 40 40" aria-hidden="true"><ellipse cx="20" cy="20" rx="15" ry="12" fill="#f5f0e6" stroke="#8a7d68" stroke-width="2.5"/><ellipse cx="18" cy="19" rx="9" ry="7" fill="none" stroke="#b3a68f" stroke-width="2"/><ellipse cx="17" cy="18" rx="4" ry="3" fill="#b3a68f"/></svg>',
+  stengt: '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M11 11l18 18M29 11L11 29" stroke="#6b6055" stroke-width="4" stroke-linecap="round"/></svg>',
+};
+const hinder = oppgave.hinder || { navn: 'Stengt', ikon: 'stengt', tekst: 'Denne ruten er stengt. Her kan ingenting stå.' };
+const romFor = (r, c) => Motor.romFor(oppgave, r, c);
+const erStengt = (r, c) => Motor.erStengt(oppgave, r, c);
+const romNavn = (r, c) => { const k = romFor(r, c); return k && oppgave.rom && oppgave.rom[k] ? `det ${oppgave.rom[k].navn} rommet` : ''; };
+
 for (let r = 1; r <= N; r++) for (let c = 1; c <= N; c++) {
   const el = document.createElement('button');
   el.className = 'rute';
   el.dataset.r = r; el.dataset.c = c;
-  el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}`);
+  const rom = romFor(r, c);
+  if (erStengt(r, c)) {
+    el.classList.add('stengt');
+    el.title = hinder.tekst;
+  } else if (rom && oppgave.rom) {
+    el.style.setProperty('--rom', oppgave.rom[rom].farge);
+    // Tykk strek der ruten grenser mot et annet rom.
+    const kant = [[-1, 0, '0 3px'], [1, 0, '0 -3px'], [0, -1, '3px 0'], [0, 1, '-3px 0']]
+      .filter(([dr, dc]) => { const nr = r + dr, nc = c + dc; return nr >= 1 && nr <= N && nc >= 1 && nc <= N && romFor(nr, nc) !== rom; })
+      .map(([, , v]) => `inset ${v} 0 var(--blekk)`);
+    if (kant.length) el.style.boxShadow = kant.join(',');
+  }
   $('brett').appendChild(el);
+}
+
+if (oppgave.kart) {
+  const deler = [];
+  if (oppgave.rom) for (const k in oppgave.rom)
+    deler.push(`<span><i style="background:${oppgave.rom[k].farge}"></i>Det ${oppgave.rom[k].navn} rommet</span>`);
+  if (oppgave.kart.some(rad => rad.includes('#'))) deler.push(`<span>${HINDER_IKON[hinder.ikon]}${hinder.navn} – her kan ingenting stå</span>`);
+  $('forklaring').innerHTML = deler.join('');
+  $('forklaring').hidden = false;
 }
 
 // Utviklersjekk: en vanlig oppgave må ha nøyaktig én løsning.
@@ -260,6 +296,7 @@ function velg(id) {
 }
 
 function provPlasser(id, r, c) {
+  if (erStengt(r, c)) { melding(hinder.tekst, true); return false; }
   const iRad = hvemIRad(r, id), iKol = hvemIKol(c, id);
   if (iRad || iKol) {
     const hvem = BRIKKER[iRad || iKol].bestemt;
@@ -289,6 +326,7 @@ function fjern(id) {
 function klikkRute(r, c) {
   const der = hvemPaa(r, c);
   if (der) { velg(der); return; }
+  if (erStengt(r, c)) { melding(hinder.tekst, true); return; }
   if (!valgt) { melding('Velg en brikke først – klikk på den under brettet.'); return; }
   provPlasser(valgt, r, c);
 }
@@ -341,7 +379,7 @@ function markerBrukt(unntatt) {
   const { radBrukt, kolBrukt } = bruktSett(unntatt);
   $('brett').querySelectorAll('.rute').forEach(el => {
     const r = +el.dataset.r, c = +el.dataset.c;
-    el.classList.toggle('brukt', !hvemPaa(r, c) && (radBrukt.has(r) || kolBrukt.has(c)));
+    el.classList.toggle('brukt', !erStengt(r, c) && !hvemPaa(r, c) && (radBrukt.has(r) || kolBrukt.has(c)));
   });
 }
 
@@ -350,6 +388,12 @@ function tegn() {
 
   $('brett').querySelectorAll('.rute').forEach(el => {
     const r = +el.dataset.r, c = +el.dataset.c;
+    const rom = romNavn(r, c);
+    if (erStengt(r, c)) {
+      el.innerHTML = HINDER_IKON[hinder.ikon];
+      el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}: ${hinder.navn}`);
+      return;
+    }
     const der = hvemPaa(r, c);
     const brukt = !der && (radBrukt.has(r) || kolBrukt.has(c));
     el.classList.toggle('brukt', brukt);
@@ -358,10 +402,10 @@ function tegn() {
       el.innerHTML = brikkeHTML(der);
       el.firstChild.draggable = true;
       el.firstChild.classList.toggle('valgt', der === valgt);
-      el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}: ${BRIKKER[der].navn}`);
+      el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}${rom ? ', ' + rom : ''}: ${BRIKKER[der].navn}`);
     } else {
       el.innerHTML = valgt && !brukt ? `<div class="forhand">${brikkeHTML(valgt)}</div>` : '';
-      el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}${brukt ? ' (brukt)' : ''}`);
+      el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}${rom ? ', ' + rom : ''}${brukt ? ' (brukt)' : ''}`);
     }
   });
 

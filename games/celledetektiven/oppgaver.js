@@ -1,5 +1,7 @@
 /* Celledetektiven — oppgavene. Bare innhold her; reglene ligger i motor.js.
-   Regeltyper: rad, kolonne (a, n) · over, under, venstre, hoyre,
+   Brettet kan ha et kart: én streng per rad, én bokstav per rute. Bokstaven
+   er rommet ruten hører til (se rom), '#' er en stengt rute (se hinder).
+   Regeltyper: rad, kolonne (a, n) · rom (a, rom) · over, under, venstre, hoyre,
    radRettOver, radRettUnder, kolRettVenstre, kolRettHoyre (a, b).
    hint1 = faghjelp (bare for ledetråder som krever fagkunnskap),
    hint2 = hva ledetråden betyr på brettet. */
@@ -103,6 +105,86 @@
         'Cellemembranen kontrollerer hva som slipper inn og ut av cellen.',
         'Fotosyntesen foregår i kloroplasten.',
         'Celleåndingen skjer i mitokondriene. Der får cellen energi.',
+      ],
+    },
+    {
+      id: 'celler-02',
+      tittel: 'Rommene i plantecellen',
+      vanskelighet: 'normal',
+      kravUnikLosning: true,
+      storrelse: 6,
+      oppdrag: 'Nå er brettet delt inn i rom, og noen ruter er sperret av stivelseskorn. Det finnes bare én riktig løsning.',
+      brikker: ['cellekjerne', 'mitokondrium', 'kloroplast', 'cellemembran', 'vakuole', 'ribosom'],
+      kart: [
+        'AABBBB',
+        'A#BBCC',
+        'AADDCC',
+        'EEDDC#',
+        'EE#DCC',
+        'EEEDDD',
+      ],
+      rom: {
+        A: { navn: 'blå',   farge: '#bfdbfe' },
+        B: { navn: 'gule',  farge: '#fde68a' },
+        C: { navn: 'grønne', farge: '#bbf7d0' },
+        D: { navn: 'rosa',  farge: '#fbcfe8' },
+        E: { navn: 'lilla', farge: '#ddd6fe' },
+      },
+      // Temarelatert hinder. Uten hinder vises stengte ruter som «Stengt».
+      hinder: { navn: 'Stivelseskorn', ikon: 'stivelse', tekst: 'Her ligger et stivelseskorn. Her kan ingenting stå.' },
+      ledetrader: [
+        {
+          tekst: 'Cellekjernen står i det blå rommet.',
+          hint2: 'Cellekjernen skal stå i en av de blå rutene.',
+          regler: [{ type: 'rom', a: 'cellekjerne', rom: 'A' }],
+        },
+        {
+          tekst: 'Cellekjernen står lenger til høyre enn organellen der celleåndingen skjer.',
+          hint1: 'Celleåndingen skjer i mitokondriene.',
+          hint2: 'Cellekjernen skal stå i en kolonne lenger til høyre enn mitokondriet.',
+          regler: [{ type: 'hoyre', a: 'cellekjerne', b: 'mitokondrium' }],
+        },
+        {
+          tekst: 'Mitokondriet står i det lilla rommet.',
+          hint2: 'Mitokondriet skal stå i en av de lilla rutene.',
+          regler: [{ type: 'rom', a: 'mitokondrium', rom: 'E' }],
+        },
+        {
+          tekst: 'Strukturen der cellen lager proteiner, står i det lilla rommet.',
+          hint1: 'Proteinene lages av ribosomene.',
+          hint2: 'Ribosomet skal stå i en av de lilla rutene.',
+          regler: [{ type: 'rom', a: 'ribosom', rom: 'E' }],
+        },
+        {
+          tekst: 'Organellen der fotosyntesen foregår, står i rad 3.',
+          hint1: 'Fotosyntesen foregår i kloroplasten.',
+          hint2: 'Kloroplasten skal stå et sted i rad 3.',
+          regler: [{ type: 'rad', a: 'kloroplast', n: 3 }],
+        },
+        {
+          tekst: 'Organellen som lagrer vann og næringsstoffer i plantecellen, står i det grønne rommet.',
+          hint1: 'Vakuolen lagrer vann og næringsstoffer. I planteceller er den ofte stor.',
+          hint2: 'Vakuolen skal stå i en av de grønne rutene.',
+          regler: [{ type: 'rom', a: 'vakuole', rom: 'C' }],
+        },
+        {
+          tekst: 'Strukturen som kontrollerer hva som slipper inn og ut av cellen, står lenger til høyre enn vakuolen.',
+          hint1: 'Det er cellemembranen som kontrollerer hva som slipper inn og ut av cellen.',
+          hint2: 'Cellemembranen skal stå i en kolonne lenger til høyre enn vakuolen. Hvor langt til høyre kan vakuolen da stå?',
+          regler: [{ type: 'hoyre', a: 'cellemembran', b: 'vakuole' }],
+        },
+        {
+          tekst: 'Mitokondriet står lenger opp enn vakuolen.',
+          hint2: 'Mitokondriet skal stå i en rad lenger opp enn vakuolen.',
+          regler: [{ type: 'over', a: 'mitokondrium', b: 'vakuole' }],
+        },
+      ],
+      fakta: [
+        'Celleåndingen skjer i mitokondriene.',
+        'Ribosomene lager proteiner.',
+        'Fotosyntesen foregår i kloroplasten.',
+        'Vakuolen lagrer vann og næringsstoffer.',
+        'Cellemembranen kontrollerer hva som slipper inn og ut av cellen.',
       ],
     },
   ];

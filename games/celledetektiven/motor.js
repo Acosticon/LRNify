@@ -1,13 +1,26 @@
 /* Celledetektiven — spillregler og løsningsteller.
    Ingen DOM her, så fila kan også kjøres i Node for å sjekke oppgavene:
      node games/celledetektiven/sjekk-oppgaver.js
-   Rader og kolonner er 1-baserte. Rad 1 er øverst, kolonne 1 er lengst til venstre. */
+   Rader og kolonner er 1-baserte. Rad 1 er øverst, kolonne 1 er lengst til venstre.
+   Et brett kan ha et kart (én streng per rad): en bokstav per rute sier hvilket
+   rom ruten hører til, og '#' er en stengt rute der ingenting kan stå. */
 (function (root) {
   'use strict';
 
+  const STENGT = '#';
+
+  function romFor(oppgave, r, c) {
+    return oppgave.kart ? oppgave.kart[r - 1][c - 1] : null;
+  }
+
+  function erStengt(oppgave, r, c) {
+    return romFor(oppgave, r, c) === STENGT;
+  }
+
   // Én regel = ett krav om plassering. En ledetråd kan ha flere regler.
-  // pos[id] = { r, c }
+  // pos[id] = { r, c }, o = oppgaven (trengs for rom)
   const SJEKK = {
+    rom:            (p, x, o) => romFor(o, p[x.a].r, p[x.a].c) === x.rom,
     rad:            (p, x) => p[x.a].r === x.n,
     kolonne:        (p, x) => p[x.a].c === x.n,
     over:           (p, x) => p[x.a].r < p[x.b].r,
@@ -20,20 +33,20 @@
     kolRettHoyre:   (p, x) => p[x.a].c === p[x.b].c + 1,
   };
 
-  function regelOppfylt(pos, regel) {
+  function regelOppfylt(pos, regel, oppgave) {
     const f = SJEKK[regel.type];
     if (!f) throw new Error('Ukjent regeltype: ' + regel.type);
-    return f(pos, regel);
+    return f(pos, regel, oppgave);
   }
 
-  function ledetradOppfylt(pos, ledetrad) {
-    return ledetrad.regler.every(r => regelOppfylt(pos, r));
+  function ledetradOppfylt(pos, ledetrad, oppgave) {
+    return ledetrad.regler.every(r => regelOppfylt(pos, r, oppgave));
   }
 
   // Indekser til ledetrådene som ikke stemmer med en ferdig plassering.
   function brutteLedetrader(oppgave, pos) {
     const ut = [];
-    oppgave.ledetrader.forEach((l, i) => { if (!ledetradOppfylt(pos, l)) ut.push(i); });
+    oppgave.ledetrader.forEach((l, i) => { if (!ledetradOppfylt(pos, l, oppgave)) ut.push(i); });
     return ut;
   }
 
@@ -69,10 +82,11 @@
     ids.forEach(id => { pos[id] = { r: 0, c: 0 }; });
     for (const rp of perms) {
       ids.forEach((id, i) => { pos[id].r = rp[i]; });
-      if (!radRegler.every(r => regelOppfylt(pos, r))) continue;
+      if (!radRegler.every(r => regelOppfylt(pos, r, oppgave))) continue;
       for (const cp of perms) {
         ids.forEach((id, i) => { pos[id].c = cp[i]; });
-        if (!kolRegler.every(r => regelOppfylt(pos, r))) continue;
+        if (ids.some(id => erStengt(oppgave, pos[id].r, pos[id].c))) continue;
+        if (!kolRegler.every(r => regelOppfylt(pos, r, oppgave))) continue;
         const kopi = {};
         ids.forEach(id => { kopi[id] = { r: pos[id].r, c: pos[id].c }; });
         losninger.push(kopi);
@@ -88,7 +102,53 @@
     return antall === 0 ? 'ingen' : antall === 1 ? 'unik' : 'flere';
   }
 
-  const api = { regelOppfylt, ledetradOppfylt, brutteLedetrader, finnLosninger, valider };
+  // Løser oppgaven slik en elev kan gjøre det, uten gjetting: stryk ruter
+  // ledetrådene utelukker, plasser en brikke når den bare har én mulig rute,
+  // og bruk at hver rad og kolonne må ha nøyaktig én brikke.
+  // Returnerer { lost, runder } – runder er et grovt mål på hvor lang
+  // resonnementskjeden er. lost = false betyr at oppgaven krever gjetting
+  // eller lengre resonnementer enn dette.
+  function losTrinnvis(oppgave) {
+    const n = oppgave.storrelse, ids = oppgave.brikker;
+    const kand = {};
+    ids.forEach(id => {
+      kand[id] = [];
+      for (let r = 1; r <= n; r++) for (let c = 1; c <= n; c++)
+        if (!erStengt(oppgave, r, c)) kand[id].push({ r, c });
+    });
+    const regler = oppgave.ledetrader.flatMap(l => l.regler);
+    const enkel = regler.filter(x => !x.b);
+    const par = regler.filter(x => x.b);
+    const filtrer = (id, f) => {
+      const for_ = kand[id].length;
+      kand[id] = kand[id].filter(f);
+      return kand[id].length !== for_;
+    };
+    enkel.forEach(x => filtrer(x.a, p => regelOppfylt({ [x.a]: p }, x, oppgave)));
+    let runder = 0, endret = true;
+    while (endret) {
+      endret = false;
+      runder++;
+      for (const x of par) {
+        const ok = (pa, pb) => pa.r !== pb.r && pa.c !== pb.c && regelOppfylt({ [x.a]: pa, [x.b]: pb }, x, oppgave);
+        if (filtrer(x.a, pa => kand[x.b].some(pb => ok(pa, pb)))) endret = true;
+        if (filtrer(x.b, pb => kand[x.a].some(pa => ok(pa, pb)))) endret = true;
+      }
+      for (const id of ids) {
+        if (kand[id].length !== 1) continue;
+        const { r, c } = kand[id][0];
+        for (const andre of ids) if (andre !== id && filtrer(andre, p => p.r !== r && p.c !== c)) endret = true;
+      }
+      for (const akse of ['r', 'c']) for (let v = 1; v <= n; v++) {
+        const hvem = ids.filter(id => kand[id].some(p => p[akse] === v));
+        if (hvem.length === 1 && filtrer(hvem[0], p => p[akse] === v)) endret = true;
+      }
+      if (ids.some(id => kand[id].length === 0)) return { lost: false, runder };
+    }
+    return { lost: ids.every(id => kand[id].length === 1), runder };
+  }
+
+  const api = { losTrinnvis, romFor, erStengt, regelOppfylt, ledetradOppfylt, brutteLedetrader, finnLosninger, valider };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.Motor = api;
 })(this);
