@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Celledetektiven — LRNify</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--krem:#fff9f0;--blekk:#2b2118;--gul:#facc15;--korall:#fa5c66;--gronn:#16a34a;--cyto:#f7efcf;--muted:#6b6055;
+  --brukt:rgba(43,33,24,.09);--celle:72px}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%}
+body{font-family:'Nunito',sans-serif;font-weight:700;color:var(--blekk);background:var(--cyto)}
+button{font:inherit;color:inherit;cursor:pointer}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 24px}
+.logo{font-family:'Chewy',cursive;font-size:2rem;transform:rotate(-2deg);line-height:1;text-decoration:none;color:var(--blekk)}
+.logo b{color:var(--gul);-webkit-text-stroke:2px var(--blekk);font-weight:400}
+.knapp{font-weight:900;font-size:.9rem;background:#fff;border:3px solid var(--blekk);box-shadow:0 4px 0 var(--blekk);
+  border-radius:12px;padding:8px 16px;text-decoration:none;color:var(--blekk);display:inline-flex;align-items:center;gap:6px;transition:transform .08s,box-shadow .08s}
+.knapp:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--blekk)}
+.knapp:disabled{opacity:.45;cursor:not-allowed}
+.knapp.hoved{background:var(--gul);font-size:1.05rem;padding:11px 22px}
+.knapp.liten{font-size:.78rem;padding:4px 10px;border-width:2px;box-shadow:0 3px 0 var(--blekk);border-radius:9px}
+
+main{max-width:1180px;margin:0 auto;padding:0 24px 50px}
+.tittel{font-family:'Chewy',cursive;font-size:2.4rem;line-height:1;transform:rotate(-1deg);display:inline-block}
+.etikett{display:inline-block;background:var(--blekk);color:var(--krem);border-radius:99px;padding:2px 12px;font-size:.78rem;font-weight:900;margin-left:10px;vertical-align:middle}
+.oppdrag{color:var(--muted);margin:8px 0 18px;font-size:1rem}
+
+.oppsett{display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start}
+
+/* ---------- brettet ---------- */
+.brett-omraade{display:flex;flex-direction:column;align-items:flex-start;gap:14px}
+.brett-ramme{display:grid;grid-template-columns:44px auto;grid-template-rows:26px auto;gap:4px}
+.akse{display:flex;font-size:.85rem;font-weight:900;color:var(--muted)}
+.akse span{display:flex;align-items:center;justify-content:center;border-radius:6px;transition:background .1s;white-space:nowrap}
+.akse-side span{justify-content:flex-end;padding-right:6px}
+.akse span.aktiv{background:var(--gul);color:var(--blekk)}
+.akse-topp span{width:var(--celle)}
+.akse-side{flex-direction:column}
+.akse-side span{height:var(--celle)}
+.brett{display:grid;background:var(--blekk);border:3px solid var(--blekk);border-radius:14px;gap:2px;overflow:hidden;box-shadow:0 6px 0 var(--blekk)}
+.rute{width:var(--celle);height:var(--celle);background:#fffdf8;border:0;display:flex;align-items:center;justify-content:center;position:relative;padding:0}
+.rute.brukt{background:#ebe3d0}
+.rute.brukt::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 7px,var(--brukt) 7px 9px);pointer-events:none}
+.rute.ledig:hover,.rute.dra-over{background:#fff3b0}
+.rute.ledig:hover .forhand{opacity:.45}
+.forhand{opacity:0;pointer-events:none;transition:opacity .08s}
+.rute:focus-visible{outline:3px solid var(--korall);outline-offset:-3px}
+
+/* ---------- brikker ---------- */
+.brikke{width:62px;height:62px;border-radius:12px;background:#fff;border:3px solid var(--f);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:1px;user-select:none;position:relative}
+.brikke svg{width:34px;height:34px;flex-shrink:0}
+.brikke .navn{font-size:.56rem;font-weight:900;line-height:1;letter-spacing:-.01em;white-space:nowrap}
+.rute .brikke{cursor:grab}
+.brikke.valgt{box-shadow:0 0 0 3px var(--blekk),0 0 0 6px var(--gul);z-index:2}
+
+.skuff{display:flex;gap:10px;flex-wrap:wrap;padding:12px;background:rgba(255,255,255,.6);border:3px dashed var(--blekk);border-radius:16px;min-height:92px;align-items:center}
+.skuff-tittel{font-size:.8rem;color:var(--muted);font-weight:900;margin-bottom:-6px}
+.skuff-plass{width:66px;height:66px;border-radius:13px;display:flex;align-items:center;justify-content:center;border:0;background:none;padding:0}
+.skuff-plass .brikke{cursor:grab;box-shadow:0 3px 0 var(--blekk)}
+.skuff-plass.tom{border:2px dashed rgba(43,33,24,.25)}
+.skuff-plass.tom .brikke{opacity:.18;box-shadow:none;border-style:dashed}
+.skuff.dra-over{background:#fff3b0}
+.verktoy{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.melding{min-height:1.5em;font-size:.95rem;font-weight:800}
+.melding.feil{color:#b91c1c}
+
+/* ---------- ledetråder ---------- */
+.panel{background:#fff;border:3px solid var(--blekk);border-radius:20px;box-shadow:0 6px 0 var(--blekk);padding:18px 20px}
+.panel h2{font-family:'Chewy',cursive;font-size:1.6rem;font-weight:400;margin-bottom:4px}
+.panel .info{font-size:.82rem;color:var(--muted);margin-bottom:12px}
+.ledetrader{list-style:none;display:flex;flex-direction:column;gap:10px}
+.ledetrad{border:2px solid #e7dcc4;border-radius:14px;padding:10px 12px;background:#fffdf8;transition:background .15s,border-color .15s}
+.ledetrad .rad1{display:flex;gap:10px;align-items:flex-start}
+.ledetrad .nr{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--blekk);color:var(--krem);font-size:.8rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+.ledetrad .tekst{flex:1;font-size:1rem;line-height:1.4;padding-top:2px}
+.ledetrad .knapper{display:flex;gap:6px;flex-shrink:0}
+.ledetrad .ferdig-knapp{width:30px;height:30px;border-radius:9px;border:2px solid var(--blekk);background:#fff;font-size:.95rem;line-height:1;display:flex;align-items:center;justify-content:center;padding:0}
+.ledetrad.ferdig{opacity:.55}
+.ledetrad.ferdig .tekst{text-decoration:line-through;text-decoration-thickness:2px}
+.ledetrad.ferdig .ferdig-knapp{background:var(--gronn);color:#fff}
+.ledetrad.brutt{border-color:#dc2626;background:#fef2f2;opacity:1}
+.ledetrad.brutt .nr{background:#dc2626}
+.hint{margin:8px 0 0 36px;font-size:.88rem;line-height:1.4;background:#fef9c3;border-radius:10px;padding:6px 10px}
+.hint b{font-weight:900}
+
+.sjekk-rad{margin-top:18px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.status{font-size:.88rem;color:var(--muted)}
+
+/* ---------- opplæring ---------- */
+.trener{background:var(--blekk);color:var(--krem);border-radius:16px;padding:12px 16px;font-size:1rem;line-height:1.4;max-width:560px;margin-bottom:16px;display:flex;gap:12px;align-items:flex-start}
+.trener .steg{flex-shrink:0;background:var(--gul);color:var(--blekk);border-radius:8px;padding:1px 8px;font-size:.8rem;font-weight:900;margin-top:2px}
+
+/* ---------- ferdig ---------- */
+.slor{position:fixed;inset:0;background:rgba(43,33,24,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:20}
+.slor[hidden]{display:none}
+.boks{background:var(--krem);border:4px solid var(--blekk);border-radius:24px;box-shadow:0 10px 0 var(--blekk);padding:28px 32px;max-width:520px;width:100%}
+.boks h2{font-family:'Chewy',cursive;font-size:2.6rem;font-weight:400;line-height:1;margin-bottom:8px}
+.boks p{color:var(--muted);margin-bottom:14px}
+.boks h3{font-size:1rem;font-weight:900;margin-bottom:6px}
+.boks ul{margin:0 0 20px 1.2em;display:flex;flex-direction:column;gap:4px}
+.boks .knapper{display:flex;gap:12px;flex-wrap:wrap}
+
+.utvikler{background:#dc2626;color:#fff;padding:8px 24px;font-weight:900}
+
+@media (max-width:900px){
+  :root{--celle:min(60px,calc((100vw - 90px)/6))}
+  .oppsett{grid-template-columns:1fr}
+  .brikke{width:calc(var(--celle) - 8px);height:calc(var(--celle) - 8px)}
+  .brikke svg{width:60%;height:60%}
+  .brikke .navn{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="utvikler" id="utvikler" hidden></div>
+
+<header>
+  <a class="logo" href="../../index.html#grid">LRN<b>ify</b></a>
+  <a class="knapp" href="index.html">← Alle oppgaver</a>
+</header>
+
+<main>
+  <h1 class="tittel" id="tittel"></h1><span class="etikett" id="etikett"></span>
+  <p class="oppdrag" id="oppdrag"></p>
+
+  <div class="oppsett">
+    <section class="brett-omraade">
+      <div class="trener" id="trener" hidden><span class="steg" id="trener-steg"></span><span id="trener-tekst"></span></div>
+      <div class="brett-ramme">
+        <div></div>
+        <div class="akse akse-topp" id="akse-topp"></div>
+        <div class="akse akse-side" id="akse-side"></div>
+        <div class="brett" id="brett" role="grid" aria-label="Spillebrett"></div>
+      </div>
+      <div class="skuff-tittel">Brikker – velg en og klikk på en rute (eller dra den dit)</div>
+      <div class="skuff" id="skuff"></div>
+      <div class="verktoy">
+        <button class="knapp" id="fjern" disabled>↩ Ta av brettet</button>
+        <button class="knapp" id="nullstill">Start på nytt</button>
+      </div>
+      <p class="melding" id="melding" aria-live="polite"></p>
+    </section>
+
+    <aside class="panel">
+      <h2>Ledetråder</h2>
+      <p class="info">Trykk <b>Hint</b> hvis du står fast – det koster ingenting. Trykk ✓ når du er ferdig med en ledetråd.</p>
+      <ol class="ledetrader" id="ledetrader"></ol>
+      <div class="sjekk-rad">
+        <button class="knapp hoved" id="sjekk" disabled>Sjekk løsning</button>
+        <span class="status" id="status"></span>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<div class="slor" id="slor" hidden>
+  <div class="boks" role="dialog" aria-modal="true" aria-labelledby="ferdig-tittel">
+    <h2 id="ferdig-tittel">Løst! 🎉</h2>
+    <p id="ferdig-tekst"></p>
+    <h3>Du brukte blant annet disse faktaene:</h3>
+    <ul id="fakta"></ul>
+    <div class="knapper" id="ferdig-knapper"></div>
+  </div>
+</div>
+
+<script src="motor.js"></script>
+<script src="oppgaver.js"></script>
+<script>
+'use strict';
+const { BRIKKER, OPPGAVER } = window.Oppgaver;
+
+// Enkle plassholder-ikoner. Byttes ut med ordentlig grafikk senere.
+const IKON = {
+  cellekjerne: '<circle cx="20" cy="20" r="15" fill="#c4b5fd" stroke="#6d28d9" stroke-width="2.5"/><circle cx="23" cy="17" r="5" fill="#6d28d9"/>',
+  mitokondrium: '<ellipse cx="20" cy="20" rx="17" ry="10" fill="#fed7aa" stroke="#c2410c" stroke-width="2.5"/><path d="M7 20l4-6 4 12 4-12 4 12 4-12 4 6" fill="none" stroke="#c2410c" stroke-width="2" stroke-linejoin="round"/>',
+  kloroplast: '<ellipse cx="20" cy="20" rx="17" ry="11" fill="#bbf7d0" stroke="#15803d" stroke-width="2.5"/><g fill="#15803d"><rect x="9" y="14" width="6" height="12" rx="2"/><rect x="17" y="14" width="6" height="12" rx="2"/><rect x="25" y="14" width="6" height="12" rx="2"/></g>',
+  cellemembran: '<rect x="3" y="3" width="34" height="34" rx="9" fill="none" stroke="#a16207" stroke-width="2.5"/><rect x="8" y="8" width="24" height="24" rx="6" fill="#fef08a" stroke="#a16207" stroke-width="2.5"/>',
+  vakuole: '<path d="M20 4c9 0 16 6 16 15s-6 17-16 17S4 29 4 20 11 4 20 4z" fill="#bae6fd" stroke="#0369a1" stroke-width="2.5"/><path d="M12 15c1-3 4-5 7-5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>',
+  ribosom: '<circle cx="20" cy="14" r="9" fill="#fecdd3" stroke="#be123c" stroke-width="2.5"/><circle cx="20" cy="29" r="6.5" fill="#fb7185" stroke="#be123c" stroke-width="2.5"/>',
+};
+
+function brikkeHTML(id) {
+  const b = BRIKKER[id];
+  return `<div class="brikke" style="--f:${b.farge}" data-id="${id}">` +
+    `<svg viewBox="0 0 40 40" aria-hidden="true">${IKON[id]}</svg><span class="navn">${b.navn}</span></div>`;
+}
+const stor = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+// ---------- tilstand ----------
+const params = new URLSearchParams(location.search);
+const oppgaveIndeks = Math.max(0, OPPGAVER.findIndex(o => o.id === params.get('oppgave')));
+const oppgave = OPPGAVER[oppgaveIndeks];
+const N = oppgave.storrelse;
+const erOpplaering = !oppgave.kravUnikLosning;
+
+let pos = {};          // id -> {r, c}
+let valgt = null;      // id
+let brutte = [];       // indekser til ledetråder som ikke stemte ved siste sjekk
+let traenerSteg = 0;
+const ferdigMerket = new Set();
+const hintNiva = oppgave.ledetrader.map(() => 0);
+
+const $ = id => document.getElementById(id);
+
+// ---------- oppsett ----------
+document.title = oppgave.tittel + ' — Celledetektiven';
+$('tittel').textContent = oppgave.tittel;
+$('etikett').textContent = { opplaering: 'Opplæring', lett: 'Lett', normal: 'Normal' }[oppgave.vanskelighet] || '';
+$('oppdrag').textContent = oppgave.oppdrag;
+document.documentElement.style.setProperty('--n', N);
+$('brett').style.gridTemplateColumns = `repeat(${N}, var(--celle))`;
+
+for (let i = 1; i <= N; i++) {
+  $('akse-topp').insertAdjacentHTML('beforeend', `<span data-k="${i}">kol ${i}</span>`);
+  $('akse-side').insertAdjacentHTML('beforeend', `<span data-r="${i}">rad ${i}</span>`);
+}
+for (let r = 1; r <= N; r++) for (let c = 1; c <= N; c++) {
+  const el = document.createElement('button');
+  el.className = 'rute';
+  el.dataset.r = r; el.dataset.c = c;
+  el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}`);
+  $('brett').appendChild(el);
+}
+
+// Utviklersjekk: en vanlig oppgave må ha nøyaktig én løsning.
+(function () {
+  const svar = Motor.valider(oppgave);
+  const ok = oppgave.kravUnikLosning ? svar === 'unik' : svar !== 'ingen';
+  if (!ok) {
+    $('utvikler').hidden = false;
+    $('utvikler').textContent = `Oppgavefeil: «${oppgave.id}» har ${svar === 'ingen' ? 'ingen' : 'flere'} løsninger.`;
+    console.error($('utvikler').textContent);
+  }
+})();
+
+// ---------- hjelpere ----------
+function hvemPaa(r, c) { return Object.keys(pos).find(id => pos[id].r === r && pos[id].c === c) || null; }
+function hvemIRad(r, unntatt) { return Object.keys(pos).find(id => id !== unntatt && pos[id].r === r) || null; }
+function hvemIKol(c, unntatt) { return Object.keys(pos).find(id => id !== unntatt && pos[id].c === c) || null; }
+function antallPlassert() { return Object.keys(pos).length; }
+
+function melding(tekst, feil) {
+  $('melding').textContent = tekst || '';
+  $('melding').className = 'melding' + (feil ? ' feil' : '');
+}
+
+// ---------- handlinger ----------
+function velg(id) {
+  valgt = valgt === id ? null : id;
+  melding('');
+  if (traenerSteg === 0 && valgt) traenerSteg = 1;
+  tegn();
+}
+
+function provPlasser(id, r, c) {
+  const iRad = hvemIRad(r, id), iKol = hvemIKol(c, id);
+  if (iRad || iKol) {
+    const hvem = BRIKKER[iRad || iKol].bestemt;
+    melding(iRad && iKol ? `Både raden og kolonnen er allerede brukt.`
+      : iRad ? `Denne raden er allerede brukt av ${hvem}.`
+      : `Denne kolonnen er allerede brukt av ${hvem}.`, true);
+    return false;
+  }
+  pos[id] = { r, c };
+  valgt = null;
+  brutte = [];
+  melding('');
+  if (traenerSteg <= 1) traenerSteg = 2;
+  tegn();
+  return true;
+}
+
+function fjern(id) {
+  if (!id || !pos[id]) return;
+  delete pos[id];
+  valgt = null;
+  brutte = [];
+  melding('');
+  tegn();
+}
+
+function klikkRute(r, c) {
+  const der = hvemPaa(r, c);
+  if (der) { velg(der); return; }
+  if (!valgt) { melding('Velg en brikke først – klikk på den under brettet.'); return; }
+  provPlasser(valgt, r, c);
+}
+
+function visHint(i) {
+  const l = oppgave.ledetrader[i];
+  const maks = l.hint1 ? 2 : 1;
+  hintNiva[i] = Math.min(maks, hintNiva[i] + 1);
+  tegnLedetrader();
+}
+
+function sjekk() {
+  if (antallPlassert() < N) return;
+  brutte = Motor.brutteLedetrader(oppgave, pos);
+  if (brutte.length === 0) {
+    visFerdig();
+  } else {
+    melding(brutte.length === 1
+      ? 'Ikke helt! Plasseringen passer ikke med ledetråden som er merket med rødt.'
+      : `Ikke helt! Plasseringen passer ikke med ${brutte.length} av ledetrådene. De er merket med rødt.`, true);
+    brutte.forEach(i => ferdigMerket.delete(i));
+  }
+  tegn();
+}
+
+function visFerdig() {
+  $('ferdig-tekst').textContent = erOpplaering
+    ? 'Bra! Nå kan du reglene. I neste oppgave finnes det bare én riktig løsning – den må du resonnere deg fram til.'
+    : 'Du fant den eneste plasseringen som passer med alle ledetrådene.';
+  $('fakta').innerHTML = oppgave.fakta.map(f => `<li>${f}</li>`).join('');
+  const neste = OPPGAVER[oppgaveIndeks + 1];
+  $('ferdig-knapper').innerHTML =
+    (neste ? `<a class="knapp hoved" href="spill.html?oppgave=${neste.id}">Neste: ${neste.tittel} →</a>` : '') +
+    `<a class="knapp${neste ? '' : ' hoved'}" href="index.html">Alle oppgaver</a>` +
+    `<button class="knapp" id="lukk">Se brettet</button>`;
+  $('lukk').onclick = () => { $('slor').hidden = true; };
+  $('slor').hidden = false;
+  traenerSteg = 4;
+}
+
+// ---------- tegning ----------
+function bruktSett(unntatt) {
+  const radBrukt = new Set(), kolBrukt = new Set();
+  for (const id in pos) if (id !== unntatt) { radBrukt.add(pos[id].r); kolBrukt.add(pos[id].c); }
+  return { radBrukt, kolBrukt };
+}
+
+// Bare skravering, uten å bygge rutene på nytt (brukes mens en brikke dras).
+function markerBrukt(unntatt) {
+  const { radBrukt, kolBrukt } = bruktSett(unntatt);
+  $('brett').querySelectorAll('.rute').forEach(el => {
+    const r = +el.dataset.r, c = +el.dataset.c;
+    el.classList.toggle('brukt', !hvemPaa(r, c) && (radBrukt.has(r) || kolBrukt.has(c)));
+  });
+}
+
+function tegn() {
+  const { radBrukt, kolBrukt } = bruktSett(valgt);
+
+  $('brett').querySelectorAll('.rute').forEach(el => {
+    const r = +el.dataset.r, c = +el.dataset.c;
+    const der = hvemPaa(r, c);
+    const brukt = !der && (radBrukt.has(r) || kolBrukt.has(c));
+    el.classList.toggle('brukt', brukt);
+    el.classList.toggle('ledig', !der && !brukt && !!valgt);
+    if (der) {
+      el.innerHTML = brikkeHTML(der);
+      el.firstChild.draggable = true;
+      el.firstChild.classList.toggle('valgt', der === valgt);
+      el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}: ${BRIKKER[der].navn}`);
+    } else {
+      el.innerHTML = valgt && !brukt ? `<div class="forhand">${brikkeHTML(valgt)}</div>` : '';
+      el.setAttribute('aria-label', `Rad ${r}, kolonne ${c}${brukt ? ' (brukt)' : ''}`);
+    }
+  });
+
+  $('skuff').innerHTML = '';
+  oppgave.brikker.forEach(id => {
+    const plass = document.createElement('button');
+    plass.className = 'skuff-plass' + (pos[id] ? ' tom' : '');
+    plass.innerHTML = brikkeHTML(id);
+    plass.title = pos[id] ? `${BRIKKER[id].navn} står på brettet (rad ${pos[id].r}, kolonne ${pos[id].c})` : `Velg ${BRIKKER[id].bestemt}`;
+    const b = plass.firstChild;
+    b.draggable = true;
+    b.classList.toggle('valgt', id === valgt);
+    plass.onclick = () => velg(id);
+    $('skuff').appendChild(plass);
+  });
+
+  $('fjern').disabled = !(valgt && pos[valgt]);
+
+  const n = antallPlassert();
+  $('sjekk').disabled = n < N;
+  $('status').textContent = n < N ? `${n} av ${N} brikker er plassert.` : 'Alle brikkene er plassert.';
+
+  if (traenerSteg === 2 && n === N) traenerSteg = 3;
+  tegnLedetrader();
+  tegnTrener();
+}
+
+function tegnLedetrader() {
+  $('ledetrader').innerHTML = '';
+  oppgave.ledetrader.forEach((l, i) => {
+    const li = document.createElement('li');
+    li.className = 'ledetrad' + (ferdigMerket.has(i) ? ' ferdig' : '') + (brutte.includes(i) ? ' brutt' : '');
+    const maks = l.hint1 ? 2 : 1;
+    const hintTekst = hintNiva[i] === 0 ? 'Hint' : hintNiva[i] < maks ? 'Mer hjelp' : null;
+    let hint = '';
+    if (hintNiva[i] >= 1 && l.hint1) hint += `<div class="hint"><b>Fag:</b> ${l.hint1}</div>`;
+    if (hintNiva[i] >= maks) hint += `<div class="hint"><b>På brettet:</b> ${l.hint2}</div>`;
+    li.innerHTML = `<div class="rad1"><span class="nr">${i + 1}</span><span class="tekst">${l.tekst}</span>` +
+      `<span class="knapper">${hintTekst ? `<button class="knapp liten" data-hint="${i}">${hintTekst}</button>` : ''}` +
+      `<button class="ferdig-knapp" data-ferdig="${i}" title="Merk som ferdig" aria-pressed="${ferdigMerket.has(i)}">✓</button></span></div>${hint}`;
+    $('ledetrader').appendChild(li);
+  });
+}
+
+const TRENER = [
+  'Klikk på en av brikkene under brettet for å velge den.',
+  'Klikk på en rute på brettet for å sette brikken der.',
+  'Se: raden og kolonnen til brikken ble skravert. Ingen andre brikker kan stå der. Les ledetrådene og plasser alle tre brikkene. Vil du flytte en brikke, klikker du på den og så på en ny rute.',
+  'Alle brikkene står på brettet. Trykk «Sjekk løsning».',
+];
+function tegnTrener() {
+  if (!erOpplaering || traenerSteg >= TRENER.length) { $('trener').hidden = true; return; }
+  $('trener').hidden = false;
+  $('trener-steg').textContent = `Steg ${traenerSteg + 1}`;
+  $('trener-tekst').textContent = TRENER[traenerSteg];
+}
+
+// ---------- hendelser ----------
+$('brett').addEventListener('click', e => {
+  const rute = e.target.closest('.rute');
+  if (rute) klikkRute(+rute.dataset.r, +rute.dataset.c);
+});
+$('brett').addEventListener('mouseover', e => {
+  const rute = e.target.closest('.rute');
+  document.querySelectorAll('.akse span').forEach(s => s.classList.toggle('aktiv',
+    !!rute && (s.dataset.r === rute.dataset.r || s.dataset.k === rute.dataset.c)));
+});
+$('brett').addEventListener('mouseleave', () => document.querySelectorAll('.akse span').forEach(s => s.classList.remove('aktiv')));
+
+$('ledetrader').addEventListener('click', e => {
+  const h = e.target.closest('[data-hint]');
+  if (h) { visHint(+h.dataset.hint); return; }
+  const f = e.target.closest('[data-ferdig]');
+  if (f) {
+    const i = +f.dataset.ferdig;
+    ferdigMerket.has(i) ? ferdigMerket.delete(i) : ferdigMerket.add(i);
+    tegnLedetrader();
+  }
+});
+
+$('fjern').onclick = () => fjern(valgt);
+$('nullstill').onclick = () => {
+  if (antallPlassert() && !confirm('Vil du ta alle brikkene av brettet?')) return;
+  pos = {}; valgt = null; brutte = []; ferdigMerket.clear(); melding(''); tegn();
+};
+$('sjekk').onclick = sjekk;
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (!$('slor').hidden) $('slor').hidden = true;
+    else if (valgt) { valgt = null; tegn(); }
+  }
+  if ((e.key === 'Delete' || e.key === 'Backspace') && valgt && pos[valgt]) fjern(valgt);
+});
+
+// Dra og slipp: dra en brikke til en rute, eller tilbake til skuffen for å fjerne den.
+let draId = null;
+document.addEventListener('dragstart', e => {
+  const b = e.target.closest && e.target.closest('.brikke');
+  if (!b) return;
+  draId = b.dataset.id;
+  e.dataTransfer.setData('text/plain', draId);
+  e.dataTransfer.effectAllowed = 'move';
+  // Ikke tegn brettet på nytt her – da forsvinner elementet som dras.
+  markerBrukt(draId);
+});
+document.addEventListener('dragend', () => {
+  draId = null;
+  tegn();
+});
+$('brett').addEventListener('dragover', e => {
+  const rute = e.target.closest('.rute');
+  if (!draId || !rute) return;
+  e.preventDefault();
+  document.querySelectorAll('.dra-over').forEach(el => el.classList.remove('dra-over'));
+  if (!hvemPaa(+rute.dataset.r, +rute.dataset.c) && !rute.classList.contains('brukt')) rute.classList.add('dra-over');
+});
+$('brett').addEventListener('drop', e => {
+  const rute = e.target.closest('.rute');
+  if (!draId || !rute) return;
+  e.preventDefault();
+  const r = +rute.dataset.r, c = +rute.dataset.c;
+  const der = hvemPaa(r, c);
+  if (der && der !== draId) melding('Den ruten er opptatt.', true);
+  else if (!der) provPlasser(draId, r, c);
+});
+$('skuff').addEventListener('dragover', e => { if (draId && pos[draId]) { e.preventDefault(); $('skuff').classList.add('dra-over'); } });
+$('skuff').addEventListener('dragleave', () => $('skuff').classList.remove('dra-over'));
+$('skuff').addEventListener('drop', e => { e.preventDefault(); $('skuff').classList.remove('dra-over'); if (draId) fjern(draId); });
+
+tegn();
+</script>
+</body>
+</html>
