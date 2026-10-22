@@ -173,13 +173,13 @@
   /* ── Situasjon 1: hatter og regning ── */
   .hatter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
   .hatt { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: .85rem; }
-  .hatt svg { width: 56px; height: 50px; }
+  .hatt img { width: 100%; max-width: 88px; height: auto; aspect-ratio: 8 / 7; object-fit: contain; }
   .hatt-merke { font-size: .72rem; font-weight: 900; border: 2px solid var(--ink); border-radius: 999px; padding: 0 8px; background: var(--lilac); }
   .hatt-merke.vanlig { background: #e5e7eb; }
   .pakke-resultat { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
   .resultat-tekst { font-weight: 900; font-size: 1.15rem; }
   .mine-hatter { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 420px; }
-  .mine-hatter svg { width: 40px; height: 35px; }
+  .mine-hatter img { width: 40px; height: 35px; object-fit: contain; }
   .regning { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 420px; }
   .regning > div { background: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 8px; display: flex; flex-direction: column; align-items: center; font-weight: 700; font-size: .85rem; text-align: center; }
   .regning .tall { font-family: 'Chewy', cursive; font-size: 1.7rem; line-height: 1.1; }
@@ -441,14 +441,7 @@
     <div class="scene" style="margin-top:12px">
       <div class="spillvindu">
         <div class="vindutittel">Hattepakken</div>
-        <svg id="pakke-bilde" viewBox="0 0 160 130" width="150" height="122" aria-hidden="true" style="margin:8px auto;display:block">
-          <rect x="22" y="48" width="116" height="72" rx="6" fill="#b45309" stroke="#2b2118" stroke-width="5"/>
-          <path d="M22 72 H138 M22 96 H138" stroke="#2b2118" stroke-width="3"/>
-          <rect x="16" y="30" width="128" height="26" rx="6" fill="#d97706" stroke="#2b2118" stroke-width="5"/>
-          <rect x="64" y="30" width="32" height="90" fill="#7c3aed" stroke="#2b2118" stroke-width="4"/>
-          <rect x="68" y="56" width="24" height="26" rx="4" fill="#facc15" stroke="#2b2118" stroke-width="3"/>
-          <text x="80" y="76" text-anchor="middle" font-size="20" font-weight="900" fill="#2b2118">?</text>
-        </svg>
+        <img id="pakke-bilde" src="bilder/pakke.webp" width="420" height="373" alt="En lilla pakke med gul sløyfe." style="width:170px;height:auto;margin:8px auto;display:block">
         <p>Hvilken hatt får du? Det vet du ikke før du åpner.</p>
         <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 spillmynter per pakke</span></p>
       </div>
@@ -643,12 +636,12 @@ const PROFILER = [
 
 /* Hattene i pakken. Bare den grå luen kommer noen gang ut – med vilje. */
 const HATTER = [
-  { id:'gra',    navn:'Grå lue',      merke:'Vanlig',  svg:'<path d="M12 40 q20 -34 40 0z" fill="#9ca3af" stroke="#2b2118" stroke-width="4"/><rect x="8" y="38" width="48" height="10" rx="5" fill="#6b7280" stroke="#2b2118" stroke-width="4"/>' },
-  { id:'krone',  navn:'Gullkrone',    merke:'Sjelden', svg:'<path d="M10 46 L14 18 L24 32 L32 14 L40 32 L50 18 L54 46z" fill="#facc15" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="38" r="4" fill="#ef4444" stroke="#2b2118" stroke-width="2"/>' },
-  { id:'regn',   navn:'Regnbuehatt',  merke:'Sjelden', svg:'<rect x="18" y="10" width="28" height="30" rx="3" fill="#7c3aed" stroke="#2b2118" stroke-width="4"/><rect x="18" y="28" width="28" height="4" fill="#f87171"/><rect x="18" y="32" width="28" height="4" fill="#facc15"/><rect x="8" y="40" width="48" height="8" rx="4" fill="#4c1d95" stroke="#2b2118" stroke-width="4"/>' },
-  { id:'flamme', navn:'Flammehjelm',  merke:'Sjelden', svg:'<path d="M14 46 q0 -26 18 -28 q18 2 18 28z" fill="#ef4444" stroke="#2b2118" stroke-width="4"/><path d="M24 20 q-2 -10 6 -14 q-1 6 4 8 q4 -6 2 -10 q10 6 6 18" fill="#fb923c" stroke="#2b2118" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="42" width="44" height="8" rx="4" fill="#991b1b" stroke="#2b2118" stroke-width="4"/>' }
+  { id:'gra',     navn:'Grå lue',      merke:'Vanlig',  bilde:'bilder/hatt-gra.webp' },
+  { id:'galakse', navn:'Romhatt',      merke:'Sjelden', bilde:'bilder/hatt-galakse.webp' },
+  { id:'drage',   navn:'Dragelue',     merke:'Sjelden', bilde:'bilder/hatt-drage.webp' },
+  { id:'hai',     navn:'Haihjelm',     merke:'Sjelden', bilde:'bilder/hatt-hai.webp' }
 ];
-const hattSvg = h => '<svg viewBox="0 0 64 56" aria-hidden="true">' + h.svg + '</svg>';
+const hattBilde = (h, alt) => '<img src="' + h.bilde + '" alt="' + alt + '" width="240" height="210">';
 
 /* ── Bygg kort ── */
 const likekort = document.getElementById('likekort');
@@ -676,7 +669,7 @@ function oppdaterLikeSporsmal(){
 const MAKS_PAKKER = 10;
 let forsok = 0;
 document.getElementById('hatter').innerHTML = HATTER.map(h =>
-  '<div class="hatt">' + hattSvg(h) + '<b>' + h.navn + '</b><span class="hatt-merke' + (h.id === 'gra' ? ' vanlig' : '') + '">' + h.merke + '</span></div>').join('');
+  '<div class="hatt">' + hattBilde(h, '') + '<b>' + h.navn + '</b><span class="hatt-merke' + (h.id === 'gra' ? ' vanlig' : '') + '">' + h.merke + '</span></div>').join('');
 const pakkeKnapp = document.getElementById('pakke-apne');
 const pakkeBilde = document.getElementById('pakke-bilde');
 pakkeKnapp.addEventListener('click', () => {
@@ -685,7 +678,7 @@ pakkeKnapp.addEventListener('click', () => {
   pakkeBilde.classList.remove('rist'); void pakkeBilde.getBoundingClientRect(); pakkeBilde.classList.add('rist');
   document.getElementById('pakke-resultat').classList.remove('skjult');
   document.getElementById('pakke-melding').textContent = 'Pakke nr. ' + forsok + ': Du fikk en grå lue.';
-  document.getElementById('mine-hatter').insertAdjacentHTML('beforeend', '<span>' + hattSvg(HATTER[0]) + '</span>');
+  document.getElementById('mine-hatter').insertAdjacentHTML('beforeend', '<span>' + hattBilde(HATTER[0], '') + '</span>');
   document.getElementById('ant-forsok').textContent = forsok;
   document.getElementById('ant-mynter').textContent = forsok * 100;
   document.getElementById('ant-kroner').textContent = (forsok * 10) + ' kr';
