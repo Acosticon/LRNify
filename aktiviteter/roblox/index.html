@@ -78,7 +78,24 @@
 
   /* ── FORSIDE ── */
   .forside-intro { text-align: center; max-width: 52ch; margin: 0 auto; }
-  .forside-bilde { display: block; width: 100%; height: auto; border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 7px 0 var(--ink); }
+  /* Forsiden fyller nøyaktig én skjerm i full bredde */
+  body.pa-forside { height: 100vh; height: 100dvh; overflow: hidden; padding-top: 10px; padding-bottom: 12px; }
+  body.pa-forside .site-header, body.pa-forside main { max-width: none; }
+  body.pa-forside .site-header { padding-bottom: 8px; }
+  body.pa-forside footer, body.pa-forside .logo-sub { display: none; }
+  body.pa-forside main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #forside.active { flex: 1; min-height: 0; gap: 14px; }
+  .forside-hero { position: relative; flex: 1; min-height: 0; border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 7px 0 var(--ink); overflow: hidden; background: #2e1065; }
+  .forside-bilde { display: block; width: 100%; height: 100%; object-fit: cover; object-position: 50% 40%; }
+  .forside-tittelboks { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px);
+    background: rgba(255,249,240,.94); border: 4px solid var(--ink); border-radius: 20px; box-shadow: 0 6px 0 var(--ink); padding: 12px 28px 14px; text-align: center; }
+  .forside-tittelboks h1 { transform: none; font-size: clamp(1.8rem, 4vw, 3rem); }
+  .forside-tittelboks .ingress { margin-top: 2px; }
+  #forside .innganger { grid-template-columns: 1fr 1fr; flex: none; }
+  #forside .inngang, #forside .inngang.forst { padding: 16px 20px; }
+  #forside .inngang svg { width: 70px; height: 70px; }
+  #forside .inngang.forst .i-tittel, #forside .inngang .i-tittel { font-size: clamp(1.4rem, 2.6vw, 2rem); }
+  .forside-note { text-align: center; flex: none; }
   .innganger { display: grid; gap: 18px; }
   .inngang { display: flex; gap: 18px; align-items: center; text-align: left; border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 7px 0 var(--ink); padding: 20px; text-decoration: none; color: var(--ink); background: #fff; transition: transform .12s, box-shadow .12s; }
   .inngang:hover { transform: translateY(-3px); box-shadow: 0 10px 0 var(--ink); }
@@ -380,9 +397,13 @@
 
 <!-- ══════════ FORSIDE ══════════ -->
 <section class="screen" id="forside" aria-labelledby="h-forside">
-  <img class="forside-bilde" src="bilder/forside.webp" width="1200" height="675" alt="En voksen og et barn står i en spillverden full av lysende butikkskilt med kjøpeknapper, en skattekiste med nedtelling og figurer med kroner og vinger.">
-  <h1 id="h-forside" tabindex="-1">Roblox – la oss se litt nærmere</h1>
-  <p class="forside-intro ingress">En aktivitet for å snakke sammen om spill.</p>
+  <div class="forside-hero">
+    <img class="forside-bilde" src="bilder/forside.webp" width="1200" height="675" alt="En voksen og et barn står i en spillverden full av lysende butikkskilt med kjøpeknapper, en skattekiste med nedtelling og figurer med kroner og vinger.">
+    <div class="forside-tittelboks">
+      <h1 id="h-forside" tabindex="-1">Roblox – la oss se litt nærmere</h1>
+      <p class="forside-intro ingress">En aktivitet for å snakke sammen om spill.</p>
+    </div>
+  </div>
 
   <div class="innganger">
     <a class="inngang forst" href="#foreldre">
@@ -402,7 +423,7 @@
       </span>
     </a>
   </div>
-  <p class="liten" style="text-align:center">Ingen innlogging. Ingenting dere velger, blir lagret eller sendt noe sted.</p>
+  <p class="liten forside-note">Ingen innlogging, og ingenting dere velger, blir lagret. Situasjonene er oppdiktede. LRNify har ingen tilknytning til Roblox.</p>
 </section>
 
 <!-- ══════════ FORELDREDEL ══════════ -->
@@ -1063,6 +1084,7 @@ function route(){
   stoppKlokka(true);
   lukkKjop();
   const m = h.match(/^sammen-(\d)$/);
+  document.body.classList.remove('pa-forside');
   document.body.classList.toggle('bred', !!m);
   document.body.classList.toggle('i-sammen', !!m);
   if(m){
@@ -1083,6 +1105,7 @@ function route(){
     visSkjerm('foreldre'); fokus(document.getElementById('h-foreldre'));
   } else {
     visSkjerm('forside'); fokus(document.getElementById('h-forside'));
+    document.body.classList.add('pa-forside');
   }
 }
 document.getElementById('neste').addEventListener('click', e => { location.hash = e.currentTarget.dataset.mal; });
