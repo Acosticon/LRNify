@@ -186,14 +186,26 @@
   .pakke-regning { grid-area: regning; }
   .pakke-hatter { grid-area: hatter; }
   .pakke-vindu { max-width: none; }
-  .pakke-scene { position: relative; padding-top: 70px; margin: 0 auto; width: 220px; }
-  #pakke-bilde { width: 100%; height: auto; display: block; position: relative; z-index: 1; }
-  .hatt-ut { position: absolute; left: 50%; top: 0; width: 120px; height: auto; transform: translateX(-50%); z-index: 2; filter: drop-shadow(0 4px 0 rgba(43,33,24,.35)); }
-  .hatt-ut.opp { animation: hattOpp .7s cubic-bezier(.2,1.4,.4,1) both; }
+  /* Pakken: den lukkede rister, byttes med den åpne, lua vokser fram,
+     og den åpne pakken kastes ut og avdekker en ny pakke under. */
+  html, body { overflow-x: clip; }
+  .pakke-scene { position: relative; margin: 0 auto; width: 230px; padding-top: 24px; }
+  .pakke-topp { position: relative; z-index: 2; }
+  #pakke-bilde { width: 100%; height: auto; display: block; }
+  .pakke-under { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; z-index: 1; opacity: 0; }
+  .pakke-under.fram { opacity: 1; animation: fram .45s ease-out both; }
+  @keyframes fram { from { transform: scale(.8) translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .hatt-ut { position: absolute; left: 50%; top: 14%; width: 56%; height: auto; transform: translateX(-50%); z-index: 3; filter: drop-shadow(0 5px 0 rgba(43,33,24,.3)); }
+  .hatt-ut.opp { animation: hattOpp .6s cubic-bezier(.2,1.5,.4,1) both; }
   @keyframes hattOpp {
-    0%   { transform: translate(-50%, 110px) scale(.3); opacity: 0; }
-    60%  { opacity: 1; }
-    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+    0%   { transform: translate(-50%, 45%) scale(0); }
+    100% { transform: translate(-50%, 0) scale(1); }
+  }
+  .pakke-topp.kast { animation: kast .7s cubic-bezier(.5,0,.9,.6) forwards; }
+  @keyframes kast {
+    0%   { transform: none; }
+    20%  { transform: translate(-6%, -8%) rotate(-6deg); }
+    100% { transform: translate(110vw, -70vh) rotate(55deg); }
   }
   .btn-stor { width: 100%; font-size: 1.45rem; padding: 20px 24px; min-height: 76px; border-radius: 20px; box-shadow: 0 7px 0 var(--ink); }
   .pakke-regning .regning { grid-template-columns: 1fr; max-width: none; }
@@ -222,7 +234,7 @@
   .regning { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 420px; }
   .regning > div { background: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 8px; display: flex; flex-direction: column; align-items: center; font-weight: 700; font-size: .85rem; text-align: center; }
   .regning .tall { font-family: 'Chewy', cursive; font-size: 1.7rem; line-height: 1.1; }
-  #pakke-bilde.rist { animation: rist .35s ease; }
+  #pakke-bilde.rist { animation: rist .35s ease; transform-origin: 50% 90%; }
   @keyframes rist { 25% { transform: rotate(-6deg); } 50% { transform: rotate(5deg); } 75% { transform: rotate(-3deg); } }
 
   /* ── Situasjon 2: bilde og nedtelling ── */
@@ -247,7 +259,7 @@
   @keyframes puls { 50% { transform: scale(1.25); } }
   @keyframes skjelv { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
   @media (prefers-reduced-motion: reduce) {
-    #pakke-bilde.rist, .hatt-ut.opp, .redd.kritisk .klokke, .redd.kritisk .redd-ui { animation: none; }
+    #pakke-bilde.rist, .hatt-ut.opp, .pakke-topp.kast, .pakke-under.fram, .redd.kritisk .klokke, .redd.kritisk .redd-ui { animation: none; }
     .redd.kritisk .klokke { outline: 4px solid #fff; }
   }
   .skjult-leser { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -482,21 +494,24 @@
         <div class="spillvindu pakke-vindu">
           <div class="vindutittel">Hattepakken</div>
           <div class="pakke-scene">
-            <img class="hatt-ut skjult" id="hatt-ut" src="bilder/hatt-gra.webp" width="240" height="200" alt="">
-            <img id="pakke-bilde" src="bilder/pakke.webp" width="420" height="373" alt="En lilla pakke med gul sløyfe.">
+            <img class="pakke-under" id="pakke-under" src="bilder/pakke.webp" width="420" height="373" alt="">
+            <div class="pakke-topp" id="pakke-topp">
+              <img id="pakke-bilde" src="bilder/pakke.webp" width="420" height="373" alt="En lukket lilla pakke med gul sløyfe.">
+              <img class="hatt-ut skjult" id="hatt-ut" src="bilder/hatt-gra.webp" width="240" height="200" alt="">
+            </div>
           </div>
           <p id="pakke-melding" class="resultat-tekst" aria-live="polite">Hvilken hatt får du? Det vet du ikke før du åpner.</p>
-          <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 spillmynter per pakke</span></p>
+          <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 Robux per pakke</span></p>
         </div>
         <button class="btn btn-gul btn-stor" id="pakke-apne">🎁 Åpne en pakke</button>
-        <p class="kurs">Oppdiktet pris: I dette eksempelet koster 100 spillmynter <b>10 kroner</b>.</p>
+        <p class="kurs">Oppdiktet pris: I dette eksempelet koster 100 Robux <b>10 kroner</b>.</p>
       </div>
 
       <div class="card pakke-regning" style="padding:14px 16px">
         <h3 style="text-align:center">Så langt</h3>
         <div class="regning">
           <div><span class="tall" id="ant-forsok">0</span><span>pakker åpnet</span></div>
-          <div><span class="tall" id="ant-mynter">0</span><span>spillmynter brukt</span></div>
+          <div><span class="tall" id="ant-mynter">0</span><span>Robux brukt</span></div>
           <div><span class="tall" id="ant-kroner">0 kr</span><span>(oppdiktet)</span></div>
         </div>
         <h3 style="text-align:center;margin-top:12px">Dine hatter</h3>
@@ -732,14 +747,21 @@ document.getElementById('hatter').innerHTML = HATTER.map(h =>
   '<div class="hatt">' + hattBilde(h, '') + '<b>' + h.navn + '</b><span class="hatt-merke' + (h.id === 'gra' ? ' vanlig' : '') + '">' + h.merke + '</span></div>').join('');
 const pakkeKnapp = document.getElementById('pakke-apne');
 const pakkeBilde = document.getElementById('pakke-bilde');
+const pakkeTopp = document.getElementById('pakke-topp');
+const pakkeUnder = document.getElementById('pakke-under');
 const hattUt = document.getElementById('hatt-ut');
-pakkeKnapp.addEventListener('click', () => {
-  if(forsok >= MAKS_PAKKER) return;
-  forsok++;
-  pakkeBilde.classList.remove('rist'); hattUt.classList.remove('opp'); hattUt.classList.add('skjult');
-  void pakkeBilde.getBoundingClientRect();
-  pakkeBilde.classList.add('rist');
-  hattUt.classList.remove('skjult'); hattUt.classList.add('opp');
+const LUKKET = 'bilder/pakke.webp', APEN = 'bilder/pakke-apen.webp';
+new Image().src = APEN;
+let opptatt = false;
+const vent = ms => new Promise(ok => setTimeout(ok, ms));
+
+function lukketPakke(){
+  pakkeBilde.src = LUKKET; pakkeBilde.alt = 'En lukket lilla pakke med gul sløyfe.';
+  hattUt.classList.add('skjult'); hattUt.classList.remove('opp');
+  pakkeBilde.classList.remove('rist');
+  pakkeTopp.classList.remove('kast'); pakkeUnder.classList.remove('fram');
+}
+function oppdaterRegning(){
   document.getElementById('pakke-melding').textContent = 'Pakke nr. ' + forsok + ': Du fikk en grå lue.';
   const mine = document.getElementById('mine-hatter');
   const tom = mine.querySelector('.ingen-enna'); if(tom) tom.remove();
@@ -747,13 +769,41 @@ pakkeKnapp.addEventListener('click', () => {
   document.getElementById('ant-forsok').textContent = forsok;
   document.getElementById('ant-mynter').textContent = forsok * 100;
   document.getElementById('ant-kroner').textContent = (forsok * 10) + ' kr';
+}
+
+pakkeKnapp.addEventListener('click', async () => {
+  if(opptatt || forsok >= MAKS_PAKKER) return;
+  opptatt = true;
+  forsok++;
+  const rolig = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  lukketPakke();
+
+  // 1. Den lukkede pakken rister
+  if(!rolig){ void pakkeBilde.offsetWidth; pakkeBilde.classList.add('rist'); await vent(380); pakkeBilde.classList.remove('rist'); }
+
+  // 2. Pakken åpnes, og lua vokser fram fra ingenting
+  pakkeBilde.src = APEN; pakkeBilde.alt = 'En åpnet pakke med en grå lue.';
+  hattUt.classList.remove('skjult');
+  if(!rolig) hattUt.classList.add('opp');
+  oppdaterRegning();
+
   if(forsok >= MAKS_PAKKER){
     pakkeKnapp.disabled = true;
     pakkeKnapp.textContent = 'Ingen flere pakker';
     document.getElementById('pakke-stopp').classList.remove('skjult');
-  } else {
-    pakkeKnapp.textContent = '🎁 Åpne en pakke til';
+    opptatt = false;
+    return;
   }
+  pakkeKnapp.textContent = '🎁 Åpne en pakke til';
+  if(rolig){ opptatt = false; return; }   // uten animasjon: neste klikk lukker og åpner på nytt
+
+  // 3. Den åpne pakken kastes ut, og en ny pakke kommer fram under
+  await vent(1300);
+  pakkeTopp.classList.add('kast');
+  pakkeUnder.classList.add('fram');
+  await vent(720);
+  lukketPakke();
+  opptatt = false;
 });
 
 /* ── Situasjon 2: nedtelling fra 10 som blir mer og mer pågående ── */
