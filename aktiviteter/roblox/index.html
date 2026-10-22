@@ -78,6 +78,7 @@
 
   /* ── FORSIDE ── */
   .forside-intro { text-align: center; max-width: 52ch; margin: 0 auto; }
+  .forside-bilde { display: block; width: 100%; height: auto; border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 7px 0 var(--ink); }
   .innganger { display: grid; gap: 18px; }
   .inngang { display: flex; gap: 18px; align-items: center; text-align: left; border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 7px 0 var(--ink); padding: 20px; text-decoration: none; color: var(--ink); background: #fff; transition: transform .12s, box-shadow .12s; }
   .inngang:hover { transform: translateY(-3px); box-shadow: 0 10px 0 var(--ink); }
@@ -379,30 +380,9 @@
 
 <!-- ══════════ FORSIDE ══════════ -->
 <section class="screen" id="forside" aria-labelledby="h-forside">
-  <svg viewBox="0 0 320 120" width="100%" style="max-width:360px;margin:0 auto;display:block" aria-hidden="true">
-    <rect x="20" y="70" width="280" height="14" rx="7" fill="#e7dccb"/>
-    <!-- voksen -->
-    <rect x="70" y="18" width="36" height="34" rx="6" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/>
-    <rect x="62" y="52" width="52" height="30" rx="8" fill="#60a5fa" stroke="#2b2118" stroke-width="4"/>
-    <circle cx="82" cy="34" r="3" fill="#2b2118"/><circle cx="95" cy="34" r="3" fill="#2b2118"/>
-    <path d="M82 43 q6 5 13 0" stroke="#2b2118" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <!-- barn -->
-    <rect x="212" y="34" width="30" height="28" rx="6" fill="#f5c79a" stroke="#2b2118" stroke-width="4"/>
-    <rect x="205" y="62" width="44" height="22" rx="7" fill="#facc15" stroke="#2b2118" stroke-width="4"/>
-    <circle cx="222" cy="47" r="3" fill="#2b2118"/><circle cx="233" cy="47" r="3" fill="#2b2118"/>
-    <path d="M222 54 q5 4 11 0" stroke="#2b2118" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <!-- nettbrett -->
-    <rect x="130" y="40" width="64" height="44" rx="8" fill="#fff" stroke="#2b2118" stroke-width="4"/>
-    <rect x="142" y="52" width="14" height="14" fill="#86efac" stroke="#2b2118" stroke-width="3"/>
-    <rect x="160" y="58" width="14" height="14" fill="#fca5a5" stroke="#2b2118" stroke-width="3"/>
-    <!-- snakkebobler -->
-    <path d="M120 10 h40 a8 8 0 0 1 8 8 v10 a8 8 0 0 1 -8 8 h-26 l-10 8 v-8 h-4 a8 8 0 0 1 -8 -8 v-10 a8 8 0 0 1 8 -8z" fill="#fff" stroke="#2b2118" stroke-width="3"/>
-    <circle cx="130" cy="23" r="3" fill="#2b2118"/><circle cx="140" cy="23" r="3" fill="#2b2118"/><circle cx="150" cy="23" r="3" fill="#2b2118"/>
-    <path d="M250 6 h36 a8 8 0 0 1 8 8 v10 a8 8 0 0 1 -8 8 h-4 v8 l-10 -8 h-22 a8 8 0 0 1 -8 -8 v-10 a8 8 0 0 1 8 -8z" fill="#fff" stroke="#2b2118" stroke-width="3"/>
-    <text x="268" y="26" text-anchor="middle" font-size="16" font-weight="900" fill="#2b2118">?!</text>
-  </svg>
+  <img class="forside-bilde" src="bilder/forside.webp" width="1200" height="675" alt="En voksen og et barn står i en spillverden full av lysende butikkskilt med kjøpeknapper, en skattekiste med nedtelling og figurer med kroner og vinger.">
   <h1 id="h-forside" tabindex="-1">Roblox – la oss se litt nærmere</h1>
-  <p class="forside-intro ingress">En aktivitet for en voksen og et barn mellom 7 og 10 år. Dere ser på noen situasjoner fra spill sammen og snakker om spillingen framover.</p>
+  <p class="forside-intro ingress">En aktivitet for å snakke sammen om spill.</p>
 
   <div class="innganger">
     <a class="inngang forst" href="#foreldre">
@@ -528,15 +508,15 @@
   <!-- 3 Egen vurdering -->
   <div class="card">
     <div class="seksjonsnr">3 av 5</div>
-    <h2 class="tittel" style="font-size:1.6rem">Forbered din egen vurdering</h2>
+    <h2 class="tittel" style="font-size:1.6rem">Forbered deg</h2>
     <p>Tenk gjennom dette. Du trenger ikke skrive noe.</p>
     <ol class="refleksjon" style="margin-top:10px">
-      <li>Hva er mine viktigste grunner til å stoppe Roblox?<span>Velg én eller to. Det holder.</span></li>
-      <li>Hvordan forklarer jeg dem med ord barnet forstår?<span>For eksempel: «Spillet er laget for å få deg til å kjøpe ting», eller «Vi kan ikke vite hvem du møter der».</span></li>
+      <li>Hva er det jeg ikke liker med Roblox?<span>Velg én eller to. Det holder.</span></li>
+      <li>Hvordan forklarer jeg med ord barnet forstår?<span>For eksempel: «Spillet er laget for å få deg til å kjøpe ting», eller «Vi kan ikke vite hvem du møter der».</span></li>
       <li>Hva er bestemt, og hva kan barnet påvirke?<span>Beslutningen er din. Barnet kan kanskje være med på å bestemme når, hvordan det sier fra til venner, og hva dere gjør i stedet.</span></li>
-      <li>Hvordan skal overgangen gjennomføres?<span>Slutt med en gang, eller en siste økt for å si ha det? Hva skjer med kontoen?</span></li>
+      <li>Ønsker jeg å forby Roblox, eller begrense det?<span>Hva er målet mitt?</span></li>
     </ol>
-    <p style="margin-top:12px">Du sier beslutningen med egne ord. Aktiviteten gir dere et felles utgangspunkt, men den bestemmer ikke for deg. Og barnet trenger ikke forstå alt for at du kan sette en grense.</p>
+    <p style="margin-top:12px">Aktiviteten gir dere et felles utgangspunkt for å snakke om Roblox, men barnet trenger ikke forstå alt for at du kan sette en grense.</p>
     <p class="sitat" style="margin-top:12px">«Vi sa ja ut fra det vi visste da. Nå har vi lært mer.»</p>
     <p class="liten" style="margin-top:6px">Å endre en tillatelse betyr ikke at barnet har gjort noe galt.</p>
   </div>
