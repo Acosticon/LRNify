@@ -126,6 +126,11 @@
 
   /* ── KORT: hva liker du ── */
   .likekort { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+  /* Steg 1: kortene i to rader til venstre, samtalen til høyre */
+  .like-oppsett { flex: 1; display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  .like-oppsett .likekort { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+  .like-oppsett .likekort button { flex: 0 0 calc((100% - 28px) / 3); min-height: 0; padding: 10px; }
+  .like-oppsett .likekort button img { max-width: 100%; width: auto; height: calc((100dvh - 320px) / 2 - 50px); max-height: 230px; min-height: 90px; object-fit: contain; }
   @media (max-width: 420px) { .likekort { grid-template-columns: 1fr 1fr; } }
   .likekort button { border: 4px solid var(--ink); border-radius: 18px; background: #fff; box-shadow: 0 5px 0 var(--ink); padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 150px; font-size: 1.05rem; position: relative; transition: transform .12s, box-shadow .12s; }
   .likekort button img { width: 100%; max-width: 130px; height: auto; aspect-ratio: 1; object-fit: contain; }
@@ -194,21 +199,38 @@
   #sammen h2.tittel { font-size: clamp(1.3rem, 2.6vw, 1.8rem); }
 
   /* Samtalesidene: illustrasjon til venstre, samtale til høyre */
-  .samtale-oppsett { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 22px; align-items: center; }
+  .samtale-oppsett { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 22px; align-items: start; padding-top: 8px; }
   .samtale-bilde { display: flex; justify-content: center; align-items: center; gap: 10px; }
   .samtale-bilde img { width: 100%; height: auto; display: block; }
   .samtale-foto { max-width: 480px; border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 6px 0 var(--ink); }
-  .samtale-profiler img { max-width: 160px; }
+  .samtale-profiler { flex-wrap: wrap; }
+  .samtale-profiler img { width: calc(50% - 6px); max-width: 230px; }
   .samtale-tekst { display: flex; flex-direction: column; gap: 12px; }
   .samtale-tekst details { margin-top: 0; }
-  .slutt-oppsett { align-items: start; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  /* Steg 8: samtalen er hovedelementet, barnets valg ved siden av */
+  .slutt-oppsett { flex: 1; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 22px; align-items: start; padding-top: 8px; }
+  .snakk-hoved { padding: 22px 26px; border-width: 4px; }
+  .snakk-hoved h3 { font-size: 1.4rem; margin-bottom: 8px; }
+  .snakk-hoved li { font-family: 'Chewy', cursive; font-weight: 400; font-size: clamp(1.5rem, 2.6vw, 2.1rem); line-height: 1.2; padding: 12px 0; }
+  .snakk-hoved li + li { border-top: 2px dashed #d6cbbb; }
+  .valgte-bilder { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+  .valgte-bilder figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--yellow); border: 3px solid var(--ink); border-radius: 16px; padding: 8px; font-weight: 900; text-align: center; }
+  .valgte-bilder img { width: 100%; max-width: 150px; height: auto; }
+  .valgte-tom { color: var(--muted); font-weight: 700; }
   .grep { list-style: none; padding-left: 0 !important; }
   .grep li + li { margin-top: 8px; }
 
   /* Situasjon 3: profiler til venstre, detaljer til høyre */
   .profil-oppsett { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start; }
-  .profil-oppsett .profiler { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .profil-oppsett .profil img { max-width: 260px; margin: 0 auto; }
+  .profil-oppsett .profiler { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+  .profil-kort { border: none; background: none; padding: 0; border-radius: 20px; cursor: pointer; transition: transform .12s; }
+  .profil-kort:hover { transform: translateY(-3px); }
+  .profil-kort[aria-pressed="true"] { outline: 5px solid var(--yellow); outline-offset: 2px; }
+  /* To rader: kortbredden styres av skjermhøyden, og rammen gir plass til to per rad */
+  .profil-oppsett { --kort: min(400px, calc((100dvh - 215px) / 2 - 8px)); }
+  .profil-oppsett .profiler { max-width: calc(2 * var(--kort) + 16px); margin: 0 auto; }
+  .profil-kort { flex: 0 0 var(--kort); width: var(--kort); }
+  .profil-kort img { display: block; border-radius: 16px; width: 100%; height: auto; }
   .profil-side .vet { grid-template-columns: 1fr; }
   .profil-hint { font-weight: 800; color: var(--muted); border: 3px dashed #c9bfb2; border-radius: 14px; padding: 18px; text-align: center; }
 
@@ -217,7 +239,7 @@
   .redd-omstart { position: absolute; top: 10px; right: 10px; z-index: 12; min-height: 44px; padding: 6px 14px; font-size: .95rem; }
   .pakke-oppsett { display: grid; gap: 16px; width: 100%; grid-template-areas: "midt" "regning" "hatter"; }
   @media (min-width: 760px) {
-    .pakke-oppsett { grid-template-columns: 1fr 1.35fr 1fr; grid-template-areas: "regning midt hatter"; align-items: start; }
+    .pakke-oppsett { grid-template-columns: 1fr 1.35fr 1fr; grid-template-areas: "regning midt hatter"; align-items: stretch; }
   }
   .pakke-midt { grid-area: midt; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
   .pakke-regning { grid-area: regning; }
@@ -525,7 +547,7 @@
     <h2 class="tittel" style="font-size:1.6rem">Slik starter dere</h2>
     <p>Vær ærlig om hva dere skal gjøre, men vent med beslutningen. Du kan for eksempel si:</p>
     <p class="sitat" style="margin-top:10px">«Jeg har lært noen ting om Roblox som gjør meg bekymret. Jeg vil gjerne se på dem sammen med deg og høre hva du tenker. Så skal vi snakke om hva det betyr for spillingen framover.»</p>
-    <p style="margin-top:10px">Deretter begynner aktiviteten med barnets egen opplevelse. Så ser dere på tre oppdiktede situasjoner. Til slutt får barnet si hva det tenker om Roblox nå. Etterpå forteller du om beslutningen din med egne ord. Støtten til den delen ligger sammenslått nederst på siste skjerm.</p>
+    <p style="margin-top:10px">Deretter begynner aktiviteten med barnets egen opplevelse. Så ser dere på tre oppdiktede situasjoner. Til slutt får barnet si hva det tenker om Roblox nå. Etterpå forteller du om beslutningen din med egne ord.</p>
   </div>
 
   <!-- 5 Møt reaksjonen -->
@@ -555,10 +577,12 @@
   <!-- 1: Barnet viser vei -->
   <div class="steg" data-steg="1">
     <h2 class="tittel" id="h-sammen" tabindex="-1">Først vil vi høre fra deg som spiller: Hva liker du med Roblox?</h2>
-    <div class="likekort" id="likekort" role="group" aria-label="Hva liker du med Roblox? Velg ett eller flere kort."></div>
-    <div class="snakk" id="like-snakk" aria-live="polite">
-      <h3>Snakk sammen</h3>
-      <ul id="like-sporsmal"><li>Fortell om noe du liker å gjøre.</li></ul>
+    <div class="like-oppsett">
+      <div class="likekort" id="likekort" role="group" aria-label="Hva liker du med Roblox? Velg ett eller flere kort."></div>
+      <div class="snakk" id="like-snakk" aria-live="polite">
+        <h3>Snakk sammen</h3>
+        <ul id="like-sporsmal"><li>Fortell om noe du liker å gjøre.</li></ul>
+      </div>
     </div>
   </div>
 
@@ -699,7 +723,7 @@
     <h2 class="tittel" tabindex="-1">Situasjon 2: Snakk sammen</h2>
     <div class="samtale-oppsett">
       <div class="samtale-bilde">
-        <img src="bilder/redd-vennen.webp" width="1200" height="800" alt="Bildet fra situasjon 2: en spillfigur bøyer seg over vennen som ligger utslått." class="samtale-foto">
+        <img src="bilder/redd-vennen-timer.webp" width="892" height="595" alt="Spillvinduet fra situasjon 2: vennen ligger utslått, klokka viser 1 sekund igjen, og en grønn knapp sier «Betal 49 Robux og redd»." class="samtale-foto">
       </div>
       <div class="samtale-tekst">
         <div class="snakk">
@@ -782,39 +806,18 @@
   <!-- 8: Hva tenker du nå? -->
   <div class="steg" data-steg="8">
     <h2 class="tittel" tabindex="-1">Hva tenker du nå?</h2>
-    <div class="card" style="padding:14px 20px">
-      <p class="stort-sporsmal">Med det vi har snakket om nå – hva tenker du om Roblox?</p>
-    </div>
-    <div class="samtale-oppsett slutt-oppsett">
-      <div class="samtale-tekst">
-        <div class="card" id="valgte-kort" style="padding:14px 20px">
-          <h3>I starten sa du at du liker</h3>
-          <div class="valgte" id="valgte" style="margin-top:8px"></div>
-        </div>
-        <div class="snakk">
-          <h3>Snakk sammen</h3>
-          <ul>
-            <li>Var det noe som overrasket deg?</li>
-            <li>Er det noe du er uenig i?</li>
-            <li>Har du opplevd noe som likner, når du har spilt?</li>
-          </ul>
-        </div>
+    <div class="slutt-oppsett">
+      <div class="snakk snakk-hoved">
+        <h3>Snakk sammen</h3>
+        <ul>
+          <li>Hva er et bra spill?</li>
+          <li>Er Roblox et bra spill?</li>
+          <li>Hvorfor tror du at noen voksne ikke liker at barn spiller Roblox?</li>
+        </ul>
       </div>
-      <div class="samtale-tekst">
-        <details class="voksen-notat">
-          <summary>Til den voksne: veien videre</summary>
-          <div class="innhold">
-            <p>Når barnet har fått si sitt, kan du fortelle om vurderingen og beslutningen din med egne ord.</p>
-            <ul style="margin-top:8px">
-              <li>Én eller to grunner holder. Si hva som er bestemt, og hva barnet kan være med på å bestemme.</li>
-              <li>«Vi sa ja ut fra det vi visste da. Nå har vi lært mer.»</li>
-              <li>Lytt. Barnet trenger ikke være enig, og trenger ikke love noe.</li>
-              <li>En annen app er ikke automatisk tryggere. Se på den sammen før dere tar den i bruk.</li>
-            </ul>
-            <h4>Spørsmål dere kan snakke om</h4>
-            <ul id="slutt-sporsmal"></ul>
-          </div>
-        </details>
+      <div class="card slutt-valgte" id="valgte-kort">
+        <h3>I starten sa du at du likte</h3>
+        <div class="valgte-bilder" id="valgte"></div>
       </div>
     </div>
   </div>
@@ -1021,26 +1024,38 @@ const kjop = document.getElementById('kjop');
 function apneKjop(){
   document.getElementById('kjop-valg').classList.remove('skjult');
   document.getElementById('kjop-stopp').classList.add('skjult');
+  kjopValgt = false;
   if(typeof kjop.showModal === 'function') kjop.showModal(); else kjop.setAttribute('open', '');
 }
+let kjopValgt = false;
 function lukkKjop(){ if(kjop.open){ if(typeof kjop.close === 'function') kjop.close(); else kjop.removeAttribute('open'); } }
 document.getElementById('redd-betal').addEventListener('click', apneKjop);
 document.getElementById('redd-betal-2').addEventListener('click', apneKjop);
-document.getElementById('kjop-lukk').addEventListener('click', lukkKjop);
+document.getElementById('kjop-lukk').addEventListener('click', () => {
+  lukkKjop();
+  if(kjopValgt){                       // har «betalt»: tilbake til startbildet
+    stoppKlokka(true);
+    document.getElementById('redd-vis').textContent = '▶ Spill igjen';
+    document.getElementById('redd-vis').focus({ preventScroll: true });
+  }
+});
 kjop.querySelectorAll('.tilbud').forEach(t => t.addEventListener('click', () => {
   document.getElementById('kjop-valg').classList.add('skjult');
   document.getElementById('kjop-stopp').classList.remove('skjult');
+  kjopValgt = true;
   document.getElementById('kjop-lukk').focus();
 }));
 
 /* ── Situasjon 3 ── */
 const profilerEl = document.getElementById('profiler');
 PROFILER.forEach((p, i) => {
-  const d = document.createElement('div');
-  d.className = 'profil';
-  d.innerHTML = '<img src="' + p.bilde + '" width="640" height="640" loading="lazy" alt="Profilkort: ' + p.navn + '. ' + p.besk + ' Bildet viser ' + p.figur + '.">' +
-    '<button type="button" class="btn" aria-controls="profil-detalj">Se nærmere på ' + p.navn + '</button>';
-  d.querySelector('button').addEventListener('click', () => visProfil(i));
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'profil-kort';
+  d.setAttribute('aria-pressed', 'false');
+  d.setAttribute('aria-controls', 'profil-detalj');
+  d.innerHTML = '<img src="' + p.bilde + '" width="640" height="640" alt="Se nærmere på profilen ' + p.navn + '. ' + p.besk + ' Bildet viser ' + p.figur + '.">';
+  d.addEventListener('click', () => visProfil(i));
   profilerEl.appendChild(d);
 });
 function visProfil(i){
@@ -1048,6 +1063,7 @@ function visProfil(i){
   document.getElementById('profil-detalj-tittel').textContent = 'Vi ser nærmere på «' + p.navn + '»';
   document.getElementById('profil-ser').innerHTML =
     '<li>En spillfigur: ' + p.figur + '</li><li>Et brukernavn: «' + p.navn + '»</li><li>Det personen har skrevet: «' + p.besk + '»</li>';
+  [...profilerEl.children].forEach((k, j) => k.setAttribute('aria-pressed', j === i ? 'true' : 'false'));
   document.getElementById('profil-hint').classList.add('skjult');
   document.getElementById('profil-detalj').classList.remove('skjult');
 }
@@ -1055,13 +1071,9 @@ function visProfil(i){
 /* ── Avslutning ── */
 function byggAvslutning(){
   const valgte = LIKER.filter(l => valgt.has(l.id));
-  document.getElementById('valgte').innerHTML = valgte.map(l => '<span>' + l.tekst + '</span>').join('');
-  document.getElementById('valgte-kort').classList.toggle('skjult', valgte.length === 0);
-  const sp = ['Hva vil du savne mest?'];
-  if(valgte.length) valgte.forEach(l => sp.push(l.slutt));
-  else sp.push('Hvordan kan vi hjelpe deg med å beholde kontakten med vennene dine?', 'Hvor kan du fortsette å bygge, utforske eller klare utfordringer?');
-  sp.push('Hva gjør vi videre, og når?');
-  document.getElementById('slutt-sporsmal').innerHTML = sp.map(s => '<li>' + s + '</li>').join('');
+  document.getElementById('valgte').innerHTML = valgte.length
+    ? valgte.map(l => '<figure><img src="' + ILLU[l.id] + '" width="360" height="360" alt=""><figcaption>' + l.tekst + '</figcaption></figure>').join('')
+    : '<p class="valgte-tom">Du valgte ingen kort i starten.</p>';
 }
 
 /* ── Navigasjon (adressen styrer skjermen, så nettleserens tilbake-knapp virker) ── */
