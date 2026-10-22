@@ -107,6 +107,8 @@
   details summary::before { content: '＋'; font-size: 1.2rem; width: 1.2em; text-align: center; flex: 0 0 auto; }
   details[open] summary::before { content: '－'; }
   details .innhold { padding: 0 18px 16px; }
+  details .innhold ul { padding-left: 1.3em; }
+  details .innhold li + li { margin-top: 6px; }
   details .innhold h4 { font-size: 1rem; font-weight: 900; margin: 12px 0 4px; }
   .kilder li { word-break: break-word; }
   .sitat { border-left: 6px solid var(--yellow); background: #fffbe6; padding: 12px 16px; border-radius: 8px; font-weight: 800; font-size: 1.1rem; }
@@ -142,37 +144,18 @@
   .pris { display: inline-flex; align-items: center; gap: 6px; font-weight: 900; background: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: 4px 12px; }
   .mynt { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: #fbbf24; border: 2px solid var(--ink); }
   .kurs { font-weight: 800; background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 8px 12px; }
-  .resultat { background: #fff; border: 3px solid var(--ink); border-radius: 16px; padding: 14px; display: flex; gap: 14px; align-items: center; text-align: left; }
-  .resultat svg { width: 64px; height: 64px; flex: 0 0 auto; }
-  table.kost { border-collapse: separate; border-spacing: 0; width: 100%; max-width: 420px; background: #fff; border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; font-size: 1.05rem; }
-  table.kost th, table.kost td { padding: 10px 12px; border-bottom: 2px solid #e7e0d6; text-align: left; }
-  table.kost th { background: var(--peach); }
-  table.kost tr:last-child td { border-bottom: none; font-weight: 900; }
   .stopp { font-weight: 900; }
 
   /* ── SITUASJON 2: redd vennen ── */
-  .redd { position: relative; background: linear-gradient(#fecaca, #fee2e2); }
-  .redd .rad { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
   .klokke { font-family: 'Chewy', cursive; font-size: 1.8rem; background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 0 12px; }
+  .rad { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
   .lat-knapp { display: inline-block; background: #22c55e; border: 4px solid var(--ink); border-radius: 14px; padding: 10px 18px; font-weight: 900; box-shadow: 0 4px 0 var(--ink); }
   .ingen-betaling { font-size: .8rem; font-weight: 900; color: var(--muted); }
-  .punkt { width: 44px; height: 44px; min-width: 44px; border-radius: 50%; border: 3px solid var(--ink); background: var(--yellow); font-size: 1.15rem; box-shadow: 0 3px 0 var(--ink); }
-  .punkt[aria-expanded="true"] { background: var(--ink); color: #fff; }
-  .forklaringer { width: 100%; display: grid; gap: 10px; text-align: left; }
-  .forklaring { background: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 12px 16px; }
-  .forklaring b { display: block; }
-  .punktliste { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
-  .punktliste button { border: 3px solid var(--ink); border-radius: 999px; background: #fff; padding: 8px 14px; min-height: 48px; box-shadow: 0 3px 0 var(--ink); display: inline-flex; gap: 8px; align-items: center; }
-  .punktliste button[aria-expanded="true"] { background: var(--yellow); }
-  .punktliste .nr { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: .85rem; }
-  .nrmerke { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: #fff; font-size: .85rem; font-weight: 900; font-family: 'Nunito', sans-serif; }
 
   /* ── SITUASJON 3: profiler ── */
   .profiler { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
-  .profil { border: 4px solid var(--ink); border-radius: 18px; background: #fff; box-shadow: 0 5px 0 var(--ink); padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+  .profil { padding: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
   .profil svg { width: 96px; height: 96px; }
-  .profil .navn { font-weight: 900; font-size: 1.1rem; word-break: break-word; }
-  .profil .besk { font-weight: 700; color: var(--muted); font-size: .95rem; }
   .profil .btn { min-height: 48px; padding: 8px 14px; font-size: .95rem; margin-top: 4px; }
   .vet { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
   .vet > div { border: 3px solid var(--ink); border-radius: 14px; padding: 12px 16px; }
@@ -182,14 +165,54 @@
   .trygg { background: var(--pink); border: 4px solid var(--ink); border-radius: 18px; padding: 16px 18px; font-weight: 800; font-size: 1.12rem; display: flex; gap: 12px; align-items: flex-start; }
   .trygg .hjerte { font-size: 1.8rem; line-height: 1; }
 
-  /* ── AVSLUTNING ── */
-  .tur { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
-  .boble { border: 3px solid var(--ink); border-radius: 20px; padding: 14px 16px; background: #fff; font-weight: 800; display: flex; gap: 10px; align-items: center; }
-  .boble svg { width: 48px; height: 48px; flex: 0 0 auto; }
   .stort-sporsmal { font-family: 'Chewy', cursive; font-size: clamp(1.5rem, 5.5vw, 2.2rem); text-align: center; line-height: 1.2; }
   .valgte { display: flex; flex-wrap: wrap; gap: 8px; }
   .valgte span { background: var(--yellow); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 12px; font-weight: 900; }
   .voksen-notat summary { background: #f3efe8; border-radius: 11px; }
+
+  /* ── Situasjon 1: hatter og regning ── */
+  .hatter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+  .hatt { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: .85rem; }
+  .hatt svg { width: 56px; height: 50px; }
+  .hatt-merke { font-size: .72rem; font-weight: 900; border: 2px solid var(--ink); border-radius: 999px; padding: 0 8px; background: var(--lilac); }
+  .hatt-merke.vanlig { background: #e5e7eb; }
+  .pakke-resultat { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
+  .resultat-tekst { font-weight: 900; font-size: 1.15rem; }
+  .mine-hatter { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 420px; }
+  .mine-hatter svg { width: 40px; height: 35px; }
+  .regning { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 420px; }
+  .regning > div { background: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 8px; display: flex; flex-direction: column; align-items: center; font-weight: 700; font-size: .85rem; text-align: center; }
+  .regning .tall { font-family: 'Chewy', cursive; font-size: 1.7rem; line-height: 1.1; }
+  #pakke-bilde.rist { animation: rist .35s ease; }
+  @keyframes rist { 25% { transform: rotate(-6deg); } 50% { transform: rotate(5deg); } 75% { transform: rotate(-3deg); } }
+
+  /* ── Situasjon 2: bilde og nedtelling ── */
+  .spillvindu.redd { max-width: 640px; padding: 0; overflow: hidden; background: #2e1065; color: #fff; transition: background-color .4s, border-color .4s; }
+  .spillvindu.redd img { display: block; width: 100%; height: auto; }
+  .redd-ui { padding: 14px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .redd-linje { font-weight: 800; }
+  .redd-stor { font-family: 'Chewy', cursive; font-size: clamp(1.4rem, 5vw, 1.9rem); line-height: 1.15; color: #fde047; }
+  .redd .klokke { color: var(--ink); display: inline-block; min-width: 2.2ch; text-align: center; font-variant-numeric: tabular-nums; transition: background-color .3s, transform .2s; }
+  .tidslinje { width: 100%; max-width: 360px; height: 14px; border: 3px solid #fff; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.15); }
+  .tidslinje span { display: block; height: 100%; width: 100%; background: #4ade80; transition: width 1s linear, background-color .3s; }
+  .redd .ingen-betaling { color: #e9d5ff; }
+  .redd.varm { background: #7c2d12; }
+  .redd.varm .klokke { background: #fdba74; }
+  .redd.varm .tidslinje span { background: #fb923c; }
+  .redd.kritisk { background: #991b1b; border-color: #dc2626; }
+  .redd.kritisk .klokke { background: #fecaca; color: #991b1b; animation: puls .5s ease-in-out infinite; }
+  .redd.kritisk .tidslinje span { background: #ef4444; }
+  .redd.kritisk .redd-ui { animation: skjelv .25s linear infinite; }
+  .redd.ute { background: #3f3f46; }
+  .redd.ute .klokke { background: #d4d4d8; }
+  @keyframes puls { 50% { transform: scale(1.25); } }
+  @keyframes skjelv { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  @media (prefers-reduced-motion: reduce) {
+    #pakke-bilde.rist, .redd.kritisk .klokke, .redd.kritisk .redd-ui { animation: none; }
+    .redd.kritisk .klokke { outline: 4px solid #fff; }
+  }
+  .skjult-leser { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .profil img { width: 100%; height: auto; display: block; border-radius: 16px; }
 
   .pausenote { text-align: center; font-weight: 800; color: var(--muted); font-size: .92rem; }
   footer { margin-top: 30px; color: var(--muted); font-size: .85rem; text-align: center; max-width: 60ch; }
@@ -373,7 +396,7 @@
     <h2 class="tittel" style="font-size:1.6rem">Slik starter dere</h2>
     <p>Vær ærlig om hva dere skal gjøre, men vent med beslutningen. Du kan for eksempel si:</p>
     <p class="sitat" style="margin-top:10px">«Jeg har lært noen ting om Roblox som gjør meg bekymret. Jeg vil gjerne se på dem sammen med deg og høre hva du tenker. Så skal vi snakke om hva det betyr for spillingen framover.»</p>
-    <p style="margin-top:10px">Deretter begynner aktiviteten med barnets egen opplevelse. Så ser dere på tre oppdiktede situasjoner. Til slutt legger dere skjermen bort, og du forteller om beslutningen din.</p>
+    <p style="margin-top:10px">Deretter begynner aktiviteten med barnets egen opplevelse. Så ser dere på tre oppdiktede situasjoner. Til slutt får barnet si hva det tenker om Roblox nå. Etterpå forteller du om beslutningen din med egne ord. Støtten til den delen ligger sammenslått nederst på siste skjerm.</p>
   </div>
 
   <!-- 5 Møt reaksjonen -->
@@ -417,36 +440,36 @@
     <h2 class="tittel" tabindex="-1" style="margin-top:8px">Situasjon 1: «Bare ett forsøk til!»</h2>
     <div class="scene" style="margin-top:12px">
       <div class="spillvindu">
-        <div class="vindutittel">Overraskelsespakke</div>
-        <svg viewBox="0 0 160 130" width="150" height="122" aria-hidden="true" style="margin:8px auto;display:block">
-          <rect x="30" y="50" width="100" height="70" rx="8" fill="#a78bfa" stroke="#2b2118" stroke-width="5"/>
-          <rect x="22" y="36" width="116" height="24" rx="6" fill="#c4b5fd" stroke="#2b2118" stroke-width="5"/>
-          <rect x="72" y="36" width="16" height="84" fill="#facc15" stroke="#2b2118" stroke-width="4"/>
-          <path d="M80 36 C60 10 40 22 58 34 M80 36 C100 10 120 22 102 34" fill="none" stroke="#2b2118" stroke-width="5" stroke-linecap="round"/>
-          <text x="54" y="98" font-size="26" font-weight="900" fill="#2b2118">?</text>
-          <text x="98" y="98" font-size="26" font-weight="900" fill="#2b2118">?</text>
+        <div class="vindutittel">Hattepakken</div>
+        <svg id="pakke-bilde" viewBox="0 0 160 130" width="150" height="122" aria-hidden="true" style="margin:8px auto;display:block">
+          <rect x="22" y="48" width="116" height="72" rx="6" fill="#b45309" stroke="#2b2118" stroke-width="5"/>
+          <path d="M22 72 H138 M22 96 H138" stroke="#2b2118" stroke-width="3"/>
+          <rect x="16" y="30" width="128" height="26" rx="6" fill="#d97706" stroke="#2b2118" stroke-width="5"/>
+          <rect x="64" y="30" width="32" height="90" fill="#7c3aed" stroke="#2b2118" stroke-width="4"/>
+          <rect x="68" y="56" width="24" height="26" rx="4" fill="#facc15" stroke="#2b2118" stroke-width="3"/>
+          <text x="80" y="76" text-anchor="middle" font-size="20" font-weight="900" fill="#2b2118">?</text>
         </svg>
-        <p>Hva er inni? Det vet du ikke før du åpner.</p>
-        <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 spillmynter</span></p>
+        <p>Hvilken hatt får du? Det vet du ikke før du åpner.</p>
+        <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 spillmynter per pakke</span></p>
       </div>
+
+      <div class="card" style="padding:14px 16px">
+        <h3 style="text-align:center">Dette kan være i pakken</h3>
+        <div class="hatter" id="hatter"></div>
+      </div>
+
       <p class="kurs">Oppdiktet pris: I dette eksempelet koster 100 spillmynter <b>10 kroner</b>.</p>
-      <button class="btn btn-gul" id="pakke-apne">Åpne pakken én gang</button>
-      <div id="pakke-resultat" class="skjult" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
-        <div class="resultat">
-          <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40 q20 -34 40 0z" fill="#9ca3af" stroke="#2b2118" stroke-width="4"/><rect x="8" y="38" width="48" height="10" rx="5" fill="#6b7280" stroke="#2b2118" stroke-width="4"/></svg>
-          <div><b>Du fikk: en grå lue.</b><br>En helt vanlig ting.</div>
+      <button class="btn btn-gul" id="pakke-apne">Åpne en pakke</button>
+
+      <div id="pakke-resultat" class="skjult pakke-resultat">
+        <p id="pakke-melding" class="resultat-tekst" aria-live="polite"></p>
+        <div class="mine-hatter" id="mine-hatter" aria-hidden="true"></div>
+        <div class="regning">
+          <div><span class="tall" id="ant-forsok">0</span><span>pakker åpnet</span></div>
+          <div><span class="tall" id="ant-mynter">0</span><span>spillmynter</span></div>
+          <div><span class="tall" id="ant-kroner">0 kr</span><span>(oppdiktet)</span></div>
         </div>
-        <p class="stopp">Her stopper vi. Vi åpner ikke flere pakker.</p>
-        <p>Men tenk om man prøvde igjen for å få noe annet:</p>
-        <table class="kost">
-          <thead><tr><th scope="col">Forsøk</th><th scope="col">Spillmynter</th><th scope="col">Kroner (oppdiktet)</th></tr></thead>
-          <tbody>
-            <tr><td>1 forsøk</td><td>100</td><td>10 kr</td></tr>
-            <tr><td>5 forsøk</td><td>500</td><td>50 kr</td></tr>
-            <tr><td>10 forsøk</td><td>1000</td><td>100 kr</td></tr>
-          </tbody>
-        </table>
-        <p class="liten">Og selv etter ti forsøk er det ikke sikkert man får det man ønsker seg.</p>
+        <p id="pakke-stopp" class="stopp skjult">Her stopper vi. Ti pakker, 100 kroner – og bare grå luer.</p>
       </div>
     </div>
     <div class="snakk" style="margin-top:16px">
@@ -459,7 +482,8 @@
     <details>
       <summary>Les etter samtalen: Hva skjer her?</summary>
       <div class="innhold">
-        <p>Når man ikke vet hva som er i pakken, kan man håpe på noe annet neste gang. Men hvert forsøk koster like mye, og flere forsøk gir ingen garanti for å få det man ønsker. Den som selger pakkene, tjener penger på hvert eneste forsøk.</p>
+        <p>Når man ser de kule hattene, er det lett å håpe at neste pakke er den heldige. Men hvert forsøk koster like mye, og flere forsøk gir ingen garanti for å få det man ønsker seg. Man vet heller ikke hvor stor sjansen er.</p>
+        <p>I dette eksempelet kom det bare grå luer – med vilje. Den som selger pakkene, tjener penger på hvert eneste forsøk, uansett hva som er inni.</p>
       </div>
     </details>
   </div>
@@ -468,33 +492,20 @@
   <div class="steg" data-steg="3">
     <span class="oppdiktet-band">🧪 Oppdiktet eksempel</span>
     <h2 class="tittel" tabindex="-1" style="margin-top:8px">Situasjon 2: «Vennen din trenger hjelp!»</h2>
-    <p class="liten">Trykk på de nummererte punktene for å undersøke bildet.</p>
     <div class="scene" style="margin-top:8px">
-      <div class="spillvindu redd">
-        <svg viewBox="0 0 120 80" width="120" height="80" aria-hidden="true" style="display:block;margin:0 auto">
-          <rect x="44" y="8" width="32" height="28" rx="5" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/>
-          <path d="M51 18 l6 6 M57 18 l-6 6 M63 18 l6 6 M69 18 l-6 6" stroke="#2b2118" stroke-width="3" stroke-linecap="round"/>
-          <rect x="38" y="36" width="44" height="30" rx="6" fill="#93c5fd" stroke="#2b2118" stroke-width="4"/>
-          <text x="96" y="30" font-size="18" fill="#2b2118">💔</text>
-        </svg>
-        <div class="rad"><button class="punkt" data-punkt="venn" aria-expanded="false" aria-controls="fk-venn" aria-label="Punkt 1: Valget handler om å hjelpe en venn">1</button><b>Vennen din har mistet alle livene sine.</b></div>
-        <div class="rad"><b style="font-size:1.15rem">Redd vennen din!</b></div>
-        <div class="rad">
-          <span class="pris"><span class="mynt" aria-hidden="true"></span> Betal 49 spillmynter</span>
-          <button class="punkt" data-punkt="pris" aria-expanded="false" aria-controls="fk-pris" aria-label="Punkt 2: Prisen i spillmynter">2</button>
+      <div class="spillvindu redd" id="redd-vindu">
+        <img src="bilder/redd-vennen.webp" width="1200" height="800" alt="To spillfigurer i en lavaverden. Den ene ligger utslått på bakken, den andre bøyer seg bekymret over."> 
+        <div class="redd-ui">
+          <p class="redd-linje">Vennen din har mistet alle livene sine.</p>
+          <p class="redd-stor">Redd vennen din! Betal 49 Robux.</p>
+          <p class="redd-linje">Du har <span class="klokke" id="redd-klokke">10</span> sekunder!</p>
+          <div class="tidslinje" aria-hidden="true"><span id="redd-bar"></span></div>
+          <div class="rad" aria-hidden="true"><span class="lat-knapp">Betal 49 Robux og redd</span></div>
+          <div class="ingen-betaling">Bare et bilde. Knappen virker ikke, og ingen betaler noe.</div>
         </div>
-        <div class="rad">
-          <span>Du har</span><span class="klokke" aria-label="10 sekunder, klokka står stille">0:10</span>
-          <button class="punkt" data-punkt="tid" aria-expanded="false" aria-controls="fk-tid" aria-label="Punkt 3: Den korte tiden">3</button>
-        </div>
-        <div class="rad" aria-hidden="true"><span class="lat-knapp">Betal og redd</span></div>
-        <div class="ingen-betaling">Bare et bilde. Knappen virker ikke, og ingen betaler noe.</div>
       </div>
-      <div class="forklaringer" aria-live="polite">
-        <div class="forklaring skjult" id="fk-venn"><b><span class="nrmerke">1</span> Å hjelpe en venn</b>Valget handler om å redde en venn. Da kan det kjennes som om man er en dårlig venn hvis man ikke betaler. Men det er spillet som har laget valget slik – ikke vennen din.</div>
-        <div class="forklaring skjult" id="fk-pris"><b><span class="nrmerke">2</span> Prisen i spillmynter</b>Hvor mye er 49 spillmynter i ekte penger? Det står ikke. Når prisen er i spillmynter, er det vanskeligere å vite hva noe egentlig koster.</div>
-        <div class="forklaring skjult" id="fk-tid"><b><span class="nrmerke">3</span> Den korte tiden</b>Klokka står stille her. I et spill kan en nedtelling gjøre at man velger fort, før man rekker å tenke eller spørre en voksen.</div>
-      </div>
+      <p class="skjult-leser" id="redd-status" aria-live="polite"></p>
+      <button class="btn btn-gul" id="redd-start">▶ Start klokka</button>
     </div>
     <div class="snakk" style="margin-top:16px">
       <h3>Snakk sammen</h3>
@@ -506,7 +517,13 @@
     <details>
       <summary>Les etter samtalen: Hva skjer her?</summary>
       <div class="innhold">
-        <p>Spillet bruker tre ting samtidig: Lite tid gjør at man ikke rekker å tenke seg om. En pris i spillmynter gjør det vanskelig å se hva det koster. Og når valget handler om en venn, kjenner man seg ansvarlig. Alt dette kan gjøre det lettere å betale. Det er spillet som er laget slik. Det sier ingenting om vennen.</p>
+        <h4>⏱️ Den korte tiden</h4>
+        <p>Klokka teller ned. Da velger man fort, før man rekker å tenke seg om eller spørre en voksen.</p>
+        <h4>💰 Prisen i Robux</h4>
+        <p>Hvor mye er 49 Robux i kroner? Det står ikke. Når prisen er i en spillvaluta, er det vanskeligere å vite hva noe egentlig koster.</p>
+        <h4>🤝 Å hjelpe en venn</h4>
+        <p>Valget handler om å redde en venn. Da kan det kjennes som om man er en dårlig venn hvis man ikke betaler. Men det er spillet som har laget valget slik – ikke vennen din.</p>
+        <p style="margin-top:10px">Alt dette sammen kan gjøre det lettere å betale. Det er spillet som er laget slik. Det sier ingenting om vennen.</p>
       </div>
     </details>
   </div>
@@ -548,56 +565,40 @@
     </div>
   </div>
 
-  <!-- STEG 5: Når vi lærer noe nytt -->
+  <!-- STEG 5: Hva tenker du nå? -->
   <div class="steg" data-steg="5">
-    <h2 class="tittel" tabindex="-1">Når vi lærer noe nytt</h2>
+    <h2 class="tittel" tabindex="-1">Hva tenker du nå?</h2>
     <div class="card" style="margin-top:12px">
-      <p class="stort-sporsmal">Kan vi endre en regel når vi lærer noe nytt, selv om vi sa ja før?</p>
+      <p class="stort-sporsmal">Med det vi har snakket om nå – hva tenker du om Roblox?</p>
     </div>
-    <p style="margin-top:14px;font-weight:800">Begge får svare. Det finnes ikke et riktig svar.</p>
-    <div class="tur" style="margin-top:10px">
-      <div class="boble"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="8" width="28" height="26" rx="5" fill="#f5c79a" stroke="#2b2118" stroke-width="4"/><rect x="8" y="34" width="32" height="12" rx="5" fill="#facc15" stroke="#2b2118" stroke-width="4"/></svg>Barnet: Hva tenker du?</div>
-      <div class="boble"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="6" width="28" height="26" rx="5" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/><rect x="6" y="32" width="36" height="14" rx="5" fill="#60a5fa" stroke="#2b2118" stroke-width="4"/></svg>Den voksne: Hva tenker du?</div>
+    <div class="card" id="valgte-kort" style="margin-top:14px">
+      <h3>I starten sa du at du liker</h3>
+      <div class="valgte" id="valgte" style="margin-top:8px"></div>
     </div>
-    <details>
-      <summary>Les etter samtalen</summary>
-      <div class="innhold">
-        <p>Voksne bestemmer ut fra det de vet. Når de lærer noe nytt, kan de tenke annerledes og endre en regel. Det betyr ikke at noen har gjort noe galt.</p>
-        <p>Du kan fortsatt synes at Roblox er morsomt. Og det er lov å være lei seg eller sint hvis noe blir forandret.</p>
-      </div>
-    </details>
-  </div>
-
-  <!-- STEG 6: Samtalen videre -->
-  <div class="steg" data-steg="6">
-    <h2 class="tittel" tabindex="-1">Nå snakker vi sammen</h2>
-    <p class="ingress">Legg gjerne skjermen litt til side. Nå vil den voksne fortelle hva den har tenkt.</p>
+    <div class="snakk" style="margin-top:14px">
+      <h3>Snakk sammen</h3>
+      <ul>
+        <li>Var det noe som overrasket deg?</li>
+        <li>Er det noe du er uenig i?</li>
+        <li>Har du opplevd noe som likner, når du har spilt?</li>
+      </ul>
+    </div>
 
     <details class="voksen-notat">
-      <summary>Til den voksne (husk fra forberedelsen)</summary>
+      <summary>Til den voksne: veien videre</summary>
       <div class="innhold">
-        <ul>
-          <li>Si vurderingen og beslutningen din med egne ord. Én eller to grunner holder.</li>
-          <li>Si hva som er bestemt, og hva barnet kan være med på å bestemme.</li>
+        <p>Når barnet har fått si sitt, kan du fortelle om vurderingen og beslutningen din med egne ord. Se gjerne bort fra skjermen nå.</p>
+        <ul style="margin-top:8px">
+          <li>Én eller to grunner holder. Si hva som er bestemt, og hva barnet kan være med på å bestemme.</li>
           <li>«Vi sa ja ut fra det vi visste da. Nå har vi lært mer.»</li>
           <li>Lytt. Barnet trenger ikke være enig, og trenger ikke love noe.</li>
           <li>En annen app er ikke automatisk tryggere. Se på den sammen før dere tar den i bruk.</li>
         </ul>
+        <h4>Spørsmål dere kan snakke om</h4>
+        <ul id="slutt-sporsmal"></ul>
+        <p class="liten" style="margin-top:10px">Dere trenger ikke bli ferdige i dag. Det er helt greit å ta en pause og snakke mer en annen dag.</p>
       </div>
     </details>
-
-    <div class="card" style="margin-top:6px">
-      <h3>Dette sa du at du liker med Roblox</h3>
-      <div class="valgte" id="valgte" style="margin:8px 0 4px"></div>
-      <p class="liten skjult" id="valgte-tom">Dere valgte ingen kort i starten. Snakk gjerne om det nå.</p>
-    </div>
-
-    <div class="snakk" style="margin-top:14px">
-      <h3>Snakk sammen</h3>
-      <ul id="slutt-sporsmal"></ul>
-    </div>
-
-    <p class="pausenote" style="margin-top:14px">Dere trenger ikke bli ferdige i dag. Det er helt greit å ta en pause og snakke mer en annen dag.</p>
   </div>
 
   <div class="navrad">
@@ -635,22 +636,19 @@ const LIKER = [
 ];
 
 const PROFILER = [
-  { navn:'Pannekakefan', besk:'Liker å bygge hus og hager.', farge:'#f472b6', hode:'#fcd9b6', pynt:'lue' },
-  { navn:'LynUlv_7',     besk:'Spiller hinderløyper. Har vært med lenge.', farge:'#60a5fa', hode:'#e0b48a', pynt:'briller' },
-  { navn:'StjerneBygger', besk:'Ser etter noen å bygge sammen med.', farge:'#4ade80', hode:'#c58c5c', pynt:'stjerne' }
+  { navn:'Pannekakefan',  besk:'Liker å bygge hus og hager.',          bilde:'bilder/profil-pannekakefan.webp',  figur:'en figur med gul byggehjelm og rosa genser' },
+  { navn:'LynUlv_7',      besk:'Spiller hinderløyper. Har vært med lenge.', bilde:'bilder/profil-lynulv.webp', figur:'en figur med briller og blå genser' },
+  { navn:'StjerneBygger', besk:'Ser etter noen å bygge sammen med.',   bilde:'bilder/profil-stjernebygger.webp', figur:'en figur med en stjerne i håret og grønn genser' }
 ];
 
-function avatar(p){
-  let pynt = '';
-  if(p.pynt === 'lue')     pynt = '<path d="M30 28 q18 -24 36 0z" fill="#facc15" stroke="#2b2118" stroke-width="4"/>';
-  if(p.pynt === 'briller') pynt = '<circle cx="40" cy="40" r="7" fill="none" stroke="#2b2118" stroke-width="3"/><circle cx="56" cy="40" r="7" fill="none" stroke="#2b2118" stroke-width="3"/><path d="M47 40h2" stroke="#2b2118" stroke-width="3"/>';
-  if(p.pynt === 'stjerne') pynt = '<path d="M74 10 l3 7 7 1 -5 5 1 7 -6 -3 -6 3 1 -7 -5 -5 7 -1z" fill="#facc15" stroke="#2b2118" stroke-width="2"/>';
-  return '<svg viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="44" fill="#fff9f0" stroke="#2b2118" stroke-width="3"/>' +
-    '<rect x="30" y="24" width="36" height="32" rx="6" fill="'+p.hode+'" stroke="#2b2118" stroke-width="4"/>' +
-    '<circle cx="41" cy="40" r="3" fill="#2b2118"/><circle cx="55" cy="40" r="3" fill="#2b2118"/>' +
-    '<path d="M42 48 h12" stroke="#2b2118" stroke-width="3" stroke-linecap="round"/>' +
-    '<rect x="24" y="56" width="48" height="30" rx="8" fill="'+p.farge+'" stroke="#2b2118" stroke-width="4"/>' + pynt + '</svg>';
-}
+/* Hattene i pakken. Bare den grå luen kommer noen gang ut – med vilje. */
+const HATTER = [
+  { id:'gra',    navn:'Grå lue',      merke:'Vanlig',  svg:'<path d="M12 40 q20 -34 40 0z" fill="#9ca3af" stroke="#2b2118" stroke-width="4"/><rect x="8" y="38" width="48" height="10" rx="5" fill="#6b7280" stroke="#2b2118" stroke-width="4"/>' },
+  { id:'krone',  navn:'Gullkrone',    merke:'Sjelden', svg:'<path d="M10 46 L14 18 L24 32 L32 14 L40 32 L50 18 L54 46z" fill="#facc15" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="38" r="4" fill="#ef4444" stroke="#2b2118" stroke-width="2"/>' },
+  { id:'regn',   navn:'Regnbuehatt',  merke:'Sjelden', svg:'<rect x="18" y="10" width="28" height="30" rx="3" fill="#7c3aed" stroke="#2b2118" stroke-width="4"/><rect x="18" y="28" width="28" height="4" fill="#f87171"/><rect x="18" y="32" width="28" height="4" fill="#facc15"/><rect x="8" y="40" width="48" height="8" rx="4" fill="#4c1d95" stroke="#2b2118" stroke-width="4"/>' },
+  { id:'flamme', navn:'Flammehjelm',  merke:'Sjelden', svg:'<path d="M14 46 q0 -26 18 -28 q18 2 18 28z" fill="#ef4444" stroke="#2b2118" stroke-width="4"/><path d="M24 20 q-2 -10 6 -14 q-1 6 4 8 q4 -6 2 -10 q10 6 6 18" fill="#fb923c" stroke="#2b2118" stroke-width="3" stroke-linejoin="round"/><rect x="10" y="42" width="44" height="8" rx="4" fill="#991b1b" stroke="#2b2118" stroke-width="4"/>' }
+];
+const hattSvg = h => '<svg viewBox="0 0 64 56" aria-hidden="true">' + h.svg + '</svg>';
 
 /* ── Bygg kort ── */
 const likekort = document.getElementById('likekort');
@@ -674,21 +672,60 @@ function oppdaterLikeSporsmal(){
   ul.innerHTML = sp.map(s => '<li>' + s + '</li>').join('');
 }
 
-/* ── Situasjon 1 ── */
+/* ── Situasjon 1: pakker kan åpnes inntil ti ganger, alltid grå lue ── */
+const MAKS_PAKKER = 10;
+let forsok = 0;
+document.getElementById('hatter').innerHTML = HATTER.map(h =>
+  '<div class="hatt">' + hattSvg(h) + '<b>' + h.navn + '</b><span class="hatt-merke' + (h.id === 'gra' ? ' vanlig' : '') + '">' + h.merke + '</span></div>').join('');
 const pakkeKnapp = document.getElementById('pakke-apne');
+const pakkeBilde = document.getElementById('pakke-bilde');
 pakkeKnapp.addEventListener('click', () => {
-  pakkeKnapp.disabled = true;
-  pakkeKnapp.textContent = 'Pakken er åpnet';
+  if(forsok >= MAKS_PAKKER) return;
+  forsok++;
+  pakkeBilde.classList.remove('rist'); void pakkeBilde.getBoundingClientRect(); pakkeBilde.classList.add('rist');
   document.getElementById('pakke-resultat').classList.remove('skjult');
+  document.getElementById('pakke-melding').textContent = 'Pakke nr. ' + forsok + ': Du fikk en grå lue.';
+  document.getElementById('mine-hatter').insertAdjacentHTML('beforeend', '<span>' + hattSvg(HATTER[0]) + '</span>');
+  document.getElementById('ant-forsok').textContent = forsok;
+  document.getElementById('ant-mynter').textContent = forsok * 100;
+  document.getElementById('ant-kroner').textContent = (forsok * 10) + ' kr';
+  if(forsok >= MAKS_PAKKER){
+    pakkeKnapp.disabled = true;
+    pakkeKnapp.textContent = 'Ingen flere pakker';
+    document.getElementById('pakke-stopp').classList.remove('skjult');
+  } else {
+    pakkeKnapp.textContent = 'Åpne en pakke til';
+  }
 });
 
-/* ── Situasjon 2 ── */
-document.querySelectorAll('.punkt').forEach(p => {
-  p.addEventListener('click', () => {
-    const apen = p.getAttribute('aria-expanded') === 'true';
-    p.setAttribute('aria-expanded', apen ? 'false' : 'true');
-    document.getElementById(p.getAttribute('aria-controls')).classList.toggle('skjult', apen);
-  });
+/* ── Situasjon 2: nedtelling fra 10 som blir mer og mer pågående ── */
+const reddVindu = document.getElementById('redd-vindu');
+const reddKlokke = document.getElementById('redd-klokke');
+const reddBar = document.getElementById('redd-bar');
+const reddStart = document.getElementById('redd-start');
+const reddStatus = document.getElementById('redd-status');
+let reddTimer = null;
+function visTid(t){
+  reddKlokke.textContent = t;
+  reddBar.style.width = (t * 10) + '%';
+  reddVindu.classList.toggle('varm', t <= 6 && t > 3);
+  reddVindu.classList.toggle('kritisk', t <= 3 && t > 0);
+  reddVindu.classList.toggle('ute', t === 0);
+}
+function stoppKlokka(nullstill){
+  clearInterval(reddTimer); reddTimer = null;
+  if(nullstill){ visTid(10); reddStart.textContent = '▶ Start klokka'; reddStatus.textContent = ''; }
+}
+reddStart.addEventListener('click', () => {
+  stoppKlokka(false);
+  let t = 10; visTid(t);
+  reddStart.textContent = '↺ Start på nytt';
+  reddStatus.textContent = 'Klokka teller ned fra 10.';
+  reddTimer = setInterval(() => {
+    t--; visTid(t);
+    if(t === 3) reddStatus.textContent = 'Tre sekunder igjen.';
+    if(t <= 0){ stoppKlokka(false); reddStatus.textContent = 'Tiden er ute.'; reddKlokke.textContent = '0'; }
+  }, 1000);
 });
 
 /* ── Situasjon 3 ── */
@@ -696,8 +733,8 @@ const profilerEl = document.getElementById('profiler');
 PROFILER.forEach((p, i) => {
   const d = document.createElement('div');
   d.className = 'profil';
-  d.innerHTML = avatar(p) + '<div class="navn">' + p.navn + '</div><div class="besk">' + p.besk + '</div>' +
-    '<button type="button" class="btn" aria-controls="profil-detalj">Se nærmere</button>';
+  d.innerHTML = '<img src="' + p.bilde + '" width="640" height="640" loading="lazy" alt="Profilkort: ' + p.navn + '. ' + p.besk + ' Bildet viser ' + p.figur + '.">' +
+    '<button type="button" class="btn" aria-controls="profil-detalj">Se nærmere på ' + p.navn + '</button>';
   d.querySelector('button').addEventListener('click', () => visProfil(i));
   profilerEl.appendChild(d);
 });
@@ -705,7 +742,7 @@ function visProfil(i){
   const p = PROFILER[i];
   document.getElementById('profil-detalj-tittel').textContent = 'Vi ser nærmere på «' + p.navn + '»';
   document.getElementById('profil-ser').innerHTML =
-    '<li>En spillfigur</li><li>Et brukernavn: «' + p.navn + '»</li><li>Det personen har skrevet: «' + p.besk + '»</li>';
+    '<li>En spillfigur: ' + p.figur + '</li><li>Et brukernavn: «' + p.navn + '»</li><li>Det personen har skrevet: «' + p.besk + '»</li>';
   const el = document.getElementById('profil-detalj');
   el.classList.remove('skjult');
   el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
@@ -715,7 +752,7 @@ function visProfil(i){
 function byggAvslutning(){
   const valgte = LIKER.filter(l => valgt.has(l.id));
   document.getElementById('valgte').innerHTML = valgte.map(l => '<span>' + l.tekst + '</span>').join('');
-  document.getElementById('valgte-tom').classList.toggle('skjult', valgte.length > 0);
+  document.getElementById('valgte-kort').classList.toggle('skjult', valgte.length === 0);
   const sp = ['Hva vil du savne mest?'];
   if(valgte.length) valgte.forEach(l => sp.push(l.slutt));
   else sp.push('Hvordan kan vi hjelpe deg med å beholde kontakten med vennene dine?', 'Hvor kan du fortsette å bygge, utforske eller klare utfordringer?');
@@ -724,8 +761,8 @@ function byggAvslutning(){
 }
 
 /* ── Navigasjon (adressen styrer skjermen, så nettleserens tilbake-knapp virker) ── */
-const ANTALL = 6;
-const STEGNAVN = ['Hva liker du?', 'Situasjon 1 av 3', 'Situasjon 2 av 3', 'Situasjon 3 av 3', 'Når vi lærer noe nytt', 'Samtalen videre'];
+const ANTALL = 5;
+const STEGNAVN = ['Hva liker du?', 'Situasjon 1 av 3', 'Situasjon 2 av 3', 'Situasjon 3 av 3', 'Hva tenker du nå?'];
 const framdrift = document.getElementById('framdrift');
 for(let i = 0; i < ANTALL; i++) framdrift.appendChild(document.createElement('span'));
 
@@ -736,6 +773,7 @@ function fokus(el){ if(el){ el.focus({ preventScroll: true }); window.scrollTo(0
 
 function route(){
   const h = location.hash.replace('#', '');
+  stoppKlokka(true);
   const m = h.match(/^sammen-(\d)$/);
   if(m){
     const n = Math.min(Math.max(parseInt(m[1], 10), 1), ANTALL);
@@ -745,7 +783,7 @@ function route(){
     document.getElementById('steginfo').textContent = 'Steg ' + n + ' av ' + ANTALL + ' · ' + STEGNAVN[n - 1];
     document.getElementById('forrige').textContent = n === 1 ? '← Til forsiden' : '← Tilbake';
     const neste = document.getElementById('neste');
-    neste.textContent = n === ANTALL ? 'Tilbake til forsiden' : 'Neste →';
+    neste.textContent = n === ANTALL ? 'Ferdig' : 'Neste →';
     neste.dataset.mal = n === ANTALL ? '#forside' : '#sammen-' + (n + 1);
     document.getElementById('forrige').dataset.mal = n === 1 ? '#forside' : '#sammen-' + (n - 1);
     if(n === ANTALL) byggAvslutning();
