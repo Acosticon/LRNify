@@ -126,8 +126,9 @@
 
   /* ── KORT: hva liker du ── */
   .likekort { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+  @media (max-width: 420px) { .likekort { grid-template-columns: 1fr 1fr; } }
   .likekort button { border: 4px solid var(--ink); border-radius: 18px; background: #fff; box-shadow: 0 5px 0 var(--ink); padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 150px; font-size: 1.05rem; position: relative; transition: transform .12s, box-shadow .12s; }
-  .likekort button svg { width: 76px; height: 76px; }
+  .likekort button img { width: 100%; max-width: 130px; height: auto; aspect-ratio: 1; object-fit: contain; }
   .likekort button[aria-pressed="true"] { background: var(--yellow); }
   .likekort button[aria-pressed="true"]::after { content: '✓'; position: absolute; top: 6px; right: 10px; font-size: 1.3rem; }
   .likekort button:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
@@ -149,7 +150,8 @@
   /* ── SITUASJON 2: redd vennen ── */
   .klokke { font-family: 'Chewy', cursive; font-size: 1.8rem; background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 0 12px; }
   .rad { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
-  .lat-knapp { display: inline-block; background: #22c55e; border: 4px solid var(--ink); border-radius: 14px; padding: 10px 18px; font-weight: 900; box-shadow: 0 4px 0 var(--ink); }
+  .lat-knapp { display: inline-block; background: #22c55e; border: 4px solid var(--ink); border-radius: 14px; padding: 12px 20px; min-height: 52px; font-weight: 900; font-size: 1.05rem; box-shadow: 0 4px 0 var(--ink); }
+  .lat-knapp:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
   .ingen-betaling { font-size: .8rem; font-weight: 900; color: var(--muted); }
 
   /* ── SITUASJON 3: profiler ── */
@@ -171,12 +173,49 @@
   .voksen-notat summary { background: #f3efe8; border-radius: 11px; }
 
   /* ── Situasjon 1: hatter og regning ── */
-  .hatter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+  .hatter { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 8px; margin-top: 8px; }
+  @media (max-width: 759px) { .hatter { grid-template-columns: repeat(4, 1fr); } }
+
+  /* Situasjon 1: tre kolonner på bred skjerm (regning – pakke – hatter) */
+  body.bred .site-header, body.bred main { max-width: 1180px; }
+  .pakke-oppsett { display: grid; gap: 16px; width: 100%; grid-template-areas: "midt" "regning" "hatter"; }
+  @media (min-width: 760px) {
+    .pakke-oppsett { grid-template-columns: 1fr 1.35fr 1fr; grid-template-areas: "regning midt hatter"; align-items: start; }
+  }
+  .pakke-midt { grid-area: midt; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+  .pakke-regning { grid-area: regning; }
+  .pakke-hatter { grid-area: hatter; }
+  .pakke-vindu { max-width: none; }
+  .pakke-scene { position: relative; padding-top: 70px; margin: 0 auto; width: 220px; }
+  #pakke-bilde { width: 100%; height: auto; display: block; position: relative; z-index: 1; }
+  .hatt-ut { position: absolute; left: 50%; top: 0; width: 120px; height: auto; transform: translateX(-50%); z-index: 2; filter: drop-shadow(0 4px 0 rgba(43,33,24,.35)); }
+  .hatt-ut.opp { animation: hattOpp .7s cubic-bezier(.2,1.4,.4,1) both; }
+  @keyframes hattOpp {
+    0%   { transform: translate(-50%, 110px) scale(.3); opacity: 0; }
+    60%  { opacity: 1; }
+    100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
+  }
+  .btn-stor { width: 100%; font-size: 1.45rem; padding: 20px 24px; min-height: 76px; border-radius: 20px; box-shadow: 0 7px 0 var(--ink); }
+  .pakke-regning .regning { grid-template-columns: 1fr; max-width: none; }
+  @media (max-width: 759px) { .pakke-regning .regning { grid-template-columns: repeat(3, 1fr); } }
+  .ingen-enna { color: var(--muted); font-weight: 700; font-size: .9rem; }
+
+  /* Situasjon 2: oppdiktet kjøpsvindu */
+  dialog.kjop { margin: auto; border: 4px solid var(--ink); border-radius: 20px; box-shadow: 0 8px 0 var(--ink); padding: 18px 20px; width: min(420px, calc(100vw - 32px)); background: #fff; color: var(--ink); font-family: 'Nunito', sans-serif; }
+  dialog.kjop::backdrop { background: rgba(43,33,24,.55); }
+  .kjop-topp { margin-bottom: 10px; }
+  .kjop h3 { font-size: 1.3rem; }
+  .kjop-tilbud { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .tilbud { border: 4px solid var(--ink); border-radius: 16px; background: #f0fdf4; box-shadow: 0 5px 0 var(--ink); padding: 14px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 120px; justify-content: center; }
+  .tilbud:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .tilbud-best { background: #fef9c3; }
+  .tilbud-ant { font-family: 'Chewy', cursive; font-size: 1.5rem; font-weight: 400; }
+  .tilbud-pris { font-size: 1.1rem; background: #22c55e; border: 3px solid var(--ink); border-radius: 999px; padding: 2px 12px; }
+  .tilbud-merke { font-size: .75rem; background: #ef4444; color: #fff; border-radius: 999px; padding: 2px 8px; }
   .hatt { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: .85rem; }
   .hatt img { width: 100%; max-width: 88px; height: auto; aspect-ratio: 8 / 7; object-fit: contain; }
   .hatt-merke { font-size: .72rem; font-weight: 900; border: 2px solid var(--ink); border-radius: 999px; padding: 0 8px; background: var(--lilac); }
   .hatt-merke.vanlig { background: #e5e7eb; }
-  .pakke-resultat { display: flex; flex-direction: column; align-items: center; gap: 12px; width: 100%; }
   .resultat-tekst { font-weight: 900; font-size: 1.15rem; }
   .mine-hatter { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; max-width: 420px; }
   .mine-hatter img { width: 40px; height: 35px; object-fit: contain; }
@@ -208,7 +247,7 @@
   @keyframes puls { 50% { transform: scale(1.25); } }
   @keyframes skjelv { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
   @media (prefers-reduced-motion: reduce) {
-    #pakke-bilde.rist, .redd.kritisk .klokke, .redd.kritisk .redd-ui { animation: none; }
+    #pakke-bilde.rist, .hatt-ut.opp, .redd.kritisk .klokke, .redd.kritisk .redd-ui { animation: none; }
     .redd.kritisk .klokke { outline: 4px solid #fff; }
   }
   .skjult-leser { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
@@ -438,31 +477,36 @@
   <div class="steg" data-steg="2">
     <span class="oppdiktet-band">🧪 Oppdiktet eksempel</span>
     <h2 class="tittel" tabindex="-1" style="margin-top:8px">Situasjon 1: «Bare ett forsøk til!»</h2>
-    <div class="scene" style="margin-top:12px">
-      <div class="spillvindu">
-        <div class="vindutittel">Hattepakken</div>
-        <img id="pakke-bilde" src="bilder/pakke.webp" width="420" height="373" alt="En lilla pakke med gul sløyfe." style="width:170px;height:auto;margin:8px auto;display:block">
-        <p>Hvilken hatt får du? Det vet du ikke før du åpner.</p>
-        <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 spillmynter per pakke</span></p>
+    <div class="pakke-oppsett" style="margin-top:12px">
+      <div class="pakke-midt">
+        <div class="spillvindu pakke-vindu">
+          <div class="vindutittel">Hattepakken</div>
+          <div class="pakke-scene">
+            <img class="hatt-ut skjult" id="hatt-ut" src="bilder/hatt-gra.webp" width="240" height="200" alt="">
+            <img id="pakke-bilde" src="bilder/pakke.webp" width="420" height="373" alt="En lilla pakke med gul sløyfe.">
+          </div>
+          <p id="pakke-melding" class="resultat-tekst" aria-live="polite">Hvilken hatt får du? Det vet du ikke før du åpner.</p>
+          <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 spillmynter per pakke</span></p>
+        </div>
+        <button class="btn btn-gul btn-stor" id="pakke-apne">🎁 Åpne en pakke</button>
+        <p class="kurs">Oppdiktet pris: I dette eksempelet koster 100 spillmynter <b>10 kroner</b>.</p>
       </div>
 
-      <div class="card" style="padding:14px 16px">
-        <h3 style="text-align:center">Dette kan være i pakken</h3>
-        <div class="hatter" id="hatter"></div>
-      </div>
-
-      <p class="kurs">Oppdiktet pris: I dette eksempelet koster 100 spillmynter <b>10 kroner</b>.</p>
-      <button class="btn btn-gul" id="pakke-apne">Åpne en pakke</button>
-
-      <div id="pakke-resultat" class="skjult pakke-resultat">
-        <p id="pakke-melding" class="resultat-tekst" aria-live="polite"></p>
-        <div class="mine-hatter" id="mine-hatter" aria-hidden="true"></div>
+      <div class="card pakke-regning" style="padding:14px 16px">
+        <h3 style="text-align:center">Så langt</h3>
         <div class="regning">
           <div><span class="tall" id="ant-forsok">0</span><span>pakker åpnet</span></div>
-          <div><span class="tall" id="ant-mynter">0</span><span>spillmynter</span></div>
+          <div><span class="tall" id="ant-mynter">0</span><span>spillmynter brukt</span></div>
           <div><span class="tall" id="ant-kroner">0 kr</span><span>(oppdiktet)</span></div>
         </div>
+        <h3 style="text-align:center;margin-top:12px">Dine hatter</h3>
+        <div class="mine-hatter" id="mine-hatter" aria-hidden="true"><span class="ingen-enna">Ingen ennå</span></div>
         <p id="pakke-stopp" class="stopp skjult">Her stopper vi. Ti pakker, 100 kroner – og bare grå luer.</p>
+      </div>
+
+      <div class="card pakke-hatter" style="padding:14px 16px">
+        <h3 style="text-align:center">Dette kan være i pakken</h3>
+        <div class="hatter" id="hatter"></div>
       </div>
     </div>
     <div class="snakk" style="margin-top:16px">
@@ -493,11 +537,28 @@
           <p class="redd-stor">Redd vennen din! Betal 49 Robux.</p>
           <p class="redd-linje">Du har <span class="klokke" id="redd-klokke">10</span> sekunder!</p>
           <div class="tidslinje" aria-hidden="true"><span id="redd-bar"></span></div>
-          <div class="rad" aria-hidden="true"><span class="lat-knapp">Betal 49 Robux og redd</span></div>
-          <div class="ingen-betaling">Bare et bilde. Knappen virker ikke, og ingen betaler noe.</div>
+          <div class="rad"><button type="button" class="lat-knapp" id="redd-betal">Betal 49 Robux og redd</button></div>
+          <div class="ingen-betaling">Bare et eksempel. Ingen kan betale noe her.</div>
         </div>
       </div>
       <p class="skjult-leser" id="redd-status" aria-live="polite"></p>
+      <dialog class="kjop" id="kjop" aria-labelledby="kjop-tittel">
+        <div class="kjop-topp"><span class="oppdiktet-band">🧪 Oppdiktet kjøpsvindu</span></div>
+        <div id="kjop-valg">
+          <h3 id="kjop-tittel">Du har ikke nok Robux</h3>
+          <p>Kjøp Robux for å redde vennen din!</p>
+          <div class="kjop-tilbud">
+            <button type="button" class="tilbud" data-tilbud="49"><span class="tilbud-ant">49 Robux</span><span class="tilbud-pris">10 kr</span></button>
+            <button type="button" class="tilbud tilbud-best" data-tilbud="200"><span class="tilbud-merke">Mest for pengene!</span><span class="tilbud-ant">200 Robux</span><span class="tilbud-pris">20 kr</span></button>
+          </div>
+        </div>
+        <div id="kjop-stopp" class="skjult">
+          <h3>Her stopper eksempelet</h3>
+          <p>Ingen kjøp ble gjort, og ingen penger er brukt.</p>
+          <p style="margin-top:8px"><b>Snakk sammen:</b> Hvilket tilbud valgte du, og hvorfor?</p>
+        </div>
+        <button type="button" class="btn" id="kjop-lukk" style="margin-top:14px;width:100%">Lukk</button>
+      </dialog>
       <button class="btn btn-gul" id="redd-start">▶ Start klokka</button>
     </div>
     <div class="snakk" style="margin-top:16px">
@@ -516,6 +577,8 @@
         <p>Hvor mye er 49 Robux i kroner? Det står ikke. Når prisen er i en spillvaluta, er det vanskeligere å vite hva noe egentlig koster.</p>
         <h4>🤝 Å hjelpe en venn</h4>
         <p>Valget handler om å redde en venn. Da kan det kjennes som om man er en dårlig venn hvis man ikke betaler. Men det er spillet som har laget valget slik – ikke vennen din.</p>
+        <h4>🛒 Kjøpsvinduet</h4>
+        <p>Du trengte bare 49 Robux, men det største tilbudet ser ut som det beste kjøpet. Da er det lett å kjøpe mer enn man trenger. Det som blir til overs, blir liggende i spillet og kan friste til nye kjøp.</p>
         <p style="margin-top:10px">Alt dette sammen kan gjøre det lettere å betale. Det er spillet som er laget slik. Det sier ingenting om vennen.</p>
       </div>
     </details>
@@ -613,11 +676,8 @@
 const valgt = new Set();
 
 const ILLU = {
-  venner: '<svg viewBox="0 0 80 80" aria-hidden="true"><rect x="8" y="18" width="26" height="24" rx="5" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/><rect x="4" y="42" width="34" height="26" rx="6" fill="#60a5fa" stroke="#2b2118" stroke-width="4"/><rect x="46" y="22" width="26" height="24" rx="5" fill="#f5c79a" stroke="#2b2118" stroke-width="4"/><rect x="42" y="46" width="34" height="22" rx="6" fill="#f472b6" stroke="#2b2118" stroke-width="4"/><path d="M16 32 q5 4 10 0 M54 36 q5 4 10 0" stroke="#2b2118" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
-  bygge: '<svg viewBox="0 0 80 80" aria-hidden="true"><rect x="10" y="48" width="24" height="22" fill="#f87171" stroke="#2b2118" stroke-width="4"/><rect x="34" y="48" width="24" height="22" fill="#60a5fa" stroke="#2b2118" stroke-width="4"/><rect x="22" y="26" width="24" height="22" fill="#facc15" stroke="#2b2118" stroke-width="4"/><rect x="50" y="10" width="20" height="20" fill="#4ade80" stroke="#2b2118" stroke-width="4" transform="rotate(12 60 20)"/></svg>',
-  utfordring: '<svg viewBox="0 0 80 80" aria-hidden="true"><path d="M6 70 L32 26 L46 46 L56 34 L76 70z" fill="#a3e635" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/><path d="M32 26 V6" stroke="#2b2118" stroke-width="4" stroke-linecap="round"/><path d="M32 7 h18 l-5 6 l5 6 h-18z" fill="#facc15" stroke="#2b2118" stroke-width="3" stroke-linejoin="round"/></svg>',
-  utforske: '<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="30" fill="#bae6fd" stroke="#2b2118" stroke-width="4"/><path d="M40 16 L48 40 L40 64 L32 40z" fill="#fff" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/><path d="M40 16 L48 40 L32 40z" fill="#f87171" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/><circle cx="40" cy="40" r="4" fill="#2b2118"/></svg>',
-  annet: '<svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 6 L49 29 L74 30 L54 45 L61 70 L40 56 L19 70 L26 45 L6 30 L31 29z" fill="#fde047" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/></svg>'
+  venner:'bilder/kort-venner.webp', bygge:'bilder/kort-bygge.webp', utfordring:'bilder/kort-utfordring.webp',
+  utforske:'bilder/kort-utforske.webp', annet:'bilder/kort-annet.webp'
 };
 
 const LIKER = [
@@ -650,7 +710,7 @@ LIKER.forEach(l => {
   b.type = 'button';
   b.setAttribute('aria-pressed', 'false');
   b.dataset.id = l.id;
-  b.innerHTML = ILLU[l.id] + '<span>' + l.tekst + '</span>';
+  b.innerHTML = '<img src="' + ILLU[l.id] + '" width="360" height="360" alt="">' + '<span>' + l.tekst + '</span>';
   b.addEventListener('click', () => {
     if(valgt.has(l.id)) valgt.delete(l.id); else valgt.add(l.id);
     b.setAttribute('aria-pressed', valgt.has(l.id) ? 'true' : 'false');
@@ -672,13 +732,18 @@ document.getElementById('hatter').innerHTML = HATTER.map(h =>
   '<div class="hatt">' + hattBilde(h, '') + '<b>' + h.navn + '</b><span class="hatt-merke' + (h.id === 'gra' ? ' vanlig' : '') + '">' + h.merke + '</span></div>').join('');
 const pakkeKnapp = document.getElementById('pakke-apne');
 const pakkeBilde = document.getElementById('pakke-bilde');
+const hattUt = document.getElementById('hatt-ut');
 pakkeKnapp.addEventListener('click', () => {
   if(forsok >= MAKS_PAKKER) return;
   forsok++;
-  pakkeBilde.classList.remove('rist'); void pakkeBilde.getBoundingClientRect(); pakkeBilde.classList.add('rist');
-  document.getElementById('pakke-resultat').classList.remove('skjult');
+  pakkeBilde.classList.remove('rist'); hattUt.classList.remove('opp'); hattUt.classList.add('skjult');
+  void pakkeBilde.getBoundingClientRect();
+  pakkeBilde.classList.add('rist');
+  hattUt.classList.remove('skjult'); hattUt.classList.add('opp');
   document.getElementById('pakke-melding').textContent = 'Pakke nr. ' + forsok + ': Du fikk en grå lue.';
-  document.getElementById('mine-hatter').insertAdjacentHTML('beforeend', '<span>' + hattBilde(HATTER[0], '') + '</span>');
+  const mine = document.getElementById('mine-hatter');
+  const tom = mine.querySelector('.ingen-enna'); if(tom) tom.remove();
+  mine.insertAdjacentHTML('beforeend', '<span>' + hattBilde(HATTER[0], '') + '</span>');
   document.getElementById('ant-forsok').textContent = forsok;
   document.getElementById('ant-mynter').textContent = forsok * 100;
   document.getElementById('ant-kroner').textContent = (forsok * 10) + ' kr';
@@ -687,7 +752,7 @@ pakkeKnapp.addEventListener('click', () => {
     pakkeKnapp.textContent = 'Ingen flere pakker';
     document.getElementById('pakke-stopp').classList.remove('skjult');
   } else {
-    pakkeKnapp.textContent = 'Åpne en pakke til';
+    pakkeKnapp.textContent = '🎁 Åpne en pakke til';
   }
 });
 
@@ -720,6 +785,22 @@ reddStart.addEventListener('click', () => {
     if(t <= 0){ stoppKlokka(false); reddStatus.textContent = 'Tiden er ute.'; reddKlokke.textContent = '0'; }
   }, 1000);
 });
+
+/* Oppdiktet kjøpsvindu: viser tilbudene, men ingenting kan kjøpes. */
+const kjop = document.getElementById('kjop');
+function apneKjop(){
+  document.getElementById('kjop-valg').classList.remove('skjult');
+  document.getElementById('kjop-stopp').classList.add('skjult');
+  if(typeof kjop.showModal === 'function') kjop.showModal(); else kjop.setAttribute('open', '');
+}
+function lukkKjop(){ if(kjop.open){ if(typeof kjop.close === 'function') kjop.close(); else kjop.removeAttribute('open'); } }
+document.getElementById('redd-betal').addEventListener('click', apneKjop);
+document.getElementById('kjop-lukk').addEventListener('click', lukkKjop);
+kjop.querySelectorAll('.tilbud').forEach(t => t.addEventListener('click', () => {
+  document.getElementById('kjop-valg').classList.add('skjult');
+  document.getElementById('kjop-stopp').classList.remove('skjult');
+  document.getElementById('kjop-lukk').focus();
+}));
 
 /* ── Situasjon 3 ── */
 const profilerEl = document.getElementById('profiler');
@@ -767,6 +848,8 @@ function fokus(el){ if(el){ el.focus({ preventScroll: true }); window.scrollTo(0
 function route(){
   const h = location.hash.replace('#', '');
   stoppKlokka(true);
+  lukkKjop();
+  document.body.classList.toggle('bred', location.hash === '#sammen-2');
   const m = h.match(/^sammen-(\d)$/);
   if(m){
     const n = Math.min(Math.max(parseInt(m[1], 10), 1), ANTALL);
