@@ -144,7 +144,6 @@
   .spillvindu .vindutittel { font-weight: 900; font-size: 1.15rem; }
   .pris { display: inline-flex; align-items: center; gap: 6px; font-weight: 900; background: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: 4px 12px; }
   .mynt { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: #fbbf24; border: 2px solid var(--ink); }
-  .kurs { font-weight: 800; background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 8px 12px; }
   .stopp { font-weight: 900; }
 
   /* ── SITUASJON 2: redd vennen ── */
@@ -209,7 +208,7 @@
   }
   .btn-stor { width: 100%; font-size: 1.45rem; padding: 20px 24px; min-height: 76px; border-radius: 20px; box-shadow: 0 7px 0 var(--ink); }
   .pakke-regning .regning { grid-template-columns: 1fr; max-width: none; }
-  @media (max-width: 759px) { .pakke-regning .regning { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 759px) { .pakke-regning .regning { grid-template-columns: repeat(2, 1fr); } }
   .ingen-enna { color: var(--muted); font-weight: 700; font-size: .9rem; }
 
   /* Situasjon 2: oppdiktet kjøpsvindu */
@@ -238,27 +237,43 @@
   @keyframes rist { 25% { transform: rotate(-6deg); } 50% { transform: rotate(5deg); } 75% { transform: rotate(-3deg); } }
 
   /* ── Situasjon 2: bilde og nedtelling ── */
-  .spillvindu.redd { max-width: 640px; padding: 0; overflow: hidden; background: #2e1065; color: #fff; transition: background-color .4s, border-color .4s; }
+  .spillvindu.redd { max-width: 920px; padding: 0; overflow: hidden; background: #2e1065; color: #fff; position: relative; transition: border-color .4s; }
+  .redd-innhold { position: relative; visibility: hidden; }
+  .redd.startet .redd-innhold { visibility: visible; }
   .spillvindu.redd img { display: block; width: 100%; height: auto; }
-  .redd-ui { padding: 14px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .redd-dekke { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; padding: 20px;
+    background: radial-gradient(circle at 50% 40%, #4c1d95, #1e1b4b); transition: opacity .45s ease, visibility .45s; }
+  .redd-dekke .btn-stor { width: auto; min-width: 220px; }
+  .redd-dekke-tekst { font-weight: 800; color: #e9d5ff; }
+  .redd.startet .redd-dekke { opacity: 0; visibility: hidden; }
+  .redd-ui { padding: 14px 16px 16px; display: flex; flex-direction: column; align-items: center; gap: 10px; background: rgba(46,16,101,.92); transition: background-color .4s; }
+  .redd-ui:focus { outline: none; }
+  .redd-tekst, .redd-handling { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; }
+  /* På større skjermer ligger feltet oppå nederste fjerdedel av bildet */
+  @media (min-width: 640px) {
+    .redd-ui { position: absolute; left: 0; right: 0; bottom: 0; min-height: 25%; flex-direction: row; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 20px; text-align: left; }
+    .redd-tekst { align-items: flex-start; flex: 1 1 55%; }
+    .redd-handling { flex: 1 1 45%; }
+  }
   .redd-linje { font-weight: 800; }
-  .redd-stor { font-family: 'Chewy', cursive; font-size: clamp(1.4rem, 5vw, 1.9rem); line-height: 1.15; color: #fde047; }
+  .redd-stor { font-family: 'Chewy', cursive; font-size: clamp(1.4rem, 4vw, 2rem); line-height: 1.15; color: #fde047; }
   .redd .klokke { color: var(--ink); display: inline-block; min-width: 2.2ch; text-align: center; font-variant-numeric: tabular-nums; transition: background-color .3s, transform .2s; }
   .tidslinje { width: 100%; max-width: 360px; height: 14px; border: 3px solid #fff; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.15); }
   .tidslinje span { display: block; height: 100%; width: 100%; background: #4ade80; transition: width 1s linear, background-color .3s; }
-  .redd .ingen-betaling { color: #e9d5ff; }
-  .redd.varm { background: #7c2d12; }
+  .redd.varm .redd-ui { background: rgba(124,45,18,.94); }
   .redd.varm .klokke { background: #fdba74; }
   .redd.varm .tidslinje span { background: #fb923c; }
-  .redd.kritisk { background: #991b1b; border-color: #dc2626; }
+  .redd.kritisk { border-color: #dc2626; }
+  .redd.kritisk .redd-ui { background: rgba(153,27,27,.95); }
   .redd.kritisk .klokke { background: #fecaca; color: #991b1b; animation: puls .5s ease-in-out infinite; }
   .redd.kritisk .tidslinje span { background: #ef4444; }
   .redd.kritisk .redd-ui { animation: skjelv .25s linear infinite; }
-  .redd.ute { background: #3f3f46; }
+  .redd.ute .redd-ui { background: rgba(63,63,70,.94); }
   .redd.ute .klokke { background: #d4d4d8; }
   @keyframes puls { 50% { transform: scale(1.25); } }
   @keyframes skjelv { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
   @media (prefers-reduced-motion: reduce) {
+    .redd-dekke { transition: none; }
     #pakke-bilde.rist, .hatt-ut.opp, .pakke-topp.kast, .pakke-under.fram, .redd.kritisk .klokke, .redd.kritisk .redd-ui { animation: none; }
     .redd.kritisk .klokke { outline: 4px solid #fff; }
   }
@@ -501,10 +516,9 @@
             </div>
           </div>
           <p id="pakke-melding" class="resultat-tekst" aria-live="polite">Hvilken hatt får du? Det vet du ikke før du åpner.</p>
-          <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 Robux per pakke</span></p>
+          <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 10 Robux per pakke</span></p>
         </div>
         <button class="btn btn-gul btn-stor" id="pakke-apne">🎁 Åpne en pakke</button>
-        <p class="kurs">Oppdiktet pris: I dette eksempelet koster 100 Robux <b>10 kroner</b>.</p>
       </div>
 
       <div class="card pakke-regning" style="padding:14px 16px">
@@ -512,11 +526,10 @@
         <div class="regning">
           <div><span class="tall" id="ant-forsok">0</span><span>pakker åpnet</span></div>
           <div><span class="tall" id="ant-mynter">0</span><span>Robux brukt</span></div>
-          <div><span class="tall" id="ant-kroner">0 kr</span><span>(oppdiktet)</span></div>
         </div>
         <h3 style="text-align:center;margin-top:12px">Dine hatter</h3>
         <div class="mine-hatter" id="mine-hatter" aria-hidden="true"><span class="ingen-enna">Ingen ennå</span></div>
-        <p id="pakke-stopp" class="stopp skjult">Her stopper vi. Ti pakker, 100 kroner – og bare grå luer.</p>
+        <p id="pakke-stopp" class="stopp skjult">Her stopper vi. Ti pakker, 100 Robux – og bare grå luer.</p>
       </div>
 
       <div class="card pakke-hatter" style="padding:14px 16px">
@@ -546,16 +559,26 @@
     <h2 class="tittel" tabindex="-1" style="margin-top:8px">Situasjon 2: «Vennen din trenger hjelp!»</h2>
     <div class="scene" style="margin-top:8px">
       <div class="spillvindu redd" id="redd-vindu">
-        <img src="bilder/redd-vennen.webp" width="1200" height="800" alt="To spillfigurer i en lavaverden. Den ene ligger utslått på bakken, den andre bøyer seg bekymret over."> 
-        <div class="redd-ui">
-          <p class="redd-linje">Vennen din har mistet alle livene sine.</p>
-          <p class="redd-stor">Redd vennen din! Betal 49 Robux.</p>
-          <p class="redd-linje">Du har <span class="klokke" id="redd-klokke">10</span> sekunder!</p>
-          <div class="tidslinje" aria-hidden="true"><span id="redd-bar"></span></div>
-          <div class="rad"><button type="button" class="lat-knapp" id="redd-betal">Betal 49 Robux og redd</button></div>
-          <div class="ingen-betaling">Bare et eksempel. Ingen kan betale noe her.</div>
+        <div class="redd-dekke" id="redd-dekke">
+          <p class="redd-dekke-tekst">Trykk når dere er klare</p>
+          <button type="button" class="btn btn-gul btn-stor" id="redd-vis">▶ Start</button>
+        </div>
+        <div class="redd-innhold" id="redd-innhold">
+          <img src="bilder/redd-vennen.webp" width="1200" height="800" alt="To spillfigurer i en lavaverden. Den ene ligger utslått på bakken, den andre bøyer seg bekymret over.">
+          <div class="redd-ui" id="redd-ui" tabindex="-1">
+            <div class="redd-tekst">
+              <p class="redd-linje">Vennen din har mistet alle livene sine.</p>
+              <p class="redd-stor">Redd vennen din! Betal 49 Robux.</p>
+            </div>
+            <div class="redd-handling">
+              <p class="redd-linje">Du har <span class="klokke" id="redd-klokke">10</span> sekunder!</p>
+              <div class="tidslinje" aria-hidden="true"><span id="redd-bar"></span></div>
+              <button type="button" class="lat-knapp" id="redd-betal">Betal 49 Robux og redd</button>
+            </div>
+          </div>
         </div>
       </div>
+      <p class="ingen-betaling">Bare et eksempel. Ingen kan betale noe her.</p>
       <p class="skjult-leser" id="redd-status" aria-live="polite"></p>
       <dialog class="kjop" id="kjop" aria-labelledby="kjop-tittel">
         <div class="kjop-topp"><span class="oppdiktet-band">🧪 Oppdiktet kjøpsvindu</span></div>
@@ -574,7 +597,7 @@
         </div>
         <button type="button" class="btn" id="kjop-lukk" style="margin-top:14px;width:100%">Lukk</button>
       </dialog>
-      <button class="btn btn-gul" id="redd-start">▶ Start klokka</button>
+      <button class="btn skjult" id="redd-start">↺ Start på nytt</button>
     </div>
     <div class="snakk" style="margin-top:16px">
       <h3>Snakk sammen</h3>
@@ -767,8 +790,7 @@ function oppdaterRegning(){
   const tom = mine.querySelector('.ingen-enna'); if(tom) tom.remove();
   mine.insertAdjacentHTML('beforeend', '<span>' + hattBilde(HATTER[0], '') + '</span>');
   document.getElementById('ant-forsok').textContent = forsok;
-  document.getElementById('ant-mynter').textContent = forsok * 100;
-  document.getElementById('ant-kroner').textContent = (forsok * 10) + ' kr';
+  document.getElementById('ant-mynter').textContent = forsok * 10;
 }
 
 pakkeKnapp.addEventListener('click', async () => {
@@ -822,19 +844,30 @@ function visTid(t){
 }
 function stoppKlokka(nullstill){
   clearInterval(reddTimer); reddTimer = null;
-  if(nullstill){ visTid(10); reddStart.textContent = '▶ Start klokka'; reddStatus.textContent = ''; }
+  if(nullstill){
+    visTid(10); reddStatus.textContent = '';
+    reddVindu.classList.remove('startet');
+    reddStart.classList.add('skjult');
+  }
 }
-reddStart.addEventListener('click', () => {
+function startNedtelling(){
   stoppKlokka(false);
   let t = 10; visTid(t);
-  reddStart.textContent = '↺ Start på nytt';
   reddStatus.textContent = 'Klokka teller ned fra 10.';
   reddTimer = setInterval(() => {
     t--; visTid(t);
     if(t === 3) reddStatus.textContent = 'Tre sekunder igjen.';
     if(t <= 0){ stoppKlokka(false); reddStatus.textContent = 'Tiden er ute.'; reddKlokke.textContent = '0'; }
   }, 1000);
+}
+// Dekket tas bort, bildet og teksten kommer fram, og klokka starter
+document.getElementById('redd-vis').addEventListener('click', () => {
+  reddVindu.classList.add('startet');
+  reddStart.classList.remove('skjult');
+  document.getElementById('redd-ui').focus({ preventScroll: true });
+  startNedtelling();
 });
+reddStart.addEventListener('click', startNedtelling);
 
 /* Oppdiktet kjøpsvindu: viser tilbudene, men ingenting kan kjøpes. */
 const kjop = document.getElementById('kjop');
@@ -899,7 +932,7 @@ function route(){
   const h = location.hash.replace('#', '');
   stoppKlokka(true);
   lukkKjop();
-  document.body.classList.toggle('bred', location.hash === '#sammen-2');
+  document.body.classList.toggle('bred', location.hash === '#sammen-2' || location.hash === '#sammen-3');
   const m = h.match(/^sammen-(\d)$/);
   if(m){
     const n = Math.min(Math.max(parseInt(m[1], 10), 1), ANTALL);
