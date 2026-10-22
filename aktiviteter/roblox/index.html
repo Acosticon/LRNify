@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roblox – la oss se litt nærmere — LRNify</title>
+<meta name="description" content="En aktivitet for en forelder og et barn (7–10 år): forstå bekymringene ved Roblox, utforsk tre oppdiktede situasjoner sammen og snakk om veien videre.">
+<link rel="canonical" href="https://lrnify.no/aktiviteter/roblox/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Roblox – la oss se litt nærmere – LRNify">
+<meta property="og:description" content="En aktivitet for en forelder og et barn (7–10 år): forstå bekymringene ved Roblox, utforsk tre oppdiktede situasjoner sammen og snakk om veien videre.">
+<meta property="og:url" content="https://lrnify.no/aktiviteter/roblox/index.html">
+<meta property="og:locale" content="nb_NO">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #fff9f0;
+    --ink:   #2b2118;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #6b6055;
+    --blue:  #dbeafe;
+    --green: #dcfce7;
+    --peach: #ffedd5;
+    --lilac: #ede9fe;
+    --pink:  #fce7f3;
+    --focus: #1d4ed8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--ink);
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+    padding: 20px 16px 40px; line-height: 1.5; font-size: 1.05rem;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .skjult { display: none !important; }
+  a { color: var(--ink); font-weight: 800; }
+  :focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+
+  /* ── HEADER ── */
+  .site-header { width: 100%; max-width: 820px; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 10px; }
+  .logo { font-family: 'Chewy', cursive; font-size: clamp(1.6rem, 5vw, 2.3rem); transform: rotate(-2deg); line-height: 1; text-decoration: none; color: var(--ink); font-weight: 400; }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .logo-sub { font-family: 'Chewy', cursive; font-size: clamp(.95rem, 3vw, 1.25rem); color: var(--muted); text-align: right; }
+
+  /* ── SCREENS ── */
+  main { width: 100%; max-width: 820px; }
+  .screen { display: none; flex-direction: column; gap: 18px; animation: inn .25s ease; }
+  .screen.active { display: flex; }
+  @keyframes inn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { .screen { animation: none; } * { transition: none !important; } }
+
+  h1, h2.tittel { font-family: 'Chewy', cursive; font-weight: 400; line-height: 1.15; }
+  h1 { font-size: clamp(2rem, 7vw, 3rem); text-align: center; transform: rotate(-1deg); }
+  h2.tittel { font-size: clamp(1.5rem, 5vw, 2.1rem); }
+  h1:focus, h2:focus { outline: none; }
+  h3 { font-size: 1.15rem; font-weight: 900; margin-bottom: 6px; }
+  p + p { margin-top: 10px; }
+  .ingress { font-size: 1.12rem; font-weight: 700; }
+  .liten { font-size: .92rem; color: var(--muted); font-weight: 700; }
+
+  .card { background: var(--card); border: 4px solid var(--ink); border-radius: 20px; box-shadow: 0 6px 0 var(--ink); padding: 20px 22px; }
+  .card ul, .card ol { padding-left: 1.3em; }
+  .card li + li { margin-top: 6px; }
+
+  /* ── BUTTONS ── */
+  button { font-family: 'Nunito', sans-serif; font-weight: 900; cursor: pointer; color: var(--ink); font-size: 1rem; }
+  .btn { border: 4px solid var(--ink); border-radius: 16px; padding: 14px 20px; min-height: 56px; box-shadow: 0 5px 0 var(--ink); background: #fff; transition: transform .12s, box-shadow .12s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-align: center; }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 7px 0 var(--ink); }
+  .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .btn-gul { background: var(--yellow); }
+  .btn[disabled] { opacity: .55; cursor: not-allowed; transform: none; box-shadow: 0 5px 0 var(--ink); }
+  .navrad { display: flex; gap: 12px; flex-wrap: wrap; justify-content: space-between; margin-top: 6px; }
+  .navrad .btn { flex: 1 1 160px; }
+
+  /* ── FORSIDE ── */
+  .forside-intro { text-align: center; max-width: 52ch; margin: 0 auto; }
+  .innganger { display: grid; gap: 18px; }
+  .inngang { display: flex; gap: 18px; align-items: center; text-align: left; border: 4px solid var(--ink); border-radius: 22px; box-shadow: 0 7px 0 var(--ink); padding: 20px; text-decoration: none; color: var(--ink); background: #fff; transition: transform .12s, box-shadow .12s; }
+  .inngang:hover { transform: translateY(-3px); box-shadow: 0 10px 0 var(--ink); }
+  .inngang:active { transform: translateY(4px); box-shadow: 0 3px 0 var(--ink); }
+  .inngang svg { flex: 0 0 auto; width: 84px; height: 84px; }
+  .inngang .i-tittel { font-family: 'Chewy', cursive; font-size: clamp(1.4rem, 5vw, 1.9rem); line-height: 1.1; display: block; }
+  .inngang .i-tekst { font-weight: 700; display: block; margin-top: 4px; }
+  .inngang .i-merke { display: inline-block; font-size: .78rem; font-weight: 900; text-transform: uppercase; letter-spacing: .05em; background: var(--ink); color: #fff; border-radius: 999px; padding: 2px 10px; margin-bottom: 6px; }
+  .inngang.forst { background: var(--yellow); padding: 26px 22px; }
+  .inngang.forst .i-tittel { font-size: clamp(1.7rem, 6vw, 2.3rem); }
+  @media (max-width: 480px) { .inngang { flex-direction: column; text-align: center; } .inngang svg { width: 70px; height: 70px; } }
+
+  /* ── FORELDREDEL ── */
+  .tid { display: inline-block; background: var(--ink); color: #fff; font-weight: 900; font-size: .85rem; border-radius: 999px; padding: 3px 12px; }
+  .bekymringer { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .bekymring { border: 3px solid var(--ink); border-radius: 16px; padding: 16px; background: var(--peach); }
+  .bekymring:nth-child(2) { background: var(--lilac); }
+  .bekymring:nth-child(3) { background: var(--blue); }
+  .bekymring:nth-child(4) { background: var(--green); }
+  .bekymring h3 { display: flex; gap: 8px; align-items: center; }
+  .merke { display: inline-block; font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; border: 2px solid var(--ink); border-radius: 999px; padding: 1px 8px; background: #fff; margin: 8px 0 2px; }
+  .merke.vurd { background: var(--ink); color: #fff; }
+  .merke.oppdiktet { background: var(--yellow); }
+  details { border: 3px solid var(--ink); border-radius: 14px; background: #fff; margin-top: 12px; }
+  details summary { cursor: pointer; font-weight: 900; padding: 14px 16px; min-height: 52px; list-style: none; display: flex; align-items: center; gap: 10px; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: '＋'; font-size: 1.2rem; width: 1.2em; text-align: center; flex: 0 0 auto; }
+  details[open] summary::before { content: '－'; }
+  details .innhold { padding: 0 18px 16px; }
+  details .innhold h4 { font-size: 1rem; font-weight: 900; margin: 12px 0 4px; }
+  .kilder li { word-break: break-word; }
+  .sitat { border-left: 6px solid var(--yellow); background: #fffbe6; padding: 12px 16px; border-radius: 8px; font-weight: 800; font-size: 1.1rem; }
+  .refleksjon li { font-weight: 800; }
+  .refleksjon li span { display: block; font-weight: 600; color: var(--muted); font-size: .95rem; }
+  .seksjonsnr { font-family: 'Chewy', cursive; font-size: 1.1rem; color: var(--muted); }
+
+  /* ── FELLESDEL: framdrift ── */
+  .framdrift { display: flex; gap: 6px; align-items: center; justify-content: center; flex-wrap: wrap; }
+  .framdrift span { width: 34px; height: 10px; border-radius: 999px; border: 2px solid var(--ink); background: #fff; }
+  .framdrift span.pa { background: var(--yellow); }
+  .framdrift span.ferdig { background: var(--ink); }
+  .steginfo { text-align: center; font-weight: 900; color: var(--muted); font-size: .9rem; }
+  .oppdiktet-band { align-self: flex-start; background: var(--yellow); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 14px; font-weight: 900; font-size: .9rem; }
+
+  /* ── KORT: hva liker du ── */
+  .likekort { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; }
+  .likekort button { border: 4px solid var(--ink); border-radius: 18px; background: #fff; box-shadow: 0 5px 0 var(--ink); padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; min-height: 150px; font-size: 1.05rem; position: relative; transition: transform .12s, box-shadow .12s; }
+  .likekort button svg { width: 76px; height: 76px; }
+  .likekort button[aria-pressed="true"] { background: var(--yellow); }
+  .likekort button[aria-pressed="true"]::after { content: '✓'; position: absolute; top: 6px; right: 10px; font-size: 1.3rem; }
+  .likekort button:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .snakk { background: #fff; border: 3px dashed var(--ink); border-radius: 16px; padding: 14px 18px; }
+  .snakk h3 { display: flex; align-items: center; gap: 8px; }
+  .snakk ul { list-style: none; padding: 0; }
+  .snakk li { font-weight: 800; font-size: 1.12rem; padding: 6px 0; }
+  .snakk li::before { content: '💬 '; }
+
+  /* ── SITUASJON 1: pakke ── */
+  .scene { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+  .spillvindu { width: 100%; max-width: 460px; border: 4px solid var(--ink); border-radius: 18px; background: linear-gradient(#bfdbfe, #e0f2fe); padding: 18px; box-shadow: 0 6px 0 var(--ink); }
+  .spillvindu .vindutittel { font-weight: 900; font-size: 1.15rem; }
+  .pris { display: inline-flex; align-items: center; gap: 6px; font-weight: 900; background: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: 4px 12px; }
+  .mynt { display: inline-block; width: 18px; height: 18px; border-radius: 50%; background: #fbbf24; border: 2px solid var(--ink); }
+  .kurs { font-weight: 800; background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 8px 12px; }
+  .resultat { background: #fff; border: 3px solid var(--ink); border-radius: 16px; padding: 14px; display: flex; gap: 14px; align-items: center; text-align: left; }
+  .resultat svg { width: 64px; height: 64px; flex: 0 0 auto; }
+  table.kost { border-collapse: separate; border-spacing: 0; width: 100%; max-width: 420px; background: #fff; border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; font-size: 1.05rem; }
+  table.kost th, table.kost td { padding: 10px 12px; border-bottom: 2px solid #e7e0d6; text-align: left; }
+  table.kost th { background: var(--peach); }
+  table.kost tr:last-child td { border-bottom: none; font-weight: 900; }
+  .stopp { font-weight: 900; }
+
+  /* ── SITUASJON 2: redd vennen ── */
+  .redd { position: relative; background: linear-gradient(#fecaca, #fee2e2); }
+  .redd .rad { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+  .klokke { font-family: 'Chewy', cursive; font-size: 1.8rem; background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 0 12px; }
+  .lat-knapp { display: inline-block; background: #22c55e; border: 4px solid var(--ink); border-radius: 14px; padding: 10px 18px; font-weight: 900; box-shadow: 0 4px 0 var(--ink); }
+  .ingen-betaling { font-size: .8rem; font-weight: 900; color: var(--muted); }
+  .punkt { width: 44px; height: 44px; min-width: 44px; border-radius: 50%; border: 3px solid var(--ink); background: var(--yellow); font-size: 1.15rem; box-shadow: 0 3px 0 var(--ink); }
+  .punkt[aria-expanded="true"] { background: var(--ink); color: #fff; }
+  .forklaringer { width: 100%; display: grid; gap: 10px; text-align: left; }
+  .forklaring { background: #fff; border: 3px solid var(--ink); border-radius: 14px; padding: 12px 16px; }
+  .forklaring b { display: block; }
+  .punktliste { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+  .punktliste button { border: 3px solid var(--ink); border-radius: 999px; background: #fff; padding: 8px 14px; min-height: 48px; box-shadow: 0 3px 0 var(--ink); display: inline-flex; gap: 8px; align-items: center; }
+  .punktliste button[aria-expanded="true"] { background: var(--yellow); }
+  .punktliste .nr { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: .85rem; }
+  .nrmerke { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: #fff; font-size: .85rem; font-weight: 900; font-family: 'Nunito', sans-serif; }
+
+  /* ── SITUASJON 3: profiler ── */
+  .profiler { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .profil { border: 4px solid var(--ink); border-radius: 18px; background: #fff; box-shadow: 0 5px 0 var(--ink); padding: 14px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; }
+  .profil svg { width: 96px; height: 96px; }
+  .profil .navn { font-weight: 900; font-size: 1.1rem; word-break: break-word; }
+  .profil .besk { font-weight: 700; color: var(--muted); font-size: .95rem; }
+  .profil .btn { min-height: 48px; padding: 8px 14px; font-size: .95rem; margin-top: 4px; }
+  .vet { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .vet > div { border: 3px solid var(--ink); border-radius: 14px; padding: 12px 16px; }
+  .vet .ja { background: var(--green); }
+  .vet .nei { background: var(--lilac); }
+  .vet ul { padding-left: 1.2em; }
+  .trygg { background: var(--pink); border: 4px solid var(--ink); border-radius: 18px; padding: 16px 18px; font-weight: 800; font-size: 1.12rem; display: flex; gap: 12px; align-items: flex-start; }
+  .trygg .hjerte { font-size: 1.8rem; line-height: 1; }
+
+  /* ── AVSLUTNING ── */
+  .tur { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .boble { border: 3px solid var(--ink); border-radius: 20px; padding: 14px 16px; background: #fff; font-weight: 800; display: flex; gap: 10px; align-items: center; }
+  .boble svg { width: 48px; height: 48px; flex: 0 0 auto; }
+  .stort-sporsmal { font-family: 'Chewy', cursive; font-size: clamp(1.5rem, 5.5vw, 2.2rem); text-align: center; line-height: 1.2; }
+  .valgte { display: flex; flex-wrap: wrap; gap: 8px; }
+  .valgte span { background: var(--yellow); border: 3px solid var(--ink); border-radius: 999px; padding: 4px 12px; font-weight: 900; }
+  .voksen-notat summary { background: #f3efe8; border-radius: 11px; }
+
+  .pausenote { text-align: center; font-weight: 800; color: var(--muted); font-size: .92rem; }
+  footer { margin-top: 30px; color: var(--muted); font-size: .85rem; text-align: center; max-width: 60ch; }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="logo" href="/index.html">LRN<b>ify</b></a>
+  <div class="logo-sub">Roblox – la oss se litt nærmere</div>
+</header>
+
+<main>
+
+<!-- ══════════ FORSIDE ══════════ -->
+<section class="screen" id="forside" aria-labelledby="h-forside">
+  <svg viewBox="0 0 320 120" width="100%" style="max-width:360px;margin:0 auto;display:block" aria-hidden="true">
+    <rect x="20" y="70" width="280" height="14" rx="7" fill="#e7dccb"/>
+    <!-- voksen -->
+    <rect x="70" y="18" width="36" height="34" rx="6" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/>
+    <rect x="62" y="52" width="52" height="30" rx="8" fill="#60a5fa" stroke="#2b2118" stroke-width="4"/>
+    <circle cx="82" cy="34" r="3" fill="#2b2118"/><circle cx="95" cy="34" r="3" fill="#2b2118"/>
+    <path d="M82 43 q6 5 13 0" stroke="#2b2118" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- barn -->
+    <rect x="212" y="34" width="30" height="28" rx="6" fill="#f5c79a" stroke="#2b2118" stroke-width="4"/>
+    <rect x="205" y="62" width="44" height="22" rx="7" fill="#facc15" stroke="#2b2118" stroke-width="4"/>
+    <circle cx="222" cy="47" r="3" fill="#2b2118"/><circle cx="233" cy="47" r="3" fill="#2b2118"/>
+    <path d="M222 54 q5 4 11 0" stroke="#2b2118" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <!-- nettbrett -->
+    <rect x="130" y="40" width="64" height="44" rx="8" fill="#fff" stroke="#2b2118" stroke-width="4"/>
+    <rect x="142" y="52" width="14" height="14" fill="#86efac" stroke="#2b2118" stroke-width="3"/>
+    <rect x="160" y="58" width="14" height="14" fill="#fca5a5" stroke="#2b2118" stroke-width="3"/>
+    <!-- snakkebobler -->
+    <path d="M120 10 h40 a8 8 0 0 1 8 8 v10 a8 8 0 0 1 -8 8 h-26 l-10 8 v-8 h-4 a8 8 0 0 1 -8 -8 v-10 a8 8 0 0 1 8 -8z" fill="#fff" stroke="#2b2118" stroke-width="3"/>
+    <circle cx="130" cy="23" r="3" fill="#2b2118"/><circle cx="140" cy="23" r="3" fill="#2b2118"/><circle cx="150" cy="23" r="3" fill="#2b2118"/>
+    <path d="M250 6 h36 a8 8 0 0 1 8 8 v10 a8 8 0 0 1 -8 8 h-4 v8 l-10 -8 h-22 a8 8 0 0 1 -8 -8 v-10 a8 8 0 0 1 8 -8z" fill="#fff" stroke="#2b2118" stroke-width="3"/>
+    <text x="268" y="26" text-anchor="middle" font-size="16" font-weight="900" fill="#2b2118">?!</text>
+  </svg>
+  <h1 id="h-forside" tabindex="-1">Roblox – la oss se litt nærmere</h1>
+  <p class="forside-intro ingress">En aktivitet for en voksen og et barn mellom 7 og 10 år. Dere ser på noen situasjoner fra spill sammen og snakker om spillingen framover.</p>
+
+  <div class="innganger">
+    <a class="inngang forst" href="#foreldre">
+      <svg viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="38" fill="#fff" stroke="#2b2118" stroke-width="4"/><rect x="24" y="22" width="36" height="44" rx="4" fill="#fff9f0" stroke="#2b2118" stroke-width="4"/><path d="M31 34h22M31 43h22M31 52h14" stroke="#2b2118" stroke-width="4" stroke-linecap="round"/></svg>
+      <span>
+        <span class="i-merke">Start her · ca. 5 min</span>
+        <span class="i-tittel">Foreldre, før dere starter!</span>
+        <span class="i-tekst">Bruk noen minutter på å forstå bekymringene og forberede samtalen.</span>
+      </span>
+    </a>
+    <a class="inngang" href="#sammen-1">
+      <svg viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="38" fill="#fde68a" stroke="#2b2118" stroke-width="4"/><rect x="18" y="30" width="20" height="20" rx="4" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/><rect x="48" y="36" width="18" height="18" rx="4" fill="#f5c79a" stroke="#2b2118" stroke-width="4"/><path d="M16 64 q12 -12 24 0 M46 64 q10 -10 22 0" stroke="#2b2118" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+      <span>
+        <span class="i-merke">Sammen · 10–15 min</span>
+        <span class="i-tittel">Start aktiviteten sammen</span>
+        <span class="i-tekst">Se nærmere på Roblox, oppdag noen utfordringer og snakk sammen.</span>
+      </span>
+    </a>
+  </div>
+  <p class="liten" style="text-align:center">Ingen innlogging. Ingenting dere velger, blir lagret eller sendt noe sted.</p>
+</section>
+
+<!-- ══════════ FORELDREDEL ══════════ -->
+<section class="screen" id="foreldre" aria-labelledby="h-foreldre">
+  <a class="btn" href="#forside" style="align-self:flex-start;min-height:48px;padding:8px 14px">← Til forsiden</a>
+  <div>
+    <span class="tid">For den voksne · ca. 5 minutter</span>
+    <h2 class="tittel" id="h-foreldre" tabindex="-1" style="margin-top:8px">Foreldre, før dere starter!</h2>
+    <p class="ingress">Les dette alene før dere setter dere sammen. Felter med <b>＋</b> er valgfri fordypning.</p>
+  </div>
+
+  <!-- 1 Bekymringene -->
+  <div class="card">
+    <div class="seksjonsnr">1 av 5</div>
+    <h2 class="tittel" style="font-size:1.6rem">Hva er bekymringene?</h2>
+    <p>Medietilsynet la 22. oktober 2026 fram rapporten <i>«Roblox under radaren»</i>. De så nærmere på fire populære spill på Roblox: <i>Adopt Me</i>, <i>Brookhaven RP</i>, <i>99 Nights in the Forest</i> og <i>Clip It</i>. De intervjuet også tolv familier og brukte tall fra undersøkelsen <i>Barn og medier 2026</i>.</p>
+    <p class="liten" style="margin-top:8px">Roblox er ikke ett spill, men en plattform med svært mange spill laget av ulike utviklere. Funnene gjelder de fire spillene som ble undersøkt. Andre spill kan ha andre funksjoner.</p>
+
+    <div class="bekymringer" style="margin-top:14px">
+      <div class="bekymring">
+        <h3>🛒 Kjøpepress</h3>
+        <span class="merke">Rapportens funn</span>
+        <p>Barn møter mye kjøpepress. Man kjøper med Robux, plattformens egen valuta, som koster ekte penger. Rapporten beskriver betalte fordeler og tilbud som bare varer en kort stund.</p>
+        <p>Barna i undersøkelsen sier at Roblox er morsomt og sosialt, men forteller også om fristelser og om at det kjennes urettferdig når andre kan kjøpe seg fordeler.</p>
+      </div>
+      <div class="bekymring">
+        <h3>🎁 Betalte tilfeldige belønninger</h3>
+        <span class="merke">Rapportens funn</span>
+        <p>Rapporten omtaler <b>lootbokser</b>: man betaler for en pakke uten å vite hva den inneholder. Det kan gi lyst til å prøve én gang til, og én gang til.</p>
+      </div>
+      <div class="bekymring">
+        <h3>👥 Kontakt med ukjente</h3>
+        <span class="merke">Rapportens funn</span>
+        <p>Spillere kan møte folk de ikke kjenner. Medietilsynet beskriver <i>Clip It</i> som et spill med funksjoner som likner sosiale medier.</p>
+        <span class="merke vurd">Vår forklaring</span>
+        <p>De fleste man møter, er vanlige spillere. Problemet er at man ikke kan vite hvem som står bak en figur.</p>
+      </div>
+      <div class="bekymring">
+        <h3>🗺️ Vanskelig å ha oversikt</h3>
+        <span class="merke">Rapportens funn</span>
+        <p>Foreldrekontroll finnes, men dekker ifølge rapporten ikke alle utfordringene. Medietilsynet ber plattformene om å gjøre endringer.</p>
+        <span class="merke vurd">Vår forklaring</span>
+        <p>Med så mange spill, som stadig endres, er det urimelig å forvente at en forelder skal sjekke hvert spill og hver funksjon. Du kan vurdere tjenesten som helhet.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary>Fordypning: Hva sier Roblox om sikkerhet og kontakt?</summary>
+      <div class="innhold">
+        <p class="liten">Dette er Roblox' egne opplysninger. Vi har ikke kunnet kontrollere hvordan de virker i praksis.</p>
+        <ul>
+          <li>Siden januar 2026 sier Roblox at man må gjøre en alderssjekk (anslag av alder ut fra ansiktet, eller legitimasjon fra 13 år) for å bruke chat. Spillere plasseres i aldersgrupper og skal bare kunne chatte med egen og liknende aldersgrupper.</li>
+          <li>For barn under 9 år er chat inne i spillene ifølge Roblox skrudd av som standard, med mindre en forelder gir samtykke etter en alderssjekk.</li>
+          <li>Foreldrekontrollen ligger under <i>Innstillinger → Foreldrekontroll</i>, og omfatter blant annet grense for pengebruk og oversikt over venner.</li>
+        </ul>
+        <p style="margin-top:10px">Ifølge Medietilsynet dekker foreldrekontrollen likevel ikke alle utfordringene. Barna de snakket med, fortalte også at de kjenner til måter å komme rundt den på. Hvilke kontaktmuligheter som finnes, varierer dessuten fra spill til spill.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Fordypning: Om seksuell utnyttelse og grooming</summary>
+      <div class="innhold">
+        <p>Dette temaet er ikke en del av fellesaktiviteten. Det er her for at du skal ha et helhetlig bilde.</p>
+        <p>Medietilsynets rapport handler, så langt vi har kunnet kontrollere, om kjøpepress, design som gjør det vanskelig å slutte, og kontakt med ukjente. Vi har ikke funnet at rapporten dokumenterer konkrete tilfeller av grooming.</p>
+        <p>I USA har flere delstater saksøkt Roblox, blant andre Louisiana (august 2025), Iowa (desember 2025) og Nebraska (mars 2026). De hevder at plattformen ikke har beskyttet barn godt nok mot seksuell utnyttelse. Dette er påstander i rettssaker, ikke avgjørelser. Vi kjenner ikke utfallet.</p>
+        <p>Det betyr ikke at barn flest blir utsatt for dette. Det betyr at risikoen er alvorlig nok til at voksne bør vurdere hvilke kontaktmuligheter barnet har.</p>
+        <p class="liten">Er du bekymret for at noe har skjedd, kan du kontakte politiet på 02800, eller 112 ved akutt fare.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Kilder og faktakontroll</summary>
+      <div class="innhold">
+        <p><b>Faktakontroll: 22. oktober 2026.</b> Rapporten kom samme dag. Vi har kontrollert opplysningene mot Medietilsynets pressemelding og nyhetsomtale gjennom nettsøk, men har ikke lest hele rapporten. Les gjerne kildene selv.</p>
+        <ul class="kilder" style="margin-top:8px">
+          <li><a href="https://www.nrk.no/artikkel/rapport-roblox-utsetter-barn-for-massivt-kjopepress-1530639" target="_blank" rel="noopener">NRK: «Rapport: Roblox utsetter barn for massivt kjøpepress»</a> (Knut Are Tornås og Roy Pettersen)</li>
+          <li><a href="https://www.medietilsynet.no/nyheter/aktuelt/ny-rapport-fra-medietilsynet-betydelig-risiko-pa-spillplattformen-roblox/" target="_blank" rel="noopener">Medietilsynet: «Ny rapport fra Medietilsynet: Betydelig risiko på spillplattformen Roblox»</a></li>
+          <li><a href="https://about.roblox.com/newsroom/2025/11/roblox-requires-age-checks-limits-minor-and-adult-chat" target="_blank" rel="noopener">Roblox: om alderssjekk og chat (engelsk)</a></li>
+          <li><a href="https://about.roblox.com/parental-controls" target="_blank" rel="noopener">Roblox: foreldrekontroll (engelsk)</a></li>
+          <li><a href="https://www.iowaattorneygeneral.gov/newsroom/attorney-general-brenna-bird-sues-roblox-for-endangering-iowa-children" target="_blank" rel="noopener">Iowas riksadvokat: søksmål mot Roblox (engelsk)</a></li>
+          <li><a href="https://ago.nebraska.gov/sites/default/files/doc/Roblox%20release.pdf" target="_blank" rel="noopener">Nebraskas riksadvokat: søksmål mot Roblox (engelsk, PDF)</a></li>
+          <li><a href="https://www.kttc.com/2025/08/15/state-attorney-general-sues-roblox-alleging-child-exploitation-safety-failures" target="_blank" rel="noopener">KTTC: om Louisianas søksmål (engelsk)</a></li>
+        </ul>
+        <p class="liten" style="margin-top:10px">Situasjonene i fellesdelen er oppdiktede eksempler laget for samtale. De viser ikke bestemte spill.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 2 Hva betyr Roblox -->
+  <div class="card">
+    <div class="seksjonsnr">2 av 5</div>
+    <h2 class="tittel" style="font-size:1.6rem">Hva betyr Roblox for barnet?</h2>
+    <p>For barnet ditt er Roblox kanskje ikke «bare et spill». Det kan være:</p>
+    <ul style="margin-top:8px">
+      <li><b>Venner</b> – et sted å leke med de andre etter skolen, og noe å snakke om i friminuttet.</li>
+      <li><b>Prosjekter</b> – noe de har bygget eller samlet over lang tid.</li>
+      <li><b>Mestring</b> – ting de har øvd på og blitt gode til.</li>
+      <li><b>Noe kjent</b> – en fast del av hverdagen.</li>
+    </ul>
+    <p style="margin-top:10px">Å miste dette kan kjennes som et ekte tap, selv om du har gode grunner. Det er naturlig om barnet blir lei seg eller sint.</p>
+  </div>
+
+  <!-- 3 Egen vurdering -->
+  <div class="card">
+    <div class="seksjonsnr">3 av 5</div>
+    <h2 class="tittel" style="font-size:1.6rem">Forbered din egen vurdering</h2>
+    <p>Tenk gjennom dette. Du trenger ikke skrive noe.</p>
+    <ol class="refleksjon" style="margin-top:10px">
+      <li>Hva er mine viktigste grunner til å stoppe Roblox?<span>Velg én eller to. Det holder.</span></li>
+      <li>Hvordan forklarer jeg dem med ord barnet forstår?<span>For eksempel: «Spillet er laget for å få deg til å kjøpe ting», eller «Vi kan ikke vite hvem du møter der».</span></li>
+      <li>Hva er bestemt, og hva kan barnet påvirke?<span>Beslutningen er din. Barnet kan kanskje være med på å bestemme når, hvordan det sier fra til venner, og hva dere gjør i stedet.</span></li>
+      <li>Hvordan skal overgangen gjennomføres?<span>Slutt med en gang, eller en siste økt for å si ha det? Hva skjer med kontoen?</span></li>
+    </ol>
+    <p style="margin-top:12px">Du sier beslutningen med egne ord. Aktiviteten gir dere et felles utgangspunkt, men den bestemmer ikke for deg. Og barnet trenger ikke forstå alt for at du kan sette en grense.</p>
+    <p class="sitat" style="margin-top:12px">«Vi sa ja ut fra det vi visste da. Nå har vi lært mer.»</p>
+    <p class="liten" style="margin-top:6px">Å endre en tillatelse betyr ikke at barnet har gjort noe galt.</p>
+  </div>
+
+  <!-- 4 Slik starter dere -->
+  <div class="card">
+    <div class="seksjonsnr">4 av 5</div>
+    <h2 class="tittel" style="font-size:1.6rem">Slik starter dere</h2>
+    <p>Vær ærlig om hva dere skal gjøre, men vent med beslutningen. Du kan for eksempel si:</p>
+    <p class="sitat" style="margin-top:10px">«Jeg har lært noen ting om Roblox som gjør meg bekymret. Jeg vil gjerne se på dem sammen med deg og høre hva du tenker. Så skal vi snakke om hva det betyr for spillingen framover.»</p>
+    <p style="margin-top:10px">Deretter begynner aktiviteten med barnets egen opplevelse. Så ser dere på tre oppdiktede situasjoner. Til slutt legger dere skjermen bort, og du forteller om beslutningen din.</p>
+  </div>
+
+  <!-- 5 Møt reaksjonen -->
+  <div class="card">
+    <div class="seksjonsnr">5 av 5</div>
+    <h2 class="tittel" style="font-size:1.6rem">Møt barnets reaksjon</h2>
+    <ul>
+      <li><b>Lytt.</b> Barnet kan være uenig, lei seg eller sint. Det trenger du ikke rette på.</li>
+      <li><b>Anerkjenn tapet.</b> «Jeg skjønner at dette er kjipt. Du liker jo å spille med de andre.»</li>
+      <li><b>Stå i beslutningen.</b> «Jeg forstår at du er uenig. Jeg har likevel bestemt meg, fordi det er min jobb å passe på deg.»</li>
+      <li><b>Ikke krev enighet.</b> Barnet trenger ikke si at Roblox er dårlig, eller at det er enig.</li>
+      <li><b>Ikke gjem deg bak aktiviteten.</b> Det er du, ikke nettsiden, som har bestemt.</li>
+    </ul>
+    <p style="margin-top:10px">Mange barn trenger tid. Det er vanlig at følelsene kommer tilbake de neste dagene.</p>
+    <p style="margin-top:10px"><b>Dere kan ta pause når som helst.</b> Si gjerne: «La oss ta en pause og snakke mer i morgen.»</p>
+  </div>
+
+  <a class="btn btn-gul" href="#sammen-1" style="font-size:1.15rem">Start aktiviteten sammen →</a>
+</section>
+
+<!-- ══════════ FELLESDEL ══════════ -->
+<section class="screen" id="sammen" aria-labelledby="h-sammen">
+  <div class="framdrift" id="framdrift" aria-hidden="true"></div>
+  <div class="steginfo" id="steginfo"></div>
+
+  <!-- STEG 1: Barnet viser vei -->
+  <div class="steg" data-steg="1">
+    <h2 class="tittel" id="h-sammen" tabindex="-1">Først vil vi høre fra deg som spiller: Hva liker du med Roblox?</h2>
+    <p class="liten" style="margin:6px 0 14px">Velg ett eller flere kort. Den voksne leser høyt.</p>
+    <div class="likekort" id="likekort" role="group" aria-label="Hva liker du med Roblox?"></div>
+    <div class="snakk" id="like-snakk" style="margin-top:16px" aria-live="polite">
+      <h3>Snakk sammen</h3>
+      <ul id="like-sporsmal"><li>Fortell om noe du liker å gjøre.</li></ul>
+    </div>
+    <p class="liten" style="margin-top:12px">Neste: Vi ser på tre oppdiktede situasjoner fra spill, og snakker om spillingen framover.</p>
+  </div>
+
+  <!-- STEG 2: Bare ett forsøk til -->
+  <div class="steg" data-steg="2">
+    <span class="oppdiktet-band">🧪 Oppdiktet eksempel</span>
+    <h2 class="tittel" tabindex="-1" style="margin-top:8px">Situasjon 1: «Bare ett forsøk til!»</h2>
+    <div class="scene" style="margin-top:12px">
+      <div class="spillvindu">
+        <div class="vindutittel">Overraskelsespakke</div>
+        <svg viewBox="0 0 160 130" width="150" height="122" aria-hidden="true" style="margin:8px auto;display:block">
+          <rect x="30" y="50" width="100" height="70" rx="8" fill="#a78bfa" stroke="#2b2118" stroke-width="5"/>
+          <rect x="22" y="36" width="116" height="24" rx="6" fill="#c4b5fd" stroke="#2b2118" stroke-width="5"/>
+          <rect x="72" y="36" width="16" height="84" fill="#facc15" stroke="#2b2118" stroke-width="4"/>
+          <path d="M80 36 C60 10 40 22 58 34 M80 36 C100 10 120 22 102 34" fill="none" stroke="#2b2118" stroke-width="5" stroke-linecap="round"/>
+          <text x="54" y="98" font-size="26" font-weight="900" fill="#2b2118">?</text>
+          <text x="98" y="98" font-size="26" font-weight="900" fill="#2b2118">?</text>
+        </svg>
+        <p>Hva er inni? Det vet du ikke før du åpner.</p>
+        <p style="margin-top:8px"><span class="pris"><span class="mynt" aria-hidden="true"></span> 100 spillmynter</span></p>
+      </div>
+      <p class="kurs">Oppdiktet pris: I dette eksempelet koster 100 spillmynter <b>10 kroner</b>.</p>
+      <button class="btn btn-gul" id="pakke-apne">Åpne pakken én gang</button>
+      <div id="pakke-resultat" class="skjult" aria-live="polite" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
+        <div class="resultat">
+          <svg viewBox="0 0 64 64" aria-hidden="true"><path d="M12 40 q20 -34 40 0z" fill="#9ca3af" stroke="#2b2118" stroke-width="4"/><rect x="8" y="38" width="48" height="10" rx="5" fill="#6b7280" stroke="#2b2118" stroke-width="4"/></svg>
+          <div><b>Du fikk: en grå lue.</b><br>En helt vanlig ting.</div>
+        </div>
+        <p class="stopp">Her stopper vi. Vi åpner ikke flere pakker.</p>
+        <p>Men tenk om man prøvde igjen for å få noe annet:</p>
+        <table class="kost">
+          <thead><tr><th scope="col">Forsøk</th><th scope="col">Spillmynter</th><th scope="col">Kroner (oppdiktet)</th></tr></thead>
+          <tbody>
+            <tr><td>1 forsøk</td><td>100</td><td>10 kr</td></tr>
+            <tr><td>5 forsøk</td><td>500</td><td>50 kr</td></tr>
+            <tr><td>10 forsøk</td><td>1000</td><td>100 kr</td></tr>
+          </tbody>
+        </table>
+        <p class="liten">Og selv etter ti forsøk er det ikke sikkert man får det man ønsker seg.</p>
+      </div>
+    </div>
+    <div class="snakk" style="margin-top:16px">
+      <h3>Snakk sammen</h3>
+      <ul>
+        <li>Hvorfor kan man få lyst til å prøve igjen?</li>
+        <li>Hva tjener den som selger pakkene?</li>
+      </ul>
+    </div>
+    <details>
+      <summary>Les etter samtalen: Hva skjer her?</summary>
+      <div class="innhold">
+        <p>Når man ikke vet hva som er i pakken, kan man håpe på noe annet neste gang. Men hvert forsøk koster like mye, og flere forsøk gir ingen garanti for å få det man ønsker. Den som selger pakkene, tjener penger på hvert eneste forsøk.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- STEG 3: Vennen din trenger hjelp -->
+  <div class="steg" data-steg="3">
+    <span class="oppdiktet-band">🧪 Oppdiktet eksempel</span>
+    <h2 class="tittel" tabindex="-1" style="margin-top:8px">Situasjon 2: «Vennen din trenger hjelp!»</h2>
+    <p class="liten">Trykk på de nummererte punktene for å undersøke bildet.</p>
+    <div class="scene" style="margin-top:8px">
+      <div class="spillvindu redd">
+        <svg viewBox="0 0 120 80" width="120" height="80" aria-hidden="true" style="display:block;margin:0 auto">
+          <rect x="44" y="8" width="32" height="28" rx="5" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/>
+          <path d="M51 18 l6 6 M57 18 l-6 6 M63 18 l6 6 M69 18 l-6 6" stroke="#2b2118" stroke-width="3" stroke-linecap="round"/>
+          <rect x="38" y="36" width="44" height="30" rx="6" fill="#93c5fd" stroke="#2b2118" stroke-width="4"/>
+          <text x="96" y="30" font-size="18" fill="#2b2118">💔</text>
+        </svg>
+        <div class="rad"><button class="punkt" data-punkt="venn" aria-expanded="false" aria-controls="fk-venn" aria-label="Punkt 1: Valget handler om å hjelpe en venn">1</button><b>Vennen din har mistet alle livene sine.</b></div>
+        <div class="rad"><b style="font-size:1.15rem">Redd vennen din!</b></div>
+        <div class="rad">
+          <span class="pris"><span class="mynt" aria-hidden="true"></span> Betal 49 spillmynter</span>
+          <button class="punkt" data-punkt="pris" aria-expanded="false" aria-controls="fk-pris" aria-label="Punkt 2: Prisen i spillmynter">2</button>
+        </div>
+        <div class="rad">
+          <span>Du har</span><span class="klokke" aria-label="10 sekunder, klokka står stille">0:10</span>
+          <button class="punkt" data-punkt="tid" aria-expanded="false" aria-controls="fk-tid" aria-label="Punkt 3: Den korte tiden">3</button>
+        </div>
+        <div class="rad" aria-hidden="true"><span class="lat-knapp">Betal og redd</span></div>
+        <div class="ingen-betaling">Bare et bilde. Knappen virker ikke, og ingen betaler noe.</div>
+      </div>
+      <div class="forklaringer" aria-live="polite">
+        <div class="forklaring skjult" id="fk-venn"><b><span class="nrmerke">1</span> Å hjelpe en venn</b>Valget handler om å redde en venn. Da kan det kjennes som om man er en dårlig venn hvis man ikke betaler. Men det er spillet som har laget valget slik – ikke vennen din.</div>
+        <div class="forklaring skjult" id="fk-pris"><b><span class="nrmerke">2</span> Prisen i spillmynter</b>Hvor mye er 49 spillmynter i ekte penger? Det står ikke. Når prisen er i spillmynter, er det vanskeligere å vite hva noe egentlig koster.</div>
+        <div class="forklaring skjult" id="fk-tid"><b><span class="nrmerke">3</span> Den korte tiden</b>Klokka står stille her. I et spill kan en nedtelling gjøre at man velger fort, før man rekker å tenke eller spørre en voksen.</div>
+      </div>
+    </div>
+    <div class="snakk" style="margin-top:16px">
+      <h3>Snakk sammen</h3>
+      <ul>
+        <li>Hvordan føles dette valget?</li>
+        <li>Hvordan kunne spillet latt deg hjelpe vennen din uten å betale?</li>
+      </ul>
+    </div>
+    <details>
+      <summary>Les etter samtalen: Hva skjer her?</summary>
+      <div class="innhold">
+        <p>Spillet bruker tre ting samtidig: Lite tid gjør at man ikke rekker å tenke seg om. En pris i spillmynter gjør det vanskelig å se hva det koster. Og når valget handler om en venn, kjenner man seg ansvarlig. Alt dette kan gjøre det lettere å betale. Det er spillet som er laget slik. Det sier ingenting om vennen.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- STEG 4: Hvem er med i spillet -->
+  <div class="steg" data-steg="4">
+    <span class="oppdiktet-band">🧪 Oppdiktet eksempel</span>
+    <h2 class="tittel" tabindex="-1" style="margin-top:8px">Situasjon 3: «Hvem er med i spillet?»</h2>
+    <p class="liten">Her er tre oppdiktede spillere. Trykk på en profil for å se nærmere.</p>
+    <div class="profiler" id="profiler" style="margin-top:10px"></div>
+    <div id="profil-detalj" class="skjult" aria-live="polite" style="margin-top:14px">
+      <h3 id="profil-detalj-tittel"></h3>
+      <div class="vet">
+        <div class="ja"><b>Dette kan vi se</b><ul id="profil-ser"></ul></div>
+        <div class="nei"><b>Dette vet vi ikke</b><ul>
+          <li>Hvor gammel personen er</li>
+          <li>Hva personen egentlig heter</li>
+          <li>Om det som står på profilen, stemmer</li>
+          <li>Hvorfor personen er i spillet</li>
+        </ul></div>
+      </div>
+    </div>
+    <div class="snakk" style="margin-top:16px">
+      <h3>Snakk sammen</h3>
+      <ul>
+        <li>Hva kan vi vite ut fra en spillfigur og et navn?</li>
+        <li>Hva kan voksne hjelpe med når vi ikke vet hvem vi møter?</li>
+      </ul>
+    </div>
+    <details>
+      <summary>Les etter samtalen: Hva betyr dette?</summary>
+      <div class="innhold">
+        <p>En spillfigur og et navn kan hvem som helst lage. Profilen forteller oss ikke sikkert hvem som er bak, hvor gammel personen er, eller hva personen vil. De fleste er vanlige spillere. Men fordi vi ikke kan vite det, er det de voksnes ansvar å bestemme hvilke måter å snakke med andre på som passer for barn.</p>
+      </div>
+    </details>
+    <div class="trygg" style="margin-top:14px">
+      <span class="hjerte" aria-hidden="true">💗</span>
+      <span>Hvis noen gjør deg ukomfortabel, kan du alltid si fra til en voksen du stoler på. Det er ikke din skyld om noen andre oppfører seg dårlig.</span>
+    </div>
+  </div>
+
+  <!-- STEG 5: Når vi lærer noe nytt -->
+  <div class="steg" data-steg="5">
+    <h2 class="tittel" tabindex="-1">Når vi lærer noe nytt</h2>
+    <div class="card" style="margin-top:12px">
+      <p class="stort-sporsmal">Kan vi endre en regel når vi lærer noe nytt, selv om vi sa ja før?</p>
+    </div>
+    <p style="margin-top:14px;font-weight:800">Begge får svare. Det finnes ikke et riktig svar.</p>
+    <div class="tur" style="margin-top:10px">
+      <div class="boble"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="8" width="28" height="26" rx="5" fill="#f5c79a" stroke="#2b2118" stroke-width="4"/><rect x="8" y="34" width="32" height="12" rx="5" fill="#facc15" stroke="#2b2118" stroke-width="4"/></svg>Barnet: Hva tenker du?</div>
+      <div class="boble"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="10" y="6" width="28" height="26" rx="5" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/><rect x="6" y="32" width="36" height="14" rx="5" fill="#60a5fa" stroke="#2b2118" stroke-width="4"/></svg>Den voksne: Hva tenker du?</div>
+    </div>
+    <details>
+      <summary>Les etter samtalen</summary>
+      <div class="innhold">
+        <p>Voksne bestemmer ut fra det de vet. Når de lærer noe nytt, kan de tenke annerledes og endre en regel. Det betyr ikke at noen har gjort noe galt.</p>
+        <p>Du kan fortsatt synes at Roblox er morsomt. Og det er lov å være lei seg eller sint hvis noe blir forandret.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- STEG 6: Samtalen videre -->
+  <div class="steg" data-steg="6">
+    <h2 class="tittel" tabindex="-1">Nå snakker vi sammen</h2>
+    <p class="ingress">Legg gjerne skjermen litt til side. Nå vil den voksne fortelle hva den har tenkt.</p>
+
+    <details class="voksen-notat">
+      <summary>Til den voksne (husk fra forberedelsen)</summary>
+      <div class="innhold">
+        <ul>
+          <li>Si vurderingen og beslutningen din med egne ord. Én eller to grunner holder.</li>
+          <li>Si hva som er bestemt, og hva barnet kan være med på å bestemme.</li>
+          <li>«Vi sa ja ut fra det vi visste da. Nå har vi lært mer.»</li>
+          <li>Lytt. Barnet trenger ikke være enig, og trenger ikke love noe.</li>
+          <li>En annen app er ikke automatisk tryggere. Se på den sammen før dere tar den i bruk.</li>
+        </ul>
+      </div>
+    </details>
+
+    <div class="card" style="margin-top:6px">
+      <h3>Dette sa du at du liker med Roblox</h3>
+      <div class="valgte" id="valgte" style="margin:8px 0 4px"></div>
+      <p class="liten skjult" id="valgte-tom">Dere valgte ingen kort i starten. Snakk gjerne om det nå.</p>
+    </div>
+
+    <div class="snakk" style="margin-top:14px">
+      <h3>Snakk sammen</h3>
+      <ul id="slutt-sporsmal"></ul>
+    </div>
+
+    <p class="pausenote" style="margin-top:14px">Dere trenger ikke bli ferdige i dag. Det er helt greit å ta en pause og snakke mer en annen dag.</p>
+  </div>
+
+  <div class="navrad">
+    <button class="btn" id="forrige">← Tilbake</button>
+    <button class="btn btn-gul" id="neste">Neste →</button>
+  </div>
+  <p class="pausenote">Ta den tiden dere trenger. Dere kan stoppe og snakke når som helst.</p>
+</section>
+
+</main>
+
+<footer>LRNify · Roblox – la oss se litt nærmere · Situasjonene er oppdiktede eksempler. LRNify har ingen tilknytning til Roblox.</footer>
+
+<script>
+'use strict';
+
+/* Valgene i fellesdelen ligger bare i minnet til fanen lukkes eller lastes på nytt.
+   Ingenting lagres i nettleseren og ingenting sendes noe sted. */
+const valgt = new Set();
+
+const ILLU = {
+  venner: '<svg viewBox="0 0 80 80" aria-hidden="true"><rect x="8" y="18" width="26" height="24" rx="5" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/><rect x="4" y="42" width="34" height="26" rx="6" fill="#60a5fa" stroke="#2b2118" stroke-width="4"/><rect x="46" y="22" width="26" height="24" rx="5" fill="#f5c79a" stroke="#2b2118" stroke-width="4"/><rect x="42" y="46" width="34" height="22" rx="6" fill="#f472b6" stroke="#2b2118" stroke-width="4"/><path d="M16 32 q5 4 10 0 M54 36 q5 4 10 0" stroke="#2b2118" stroke-width="3" fill="none" stroke-linecap="round"/></svg>',
+  bygge: '<svg viewBox="0 0 80 80" aria-hidden="true"><rect x="10" y="48" width="24" height="22" fill="#f87171" stroke="#2b2118" stroke-width="4"/><rect x="34" y="48" width="24" height="22" fill="#60a5fa" stroke="#2b2118" stroke-width="4"/><rect x="22" y="26" width="24" height="22" fill="#facc15" stroke="#2b2118" stroke-width="4"/><rect x="50" y="10" width="20" height="20" fill="#4ade80" stroke="#2b2118" stroke-width="4" transform="rotate(12 60 20)"/></svg>',
+  utfordring: '<svg viewBox="0 0 80 80" aria-hidden="true"><path d="M6 70 L32 26 L46 46 L56 34 L76 70z" fill="#a3e635" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/><path d="M32 26 V6" stroke="#2b2118" stroke-width="4" stroke-linecap="round"/><path d="M32 7 h18 l-5 6 l5 6 h-18z" fill="#facc15" stroke="#2b2118" stroke-width="3" stroke-linejoin="round"/></svg>',
+  utforske: '<svg viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="30" fill="#bae6fd" stroke="#2b2118" stroke-width="4"/><path d="M40 16 L48 40 L40 64 L32 40z" fill="#fff" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/><path d="M40 16 L48 40 L32 40z" fill="#f87171" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/><circle cx="40" cy="40" r="4" fill="#2b2118"/></svg>',
+  annet: '<svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 6 L49 29 L74 30 L54 45 L61 70 L40 56 L19 70 L26 45 L6 30 L31 29z" fill="#fde047" stroke="#2b2118" stroke-width="4" stroke-linejoin="round"/></svg>'
+};
+
+const LIKER = [
+  { id:'venner',     tekst:'Være med venner',  start:'Hva liker dere å gjøre sammen i spillet?',   slutt:'Hvordan kan vi hjelpe deg med å beholde kontakten med vennene dine?' },
+  { id:'bygge',      tekst:'Bygge og lage',    start:'Fortell om noe du har bygget eller laget.',  slutt:'Hvor kan du fortsette å bygge og lage ting?' },
+  { id:'utfordring', tekst:'Klare utfordringer', start:'Fortell om noe vanskelig du har klart.',   slutt:'Hvor kan du fortsatt få klare utfordringer?' },
+  { id:'utforske',   tekst:'Utforske',         start:'Fortell om et sted du liker å utforske.',    slutt:'Hvor kan du fortsette å utforske?' },
+  { id:'annet',      tekst:'Noe annet',        start:'Fortell om noe du liker å gjøre.',           slutt:'Hvordan kan du fortsatt få gjøre det du liker?' }
+];
+
+const PROFILER = [
+  { navn:'Pannekakefan', besk:'Liker å bygge hus og hager.', farge:'#f472b6', hode:'#fcd9b6', pynt:'lue' },
+  { navn:'LynUlv_7',     besk:'Spiller hinderløyper. Har vært med lenge.', farge:'#60a5fa', hode:'#e0b48a', pynt:'briller' },
+  { navn:'StjerneBygger', besk:'Ser etter noen å bygge sammen med.', farge:'#4ade80', hode:'#c58c5c', pynt:'stjerne' }
+];
+
+function avatar(p){
+  let pynt = '';
+  if(p.pynt === 'lue')     pynt = '<path d="M30 28 q18 -24 36 0z" fill="#facc15" stroke="#2b2118" stroke-width="4"/>';
+  if(p.pynt === 'briller') pynt = '<circle cx="40" cy="40" r="7" fill="none" stroke="#2b2118" stroke-width="3"/><circle cx="56" cy="40" r="7" fill="none" stroke="#2b2118" stroke-width="3"/><path d="M47 40h2" stroke="#2b2118" stroke-width="3"/>';
+  if(p.pynt === 'stjerne') pynt = '<path d="M74 10 l3 7 7 1 -5 5 1 7 -6 -3 -6 3 1 -7 -5 -5 7 -1z" fill="#facc15" stroke="#2b2118" stroke-width="2"/>';
+  return '<svg viewBox="0 0 96 96" aria-hidden="true"><circle cx="48" cy="48" r="44" fill="#fff9f0" stroke="#2b2118" stroke-width="3"/>' +
+    '<rect x="30" y="24" width="36" height="32" rx="6" fill="'+p.hode+'" stroke="#2b2118" stroke-width="4"/>' +
+    '<circle cx="41" cy="40" r="3" fill="#2b2118"/><circle cx="55" cy="40" r="3" fill="#2b2118"/>' +
+    '<path d="M42 48 h12" stroke="#2b2118" stroke-width="3" stroke-linecap="round"/>' +
+    '<rect x="24" y="56" width="48" height="30" rx="8" fill="'+p.farge+'" stroke="#2b2118" stroke-width="4"/>' + pynt + '</svg>';
+}
+
+/* ── Bygg kort ── */
+const likekort = document.getElementById('likekort');
+LIKER.forEach(l => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('aria-pressed', 'false');
+  b.dataset.id = l.id;
+  b.innerHTML = ILLU[l.id] + '<span>' + l.tekst + '</span>';
+  b.addEventListener('click', () => {
+    if(valgt.has(l.id)) valgt.delete(l.id); else valgt.add(l.id);
+    b.setAttribute('aria-pressed', valgt.has(l.id) ? 'true' : 'false');
+    oppdaterLikeSporsmal();
+  });
+  likekort.appendChild(b);
+});
+function oppdaterLikeSporsmal(){
+  const ul = document.getElementById('like-sporsmal');
+  const valgte = LIKER.filter(l => valgt.has(l.id));
+  const sp = valgte.length ? valgte.map(l => l.start) : ['Fortell om noe du liker å gjøre.'];
+  ul.innerHTML = sp.map(s => '<li>' + s + '</li>').join('');
+}
+
+/* ── Situasjon 1 ── */
+const pakkeKnapp = document.getElementById('pakke-apne');
+pakkeKnapp.addEventListener('click', () => {
+  pakkeKnapp.disabled = true;
+  pakkeKnapp.textContent = 'Pakken er åpnet';
+  document.getElementById('pakke-resultat').classList.remove('skjult');
+});
+
+/* ── Situasjon 2 ── */
+document.querySelectorAll('.punkt').forEach(p => {
+  p.addEventListener('click', () => {
+    const apen = p.getAttribute('aria-expanded') === 'true';
+    p.setAttribute('aria-expanded', apen ? 'false' : 'true');
+    document.getElementById(p.getAttribute('aria-controls')).classList.toggle('skjult', apen);
+  });
+});
+
+/* ── Situasjon 3 ── */
+const profilerEl = document.getElementById('profiler');
+PROFILER.forEach((p, i) => {
+  const d = document.createElement('div');
+  d.className = 'profil';
+  d.innerHTML = avatar(p) + '<div class="navn">' + p.navn + '</div><div class="besk">' + p.besk + '</div>' +
+    '<button type="button" class="btn" aria-controls="profil-detalj">Se nærmere</button>';
+  d.querySelector('button').addEventListener('click', () => visProfil(i));
+  profilerEl.appendChild(d);
+});
+function visProfil(i){
+  const p = PROFILER[i];
+  document.getElementById('profil-detalj-tittel').textContent = 'Vi ser nærmere på «' + p.navn + '»';
+  document.getElementById('profil-ser').innerHTML =
+    '<li>En spillfigur</li><li>Et brukernavn: «' + p.navn + '»</li><li>Det personen har skrevet: «' + p.besk + '»</li>';
+  const el = document.getElementById('profil-detalj');
+  el.classList.remove('skjult');
+  el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' });
+}
+
+/* ── Avslutning ── */
+function byggAvslutning(){
+  const valgte = LIKER.filter(l => valgt.has(l.id));
+  document.getElementById('valgte').innerHTML = valgte.map(l => '<span>' + l.tekst + '</span>').join('');
+  document.getElementById('valgte-tom').classList.toggle('skjult', valgte.length > 0);
+  const sp = ['Hva vil du savne mest?'];
+  if(valgte.length) valgte.forEach(l => sp.push(l.slutt));
+  else sp.push('Hvordan kan vi hjelpe deg med å beholde kontakten med vennene dine?', 'Hvor kan du fortsette å bygge, utforske eller klare utfordringer?');
+  sp.push('Hva gjør vi videre, og når?');
+  document.getElementById('slutt-sporsmal').innerHTML = sp.map(s => '<li>' + s + '</li>').join('');
+}
+
+/* ── Navigasjon (adressen styrer skjermen, så nettleserens tilbake-knapp virker) ── */
+const ANTALL = 6;
+const STEGNAVN = ['Hva liker du?', 'Situasjon 1 av 3', 'Situasjon 2 av 3', 'Situasjon 3 av 3', 'Når vi lærer noe nytt', 'Samtalen videre'];
+const framdrift = document.getElementById('framdrift');
+for(let i = 0; i < ANTALL; i++) framdrift.appendChild(document.createElement('span'));
+
+function visSkjerm(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+}
+function fokus(el){ if(el){ el.focus({ preventScroll: true }); window.scrollTo(0, 0); } }
+
+function route(){
+  const h = location.hash.replace('#', '');
+  const m = h.match(/^sammen-(\d)$/);
+  if(m){
+    const n = Math.min(Math.max(parseInt(m[1], 10), 1), ANTALL);
+    visSkjerm('sammen');
+    document.querySelectorAll('.steg').forEach(s => s.classList.toggle('skjult', s.dataset.steg !== String(n)));
+    [...framdrift.children].forEach((sp, i) => { sp.className = i + 1 < n ? 'ferdig' : (i + 1 === n ? 'pa' : ''); });
+    document.getElementById('steginfo').textContent = 'Steg ' + n + ' av ' + ANTALL + ' · ' + STEGNAVN[n - 1];
+    document.getElementById('forrige').textContent = n === 1 ? '← Til forsiden' : '← Tilbake';
+    const neste = document.getElementById('neste');
+    neste.textContent = n === ANTALL ? 'Tilbake til forsiden' : 'Neste →';
+    neste.dataset.mal = n === ANTALL ? '#forside' : '#sammen-' + (n + 1);
+    document.getElementById('forrige').dataset.mal = n === 1 ? '#forside' : '#sammen-' + (n - 1);
+    if(n === ANTALL) byggAvslutning();
+    fokus(document.querySelector('.steg[data-steg="' + n + '"] h2'));
+  } else if(h === 'foreldre'){
+    visSkjerm('foreldre'); fokus(document.getElementById('h-foreldre'));
+  } else {
+    visSkjerm('forside'); fokus(document.getElementById('h-forside'));
+  }
+}
+document.getElementById('neste').addEventListener('click', e => { location.hash = e.currentTarget.dataset.mal; });
+document.getElementById('forrige').addEventListener('click', e => { location.hash = e.currentTarget.dataset.mal; });
+window.addEventListener('hashchange', route);
+route();
+</script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
