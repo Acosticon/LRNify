@@ -93,7 +93,8 @@
   .forside-tittelboks .ingress { margin-top: 2px; }
   #forside .innganger { grid-template-columns: 1fr 1fr; flex: none; }
   #forside .inngang, #forside .inngang.forst { padding: 16px 20px; }
-  #forside .inngang svg { width: 70px; height: 70px; }
+  .inngang-bilde { flex: 0 0 auto; width: 96px; height: 96px; object-fit: contain; }
+  #forside .inngang-bilde { width: clamp(80px, 9vw, 120px); height: auto; margin: -8px 0; }
   #forside .inngang.forst .i-tittel, #forside .inngang .i-tittel { font-size: clamp(1.4rem, 2.6vw, 2rem); }
   .forside-note { text-align: center; flex: none; }
   .innganger { display: grid; gap: 18px; }
@@ -272,6 +273,10 @@
   .popup-tekst { font-weight: 800; font-size: 1.1rem; margin-top: 6px; }
   .popup-sporsmal { font-weight: 900; font-size: 1.15rem; margin-top: 14px; background: #fff; border: 3px dashed var(--ink); border-radius: 14px; padding: 10px 12px; }
   .popup-knapp { font-size: 1.3rem; padding: 14px 34px; margin-top: 10px; cursor: pointer; }
+  .pakke-tilbud-valg { display: flex; gap: 10px; margin-top: 10px; }
+  .pakke-kjop { display: flex; flex-direction: column; align-items: center; padding: 8px 16px; cursor: pointer; line-height: 1.2; }
+  .pakke-kjop b { font-size: 1.05rem; }
+  .pakke-kjop span { font-size: .95rem; }
   .pakke-popup { inset: 8px; background: linear-gradient(#fef9c3, #fde68a); border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 6px 0 var(--ink);
     display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 14px; }
   .pakke-popup > div { display: flex; flex-direction: column; align-items: center; }
@@ -407,7 +412,7 @@
 
   <div class="innganger">
     <a class="inngang forst" href="#foreldre">
-      <svg viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="38" fill="#fff" stroke="#2b2118" stroke-width="4"/><rect x="24" y="22" width="36" height="44" rx="4" fill="#fff9f0" stroke="#2b2118" stroke-width="4"/><path d="M31 34h22M31 43h22M31 52h14" stroke="#2b2118" stroke-width="4" stroke-linecap="round"/></svg>
+      <img class="inngang-bilde" src="bilder/inngang-foreldre.webp" width="300" height="300" alt="">
       <span>
         <span class="i-merke">Start her · ca. 5 min</span>
         <span class="i-tittel">Foreldre, før dere starter!</span>
@@ -415,7 +420,7 @@
       </span>
     </a>
     <a class="inngang" href="#sammen-1">
-      <svg viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="38" fill="#fde68a" stroke="#2b2118" stroke-width="4"/><rect x="18" y="30" width="20" height="20" rx="4" fill="#fcd9b6" stroke="#2b2118" stroke-width="4"/><rect x="48" y="36" width="18" height="18" rx="4" fill="#f5c79a" stroke="#2b2118" stroke-width="4"/><path d="M16 64 q12 -12 24 0 M46 64 q10 -10 22 0" stroke="#2b2118" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+      <img class="inngang-bilde" src="bilder/inngang-sammen.webp" width="300" height="300" alt="">
       <span>
         <span class="i-merke">Sammen · 10–15 min</span>
         <span class="i-tittel">Start aktiviteten sammen</span>
@@ -438,7 +443,7 @@
   <!-- 1 Bekymringene -->
   <div class="card">
     <div class="seksjonsnr">1 av 4</div>
-    <h2 class="tittel" style="font-size:1.6rem">Hva er bekymringene?</h2>
+    <h2 class="tittel" style="font-size:1.6rem">Hva handler dette om?</h2>
     <p>Medietilsynet la 22. oktober 2026 fram rapporten <i>«Roblox under radaren»</i>. De så nærmere på fire populære spill på Roblox: <i>Adopt Me</i>, <i>Brookhaven RP</i>, <i>99 Nights in the Forest</i> og <i>Clip It</i>. De intervjuet også tolv familier og brukte tall fra undersøkelsen <i>Barn og medier 2026</i>.</p>
     <p class="liten" style="margin-top:8px">Roblox er ikke ett spill, men en plattform med svært mange spill laget av ulike utviklere. Funnene gjelder de fire spillene som ble undersøkt. Andre spill kan ha andre funksjoner.</p>
 
@@ -601,8 +606,11 @@
                 <img class="m-hatt m-hai" src="bilder/hatt-hai.webp" width="240" height="219" alt="">
                 <img class="m-hatt m-drage" src="bilder/hatt-drage.webp" width="240" height="200" alt="">
               </div>
-              <h3 id="pakke-popup-tittel" class="popup-tittel">Kjøpe ti pakker til for 200 Robux?</h3>
-              <button type="button" class="lat-knapp popup-knapp" id="pakke-kjop">Kjøp</button>
+              <h3 id="pakke-popup-tittel" class="popup-tittel">Vil du kjøpe flere pakker?</h3>
+              <div class="pakke-tilbud-valg">
+                <button type="button" class="lat-knapp pakke-kjop" id="pakke-kjop"><b>5 pakker til</b><span>100 Robux</span></button>
+                <button type="button" class="lat-knapp pakke-kjop"><b>50 pakker til</b><span>500 Robux</span></button>
+              </div>
             </div>
             <div id="pakke-tomt" class="skjult">
               <h3 class="popup-tittel" tabindex="-1" id="pakke-tomt-tittel">Beklager, nå var det tomt.</h3>
@@ -624,7 +632,7 @@
         </div>
         <h3 style="text-align:center;margin-top:12px">Dine hatter</h3>
         <div class="mine-hatter" id="mine-hatter" aria-hidden="true"><span class="ingen-enna">Ingen ennå</span></div>
-        <p id="pakke-stopp" class="stopp skjult">Her stopper vi. Ti pakker, 100 Robux – og bare grå luer.</p>
+        <p id="pakke-stopp" class="stopp skjult">Her stopper vi. Fem pakker, 50 Robux – og bare grå luer.</p>
       </div>
 
       <div class="card pakke-hatter">
@@ -884,7 +892,7 @@ function oppdaterLikeSporsmal(){
 }
 
 /* ── Situasjon 1: pakker kan åpnes inntil ti ganger, alltid grå lue ── */
-const MAKS_PAKKER = 10;
+const MAKS_PAKKER = 5;
 let forsok = 0;
 document.getElementById('hatter').innerHTML = HATTER.map(h =>
   '<div class="hatt">' + hattBilde(h, '') + '<b>' + h.navn + '</b><span class="hatt-merke' + (h.id === 'gra' ? ' vanlig' : '') + '">' + h.merke + '</span></div>').join('');
@@ -958,11 +966,11 @@ function visPakkePopup(){
   pakkePopup.classList.remove('skjult');
   document.getElementById('pakke-kjop').focus({ preventScroll: true });
 }
-document.getElementById('pakke-kjop').addEventListener('click', () => {
+document.querySelectorAll('.pakke-kjop').forEach(k => k.addEventListener('click', () => {
   document.getElementById('pakke-tilbud').classList.add('skjult');
   document.getElementById('pakke-tomt').classList.remove('skjult');
   document.getElementById('pakke-tomt-tittel').focus({ preventScroll: true });
-});
+}));
 document.getElementById('pakke-popup-lukk').addEventListener('click', () => {
   pakkePopup.classList.add('skjult');
   pakkeKnapp.focus({ preventScroll: true });
