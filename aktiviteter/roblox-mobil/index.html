@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#fff9f0">
+<title>Roblox – la oss se litt nærmere (mobil) — LRNify</title>
+<meta name="description" content="Mobilversjon: en aktivitet for en forelder og et barn (7–10 år). Forstå bekymringene ved Roblox, utforsk tre oppdiktede situasjoner sammen og snakk om veien videre.">
+<link rel="canonical" href="https://lrnify.no/aktiviteter/roblox-mobil/index.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LRNify">
+<meta property="og:title" content="Roblox – la oss se litt nærmere (mobil) – LRNify">
+<meta property="og:description" content="Mobilversjon: en aktivitet for en forelder og et barn (7–10 år). Forstå bekymringene ved Roblox, utforsk tre oppdiktede situasjoner sammen og snakk om veien videre.">
+<meta property="og:url" content="https://lrnify.no/aktiviteter/roblox-mobil/index.html">
+<meta property="og:locale" content="nb_NO">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* Mobilversjonen: én kolonne, vanlig scrolling, Neste/Tilbake fast nederst.
+     Laget for en telefon som voksen og barn holder sammen. */
+  :root {
+    --cream: #fff9f0;
+    --ink:   #2b2118;
+    --yellow:#facc15;
+    --card:  #ffffff;
+    --muted: #6b6055;
+    --blue:  #dbeafe;
+    --green: #dcfce7;
+    --peach: #ffedd5;
+    --lilac: #ede9fe;
+    --pink:  #fce7f3;
+    --focus: #1d4ed8;
+    --side:  max(16px, env(safe-area-inset-left), env(safe-area-inset-right));
+    --navhoyde: 84px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow-x: clip; }
+  body {
+    font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--ink);
+    min-height: 100vh; min-height: 100dvh; line-height: 1.45; font-size: 1.02rem;
+    padding: max(10px, env(safe-area-inset-top)) var(--side) 32px;
+    -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
+  }
+  .ramme { width: 100%; max-width: 560px; margin: 0 auto; }
+  .skjult { display: none !important; }
+  a { color: var(--ink); font-weight: 800; }
+  :focus-visible { outline: 4px solid var(--focus); outline-offset: 3px; border-radius: 6px; }
+  img { max-width: 100%; }
+
+  /* ── TOPP ── */
+  .site-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-bottom: 10px; }
+  .logo { font-family: 'Chewy', cursive; font-size: 1.7rem; transform: rotate(-2deg); line-height: 1; text-decoration: none; color: var(--ink); font-weight: 400; flex: none; }
+  .logo b { color: var(--yellow); -webkit-text-stroke: 2px var(--ink); font-weight: 400; }
+  .logo-sub { font-family: 'Chewy', cursive; font-size: 1rem; color: var(--muted); text-align: right; line-height: 1.15; }
+  .topp-framdrift { display: none; flex: 1; min-width: 0; flex-direction: column; gap: 4px; }
+  .framdrift { display: flex; gap: 4px; }
+  .framdrift span { flex: 1; height: 9px; border-radius: 999px; border: 2px solid var(--ink); background: #fff; }
+  .framdrift span.pa { background: var(--yellow); }
+  .framdrift span.ferdig { background: var(--ink); }
+  .steginfo { font-weight: 900; color: var(--muted); font-size: .78rem; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* I fellesdelen: toppen blir liggende, og det er plass til knappene nederst */
+  body.i-sammen { padding-bottom: calc(var(--navhoyde) + env(safe-area-inset-bottom) + 20px); }
+  body.i-sammen .site-header { position: sticky; top: 0; z-index: 20; background: var(--cream); margin: 0 calc(-1 * var(--side)); padding: 8px var(--side) 8px; border-bottom: 3px solid var(--ink); }
+  body.i-sammen .logo { font-size: 1.4rem; }
+  body.i-sammen .logo-sub, body.i-sammen footer { display: none; }
+  body.i-sammen .topp-framdrift { display: flex; }
+
+  /* ── SKJERMER ── */
+  .screen { display: none; flex-direction: column; gap: 16px; animation: inn .25s ease; }
+  .screen.active { display: flex; }
+  @keyframes inn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
+
+  h1, h2.tittel { font-family: 'Chewy', cursive; font-weight: 400; line-height: 1.15; }
+  h1 { font-size: 2rem; text-align: center; }
+  h2.tittel { font-size: 1.6rem; }
+  .card h2.tittel { font-size: 1.4rem; }
+  h1:focus, h2:focus { outline: none; }
+  h3 { font-size: 1.1rem; font-weight: 900; margin-bottom: 6px; }
+  p + p { margin-top: 10px; }
+  .ingress { font-size: 1.08rem; font-weight: 700; }
+  .liten { font-size: .9rem; color: var(--muted); font-weight: 700; }
+
+  .card { background: var(--card); border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--ink); padding: 16px; }
+  .card ul, .card ol { padding-left: 1.3em; }
+  .card li + li { margin-top: 6px; }
+
+  /* ── KNAPPER ── */
+  button { font-family: 'Nunito', sans-serif; font-weight: 900; cursor: pointer; color: var(--ink); font-size: 1rem; }
+  .btn { border: 4px solid var(--ink); border-radius: 16px; padding: 10px 16px; min-height: 52px; box-shadow: 0 5px 0 var(--ink); background: #fff; transition: transform .12s, box-shadow .12s; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-align: center; font-weight: 900; }
+  .btn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .btn-gul { background: var(--yellow); }
+  .btn[disabled] { opacity: .55; cursor: not-allowed; transform: none; box-shadow: 0 5px 0 var(--ink); }
+  .btn-stor { width: 100%; font-size: 1.3rem; padding: 14px 18px; min-height: 66px; border-radius: 18px; box-shadow: 0 6px 0 var(--ink); }
+  .btn-liten { min-height: 44px; padding: 6px 12px; font-size: .92rem; box-shadow: 0 4px 0 var(--ink); border-width: 3px; border-radius: 12px; }
+
+  /* Neste/Tilbake fast nederst i fellesdelen */
+  .navrad { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--cream); border-top: 3px solid var(--ink);
+    padding: 10px var(--side) calc(12px + env(safe-area-inset-bottom)); }
+  .navrad-inn { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; }
+  .navrad .btn { min-height: 54px; font-size: 1.05rem; }
+  body:not(.i-sammen) .navrad { display: none; }
+
+  /* ── FORSIDE ── */
+  .forside-bilde { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; object-position: 50% 40%; border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--ink); background: #2e1065; }
+  .forside-intro { text-align: center; margin-top: 4px; }
+  .innganger { display: flex; flex-direction: column; gap: 14px; }
+  .inngang { display: flex; gap: 12px; align-items: center; text-align: left; border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 5px 0 var(--ink); padding: 12px 14px; text-decoration: none; color: var(--ink); background: #fff; }
+  .inngang:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .inngang.forst { background: var(--yellow); }
+  .inngang-bilde { flex: 0 0 auto; width: 76px; height: 76px; object-fit: contain; }
+  .inngang .i-merke { display: inline-block; font-size: .72rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; background: var(--ink); color: #fff; border-radius: 999px; padding: 1px 9px; margin-bottom: 4px; }
+  .inngang .i-tittel { font-family: 'Chewy', cursive; font-size: 1.45rem; line-height: 1.1; display: block; }
+  .inngang .i-tekst { font-weight: 700; display: block; margin-top: 2px; font-size: .95rem; }
+  .forside-note { text-align: center; }
+
+  /* ── FORELDREDEL ── */
+  .tid { display: inline-block; background: var(--ink); color: #fff; font-weight: 900; font-size: .8rem; border-radius: 999px; padding: 2px 11px; }
+  .bekymringer { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; }
+  .bekymring { border: 3px solid var(--ink); border-radius: 14px; padding: 12px 14px; background: var(--peach); }
+  .bekymring:nth-child(2) { background: var(--lilac); }
+  .bekymring:nth-child(3) { background: var(--blue); }
+  .bekymring:nth-child(4) { background: var(--green); }
+  .merke { display: inline-block; font-size: .7rem; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; border: 2px solid var(--ink); border-radius: 999px; padding: 1px 8px; background: #fff; margin: 6px 0 2px; }
+  .merke.vurd { background: var(--ink); color: #fff; }
+  details { border: 3px solid var(--ink); border-radius: 14px; background: #fff; margin-top: 12px; }
+  details summary { cursor: pointer; font-weight: 900; padding: 12px 14px; min-height: 52px; list-style: none; display: flex; align-items: center; gap: 10px; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::before { content: '＋'; font-size: 1.2rem; width: 1.2em; text-align: center; flex: 0 0 auto; }
+  details[open] summary::before { content: '－'; }
+  details .innhold { padding: 0 14px 14px; }
+  details .innhold ul { padding-left: 1.2em; }
+  details .innhold li + li { margin-top: 6px; }
+  .kilder li { word-break: break-word; }
+  .sitat { border-left: 6px solid var(--yellow); background: #fffbe6; padding: 10px 14px; border-radius: 8px; font-weight: 800; font-size: 1.05rem; }
+  .refleksjon li { font-weight: 800; }
+  .refleksjon li span { display: block; font-weight: 600; color: var(--muted); font-size: .93rem; }
+  .seksjonsnr { font-family: 'Chewy', cursive; font-size: 1.05rem; color: var(--muted); }
+
+  /* ── FELLES: snakk sammen ── */
+  .steg { display: flex; flex-direction: column; gap: 14px; }
+  .snakk { background: #fff; border: 3px dashed var(--ink); border-radius: 16px; padding: 12px 16px; }
+  .snakk ul { list-style: none; padding: 0; }
+  .snakk li { font-weight: 800; font-size: 1.1rem; padding: 6px 0; }
+  .snakk li::before { content: '💬 '; }
+  .samtale-bilde { display: flex; justify-content: center; }
+  .samtale-bilde img { display: block; height: auto; }
+  .samtale-foto { width: 100%; border: 4px solid var(--ink); border-radius: 16px; box-shadow: 0 5px 0 var(--ink); }
+  .samtale-profiler { gap: 8px; }
+  .samtale-profiler img { width: calc((100% - 16px) / 3); border-radius: 12px; }
+  .grep { list-style: none; padding-left: 0 !important; }
+  .grep li + li { margin-top: 8px; }
+  .trygg { background: var(--pink); border: 4px solid var(--ink); border-radius: 16px; padding: 12px 14px; font-weight: 800; font-size: 1.05rem; display: flex; gap: 10px; align-items: flex-start; }
+  .trygg .hjerte { font-size: 1.6rem; line-height: 1; }
+
+  /* ── STEG 1: hva liker du ── */
+  .likekort { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .likekort button { border: 4px solid var(--ink); border-radius: 16px; background: #fff; box-shadow: 0 4px 0 var(--ink); padding: 8px 6px 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 1rem; line-height: 1.2; position: relative; transition: transform .12s, box-shadow .12s; }
+  .likekort button img { width: 100%; max-width: 120px; height: auto; aspect-ratio: 1; object-fit: contain; }
+  /* Det femte kortet ligger alene: bilde og tekst på rad */
+  .likekort button:last-child:nth-child(odd) { grid-column: 1 / -1; flex-direction: row; justify-content: center; gap: 12px; }
+  .likekort button:last-child:nth-child(odd) img { width: 72px; }
+  .likekort button[aria-pressed="true"] { background: var(--yellow); }
+  .likekort button[aria-pressed="true"]::after { content: '✓'; position: absolute; top: 4px; right: 9px; font-size: 1.3rem; }
+  .likekort button:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+
+  /* ── STEG 2: pakken ── */
+  .spillvindu { width: 100%; border: 4px solid var(--ink); border-radius: 18px; background: linear-gradient(#bfdbfe, #e0f2fe); padding: 12px 14px 14px; box-shadow: 0 5px 0 var(--ink); text-align: center; position: relative; }
+  .vindu-topp { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .vindutittel { font-weight: 900; font-size: 1.1rem; }
+  .pris { display: inline-flex; align-items: center; gap: 6px; font-weight: 900; font-size: .9rem; background: #fff; border: 3px solid var(--ink); border-radius: 999px; padding: 2px 10px; }
+  .mynt { display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: #fbbf24; border: 2px solid var(--ink); }
+  .pakke-scene { position: relative; margin: 0 auto; width: min(190px, 52vw); padding-top: 18px; }
+  .pakke-topp { position: relative; z-index: 2; }
+  #pakke-bilde { width: 100%; height: auto; display: block; }
+  .pakke-under { position: absolute; left: 0; bottom: 0; width: 100%; height: auto; z-index: 1; opacity: 0; }
+  .pakke-under.fram { opacity: 1; animation: fram .45s ease-out both; }
+  @keyframes fram { from { transform: scale(.8) translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .hatt-ut { position: absolute; left: 50%; top: 14%; width: 56%; height: auto; transform: translateX(-50%); z-index: 3; filter: drop-shadow(0 5px 0 rgba(43,33,24,.3)); }
+  .hatt-ut.opp { animation: hattOpp .6s cubic-bezier(.2,1.5,.4,1) both; }
+  @keyframes hattOpp { 0% { transform: translate(-50%, 45%) scale(0); } 100% { transform: translate(-50%, 0) scale(1); } }
+  .pakke-topp.kast { animation: kast .7s cubic-bezier(.5,0,.9,.6) forwards; }
+  @keyframes kast { 0% { transform: none; } 20% { transform: translate(-6%, -8%) rotate(-6deg); } 100% { transform: translate(110vw, -70vh) rotate(55deg); } }
+  #pakke-bilde.rist { animation: rist .35s ease; transform-origin: 50% 90%; }
+  @keyframes rist { 25% { transform: rotate(-6deg); } 50% { transform: rotate(5deg); } 75% { transform: rotate(-3deg); } }
+  .resultat-tekst { font-weight: 900; font-size: 1.05rem; margin-top: 6px; min-height: 2.9em; display: flex; align-items: center; justify-content: center; }
+
+  .status { display: flex; align-items: center; gap: 10px; }
+  .status .tall-boks { flex: none; display: flex; gap: 8px; }
+  .tall-boks > div { background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 4px 8px; display: flex; flex-direction: column; align-items: center; font-weight: 700; font-size: .72rem; line-height: 1.1; text-align: center; min-width: 64px; }
+  .tall-boks .tall { font-family: 'Chewy', cursive; font-size: 1.5rem; line-height: 1.1; }
+  .mine-hatter { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; gap: 2px; align-items: center; }
+  .mine-hatter img { width: 34px; height: 30px; object-fit: contain; }
+  .ingen-enna { color: var(--muted); font-weight: 700; font-size: .88rem; }
+  .stopp { font-weight: 900; }
+  .hatter { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .hatt { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; font-size: .78rem; line-height: 1.15; }
+  .hatt img { width: 100%; max-width: 72px; height: auto; aspect-ratio: 8 / 7; object-fit: contain; }
+  .hatt-merke { font-size: .66rem; font-weight: 900; border: 2px solid var(--ink); border-radius: 999px; padding: 0 6px; background: var(--lilac); }
+  .hatt-merke.vanlig { background: #e5e7eb; }
+
+  /* Ark som glir opp nedenfra (tilbud etter siste pakke) */
+  .ark-bak { position: fixed; inset: 0; z-index: 50; background: rgba(43,33,24,.55); display: flex; align-items: flex-end; justify-content: center; }
+  .ark { width: 100%; max-width: 560px; background: linear-gradient(#fef9c3, #fde68a); border: 4px solid var(--ink); border-bottom: none; border-radius: 22px 22px 0 0;
+    padding: 18px var(--side) calc(20px + env(safe-area-inset-bottom)); text-align: center; display: flex; flex-direction: column; align-items: center; animation: opp .35s cubic-bezier(.2,1.2,.4,1) both; }
+  .ark > div { display: flex; flex-direction: column; align-items: center; width: 100%; }
+  @keyframes opp { from { transform: translateY(100%); } to { transform: none; } }
+  .popup-tittel { font-family: 'Chewy', cursive; font-weight: 400; font-size: 1.6rem; line-height: 1.15; }
+  .popup-tittel:focus { outline: none; }
+  .popup-tekst { font-weight: 800; font-size: 1.08rem; margin-top: 6px; }
+  .popup-sporsmal { font-weight: 900; font-size: 1.1rem; margin-top: 14px; background: #fff; border: 3px dashed var(--ink); border-radius: 14px; padding: 10px 12px; width: 100%; }
+  .mashup { position: relative; width: 180px; height: 160px; margin-bottom: 4px; }
+  .mashup .m-pakke { position: absolute; left: 18px; bottom: 0; width: 144px; height: auto; }
+  .mashup .m-hatt { position: absolute; height: auto; filter: drop-shadow(0 3px 0 rgba(43,33,24,.3)); }
+  .mashup .m-galakse { width: 78px; left: -4px; top: 12px; transform: rotate(-16deg); }
+  .mashup .m-hai { width: 78px; right: -6px; top: 16px; transform: rotate(14deg); }
+  .mashup .m-drage { width: 84px; left: 48px; top: -6px; }
+  .pakke-tilbud-valg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; width: 100%; }
+  .lat-knapp { display: inline-block; background: #22c55e; border: 4px solid var(--ink); border-radius: 14px; padding: 10px 14px; min-height: 52px; font-weight: 900; font-size: 1.02rem; box-shadow: 0 4px 0 var(--ink); }
+  .lat-knapp:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .pakke-kjop { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.2; }
+  .pakke-kjop span { font-size: .92rem; }
+
+  /* ── STEG 4: redd vennen (bildet øverst, nedtellingen under) ── */
+  .spillvindu.redd { padding: 0; overflow: hidden; background: #2e1065; color: #fff; text-align: center; transition: border-color .4s; }
+  .redd-innhold { position: relative; visibility: hidden; }
+  .redd.startet .redd-innhold { visibility: visible; }
+  .redd-innhold > img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+  .redd-dekke { position: absolute; inset: 0; z-index: 5; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px;
+    background: radial-gradient(circle at 50% 40%, #4c1d95, #1e1b4b); transition: opacity .45s ease, visibility .45s; }
+  .redd-dekke .btn-stor { width: auto; min-width: 200px; }
+  .redd-dekke-tekst { font-weight: 800; color: #e9d5ff; }
+  .redd.startet .redd-dekke { opacity: 0; visibility: hidden; }
+  .redd-omstart { position: absolute; top: 8px; right: 8px; z-index: 12; }
+  .redd-ui { padding: 12px 14px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: #3b1585; transition: background-color .4s; }
+  .redd-ui:focus { outline: none; }
+  .redd-linje { font-weight: 800; }
+  .redd-stor { font-family: 'Chewy', cursive; font-size: 1.55rem; line-height: 1.15; color: #fde047; }
+  .klokke { font-family: 'Chewy', cursive; font-size: 1.6rem; color: var(--ink); background: #fff; border: 3px solid var(--ink); border-radius: 12px; padding: 0 10px; display: inline-block; min-width: 2.2ch; text-align: center; font-variant-numeric: tabular-nums; transition: background-color .3s, transform .2s; }
+  .tidslinje { width: 100%; height: 14px; border: 3px solid #fff; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.15); }
+  .tidslinje span { display: block; height: 100%; width: 100%; background: #4ade80; transition: width 1s linear, background-color .3s; }
+  .redd-ui .lat-knapp { width: 100%; font-size: 1.1rem; }
+  .redd.varm .redd-ui { background: #7c2d12; }
+  .redd.varm .klokke { background: #fdba74; }
+  .redd.varm .tidslinje span { background: #fb923c; }
+  .redd.kritisk { border-color: #dc2626; }
+  .redd.kritisk .redd-ui { background: #991b1b; animation: skjelv .25s linear infinite; }
+  .redd.kritisk .klokke { background: #fecaca; color: #991b1b; animation: puls .5s ease-in-out infinite; }
+  .redd.kritisk .tidslinje span { background: #ef4444; }
+  .redd.ute .redd-ui { background: #3f3f46; }
+  .redd.ute .klokke { background: #d4d4d8; }
+  @keyframes puls { 50% { transform: scale(1.25); } }
+  @keyframes skjelv { 25% { transform: translateX(-2px); } 75% { transform: translateX(2px); } }
+  .siste-sjanse { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; padding: 12px; background: rgba(69,10,10,.78); animation: popInn .35s cubic-bezier(.2,1.4,.4,1) both; }
+  @keyframes popInn { from { transform: scale(.6); opacity: 0; } to { transform: none; opacity: 1; } }
+  .siste-kort { background: #fff; color: var(--ink); border: 5px solid #dc2626; border-radius: 20px; box-shadow: 0 6px 0 var(--ink); padding: 16px 14px; text-align: center; width: 100%; }
+  .siste-tittel { font-family: 'Chewy', cursive; font-size: 2.3rem; line-height: 1; color: #dc2626; -webkit-text-stroke: 1px var(--ink); }
+  .siste-tekst { font-weight: 900; font-size: 1.12rem; margin-top: 8px; }
+  .siste-kort .lat-knapp { width: 100%; margin-top: 12px; font-size: 1.1rem; }
+
+  /* Oppdiktet kjøpsvindu */
+  dialog.kjop { margin: auto auto 0; border: 4px solid var(--ink); border-bottom: none; border-radius: 22px 22px 0 0; padding: 18px var(--side) calc(18px + env(safe-area-inset-bottom)); width: 100%; max-width: 560px; background: #fff; color: var(--ink); font-family: 'Nunito', sans-serif; }
+  dialog.kjop[open] { animation: opp .3s cubic-bezier(.2,1.2,.4,1) both; }
+  dialog.kjop::backdrop { background: rgba(43,33,24,.55); }
+  .kjop h3 { font-size: 1.3rem; }
+  .kjop-tilbud { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+  .tilbud { border: 4px solid var(--ink); border-radius: 16px; background: #f0fdf4; box-shadow: 0 5px 0 var(--ink); padding: 12px 6px; display: flex; flex-direction: column; align-items: center; gap: 4px; min-height: 116px; justify-content: center; }
+  .tilbud:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--ink); }
+  .tilbud-best { background: #fef9c3; }
+  .tilbud-ant { font-family: 'Chewy', cursive; font-size: 1.4rem; font-weight: 400; }
+  .tilbud-pris { font-size: 1.05rem; background: #22c55e; border: 3px solid var(--ink); border-radius: 999px; padding: 2px 12px; }
+  .tilbud-merke { font-size: .72rem; background: #ef4444; color: #fff; border-radius: 999px; padding: 2px 8px; }
+
+  /* ── STEG 6: profiler som liste, detaljene åpnes under kortet ── */
+  .profiler { display: flex; flex-direction: column; gap: 12px; }
+  .profil-kort { display: flex; align-items: center; gap: 12px; text-align: left; border: 4px solid var(--ink); border-radius: 18px; box-shadow: 0 4px 0 var(--ink); background: #fff; padding: 8px 12px 8px 8px; width: 100%; font-weight: 700; }
+  .profil-kort, .spillvindu.redd { scroll-margin-top: 76px; scroll-margin-bottom: calc(var(--navhoyde) + 16px); }
+  .profil-kort:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink); }
+  .profil-kort img { flex: none; width: 92px; height: 92px; border-radius: 12px; object-fit: cover; }
+  .profil-kort .p-navn { display: block; font-family: 'Chewy', cursive; font-weight: 400; font-size: 1.35rem; line-height: 1.1; }
+  .profil-kort .p-besk { display: block; font-size: .95rem; margin-top: 2px; }
+  .profil-kort .p-pil { margin-left: auto; font-size: 1.3rem; flex: none; transition: transform .2s; }
+  .profil-kort[aria-expanded="true"] { background: var(--yellow); }
+  .profil-kort[aria-expanded="true"] .p-pil { transform: rotate(90deg); }
+  .profil-hint { font-weight: 800; color: var(--muted); text-align: center; }
+  .profil-detalj { display: flex; flex-direction: column; gap: 10px; margin-top: -2px; }
+  .profil-detalj h3 { margin: 0; }
+  .vet > div { border: 3px solid var(--ink); border-radius: 14px; padding: 10px 14px; }
+  .vet > div + div { margin-top: 10px; }
+  .vet .ja { background: var(--green); }
+  .vet .nei { background: var(--lilac); }
+  .vet ul { padding-left: 1.2em; margin-top: 4px; }
+
+  /* ── STEG 8 ── */
+  .snakk-hoved li { font-family: 'Chewy', cursive; font-weight: 400; font-size: 1.5rem; line-height: 1.2; padding: 10px 0; }
+  .snakk-hoved li + li { border-top: 2px dashed #d6cbbb; }
+  .valgte-bilder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 6px; }
+  .valgte-bilder figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; background: var(--yellow); border: 3px solid var(--ink); border-radius: 14px; padding: 6px; font-weight: 900; font-size: .82rem; line-height: 1.15; text-align: center; }
+  .valgte-bilder img { width: 100%; max-width: 90px; height: auto; }
+  .valgte-tom { color: var(--muted); font-weight: 700; }
+
+  .skjult-leser { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  footer { margin-top: 28px; color: var(--muted); font-size: .82rem; text-align: center; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .screen, .ark, dialog.kjop[open], .siste-sjanse { animation: none; }
+    * { transition: none !important; }
+    #pakke-bilde.rist, .hatt-ut.opp, .pakke-topp.kast, .pakke-under.fram, .redd.kritisk .klokke, .redd.kritisk .redd-ui { animation: none; }
+    .redd.kritisk .klokke { outline: 4px solid #fff; }
+  }
+</style>
+</head>
+<body>
+<div class="ramme">
+<header class="site-header">
+  <a class="logo" href="/index.html">LRN<b>ify</b></a>
+  <div class="logo-sub">Roblox – la oss se litt nærmere</div>
+  <div class="topp-framdrift">
+    <div class="framdrift" id="framdrift" aria-hidden="true"></div>
+    <div class="steginfo" id="steginfo"></div>
+  </div>
+</header>
+
+<main>
+
+<!-- ══════════ FORSIDE ══════════ -->
+<section class="screen" id="forside" aria-labelledby="h-forside">
+  <img class="forside-bilde" src="bilder/forside.webp" width="1200" height="675" alt="En voksen og et barn står i en spillverden full av lysende butikkskilt med kjøpeknapper, en skattekiste med nedtelling og figurer med kroner og vinger.">
+  <div>
+    <h1 id="h-forside" tabindex="-1">Roblox – la oss se litt nærmere</h1>
+    <p class="forside-intro ingress">En aktivitet for å snakke sammen om spill.</p>
+  </div>
+
+  <div class="innganger">
+    <a class="inngang forst" href="#foreldre">
+      <img class="inngang-bilde" src="bilder/inngang-foreldre.webp" width="300" height="300" alt="">
+      <span>
+        <span class="i-merke">Start her · ca. 5 min</span>
+        <span class="i-tittel">Foreldre, før dere starter!</span>
+        <span class="i-tekst">Bruk noen minutter på å forstå bekymringene og forberede samtalen.</span>
+      </span>
+    </a>
+    <a class="inngang" href="#sammen-1">
+      <img class="inngang-bilde" src="bilder/inngang-sammen.webp" width="300" height="300" alt="">
+      <span>
+        <span class="i-merke">Sammen · 10–15 min</span>
+        <span class="i-tittel">Start aktiviteten sammen</span>
+        <span class="i-tekst">Se nærmere på Roblox, oppdag noen utfordringer og snakk sammen.</span>
+      </span>
+    </a>
+  </div>
+  <p class="liten forside-note">Ingen innlogging, og ingenting dere velger, blir lagret. Situasjonene er oppdiktede. LRNify har ingen tilknytning til Roblox.</p>
+</section>
+
+<!-- ══════════ FORELDREDEL ══════════ -->
+<section class="screen" id="foreldre" aria-labelledby="h-foreldre">
+  <a class="btn btn-liten" href="#forside" style="align-self:flex-start">← Til forsiden</a>
+  <div>
+    <span class="tid">For den voksne · ca. 5 minutter</span>
+    <h2 class="tittel" id="h-foreldre" tabindex="-1" style="margin-top:6px">Foreldre, før dere starter!</h2>
+    <p class="ingress">Les dette alene før dere setter dere sammen. Felter med <b>＋</b> er valgfri fordypning.</p>
+  </div>
+
+  <!-- 1 Bekymringene -->
+  <div class="card">
+    <div class="seksjonsnr">1 av 4</div>
+    <h2 class="tittel">Hva handler dette om?</h2>
+    <p>Medietilsynet la 22. oktober 2026 fram rapporten <i>«Roblox under radaren»</i>. De så nærmere på fire populære spill på Roblox: <i>Adopt Me</i>, <i>Brookhaven RP</i>, <i>99 Nights in the Forest</i> og <i>Clip It</i>. De intervjuet også tolv familier og brukte tall fra undersøkelsen <i>Barn og medier 2026</i>.</p>
+    <p class="liten" style="margin-top:8px">Roblox er ikke ett spill, men en plattform med svært mange spill laget av ulike utviklere. Funnene gjelder de fire spillene som ble undersøkt. Andre spill kan ha andre funksjoner.</p>
+
+    <div class="bekymringer">
+      <div class="bekymring">
+        <h3>🛒 Kjøpepress</h3>
+        <span class="merke">Rapportens funn</span>
+        <p>Barn møter mye kjøpepress. Man kjøper med Robux, plattformens egen valuta, som koster ekte penger. Rapporten beskriver betalte fordeler og tilbud som bare varer en kort stund.</p>
+        <p>Barna i undersøkelsen sier at Roblox er morsomt og sosialt, men forteller også om fristelser og om at det kjennes urettferdig når andre kan kjøpe seg fordeler.</p>
+      </div>
+      <div class="bekymring">
+        <h3>🎁 Betalte tilfeldige belønninger</h3>
+        <span class="merke">Rapportens funn</span>
+        <p>Rapporten omtaler <b>lootbokser</b>: man betaler for en pakke uten å vite hva den inneholder. Det kan gi lyst til å prøve én gang til, og én gang til.</p>
+      </div>
+      <div class="bekymring">
+        <h3>👥 Kontakt med ukjente</h3>
+        <span class="merke">Rapportens funn</span>
+        <p>Spillere kan møte folk de ikke kjenner. Medietilsynet beskriver <i>Clip It</i> som et spill med funksjoner som likner sosiale medier.</p>
+        <span class="merke vurd">Vår forklaring</span>
+        <p>De fleste man møter, er vanlige spillere. Problemet er at man ikke kan vite hvem som står bak en figur.</p>
+      </div>
+      <div class="bekymring">
+        <h3>🗺️ Vanskelig å ha oversikt</h3>
+        <span class="merke">Rapportens funn</span>
+        <p>Foreldrekontroll finnes, men dekker ifølge rapporten ikke alle utfordringene. Medietilsynet ber plattformene om å gjøre endringer.</p>
+        <span class="merke vurd">Vår forklaring</span>
+        <p>Med så mange spill, som stadig endres, er det urimelig å forvente at en forelder skal sjekke hvert spill og hver funksjon. Du kan vurdere tjenesten som helhet.</p>
+      </div>
+    </div>
+
+    <details>
+      <summary>Fordypning: Hva sier Roblox om sikkerhet og kontakt?</summary>
+      <div class="innhold">
+        <p class="liten">Dette er Roblox' egne opplysninger. Vi har ikke kunnet kontrollere hvordan de virker i praksis.</p>
+        <ul>
+          <li>Siden januar 2026 sier Roblox at man må gjøre en alderssjekk (anslag av alder ut fra ansiktet, eller legitimasjon fra 13 år) for å bruke chat. Spillere plasseres i aldersgrupper og skal bare kunne chatte med egen og liknende aldersgrupper.</li>
+          <li>For barn under 9 år er chat inne i spillene ifølge Roblox skrudd av som standard, med mindre en forelder gir samtykke etter en alderssjekk.</li>
+          <li>Foreldrekontrollen ligger under <i>Innstillinger → Foreldrekontroll</i>, og omfatter blant annet grense for pengebruk og oversikt over venner.</li>
+        </ul>
+        <p style="margin-top:10px">Ifølge Medietilsynet dekker foreldrekontrollen likevel ikke alle utfordringene. Barna de snakket med, fortalte også at de kjenner til måter å komme rundt den på. Hvilke kontaktmuligheter som finnes, varierer dessuten fra spill til spill.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Fordypning: Om seksuell utnyttelse og grooming</summary>
+      <div class="innhold">
+        <p>Dette temaet er ikke en del av fellesaktiviteten. Det er her for at du skal ha et helhetlig bilde.</p>
+        <p>Medietilsynets rapport handler, så langt vi har kunnet kontrollere, om kjøpepress, design som gjør det vanskelig å slutte, og kontakt med ukjente. Vi har ikke funnet at rapporten dokumenterer konkrete tilfeller av grooming.</p>
+        <p>I USA har flere delstater saksøkt Roblox, blant andre Louisiana (august 2025), Iowa (desember 2025) og Nebraska (mars 2026). De hevder at plattformen ikke har beskyttet barn godt nok mot seksuell utnyttelse. Dette er påstander i rettssaker, ikke avgjørelser. Vi kjenner ikke utfallet.</p>
+        <p>Det betyr ikke at barn flest blir utsatt for dette. Det betyr at risikoen er alvorlig nok til at voksne bør vurdere hvilke kontaktmuligheter barnet har.</p>
+        <p class="liten">Er du bekymret for at noe har skjedd, kan du kontakte politiet på 02800, eller 112 ved akutt fare.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Kilder og faktakontroll</summary>
+      <div class="innhold">
+        <p><b>Faktakontroll: 22. oktober 2026.</b> Rapporten kom samme dag. Vi har kontrollert opplysningene mot Medietilsynets pressemelding og nyhetsomtale gjennom nettsøk, men har ikke lest hele rapporten. Les gjerne kildene selv.</p>
+        <ul class="kilder" style="margin-top:8px">
+          <li><a href="https://www.nrk.no/artikkel/rapport-roblox-utsetter-barn-for-massivt-kjopepress-1530639" target="_blank" rel="noopener">NRK: «Rapport: Roblox utsetter barn for massivt kjøpepress»</a> (Knut Are Tornås og Roy Pettersen)</li>
+          <li><a href="https://www.medietilsynet.no/nyheter/aktuelt/ny-rapport-fra-medietilsynet-betydelig-risiko-pa-spillplattformen-roblox/" target="_blank" rel="noopener">Medietilsynet: «Ny rapport fra Medietilsynet: Betydelig risiko på spillplattformen Roblox»</a></li>
+          <li><a href="https://about.roblox.com/newsroom/2025/11/roblox-requires-age-checks-limits-minor-and-adult-chat" target="_blank" rel="noopener">Roblox: om alderssjekk og chat (engelsk)</a></li>
+          <li><a href="https://about.roblox.com/parental-controls" target="_blank" rel="noopener">Roblox: foreldrekontroll (engelsk)</a></li>
+          <li><a href="https://www.iowaattorneygeneral.gov/newsroom/attorney-general-brenna-bird-sues-roblox-for-endangering-iowa-children" target="_blank" rel="noopener">Iowas riksadvokat: søksmål mot Roblox (engelsk)</a></li>
+          <li><a href="https://ago.nebraska.gov/sites/default/files/doc/Roblox%20release.pdf" target="_blank" rel="noopener">Nebraskas riksadvokat: søksmål mot Roblox (engelsk, PDF)</a></li>
+          <li><a href="https://www.kttc.com/2025/08/15/state-attorney-general-sues-roblox-alleging-child-exploitation-safety-failures" target="_blank" rel="noopener">KTTC: om Louisianas søksmål (engelsk)</a></li>
+        </ul>
+        <p class="liten" style="margin-top:10px">Situasjonene i fellesdelen er oppdiktede eksempler laget for samtale. De viser ikke bestemte spill.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 2 Hva betyr Roblox -->
+  <div class="card">
+    <div class="seksjonsnr">2 av 4</div>
+    <h2 class="tittel">Hva betyr Roblox for barnet?</h2>
+    <p>For barnet ditt er Roblox kanskje ikke «bare et spill». Det kan være:</p>
+    <ul style="margin-top:8px">
+      <li><b>Venner</b> – et sted å leke med de andre etter skolen, og noe å snakke om i friminuttet.</li>
+      <li><b>Prosjekter</b> – noe de har bygget eller samlet over lang tid.</li>
+      <li><b>Mestring</b> – ting de har øvd på og blitt gode til.</li>
+      <li><b>Noe kjent</b> – en fast del av hverdagen.</li>
+    </ul>
+    <p style="margin-top:10px">Å miste dette kan kjennes som et ekte tap, selv om du har gode grunner. Det er naturlig om barnet blir lei seg eller sint.</p>
+  </div>
+
+  <!-- 3 Egen vurdering -->
+  <div class="card">
+    <div class="seksjonsnr">3 av 4</div>
+    <h2 class="tittel">Forbered deg</h2>
+    <p>Tenk gjennom dette. Du trenger ikke skrive noe.</p>
+    <ol class="refleksjon" style="margin-top:10px">
+      <li>Hva er det jeg ikke liker med Roblox?<span>Velg én eller to. Det holder.</span></li>
+      <li>Hvordan forklarer jeg med ord barnet forstår?<span>For eksempel: «Spillet er laget for å få deg til å kjøpe ting», eller «Vi kan ikke vite hvem du møter der».</span></li>
+      <li>Hva er bestemt, og hva kan barnet påvirke?<span>Beslutningen er din. Barnet kan kanskje være med på å bestemme når, hvordan det sier fra til venner, og hva dere gjør i stedet.</span></li>
+      <li>Ønsker jeg å forby Roblox, eller begrense det?<span>Hva er målet mitt?</span></li>
+    </ol>
+    <p style="margin-top:12px">Aktiviteten gir dere et felles utgangspunkt for å snakke om Roblox, men barnet trenger ikke forstå alt for at du kan sette en grense.</p>
+    <p class="sitat" style="margin-top:12px">«Vi sa ja ut fra det vi visste da. Nå har vi lært mer.»</p>
+    <p class="liten" style="margin-top:6px">Å endre en tillatelse betyr ikke at barnet har gjort noe galt.</p>
+  </div>
+
+  <!-- 4 Møt reaksjonen -->
+  <div class="card">
+    <div class="seksjonsnr">4 av 4</div>
+    <h2 class="tittel">Tips til å møte barnets reaksjon</h2>
+    <ul>
+      <li><b>Lytt.</b> Barnet kan være uenig, lei seg eller sint. Det trenger du ikke rette på.</li>
+      <li><b>Anerkjenn tapet.</b> «Jeg skjønner at dette er kjipt. Du liker jo å spille med de andre.»</li>
+      <li><b>Stå i beslutningen.</b> «Jeg forstår at du er uenig. Jeg har likevel bestemt meg, fordi det er min jobb å passe på deg.»</li>
+      <li><b>Ikke krev enighet.</b> Barnet trenger ikke si at Roblox er dårlig, eller at det er enig.</li>
+      <li><b>Ikke gjem deg bak aktiviteten.</b> Det er du, ikke nettsiden, som har bestemt.</li>
+    </ul>
+    <p style="margin-top:10px">Mange barn trenger tid. Det er vanlig at følelsene kommer tilbake de neste dagene.</p>
+    <p style="margin-top:10px"><b>Dere kan ta pause når som helst.</b> Si gjerne: «La oss ta en pause og snakke mer i morgen.»</p>
+  </div>
+
+  <a class="btn btn-gul btn-stor" href="#sammen-1">Start aktiviteten sammen →</a>
+</section>
+
+<!-- ══════════ FELLESDEL ══════════
+     Ett steg om gangen, i én kolonne. Siden scroller vanlig,
+     og Neste/Tilbake ligger fast nederst. -->
+<section class="screen" id="sammen" aria-labelledby="h-sammen">
+
+  <!-- 1: Barnet viser vei -->
+  <div class="steg" data-steg="1">
+    <h2 class="tittel" id="h-sammen" tabindex="-1">Hva liker du med Roblox?</h2>
+    <p class="liten" style="margin-top:-8px">Først vil vi høre fra deg som spiller. Trykk på ett eller flere kort.</p>
+    <div class="likekort" id="likekort" role="group" aria-label="Hva liker du med Roblox? Velg ett eller flere kort."></div>
+    <div class="snakk" aria-live="polite">
+      <h3>Snakk sammen</h3>
+      <ul id="like-sporsmal"><li>Fortell om noe du liker å gjøre.</li></ul>
+    </div>
+  </div>
+
+  <!-- 2: Situasjon 1 – aktivitet -->
+  <div class="steg" data-steg="2">
+    <h2 class="tittel" tabindex="-1">Situasjon 1: «Bare ett forsøk til!»</h2>
+    <div class="spillvindu">
+      <div class="vindu-topp">
+        <span class="vindutittel">Hattepakken</span>
+        <span class="pris"><span class="mynt" aria-hidden="true"></span> 10 Robux</span>
+      </div>
+      <div class="pakke-scene">
+        <img class="pakke-under" id="pakke-under" src="bilder/pakke.webp" width="420" height="373" alt="">
+        <div class="pakke-topp" id="pakke-topp">
+          <img id="pakke-bilde" src="bilder/pakke.webp" width="420" height="373" alt="En lukket lilla pakke med gul sløyfe.">
+          <img class="hatt-ut skjult" id="hatt-ut" src="bilder/hatt-gra.webp" width="240" height="200" alt="">
+        </div>
+      </div>
+      <p id="pakke-melding" class="resultat-tekst" aria-live="polite">Hvilken hatt får du? Det vet du ikke før du åpner.</p>
+    </div>
+    <button class="btn btn-gul btn-stor" id="pakke-apne">🎁 Åpne en pakke</button>
+
+    <div class="card">
+      <h3>Så langt</h3>
+      <div class="status">
+        <div class="tall-boks">
+          <div><span class="tall" id="ant-forsok">0</span><span>pakker</span></div>
+          <div><span class="tall" id="ant-mynter">0</span><span>Robux brukt</span></div>
+        </div>
+        <div class="mine-hatter" id="mine-hatter" aria-hidden="true"><span class="ingen-enna">Ingen hatter ennå</span></div>
+      </div>
+      <p id="pakke-stopp" class="stopp skjult" style="margin-top:10px">Her stopper vi. Fem pakker, 50 Robux – og bare grå luer.</p>
+    </div>
+
+    <div class="card">
+      <h3>Dette kan være i pakken</h3>
+      <div class="hatter" id="hatter"></div>
+    </div>
+
+    <div class="ark-bak skjult" id="pakke-popup">
+      <div class="ark" role="dialog" aria-modal="true" aria-labelledby="pakke-popup-tittel">
+        <div id="pakke-tilbud">
+          <div class="mashup" aria-hidden="true">
+            <img class="m-pakke" src="bilder/pakke.webp" width="420" height="373" alt="">
+            <img class="m-hatt m-galakse" src="bilder/hatt-galakse.webp" width="240" height="219" alt="">
+            <img class="m-hatt m-hai" src="bilder/hatt-hai.webp" width="240" height="219" alt="">
+            <img class="m-hatt m-drage" src="bilder/hatt-drage.webp" width="240" height="200" alt="">
+          </div>
+          <h3 id="pakke-popup-tittel" class="popup-tittel">Vil du kjøpe flere pakker?</h3>
+          <div class="pakke-tilbud-valg">
+            <button type="button" class="lat-knapp pakke-kjop" id="pakke-kjop"><b>5 pakker til</b><span>100 Robux</span></button>
+            <button type="button" class="lat-knapp pakke-kjop"><b>50 pakker til</b><span>500 Robux</span></button>
+          </div>
+        </div>
+        <div id="pakke-tomt" class="skjult">
+          <h3 class="popup-tittel" tabindex="-1" id="pakke-tomt-tittel">Beklager, nå var det tomt.</h3>
+          <p class="popup-tekst">Men Roblox går aldri tom for pakker!</p>
+          <p class="popup-sporsmal">💬 Hvorfor er det så fristende å åpne pakker?</p>
+          <button type="button" class="btn" id="pakke-popup-lukk" style="margin-top:14px;width:100%">Lukk</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3: Situasjon 1 – samtale -->
+  <div class="steg" data-steg="3">
+    <h2 class="tittel" tabindex="-1">Situasjon 1: Snakk sammen</h2>
+    <div class="samtale-bilde">
+      <img src="bilder/pakke.webp" width="420" height="373" alt="Hattepakken fra situasjon 1." style="width:min(200px, 55vw)">
+    </div>
+    <div class="snakk">
+      <h3>Snakk sammen</h3>
+      <ul>
+        <li>Hvorfor kan man få lyst til å prøve igjen?</li>
+        <li>Hva tjener den som selger pakkene?</li>
+      </ul>
+    </div>
+    <details>
+      <summary>Les etter samtalen: Hva skjer her?</summary>
+      <div class="innhold">
+        <p>Når man ser de kule hattene, er det lett å håpe at neste pakke er den heldige. Men hvert forsøk koster like mye, og flere forsøk gir ingen garanti for å få det man ønsker seg. Man vet heller ikke hvor stor sjansen er.</p>
+        <p>Her kom det bare grå luer – med vilje. Den som selger pakkene, tjener penger på hvert eneste forsøk, uansett hva som er inni.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- 4: Situasjon 2 – aktivitet -->
+  <div class="steg" data-steg="4">
+    <h2 class="tittel" tabindex="-1">Situasjon 2: «Vennen din trenger hjelp!»</h2>
+    <div class="spillvindu redd" id="redd-vindu">
+      <div class="redd-dekke" id="redd-dekke">
+        <button type="button" class="btn btn-gul btn-stor" id="redd-vis">▶ Start</button>
+      </div>
+      <div class="redd-innhold" id="redd-innhold">
+        <img src="bilder/redd-vennen.webp" width="1200" height="800" alt="To spillfigurer i en lavaverden. Den ene ligger utslått på bakken, den andre bøyer seg bekymret over.">
+        <button class="btn btn-liten redd-omstart skjult" id="redd-start">↺ Start på nytt</button>
+        <div class="redd-ui" id="redd-ui" tabindex="-1">
+          <p class="redd-linje">Vennen din har mistet alle livene sine.</p>
+          <p class="redd-stor">Redd vennen din! Betal 49 Robux.</p>
+          <p class="redd-linje">Du har <span class="klokke" id="redd-klokke">10</span> sekunder!</p>
+          <div class="tidslinje" aria-hidden="true"><span id="redd-bar"></span></div>
+          <button type="button" class="lat-knapp" id="redd-betal">Betal 49 Robux og redd</button>
+        </div>
+        <div class="siste-sjanse skjult" id="siste-sjanse" role="dialog" aria-labelledby="siste-tittel">
+          <div class="siste-kort">
+            <p class="siste-tittel" id="siste-tittel">SISTE SJANSE!</p>
+            <p class="siste-tekst">Vil du være en helt (49 Robux), eller la vennen din dø?</p>
+            <button type="button" class="lat-knapp" id="redd-betal-2">Betal 49 Robux og redd vennen</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="skjult-leser" id="redd-status" aria-live="polite"></p>
+    <dialog class="kjop" id="kjop" aria-labelledby="kjop-tittel">
+      <div id="kjop-valg">
+        <h3 id="kjop-tittel">Du har ikke nok Robux</h3>
+        <p>Kjøp Robux for å redde vennen din!</p>
+        <div class="kjop-tilbud">
+          <button type="button" class="tilbud" data-tilbud="49"><span class="tilbud-ant">49 Robux</span><span class="tilbud-pris">10 kr</span></button>
+          <button type="button" class="tilbud tilbud-best" data-tilbud="200"><span class="tilbud-merke">Mest for pengene!</span><span class="tilbud-ant">200 Robux</span><span class="tilbud-pris">20 kr</span></button>
+        </div>
+      </div>
+      <div id="kjop-stopp" class="skjult">
+        <h3>Her stopper vi</h3>
+        <p style="margin-top:8px"><b>Snakk sammen:</b> Hvilket tilbud valgte du, og hvorfor?</p>
+      </div>
+      <button type="button" class="btn" id="kjop-lukk" style="margin-top:14px;width:100%">Lukk</button>
+    </dialog>
+  </div>
+
+  <!-- 5: Situasjon 2 – samtale -->
+  <div class="steg" data-steg="5">
+    <h2 class="tittel" tabindex="-1">Situasjon 2: Snakk sammen</h2>
+    <div class="samtale-bilde">
+      <img src="bilder/redd-vennen-timer.webp" width="892" height="595" alt="Spillvinduet fra situasjon 2: vennen ligger utslått, klokka viser 1 sekund igjen, og en grønn knapp sier «Betal 49 Robux og redd»." class="samtale-foto">
+    </div>
+    <div class="snakk">
+      <h3>Snakk sammen</h3>
+      <ul>
+        <li>Hvordan føles dette valget?</li>
+        <li>Hvordan kunne spillet latt deg hjelpe vennen din uten å betale?</li>
+      </ul>
+    </div>
+    <details>
+      <summary>Les etter samtalen: Hva skjer her?</summary>
+      <div class="innhold">
+        <ul class="grep">
+          <li><b>⏱️ Kort tid:</b> Man velger fort, før man rekker å tenke seg om eller spørre en voksen.</li>
+          <li><b>💰 Pris i Robux:</b> Hvor mye er 49 Robux i kroner? Det står ikke.</li>
+          <li><b>🤝 En venn i nød:</b> Det kan kjennes som om man er en dårlig venn hvis man ikke betaler. Men det er spillet som har laget valget slik – ikke vennen din.</li>
+          <li><b>⚠️ Siste sjanse:</b> Ord som «helt» og «la vennen din dø» gjør det vanskelig å si nei.</li>
+          <li><b>🛒 Kjøpsvinduet:</b> Det største tilbudet ser best ut, og da kjøper man lett mer enn man trenger.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+
+  <!-- 6: Situasjon 3 – aktivitet -->
+  <div class="steg" data-steg="6">
+    <h2 class="tittel" tabindex="-1">Situasjon 3: «Hvem er med i spillet?»</h2>
+    <p class="profil-hint">Trykk på en profil for å se nærmere.</p>
+    <div class="profiler" id="profiler"></div>
+    <div id="profil-detalj" class="profil-detalj skjult" aria-live="polite">
+      <h3 id="profil-detalj-tittel"></h3>
+      <div class="vet">
+        <div class="ja"><b>Dette kan vi se</b><ul id="profil-ser"></ul></div>
+        <div class="nei"><b>Dette vet vi ikke</b><ul>
+          <li>Hvor gammel personen er</li>
+          <li>Hva personen egentlig heter</li>
+          <li>Om det som står på profilen, stemmer</li>
+          <li>Hvorfor personen er i spillet</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7: Situasjon 3 – samtale -->
+  <div class="steg" data-steg="7">
+    <h2 class="tittel" tabindex="-1">Situasjon 3: Snakk sammen</h2>
+    <div class="samtale-bilde samtale-profiler">
+      <img src="bilder/profil-pannekakefan.webp" width="640" height="640" alt="Profilkort: Pannekakefan.">
+      <img src="bilder/profil-lynulv.webp" width="640" height="640" alt="Profilkort: LynUlv_7.">
+      <img src="bilder/profil-stjernebygger.webp" width="640" height="640" alt="Profilkort: StjerneBygger.">
+    </div>
+    <div class="snakk">
+      <h3>Snakk sammen</h3>
+      <ul>
+        <li>Hva kan vi vite ut fra en spillfigur og et navn?</li>
+        <li>Hva kan voksne hjelpe med når vi ikke vet hvem vi møter?</li>
+      </ul>
+    </div>
+    <details>
+      <summary>Les etter samtalen: Hva betyr dette?</summary>
+      <div class="innhold">
+        <p>En spillfigur og et navn kan hvem som helst lage. Profilen forteller oss ikke sikkert hvem som er bak, hvor gammel personen er, eller hva personen vil. De fleste er vanlige spillere. Men fordi vi ikke kan vite det, er det de voksnes ansvar å bestemme hvilke måter å snakke med andre på som passer for barn.</p>
+      </div>
+    </details>
+    <div class="trygg">
+      <span class="hjerte" aria-hidden="true">💗</span>
+      <span>Hvis noen gjør deg ukomfortabel, kan du alltid si fra til en voksen du stoler på. Det er ikke din skyld om noen andre oppfører seg dårlig.</span>
+    </div>
+  </div>
+
+  <!-- 8: Hva tenker du nå? -->
+  <div class="steg" data-steg="8">
+    <h2 class="tittel" tabindex="-1">Hva tenker du nå?</h2>
+    <div class="snakk snakk-hoved">
+      <h3>Snakk sammen</h3>
+      <ul>
+        <li>Hva er et bra spill?</li>
+        <li>Er Roblox et bra spill?</li>
+        <li>Hvorfor tror du at noen voksne ikke liker at barn spiller Roblox?</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>I starten sa du at du likte</h3>
+      <div class="valgte-bilder" id="valgte"></div>
+    </div>
+  </div>
+
+</section>
+
+</main>
+
+<footer>LRNify · Roblox – la oss se litt nærmere · Situasjonene er oppdiktede eksempler. LRNify har ingen tilknytning til Roblox.</footer>
+</div>
+
+<nav class="navrad" aria-label="Steg">
+  <div class="navrad-inn">
+    <button class="btn" id="forrige">← Tilbake</button>
+    <button class="btn btn-gul" id="neste">Neste →</button>
+  </div>
+</nav>
+
+<script>
+'use strict';
+
+/* Valgene ligger bare i minnet til fanen lukkes eller lastes på nytt.
+   Ingenting lagres i nettleseren og ingenting sendes noe sted. */
+const valgt = new Set();
+
+const ILLU = {
+  venner:'bilder/kort-venner.webp', bygge:'bilder/kort-bygge.webp', utfordring:'bilder/kort-utfordring.webp',
+  utforske:'bilder/kort-utforske.webp', annet:'bilder/kort-annet.webp'
+};
+
+const LIKER = [
+  { id:'venner',     tekst:'Være med venner',    start:'Hva liker dere å gjøre sammen i spillet?' },
+  { id:'bygge',      tekst:'Bygge og lage',      start:'Fortell om noe du har bygget eller laget.' },
+  { id:'utfordring', tekst:'Klare utfordringer', start:'Fortell om noe vanskelig du har klart.' },
+  { id:'utforske',   tekst:'Utforske',           start:'Fortell om et sted du liker å utforske.' },
+  { id:'annet',      tekst:'Noe annet',          start:'Fortell om noe du liker å gjøre.' }
+];
+
+const PROFILER = [
+  { navn:'Pannekakefan',  besk:'Liker å bygge hus og hager.',               bilde:'bilder/profil-pannekakefan.webp',  figur:'en figur med gul byggehjelm og rosa genser' },
+  { navn:'LynUlv_7',      besk:'Spiller hinderløyper. Har vært med lenge.', bilde:'bilder/profil-lynulv.webp',        figur:'en figur med briller og blå genser' },
+  { navn:'StjerneBygger', besk:'Ser etter noen å bygge sammen med.',        bilde:'bilder/profil-stjernebygger.webp', figur:'en figur med en stjerne i håret og grønn genser' }
+];
+
+/* Hattene i pakken. Bare den grå luen kommer noen gang ut – med vilje. */
+const HATTER = [
+  { id:'gra',     navn:'Grå lue',  merke:'Vanlig',  bilde:'bilder/hatt-gra.webp' },
+  { id:'galakse', navn:'Romhatt',  merke:'Sjelden', bilde:'bilder/hatt-galakse.webp' },
+  { id:'drage',   navn:'Dragelue', merke:'Sjelden', bilde:'bilder/hatt-drage.webp' },
+  { id:'hai',     navn:'Haihjelm', merke:'Sjelden', bilde:'bilder/hatt-hai.webp' }
+];
+const hattBilde = (h, alt) => '<img src="' + h.bilde + '" alt="' + alt + '" width="240" height="210">';
+const rolig = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── Steg 1: kort ── */
+const likekort = document.getElementById('likekort');
+LIKER.forEach(l => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = '<img src="' + ILLU[l.id] + '" width="360" height="360" alt=""><span>' + l.tekst + '</span>';
+  b.addEventListener('click', () => {
+    if(valgt.has(l.id)) valgt.delete(l.id); else valgt.add(l.id);
+    b.setAttribute('aria-pressed', valgt.has(l.id) ? 'true' : 'false');
+    const valgte = LIKER.filter(x => valgt.has(x.id));
+    const sp = valgte.length ? valgte.map(x => x.start) : ['Fortell om noe du liker å gjøre.'];
+    document.getElementById('like-sporsmal').innerHTML = sp.map(s => '<li>' + s + '</li>').join('');
+  });
+  likekort.appendChild(b);
+});
+
+/* ── Situasjon 1: fem pakker, alltid grå lue ── */
+const MAKS_PAKKER = 5;
+let forsok = 0;
+document.getElementById('hatter').innerHTML = HATTER.map(h =>
+  '<div class="hatt">' + hattBilde(h, '') + '<b>' + h.navn + '</b><span class="hatt-merke' + (h.id === 'gra' ? ' vanlig' : '') + '">' + h.merke + '</span></div>').join('');
+const pakkeKnapp = document.getElementById('pakke-apne');
+const pakkeBilde = document.getElementById('pakke-bilde');
+const pakkeTopp = document.getElementById('pakke-topp');
+const pakkeUnder = document.getElementById('pakke-under');
+const hattUt = document.getElementById('hatt-ut');
+const LUKKET = 'bilder/pakke.webp', APEN = 'bilder/pakke-apen.webp';
+new Image().src = APEN;
+let opptatt = false;
+const vent = ms => new Promise(ok => setTimeout(ok, ms));
+
+function lukketPakke(){
+  pakkeBilde.src = LUKKET; pakkeBilde.alt = 'En lukket lilla pakke med gul sløyfe.';
+  hattUt.classList.add('skjult'); hattUt.classList.remove('opp');
+  pakkeBilde.classList.remove('rist');
+  pakkeTopp.classList.remove('kast'); pakkeUnder.classList.remove('fram');
+}
+function oppdaterRegning(){
+  document.getElementById('pakke-melding').textContent = 'Pakke nr. ' + forsok + ': Du fikk en grå lue.';
+  const mine = document.getElementById('mine-hatter');
+  const tom = mine.querySelector('.ingen-enna'); if(tom) tom.remove();
+  mine.insertAdjacentHTML('beforeend', hattBilde(HATTER[0], ''));
+  document.getElementById('ant-forsok').textContent = forsok;
+  document.getElementById('ant-mynter').textContent = forsok * 10;
+}
+
+pakkeKnapp.addEventListener('click', async () => {
+  if(opptatt || forsok >= MAKS_PAKKER) return;
+  opptatt = true;
+  forsok++;
+  const r = rolig();
+  lukketPakke();
+
+  // 1. Den lukkede pakken rister
+  if(!r){ void pakkeBilde.offsetWidth; pakkeBilde.classList.add('rist'); await vent(380); pakkeBilde.classList.remove('rist'); }
+
+  // 2. Pakken åpnes, og lua vokser fram
+  pakkeBilde.src = APEN; pakkeBilde.alt = 'En åpnet pakke med en grå lue.';
+  hattUt.classList.remove('skjult');
+  if(!r) hattUt.classList.add('opp');
+  oppdaterRegning();
+
+  if(forsok >= MAKS_PAKKER){
+    pakkeKnapp.disabled = true;
+    pakkeKnapp.textContent = 'Ingen flere pakker';
+    document.getElementById('pakke-stopp').classList.remove('skjult');
+    opptatt = false;
+    await vent(r ? 300 : 1400);
+    if(location.hash === '#sammen-2') visPakkePopup();
+    return;
+  }
+  pakkeKnapp.textContent = '🎁 Åpne en pakke til';
+  if(r){ opptatt = false; return; }
+
+  // 3. Den åpne pakken kastes ut, og en ny pakke kommer fram under
+  await vent(1300);
+  pakkeTopp.classList.add('kast');
+  pakkeUnder.classList.add('fram');
+  await vent(720);
+  lukketPakke();
+  opptatt = false;
+});
+
+/* Etter siste pakke: tilbud om flere pakker. «Kjøp» kjøper ingenting. */
+const pakkePopup = document.getElementById('pakke-popup');
+function visPakkePopup(){
+  document.getElementById('pakke-tilbud').classList.remove('skjult');
+  document.getElementById('pakke-tomt').classList.add('skjult');
+  pakkePopup.classList.remove('skjult');
+  document.getElementById('pakke-kjop').focus({ preventScroll: true });
+}
+function lukkPakkePopup(){ pakkePopup.classList.add('skjult'); }
+document.querySelectorAll('.pakke-kjop').forEach(k => k.addEventListener('click', () => {
+  document.getElementById('pakke-tilbud').classList.add('skjult');
+  document.getElementById('pakke-tomt').classList.remove('skjult');
+  document.getElementById('pakke-tomt-tittel').focus({ preventScroll: true });
+}));
+document.getElementById('pakke-popup-lukk').addEventListener('click', () => {
+  lukkPakkePopup();
+  pakkeKnapp.focus({ preventScroll: true });
+});
+
+/* ── Situasjon 2: nedtelling fra 10 som blir mer og mer pågående ── */
+const reddVindu = document.getElementById('redd-vindu');
+const reddKlokke = document.getElementById('redd-klokke');
+const reddBar = document.getElementById('redd-bar');
+const reddStart = document.getElementById('redd-start');
+const reddStatus = document.getElementById('redd-status');
+const sisteSjanse = document.getElementById('siste-sjanse');
+let reddTimer = null;
+function visTid(t){
+  reddKlokke.textContent = t;
+  reddBar.style.width = (t * 10) + '%';
+  reddVindu.classList.toggle('varm', t <= 6 && t > 3);
+  reddVindu.classList.toggle('kritisk', t <= 3 && t > 0);
+  reddVindu.classList.toggle('ute', t === 0);
+  sisteSjanse.classList.toggle('skjult', t !== 0);
+}
+function stoppKlokka(nullstill){
+  clearInterval(reddTimer); reddTimer = null;
+  if(nullstill){
+    visTid(10); reddStatus.textContent = '';
+    reddVindu.classList.remove('startet');
+    reddStart.classList.add('skjult');
+  }
+}
+function startNedtelling(){
+  stoppKlokka(false);
+  let t = 10; visTid(t);
+  reddStatus.textContent = 'Klokka teller ned fra 10.';
+  reddTimer = setInterval(() => {
+    t--; visTid(t);
+    if(t === 3) reddStatus.textContent = 'Tre sekunder igjen.';
+    if(t <= 0){ stoppKlokka(false); reddStatus.textContent = 'Tiden er ute. Siste sjanse!'; document.getElementById('redd-betal-2').focus({ preventScroll: true }); }
+  }, 1000);
+}
+document.getElementById('redd-vis').addEventListener('click', () => {
+  reddVindu.classList.add('startet');
+  reddStart.classList.remove('skjult');
+  document.getElementById('redd-ui').focus({ preventScroll: true });
+  // Sørg for at hele spillvinduet er synlig på en liten skjerm
+  reddVindu.scrollIntoView({ block: 'nearest', behavior: rolig() ? 'auto' : 'smooth' });
+  startNedtelling();
+});
+reddStart.addEventListener('click', startNedtelling);
+
+/* Oppdiktet kjøpsvindu: viser tilbudene, men ingenting kan kjøpes. */
+const kjop = document.getElementById('kjop');
+let kjopValgt = false;
+function apneKjop(){
+  document.getElementById('kjop-valg').classList.remove('skjult');
+  document.getElementById('kjop-stopp').classList.add('skjult');
+  kjopValgt = false;
+  if(typeof kjop.showModal === 'function') kjop.showModal(); else kjop.setAttribute('open', '');
+}
+function lukkKjop(){ if(kjop.open){ if(typeof kjop.close === 'function') kjop.close(); else kjop.removeAttribute('open'); } }
+document.getElementById('redd-betal').addEventListener('click', apneKjop);
+document.getElementById('redd-betal-2').addEventListener('click', apneKjop);
+document.getElementById('kjop-lukk').addEventListener('click', () => {
+  lukkKjop();
+  if(kjopValgt){                       // har «betalt»: tilbake til startbildet
+    stoppKlokka(true);
+    document.getElementById('redd-vis').textContent = '▶ Spill igjen';
+    document.getElementById('redd-vis').focus({ preventScroll: true });
+  }
+});
+kjop.querySelectorAll('.tilbud').forEach(t => t.addEventListener('click', () => {
+  document.getElementById('kjop-valg').classList.add('skjult');
+  document.getElementById('kjop-stopp').classList.remove('skjult');
+  kjopValgt = true;
+  document.getElementById('kjop-lukk').focus();
+}));
+
+/* ── Situasjon 3: detaljene åpnes rett under profilen man trykker på ── */
+const profilerEl = document.getElementById('profiler');
+const profilDetalj = document.getElementById('profil-detalj');
+PROFILER.forEach((p, i) => {
+  const d = document.createElement('button');
+  d.type = 'button';
+  d.className = 'profil-kort';
+  d.setAttribute('aria-expanded', 'false');
+  d.setAttribute('aria-controls', 'profil-detalj');
+  d.innerHTML = '<img src="' + p.bilde + '" width="640" height="640" alt="">' +
+    '<span><span class="p-navn">' + p.navn + '</span><span class="p-besk">' + p.besk + '</span></span>' +
+    '<span class="p-pil" aria-hidden="true">›</span>';
+  d.addEventListener('click', () => visProfil(i));
+  profilerEl.appendChild(d);
+});
+function visProfil(i){
+  const kort = profilerEl.children[i];
+  const apen = kort.getAttribute('aria-expanded') === 'true';
+  [...profilerEl.children].forEach(k => k.setAttribute('aria-expanded', 'false'));
+  if(apen){ profilDetalj.classList.add('skjult'); return; }
+  const p = PROFILER[i];
+  document.getElementById('profil-detalj-tittel').textContent = 'Vi ser nærmere på «' + p.navn + '»';
+  document.getElementById('profil-ser').innerHTML =
+    '<li>En spillfigur: ' + p.figur + '</li><li>Et brukernavn: «' + p.navn + '»</li><li>Det personen har skrevet: «' + p.besk + '»</li>';
+  kort.setAttribute('aria-expanded', 'true');
+  kort.after(profilDetalj);
+  profilDetalj.classList.remove('skjult');
+  kort.scrollIntoView({ block: 'start', behavior: rolig() ? 'auto' : 'smooth' });
+}
+
+/* ── Avslutning ── */
+function byggAvslutning(){
+  const valgte = LIKER.filter(l => valgt.has(l.id));
+  document.getElementById('valgte').innerHTML = valgte.length
+    ? valgte.map(l => '<figure><img src="' + ILLU[l.id] + '" width="360" height="360" alt=""><figcaption>' + l.tekst + '</figcaption></figure>').join('')
+    : '<p class="valgte-tom">Du valgte ingen kort i starten.</p>';
+}
+
+/* ── Navigasjon (adressen styrer skjermen, så nettleserens tilbake-knapp virker) ── */
+const ANTALL = 8;
+const STEGNAVN = ['Hva liker du?', 'Situasjon 1', 'Situasjon 1 · Snakk', 'Situasjon 2', 'Situasjon 2 · Snakk', 'Situasjon 3', 'Situasjon 3 · Snakk', 'Hva tenker du nå?'];
+const framdrift = document.getElementById('framdrift');
+for(let i = 0; i < ANTALL; i++) framdrift.appendChild(document.createElement('span'));
+
+function visSkjerm(id){
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+}
+function fokus(el){ window.scrollTo(0, 0); if(el) el.focus({ preventScroll: true }); }
+
+function route(){
+  const h = location.hash.replace('#', '');
+  stoppKlokka(true);
+  lukkKjop();
+  lukkPakkePopup();
+  const m = h.match(/^sammen-(\d)$/);
+  document.body.classList.toggle('i-sammen', !!m);
+  if(m){
+    const n = Math.min(Math.max(parseInt(m[1], 10), 1), ANTALL);
+    visSkjerm('sammen');
+    document.querySelectorAll('.steg').forEach(s => s.classList.toggle('skjult', s.dataset.steg !== String(n)));
+    [...framdrift.children].forEach((sp, i) => { sp.className = i + 1 < n ? 'ferdig' : (i + 1 === n ? 'pa' : ''); });
+    document.getElementById('steginfo').textContent = 'Steg ' + n + ' av ' + ANTALL + ' · ' + STEGNAVN[n - 1];
+    const forrige = document.getElementById('forrige');
+    const neste = document.getElementById('neste');
+    forrige.textContent = n === 1 ? '← Forsiden' : '← Tilbake';
+    forrige.dataset.mal = n === 1 ? '#forside' : '#sammen-' + (n - 1);
+    neste.textContent = n === ANTALL ? 'Ferdig ✓' : 'Neste →';
+    neste.dataset.mal = n === ANTALL ? '#forside' : '#sammen-' + (n + 1);
+    if(n === ANTALL) byggAvslutning();
+    fokus(document.querySelector('.steg[data-steg="' + n + '"] h2'));
+  } else if(h === 'foreldre'){
+    visSkjerm('foreldre'); fokus(document.getElementById('h-foreldre'));
+  } else {
+    visSkjerm('forside'); fokus(document.getElementById('h-forside'));
+  }
+}
+document.getElementById('neste').addEventListener('click', e => { location.hash = e.currentTarget.dataset.mal; });
+document.getElementById('forrige').addEventListener('click', e => { location.hash = e.currentTarget.dataset.mal; });
+window.addEventListener('hashchange', route);
+route();
+</script>
+<script src="/nav/lrnify-tilbake.js" defer></script>
+</body>
+</html>
